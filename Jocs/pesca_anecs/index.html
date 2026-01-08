@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Pesca d'Ànecs</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;700&display=swap');
+
+        :root {
+            --water-blue: #29b6f6;
+            --water-dark: #0288d1;
+            --duck-yellow: #ffeb3b;
+            --duck-orange: #ff9800;
+            --alert-red: #e53935;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+            background-color: #333;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10a6 6 0 0 0-12 0"/><path d="M12 10v10"/><path d="M12 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>') 16 32, auto;
+            /* Hook cursor */
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1100px;
+            position: relative;
+            background: var(--water-blue);
+            border: 12px solid #ff9800;
+            /* Fairground orange border */
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 100px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 5rem;
+            color: #d32f2f;
+            margin-bottom: 30px;
+            text-shadow: 4px 4px 0 #fff, 6px 6px 0 var(--duck-orange);
+            letter-spacing: 2px;
+        }
+
+        .start-deco {
+            font-size: 3rem;
+            margin: 20px;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .btn-era {
+            background: var(--duck-yellow);
+            border: 3px solid var(--duck-orange);
+            color: #333;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            font-family: 'Fredoka One', cursive;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.1s;
+        }
+
+        .btn-era:hover {
+            transform: scale(1.05);
+            background: #fdd835;
+        }
+
+        .btn-era.completed {
+            background: #81c784;
+            border-color: #388e3c;
+            color: #1b5e20;
+        }
+
+        .btn-era.completed:hover {
+            background: #a5d6a7;
+        }
+
+        /* Game Interface */
+        #pool {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image:
+                radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.1) 100%),
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.1) 10px, rgba(255, 255, 255, 0.1) 20px);
+            animation: water-flow 20s linear infinite;
+        }
+
+        @keyframes water-flow {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 100px 100px;
+            }
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            color: var(--water-dark);
+            display: flex;
+            gap: 30px;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Ducks */
+        .duck {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+            transition: transform 0.22s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .duck-body {
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.2));
+            z-index: 1;
+        }
+
+        @keyframes gold-glow {
+            from {
+                filter: drop-shadow(0 0 5px #ffd700);
+            }
+
+            to {
+                filter: drop-shadow(0 0 20px #ffd700);
+            }
+        }
+
+        .duck-label {
+            padding: 2px 10px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-align: center;
+            white-space: nowrap;
+            z-index: 2;
+            margin-top: -10px;
+            max-width: 200px;
+            color: #fff;
+            text-shadow:
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px 2px 0 #000,
+                0px 4px 10px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .duck:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px) rotate(-5deg);
+            }
+
+            50% {
+                transform: translateX(5px) rotate(5deg);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .error-shake {
+            animation: shake 0.2s ease-in-out infinite;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            display: none;
+            color: white;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <div class="start-deco">🦆 🏵️ 🏁 🏵️ 🦆</div>
+            <h1>LA PESCA D'ÀNECS</h1>
+            <p style="font-size: 1.3rem; margin-bottom: 30px; color: #555;">Tria una època i pesca els ànecs de goma
+                correctes!</p>
+            <div class="era-grid">
+                <button class="btn-era" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="btn-era" data-era="renaixement">Renaixement</button>
+                <button class="btn-era" data-era="barroc">Barroc</button>
+                <button class="btn-era" data-era="classicisme">Classicisme</button>
+                <button class="btn-era" data-era="romanticisme">Romanticisme</button>
+                <button class="btn-era" data-era="segle_xx">Segle XX</button>
+            </div>
+        </div>
+
+        <!-- Game Pool -->
+        <div id="pool" class="hidden">
+            <div id="hud">
+                <span>PUNTS: <span id="score">0</span>/10</span>
+                <span style="color:var(--alert-red)">VIDES: <span id="lives">3</span></span>
+            </div>
+            <!-- Ducks spawn here -->
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="end-title"></h2>
+            <p id="end-msg"></p>
+            <button class="btn-era" onclick="location.reload()">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: ["Cant Gregorià", "Monodia", "Neumes", "Trobador", "Guido d'Arezzo", "Viola de Roda", "Ars Nova", "Leonin", "Perotin", "Missa"],
+            renaixement: ["Polifonia", "Humanisme", "Impremta", "Madrigal", "Palestrina", "Josquin", "Viola da Gamba", "Llaüt", "Coral", "Ensalada"],
+            barroc: ["Baix Continu", "Clavicèmbal", "Bach", "Vivaldi", "Händel", "Òpera", "Fuga", "Contrast", "Ornament", "Castrato"],
+            classicisme: ["Mozart", "Haydn", "Beethoven", "Sonata", "Equilibri", "Clarinet", "Piano", "Simfonia", "Quartet", "Senzillesa"],
+            romanticisme: ["Wagner", "Chopin", "Verdi", "Lied", "Rubato", "Passió", "Poema Simfònic", "Virtuosisme", "Tuba", "Nacionalisme"],
+            segle_xx: ["Atonalitat", "Dodecafonisme", "Stravinsky", "Cage", "Sintetitzador", "Jazz", "Minimalisme", "Soroll", "Aleatòria", "Electrònica"]
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let score = 0;
+        let lives = 3;
+        let gameActive = false;
+        let ducks = [];
+        let spawnInterval = null;
+        let gameLoopInterval = null;
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+
+            if (type === 'quack') {
+                // Success sound: Bright harmonic arpeggio
+                const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                frequencies.forEach((f, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, now + i * 0.05);
+                    gain.gain.setValueAtTime(0.2, now + i * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + i * 0.05);
+                    osc.stop(now + i * 0.05 + 0.3);
+                });
+            } else if (type === 'angry') {
+                // Failure sound: Harsh discordant downward sweep
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.4);
+
+                // Add a second discordant oscillator
+                const osc2 = audioCtx.createOscillator();
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(110, now);
+                osc2.frequency.exponentialRampToValueAtTime(30, now + 0.4);
+                osc2.connect(gain);
+                osc2.start(now);
+                osc2.stop(now + 0.4);
+            }
+        }
+
+        // --- LOGIC ---
+        function loadProgress() {
+            const completed = JSON.parse(localStorage.getItem('pesca_anecs_completed') || '[]');
+            document.querySelectorAll('.btn-era').forEach(btn => {
+                if (completed.includes(btn.dataset.era)) {
+                    btn.classList.add('completed');
+                }
+            });
+        }
+
+        function saveProgress(era) {
+            const completed = JSON.parse(localStorage.getItem('pesca_anecs_completed') || '[]');
+            if (!completed.includes(era)) {
+                completed.push(era);
+                localStorage.setItem('pesca_anecs_completed', JSON.stringify(completed));
+            }
+        }
+
+        loadProgress();
+
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            if (btn.parentElement.id === 'feedback-overlay') return;
+            btn.addEventListener('click', () => {
+                currentEra = btn.dataset.era;
+                startGame();
+            });
+        });
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('pool').classList.remove('hidden');
+
+            score = 0;
+            lives = 3;
+            gameActive = true;
+            ducks = [];
+
+            updateHUD();
+
+            spawnInterval = setInterval(spawnDuck, 1500);
+            gameLoopInterval = requestAnimationFrame(gameLoop);
+        }
+
+        function spawnDuck() {
+            if (!gameActive) return;
+
+            // 40% chance correct
+            const isCorrect = Math.random() > 0.6;
+            let era, text;
+
+            if (isCorrect) {
+                era = currentEra;
+                text = DB[currentEra][Math.floor(Math.random() * DB[currentEra].length)];
+            } else {
+                const eras = Object.keys(DB).filter(e => e !== currentEra);
+                era = eras[Math.floor(Math.random() * eras.length)];
+                text = DB[era][Math.floor(Math.random() * DB[era].length)];
+            }
+
+            const el = document.createElement('div');
+            el.className = 'duck';
+
+            el.innerHTML = `<img class="duck-body" src="img/duck_normal.png"><div class="duck-label">${text}</div>`;
+
+            // Random vertical position
+            const poolHeight = document.getElementById('pool').clientHeight;
+            const y = Math.random() * (poolHeight - 250) + 100;
+
+            el.style.left = '-200px';
+            el.style.top = y + 'px';
+
+            document.getElementById('pool').appendChild(el);
+
+            const duckObj = {
+                element: el,
+                x: -200,
+                y: y,
+                speed: (Math.random() * 1.5 + 1.5),
+                isCorrect: isCorrect,
+                active: true,
+                wobbleOffset: Math.random() * 100
+            };
+
+            el.addEventListener('click', () => catchDuck(duckObj));
+
+            ducks.push(duckObj);
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            const now = Date.now();
+
+            ducks.forEach((d, i) => {
+                if (!d.active) return;
+
+                d.x += d.speed;
+
+                // Bobbing effect
+                const wobble = Math.sin((now / 500) + d.wobbleOffset) * 5;
+
+                d.element.style.left = d.x + 'px';
+                d.element.style.transform = `translateY(${wobble}px)`;
+
+                // Remove if out of bounds
+                const poolWidth = document.getElementById('pool').clientWidth;
+                if (d.x > poolWidth + 100) {
+                    d.element.remove();
+                    d.active = false;
+                }
+            });
+
+            // Cleanup
+            ducks = ducks.filter(d => d.active);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function catchDuck(duck) {
+            if (!gameActive || !duck.active) return;
+
+            duck.active = false;
+            // Removed splash call to clean up
+
+            if (duck.isCorrect) {
+                score++;
+                playSound('quack');
+                duck.element.style.transition = "all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                duck.element.style.transform = "scale(1.8) rotate(-45deg) translateY(-150px)";
+                duck.element.style.opacity = "0";
+                setTimeout(() => duck.element.remove(), 600);
+            } else {
+                lives--;
+                playSound('angry');
+                duck.element.querySelector('.duck-body').src = "img/duck_wrong.png";
+                duck.element.classList.add('error-shake');
+                setTimeout(() => duck.element.remove(), 500);
+            }
+
+            updateHUD();
+            checkGameOver();
+        }
+
+        function createSplash(x, y) {
+            const splash = document.createElement('div');
+            splash.className = 'splash';
+            splash.style.left = x + 'px';
+            splash.style.top = y + 'px';
+            document.getElementById('pool').appendChild(splash);
+            setTimeout(() => splash.remove(), 500);
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function checkGameOver() {
+            if (lives <= 0) {
+                endGame(false);
+            } else if (score >= 10) {
+                endGame(true);
+            }
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            clearInterval(spawnInterval);
+            cancelAnimationFrame(gameLoopInterval);
+
+            const overlay = document.getElementById('feedback-overlay');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                saveProgress(currentEra);
+                loadProgress();
+                title.textContent = "PESCA MIRACULOSA!";
+                title.style.color = "var(--duck-yellow)";
+                msg.textContent = "Has pescat tots els conceptes correctes!";
+            } else {
+                title.textContent = "GAME OVER";
+                title.style.color = "var(--alert-red)";
+                msg.textContent = "T'han esquitxat massa ànecs enfadats.";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

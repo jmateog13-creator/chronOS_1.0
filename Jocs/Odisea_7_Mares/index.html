@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odisea dels 7 Mars: El Rei dels Pirates</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;700&family=Bangers&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --ocean-blue: #0077be;
+            --deep-sea: #004a7c;
+            --wood: #5d4037;
+            --parchment: #fdf5e6;
+            --gold: #ffd700;
+            --blood-red: #d32f2f;
+            --sky-blue: #87ceeb;
+            --font-pirate: 'Pirata One', cursive;
+            --font-anime: 'Bangers', cursive;
+            --font-text: 'Cinzel', serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #000;
+            color: #333;
+            font-family: var(--font-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle, #333, #000);
+        }
+
+        #game-container {
+            width: 1200px;
+            height: 800px;
+            background-color: var(--deep-sea);
+            position: relative;
+            border: 10px solid var(--wood);
+            border-radius: 15px;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUND LAYERS --- */
+        #bg-deck {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('img/fonsbatalla.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 5;
+            display: none;
+        }
+
+        #bg-open-sea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('img/fonsmar.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 2;
+            display: none;
+        }
+
+        /* --- HUD --- */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            border-bottom: 3px solid var(--gold);
+            color: var(--gold);
+            font-family: var(--font-pirate);
+            font-size: 30px;
+            box-sizing: border-box;
+        }
+
+        .hp-heart {
+            font-size: 36px;
+            color: var(--blood-red);
+            text-shadow: 0 0 10px #000;
+            transition: 0.3s;
+        }
+
+        #volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+            accent-color: var(--gold);
+        }
+
+        /* --- CHARACTERS --- */
+        #enemy-sprite-container {
+            position: absolute;
+            top: 50px;
+            right: 30px;
+            z-index: 10;
+            text-align: center;
+            transition: 0.5s;
+            height: 650px;
+        }
+
+        .pirate-portrait {
+            height: 650px;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+            animation: float-pirate 4s ease-in-out infinite;
+        }
+
+        @keyframes float-pirate {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(1deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(-1deg);
+            }
+        }
+
+        #player-ship {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 450px;
+            z-index: 30;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.6));
+            transition: transform 0.3s, opacity 0.5s;
+        }
+
+        /* --- DIALOGUE (VISUAL NOVEL SIDE-BY-SIDE) --- */
+        #dialogue-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 500;
+            display: none;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        #dialogue-content {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1150px;
+            height: 550px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        #dialogue-box {
+            width: 800px;
+            background: var(--parchment);
+            background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
+            border: 8px solid var(--wood);
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            position: relative;
+            z-index: 550;
+        }
+
+        #speaker-title {
+            position: absolute;
+            top: -25px;
+            left: 30px;
+            background: var(--blood-red);
+            color: white;
+            padding: 5px 20px;
+            font-family: var(--font-pirate);
+            font-size: 32px;
+            border: 3px solid var(--gold);
+            border-radius: 5px;
+        }
+
+        #dialogue-text {
+            font-size: 26px;
+            line-height: 1.4;
+            color: #2e1a14;
+            margin-bottom: 20px;
+            font-family: 'Crimson Text', serif;
+            min-height: 120px;
+        }
+
+        #dialogue-portrait {
+            height: 700px;
+            filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.5));
+            animation: float-pirate 4s ease-in-out infinite;
+            z-index: 510;
+        }
+
+        /* Ensure boss is to the right in combat and doesn't cover player */
+        #enemy-sprite-container {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            /* Aligned right */
+            z-index: 10;
+            text-align: center;
+            transition: 0.5s;
+            height: 650px;
+        }
+
+        /* --- COMBAT UI --- */
+        #combat-ui {
+            position: absolute;
+            bottom: 50px;
+            width: 650px;
+            left: 50px;
+            z-index: 400;
+            display: none;
+        }
+
+        #question-bubble {
+            background: white;
+            border: 6px solid var(--ocean-blue);
+            border-radius: 20px;
+            padding: 25px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        #question-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid var(--ocean-blue);
+        }
+
+        #answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .ans-btn {
+            background: var(--gold);
+            color: var(--wood);
+            border: 4px solid var(--wood);
+            padding: 15px;
+            font-family: var(--font-anime);
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 var(--wood);
+        }
+
+        .ans-btn:hover {
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 var(--wood);
+        }
+
+        .ans-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 var(--wood);
+        }
+
+        /* --- SCREENS --- */
+        .full-screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #start-screen {
+            background: linear-gradient(rgba(0, 119, 190, 0.5), rgba(0, 74, 124, 0.7)), url('img/fonsmar.jpg');
+        }
+
+        #game-over-screen {
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)), url('img/fonsbatalla.jpg');
+            display: none;
+        }
+
+        .btn-action {
+            background: var(--blood-red);
+            color: white;
+            border: 4px solid var(--gold);
+            padding: 15px 40px;
+            font-family: var(--font-anime);
+            font-size: 36px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 50px;
+            box-shadow: 0 8px 0 #800;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 0 #800;
+        }
+
+        /* ARTEFACT DEL TEMPS */
+        #artifact-container {
+            margin: 30px;
+            padding: 20px;
+            border: 5px dashed var(--gold);
+            border-radius: 50%;
+            width: 250px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+            animation: spin 10s linear infinite;
+        }
+
+        #artifact-img {
+            width: 150px;
+            filter: drop-shadow(0 0 20px var(--gold));
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* VFX */
+        #slash-fx {
+            position: absolute;
+            width: 100%;
+            height: 60px;
+            background: white;
+            z-index: 600;
+            transform: rotate(-45deg) scaleX(0);
+            box-shadow: 0 0 60px white;
+            pointer-events: none;
+        }
+
+        @keyframes slash {
+            0% {
+                transform: translate(-600px, -300px) rotate(-45deg) scaleX(0);
+            }
+
+            50% {
+                transform: translate(0, 0) rotate(-45deg) scaleX(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(600px, 300px) rotate(-45deg) scaleX(0);
+                opacity: 0;
+            }
+        }
+
+        .time-rewind-fx {
+            animation: rewind 1s ease-in-out;
+        }
+
+        @keyframes rewind {
+            0% {
+                filter: sepia(0) blur(0);
+            }
+
+            50% {
+                filter: sepia(1) blur(10px) brightness(1.5);
+                transform: scale(1.1);
+            }
+
+            100% {
+                filter: sepia(0) blur(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+
+        <!-- START -->
+        <div id="start-screen" class="full-screen-overlay">
+            <h1
+                style="font-family: var(--font-pirate); font-size: 150px; color: var(--gold); text-shadow: 10px 10px 0 #000; margin: 0;">
+                ON THE BEAT PIECE</h1>
+            <p style="font-family: var(--font-anime); font-size: 40px; margin-bottom: 50px;">EL TRESOR DE L'HARMONIA
+                T'ESPERA!</p>
+            <button class="btn-action" onclick="startGame()">HISSAR VELES!</button>
+        </div>
+
+        <!-- GAME OVER / TIME ARTIFACT -->
+        <div id="game-over-screen" class="full-screen-overlay">
+            <h1 style="font-family: var(--font-pirate); font-size: 80px; color: var(--blood-red); margin: 0;">VAIXELL
+                ENFONSAT!</h1>
+            <p style="font-family: var(--font-text); font-size: 24px; color: white; width: 600px;">El destí semblava
+                escrit... però portes amb tu l'Artefacte del Temps!</p>
+            <div id="artifact-container">
+                <!-- Removed artifact image as requested -->
+                <div style="font-size: 80px;">⏳</div>
+            </div>
+            <button class="btn-action" onclick="rewindTime()">USAR ARTEFACTE DEL TEMPS</button>
+            <p style="margin-top:20px; font-style: italic; opacity: 0.7;">Torna al principi d'aquesta batalla amb 3
+                vides.</p>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div id="era-name">EL MAR DEL SILENCI</div>
+            <div id="lives-display"></div>
+            <div id="volume-container">
+                🔊 <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+        </div>
+
+        <!-- BACKGROUNDS -->
+        <div id="bg-deck"></div>
+        <div id="bg-open-sea"></div>
+
+        <!-- CHARACTERS (COMBAT) -->
+        <div id="enemy-sprite-container" style="display:none;">
+            <img id="enemy-img" src="img/bossmitjana.png" class="pirate-portrait" alt="Enemy">
+            <div style="font-family: var(--font-anime); font-size: 30px; color: white; text-shadow: 2px 2px 0 #000;"
+                id="enemy-name">...</div>
+        </div>
+
+        <img id="player-ship" src="img/protagonista.png" alt="Player">
+
+        <!-- DIALOGUE OVERLAY (NOVEL STYLE) -->
+        <div id="dialogue-overlay">
+            <div id="dialogue-content">
+                <div id="dialogue-box">
+                    <div id="speaker-title">SEGON A BORD</div>
+                    <div id="dialogue-text">...</div>
+                    <button class="btn-action" id="dialogue-btn" onclick="dialogueAction()">CONTINUAR</button>
+                </div>
+                <img id="dialogue-portrait" src="img/segonabord.png" alt="Speaker">
+            </div>
+        </div>
+
+        <!-- COMBAT UI -->
+        <div id="combat-ui">
+            <div id="question-bubble">?</div>
+            <div id="answers-grid"></div>
+        </div>
+
+        <div id="slash-fx"></div>
+
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bgm" loop>
+        <source src="audio/Sea of Stars, Flags of Fire.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // --- DATA ---
+        const TUTORIAL = [
+            { title: "SEGON A BORD", text: "Capità! Estem a punt d'entrar a les Aigües de la Història. Per ser el Rei dels Pirates, has de demostrar que coneixes l'Harmonia!", img: "img/segonabord.png" },
+            { title: "SEGON A BORD", text: "No usem sabres, sinó coneixement! Cada lord pirate ens llançarà reptes de 4 opcions. Si encertem, el seu vaixell rebrà un impacte. Si fallem, ens atacaran!", img: "img/segonabord.png" },
+            { title: "SEGON A BORD", text: "Si el vaixell s'enfosa, no pateixis. Tens l'Artefacte del Temps per refer els teus errors. Som-hi?", img: "img/segonabord.png" }
+        ];
+
+        const PIRATE_LORDS = [
+            {
+                id: "medieval", era: "MAR DEL SILENCI (Medieval)", name: "Barbanegra el Càntic", img: "img/bossmitjana.png",
+                intro: "Aquestes aigües pertanyen al silenci dels monestirs! Els trobadors no hi són benvinguts... a menys que sàpiguen la veritat sobre el passat!",
+                win: "M'has derrotat... la teva harmonia és més forta que el meu silenci. Continua el teu viatge, pirata!",
+                questions: [
+                    { q: "On vivien els monjos que dedicaven la seva vida a pregar i treballar?", a: ["Al Monestir", "Al Castell", "A la Ciutat", "Al Vaixell"], correct: 0 },
+                    { q: "Què significa cantar 'A Cappella'?", a: ["Sense instruments", "Amb barret", "Molt fort", "En un cor de gats"], correct: 0 },
+                    { q: "Qui eren els músics que cantaven als castells?", a: ["Els Trobadors", "Els Monjos", "Els Pirates", "Els Arlequins"], correct: 0 },
+                    { q: "Quin instrument té forma de pera?", a: ["El Llaüt", "El Violí", "El Piano", "La Guitarra Elèctrica"], correct: 0 }
+                ]
+            },
+            {
+                id: "renaissance", era: "PORT HUMANISTA (Renaixement)", name: "Anne Bonny 'La Veu'", img: "img/bossrenaixement.png",
+                intro: "L'home és el centre de l'univers i jo la reina d'aquest port! Prepara't per a una polifonia de bales!",
+                win: "Increïble... tens una veu que podria guiar a tota la flota. El Port Humanista és teu!",
+                questions: [
+                    { q: "Què és l'Humanisme?", a: ["L'Home és el centre", "Déu és el centre", "La pirateria mana", "La Terra es plana"], correct: 0 },
+                    { q: "Quina veu de dona és la més aguda?", a: ["Soprano", "Contralt", "Tenor", "Baix"], correct: 0 },
+                    { q: "Forma religiosa més important del Renaixement?", a: ["La Missa", "L'Òpera", "El Rock", "La Simfonia"], correct: 0 },
+                    { q: "Invent que va difondre la música a tot el món?", a: ["La Impremta", "La Ràdio", "El Timó", "El Telescopi"], correct: 0 }
+                ]
+            },
+            {
+                id: "baroque", era: "BAHÍA DEL LUXE (Barroc)", name: "Capità Garfi 'El Contrast'", img: "img/bossbarroc.png",
+                intro: "El Barroc és teatre, or i contrast! Contrast extrem, com la teva imminente derrota!",
+                win: "Quin drama! El meu or no ha servit de res contra el teu talent. Passa, mestre de l'estil!",
+                questions: [
+                    { q: "L'estil d'art del Barroc és sobretot...", a: ["Recarregat i luxós", "Senzill i buit", "Minimalista", "Abstracte"], correct: 0 },
+                    { q: "Quin instrument de teclat és el rei de l'era barroca?", a: ["El Clavicèmbal", "El Piano", "L'Acordió", "El Sintetitzador"], correct: 0 },
+                    { q: "Què busca la música barroca principalment?", a: ["El Contrast", "L'Equilibri absolut", "La Pau", "La Monotonia"], correct: 0 },
+                    { q: "Quin rei vivia al luxós palau de Versalles?", a: ["Lluís XIV", "Lluís XVI", "Jaume I", "Enric VIII"], correct: 0 }
+                ]
+            },
+            {
+                id: "classic", era: "FORTALESA DE L'ORDRE (Classicisme)", name: "Comodor Haydn 'L'Endreçat'", img: "img/bossclassicisme.png",
+                intro: "L'ordre és l'única llei al Classicisme. El teu caos pirata s'acaba aquí amb un final perfecte!",
+                win: "Has posat ordre al meu fort amb la teva música. Una simfonia perfecta... t'has guanyat el pas.",
+                questions: [
+                    { q: "Què era el més important per als il·lustrats clàssics?", a: ["La Raó i l'Ordre", "Els Sentiments buits", "L'Or ignot", "La Por"], correct: 0 },
+                    { q: "Quin instrument nou s'inventa i revoluciona la música?", a: ["El Piano", "L'Arpa", "L'Òrgan", "El Violoncel"], correct: 0 },
+                    { q: "L'orquestra clàssica s'organitza en...", a: ["Seccions clares", "Grups barrejats", "Només vent", "Instruments vells"], correct: 0 },
+                    { q: "Quin geni va compondre les seves primeres obres de nen?", a: ["Mozart", "Bach", "Beethoven", "Vivaldi"], correct: 0 }
+                ]
+            },
+            {
+                id: "romantic", era: "MAR TEMPESTUÓS (Romanticisme)", name: "Capitana 'Fúria' Beethoven", img: "img/bossromanticisme.png",
+                intro: "Sents la tempesta? Són els meus sentiments desbordats! Qui necessita raó si té passió?",
+                win: "Quina passió! M'has deixat sense paraules. La tempesta s'atura per tu.",
+                questions: [
+                    { q: "Quin és l'objectiu principal del Romanticisme?", a: ["Passió i Sentiments", "Ordre absolut", "Militarisme", "La Lògica"], correct: 0 },
+                    { q: "Quin va ser l'instrument preferit dels romàntics?", a: ["El Piano", "La Flauta", "El Tambor", "La Trompeta"], correct: 0 },
+                    { q: "L'orquestra romàntica es caracteritza per ser...", a: ["Gegant i potent", "Molt petita", "Feta d'eines", "Silenciosa"], correct: 0 },
+                    { q: "Quina tragèdia física va patir Beethoven?", a: ["Sordesa", "Ceguesa", "Mudesa", "Paràlisi"], correct: 0 }
+                ]
+            },
+            {
+                id: "modern", era: "ILLA DEL FUTUR (S.XX)", name: "Cyber-Pirata Schönberg", img: "img/bosssegleXX.png",
+                intro: "10101... El futur és trencament i dissonància. Les teves lleis musicals són obsoletes!",
+                win: "ERROR... Sistema sobrecarregat de talent. Ets el futur Rei dels Pirates, sens dubte.",
+                questions: [
+                    { q: "Què fan els artistes del segle XX amb les regles del passat?", a: ["Les trenquen per innovar", "Les segueixen fil per randa", "No fan art", "Les fan més estrictes"], correct: 0 },
+                    { q: "Quina tecnologia va canviar la forma d'escoltar música?", a: ["Ràdio i Discos", "La Impremta", "El Telègraf", "La Brúixola"], correct: 0 },
+                    { q: "L'Impressionisme volia transmetre sobretot...", a: ["Una atmòsfera o somni", "Ordre matemàtic", "Pors interiors", "Pau i guerra"], correct: 0 },
+                    { q: "Com es diu la música que no té una tonalitat clara?", a: ["Atonal", "Polifònica", "Grega", "Heavy"], correct: 0 }
+                ]
+            }
+        ];
+
+        // --- ENGINE ---
+        let currentEra = 0;
+        let lives = 3;
+        let enemyHP = 4;
+        let qIndex = 0;
+        let tutorialStage = 0;
+        let currentQuestions = [];
+        let isCombatActive = false;
+
+        const bgm = document.getElementById('bgm');
+        const vSlider = document.getElementById('volume-slider');
+        const eraLabel = document.getElementById('era-name');
+        const livesArea = document.getElementById('lives-display');
+        const enemyContainer = document.getElementById('enemy-sprite-container');
+        const enemyImg = document.getElementById('enemy-img');
+        const enemyLabel = document.getElementById('enemy-name');
+        const combatUI = document.getElementById('combat-ui');
+        const qBubble = document.getElementById('question-bubble');
+        const ansGrid = document.getElementById('answers-grid');
+
+        const diagOverlay = document.getElementById('dialogue-overlay');
+        const diagText = document.getElementById('dialogue-text');
+        const diagSpeaker = document.getElementById('speaker-title');
+        const diagPortrait = document.getElementById('dialogue-portrait');
+        const diagBtn = document.getElementById('dialogue-btn');
+
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const playerShip = document.getElementById('player-ship');
+        const slashFx = document.getElementById('slash-fx');
+        const bgDeck = document.getElementById('bg-deck');
+        const bgOpenSea = document.getElementById('bg-open-sea');
+
+        vSlider.oninput = () => bgm.volume = vSlider.value;
+
+        function startGame() {
+            // Clear any lingering sprites
+            clearAllCharacters();
+            document.getElementById('start-screen').style.display = 'none';
+            bgm.play();
+            bgm.volume = 0.5;
+            tutorialStage = 0;
+            currentEra = 0;
+            lives = 3;
+            updateLivesUI();
+            showTutorial();
+        }
+
+        function clearAllCharacters() {
+            enemyContainer.style.display = 'none';
+            diagOverlay.style.display = 'none';
+            playerShip.style.opacity = '0';
+            combatUI.style.display = 'none';
+        }
+
+        function updateLivesUI() {
+            livesArea.innerHTML = "";
+            for (let i = 0; i < lives; i++) livesArea.innerHTML += '<span class="hp-heart">❤</span> ';
+            if (lives <= 0) {
+                isCombatActive = false;
+                combatUI.style.display = 'none';
+                gameOverScreen.style.display = 'flex';
+            }
+        }
+
+        function showTutorial() {
+            clearAllCharacters();
+            updateBg('ocean'); // Open sea for navigation
+            diagOverlay.style.display = 'block';
+            const stage = TUTORIAL[tutorialStage];
+            diagPortrait.src = stage.img;
+            diagSpeaker.innerText = stage.title;
+            diagText.innerText = stage.text;
+            diagBtn.innerText = "ENTÈS!";
+            diagBtn.onclick = () => {
+                tutorialStage++;
+                if (tutorialStage < TUTORIAL.length) showTutorial();
+                else loadEra();
+            };
+        }
+
+        function updateBg(type) {
+            if (type === 'ocean') {
+                bgOpenSea.style.display = 'block';
+                bgDeck.style.display = 'none';
+            } else {
+                bgOpenSea.style.display = 'none';
+                bgDeck.style.display = 'block';
+            }
+        }
+
+        function loadEra() {
+            clearAllCharacters();
+            if (currentEra >= PIRATE_LORDS.length) {
+                victory();
+                return;
+            }
+            const lord = PIRATE_LORDS[currentEra];
+            eraLabel.innerText = lord.era;
+            enemyContainer.style.display = 'none';
+            combatUI.style.display = 'none';
+            playerShip.style.opacity = '0'; // Hide player ship
+
+            updateBg('ocean');
+            diagOverlay.style.display = 'block';
+            diagPortrait.src = lord.img;
+            diagSpeaker.innerText = lord.name;
+            diagText.innerText = lord.intro;
+            diagBtn.innerText = "LLUITA!";
+            diagBtn.onclick = startCombat;
+
+            currentQuestions = [...lord.questions].sort(() => Math.random() - 0.5);
+            qIndex = 0;
+            enemyHP = 4;
+        }
+
+        function startCombat() {
+            clearAllCharacters();
+            updateBg('deck'); // Ship deck for battle
+            playerShip.style.opacity = '1'; // Show player ship
+            enemyContainer.style.display = 'block';
+            enemyImg.src = PIRATE_LORDS[currentEra].img;
+            enemyLabel.innerText = PIRATE_LORDS[currentEra].name;
+            combatUI.style.display = 'block';
+            isCombatActive = true;
+            askQuestion();
+        }
+
+        function askQuestion() {
+            if (!isCombatActive) return;
+            if (enemyHP <= 0) {
+                isCombatActive = false;
+                showPostBattle();
+                return;
+            }
+            if (qIndex >= currentQuestions.length) {
+                qIndex = 0;
+                currentQuestions.sort(() => Math.random() - 0.5);
+            }
+
+            const q = currentQuestions[qIndex];
+            qBubble.innerText = q.q;
+            ansGrid.innerHTML = "";
+
+            const choices = q.a.map((txt, idx) => ({ txt, correct: idx === 0 }));
+            choices.sort(() => Math.random() - 0.5);
+
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'ans-btn';
+                btn.innerText = choice.txt;
+                btn.onclick = () => handleAnswer(choice.correct);
+                ansGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect) {
+            const btns = document.querySelectorAll('.ans-btn');
+            btns.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                slashFx.style.animation = "slash 0.5s ease-out forwards";
+                enemyImg.style.filter = "brightness(2.5) contrast(1.5)";
+                setTimeout(() => {
+                    slashFx.style.animation = "none";
+                    enemyImg.style.filter = "drop-shadow(0 10px 20px rgba(0,0,0,0.5))";
+                    enemyHP--;
+                    qIndex++;
+                    askQuestion();
+                }, 500);
+            } else {
+                document.getElementById('game-container').classList.add('time-rewind-fx');
+                playerShip.style.transform = "translateX(-30px) rotate(-10deg)";
+                setTimeout(() => {
+                    document.getElementById('game-container').classList.remove('time-rewind-fx');
+                    playerShip.style.transform = "translateX(0) rotate(0)";
+                    lives--;
+                    updateLivesUI();
+                    qIndex++;
+                    askQuestion();
+                }, 600);
+            }
+        }
+
+        function showPostBattle() {
+            const lord = PIRATE_LORDS[currentEra];
+            clearAllCharacters();
+            updateBg('deck');
+            diagOverlay.style.display = 'block';
+            diagPortrait.src = lord.img;
+            diagSpeaker.innerText = lord.name;
+            diagText.innerText = lord.win;
+            diagBtn.innerText = "CONTINUAR";
+            diagBtn.onclick = showMateTransition;
+        }
+
+        function showMateTransition() {
+            // Keep dialogue box but change portrait
+            diagPortrait.src = "img/segonabord.png";
+            diagSpeaker.innerText = "SEGON A BORD";
+            diagText.innerText = "Increïble, Capità! Hem superat aquest territori. Ara hem de posar rumb cap a la següent era musical. Prepareu-vos!";
+            diagBtn.innerText = "SET SAIL!";
+            diagBtn.onclick = () => {
+                currentEra++;
+                loadEra();
+            };
+        }
+
+        function rewindTime() {
+            document.getElementById('game-container').classList.add('time-rewind-fx');
+            setTimeout(() => {
+                document.getElementById('game-container').classList.remove('time-rewind-fx');
+                gameOverScreen.style.display = 'none';
+                lives = 3;
+                enemyHP = 4;
+                qIndex = 0;
+                updateLivesUI();
+                startCombat();
+            }, 800);
+        }
+
+        function victory() {
+            clearAllCharacters();
+            updateBg('ocean');
+            diagOverlay.style.display = 'block';
+            diagPortrait.src = "img/tresorfinal.png";
+            diagSpeaker.innerText = "¡REI DELS PIRATES!";
+            diagText.innerText = "Has recuperat l'Harmonia Suprema. El món sencer cantarà les teves gestes per tota l'eternitat!";
+            diagBtn.innerText = "TORNAR A JUGAR";
+            diagBtn.onclick = () => location.reload();
+        }
+
+    </script>
+</body>
+
+</html>

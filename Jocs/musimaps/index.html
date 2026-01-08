@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusiMaps: GeoGuessr Musical</title>
+
+    <!-- LEAFLET CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- GOOGLE FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100vw;
+            z-index: 1;
+        }
+
+        /* HERO SEARCH BAR */
+        .search-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            background: white;
+            height: 70px;
+            /* Bigger */
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .search-icon {
+            color: #5f6368;
+            font-size: 28px;
+            margin-right: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 24px;
+            /* Much bigger text */
+            font-weight: 700;
+            color: #202124;
+            background: transparent;
+        }
+
+        .era-badge {
+            background: #1a73e8;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* SCORE & PROGRESS */
+        .hud-container {
+            position: absolute;
+            top: 110px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hud-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            font-size: 16px;
+        }
+
+        .score-val {
+            color: #1a73e8;
+            font-size: 18px;
+        }
+
+        .win-target {
+            font-size: 12px;
+            color: #666;
+            font-weight: normal;
+        }
+
+        /* JOKERS */
+        .jokers-container {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+        }
+
+        .joker-btn {
+            background: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, filter 0.2s;
+            position: relative;
+        }
+
+        .joker-btn:hover {
+            transform: translateY(-5px);
+        }
+
+        .joker-btn:disabled {
+            filter: grayscale(1);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .joker-icon {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .joker-cost {
+            font-size: 11px;
+            font-weight: bold;
+            color: #d93025;
+        }
+
+        .joker-label {
+            font-size: 10px;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        /* RESULT OVERLAY */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .modal-score {
+            font-size: 48px;
+            color: #1a73e8;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .modal-desc {
+            font-size: 18px;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0F9D58;
+            width: 0%;
+            transition: width 1s;
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1557b0;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            color: white;
+        }
+
+        .start-content {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .start-title {
+            font-size: 60px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+        }
+
+        .instructions-list {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .instructions-list li {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HUD -->
+    <div class="search-container">
+        <span class="search-icon">📍</span>
+        <input type="text" id="clue-text" class="search-input" readonly value="">
+        <span class="era-badge" id="era-chip">ERA</span>
+    </div>
+
+    <div class="hud-container">
+        <div class="hud-card">
+            Ronda: <span id="round-disp">1</span>/10
+        </div>
+        <div class="hud-card">
+            Punts: <span id="score-disp" class="score-val">0</span>
+            <div class="win-target">Objectiu: 50.000 pts</div>
+            <div class="progress-bar" style="width: 150px; margin: 5px 0 0 0; height: 6px;">
+                <div class="progress-fill" id="total-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JOKERS -->
+    <div class="jokers-container">
+        <button class="joker-btn" id="joker-country" onclick="game.useJoker('country')">
+            <span class="joker-icon">🏳️</span>
+            <span class="joker-label">País</span>
+            <span class="joker-cost">-1000 pts</span>
+        </button>
+        <button class="joker-btn" id="joker-compass" onclick="game.useJoker('compass')">
+            <span class="joker-icon">🧭</span>
+            <span class="joker-label">Brúixola</span>
+            <span class="joker-cost">-500 pts</span>
+        </button>
+    </div>
+
+    <!-- MODALS -->
+    <div id="start-screen" class="modal-overlay visible">
+        <div class="start-content">
+            <div class="start-title">MusiMaps 🌍</div>
+            <div class="instructions-list">
+                <ul>
+                    <li>📍 <strong>Objectiu:</strong> Troba la localització exacta de fets musicals històrics.</li>
+                    <li>🎯 <strong>Punts:</strong> Com més a prop, més punts (màxim 5000 per ronda).</li>
+                    <li>🏆 <strong>Meta:</strong> Aconsegueix <strong>50.000 punts</strong> en 10 rondes.</li>
+                    <li>🃏 <strong>Comodins:</strong> Utilitza ajudes si et perds, però costen punts!</li>
+                </ul>
+            </div>
+            <button class="btn-primary" onclick="game.start()">COMENÇAR VIATGE</button>
+        </div>
+    </div>
+
+    <div id="result-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title" id="res-title">Excel·lent!</div>
+            <div class="modal-desc" id="res-desc">A només 12km de distància.</div>
+            <div class="modal-score">+<span id="res-score">4500</span></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="iter-progress" style="width: 80%"></div>
+            </div>
+            <button class="btn-primary" onclick="game.nextLevel()">SEGÜENT RONDA</button>
+        </div>
+    </div>
+
+    <div id="gameover-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title" id="go-title">JOC ACABAT</div>
+            <div class="modal-score" id="go-score">12,500</div>
+            <div class="modal-desc" id="go-desc">Felicitats! Has superat el repte.</div>
+            <button class="btn-primary" onclick="location.reload()">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <!-- LEAFLET JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        const LOCATIONS = [
+            { id: 1, era: "Barroc", clue: "On va treballar Bach com a Cantor?", city: "Leipzig, Alemanya", lat: 51.3397, lng: 12.3731 },
+            { id: 2, era: "Classicisme", clue: "Ciutat on van viure Mozart i Beethoven", city: "Viena, Àustria", lat: 48.2082, lng: 16.3738 },
+            { id: 3, era: "Edat Mitjana", clue: "Escola de Polifonia de Notre Dame", city: "París, França", lat: 48.8529, lng: 2.3500 },
+            { id: 4, era: "Renaixement", clue: "La Basílica dels Gabrieli", city: "Venècia, Itàlia", lat: 45.4344, lng: 12.3388 },
+            { id: 5, era: "Romanticisme", clue: "Teatre de la Scala (Verdi)", city: "Milà, Itàlia", lat: 45.4674, lng: 9.1899 },
+            { id: 6, era: "Segle XX", clue: "The Cavern Club (The Beatles)", city: "Liverpool, UK", lat: 53.4084, lng: -2.9916 },
+            { id: 7, era: "Segle XX", clue: "Bressol del Jazz (Congo Square)", city: "Nova Orleans, EUA", lat: 29.9610, lng: -90.0682 },
+            { id: 8, era: "Barroc", clue: "Abadia on està enterrat Händel", city: "Londres, UK", lat: 51.4994, lng: -0.1274 },
+            { id: 9, era: "Romanticisme", clue: "Teatre privat de Wagner", city: "Bayreuth, Alemanya", lat: 49.9481, lng: 11.5783 },
+            { id: 10, era: "Segle XX", clue: "Pioneers de la música electrònica (Kraftwerk)", city: "Düsseldorf, Alemanya", lat: 51.2277, lng: 6.7735 }
+        ];
+
+        class Game {
+            constructor() {
+                this.map = null;
+                this.currentIdx = 0;
+                this.totalScore = 0;
+                this.roundPotential = 5000;
+                this.hasGuessed = false;
+                this.markers = [];
+                this.line = null;
+                this.targetScore = 50000;
+
+                this.initMap();
+            }
+
+            initMap() {
+                this.map = L.map('map', { zoomControl: false }).setView([48.5, 10.5], 4);
+                L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(this.map);
+
+                this.map.on('click', (e) => this.handleGuess(e));
+            }
+
+            start() {
+                document.getElementById('start-screen').classList.remove('visible');
+                this.loadLevel();
+            }
+
+            loadLevel() {
+                // Check End Game
+                if (this.currentIdx >= LOCATIONS.length) {
+                    this.endGame();
+                    return;
+                }
+
+                // Reset Round State
+                this.hasGuessed = false;
+                this.roundPotential = 5000; // Reset max potential score
+                this.target = LOCATIONS[this.currentIdx];
+
+                // Clear UI
+                document.getElementById('result-overlay').classList.remove('visible');
+                this.clearMap();
+
+                // Set Clue
+                document.getElementById('clue-text').value = `❓ ${this.target.clue}`;
+                document.getElementById('era-chip').textContent = this.target.era;
+                document.getElementById('round-disp').textContent = this.currentIdx + 1;
+
+                // Reset View
+                this.map.setView([48.5, 10.5], 4, { animate: true, duration: 1 });
+
+                // Enable/Disable Jokers
+                this.updateJokersUI();
+            }
+
+            updateJokersUI() {
+                document.getElementById('joker-country').disabled = false;
+                document.getElementById('joker-compass').disabled = false;
+            }
+
+            handleGuess(e) {
+                if (this.hasGuessed) return;
+                this.hasGuessed = true;
+
+                const userLat = e.latlng.lat;
+                const userLng = e.latlng.lng;
+                const targetLat = this.target.lat;
+                const targetLng = this.target.lng;
+
+                // 1. Calculate Real Distance (Haversine formula via Leaflet)
+                const distMeters = this.map.distance(e.latlng, L.latLng(targetLat, targetLng));
+                const distKm = distMeters / 1000;
+
+                // 2. Calculate Score (GeoGuessr Style Exponential Decay)
+                // Score = 5000 * e^(-distance / 2000)
+                // Modified by round potential (if jokers used)
+                let score = Math.round(this.roundPotential * Math.exp(-distKm / 2000));
+
+                // Minimum score for being vaguely close? No, harsh reality.
+                if (score < 0) score = 0;
+
+                this.totalScore += score;
+
+                // 3. Visuals
+                this.showMapResult(userLat, userLng, targetLat, targetLng);
+                this.showResultModal(score, distKm);
+                this.updateHud();
+            }
+
+            showMapResult(uLat, uLng, tLat, tLng) {
+                const userMarker = L.marker([uLat, uLng]).addTo(this.map).bindPopup("El teu vot").openPopup();
+                const targetMarker = L.marker([tLat, tLng]).addTo(this.map).bindPopup(`<b>${this.target.city}</b>`).openPopup();
+
+                const line = L.polyline([[uLat, uLng], [tLat, tLng]], { color: 'red', dashArray: '10, 10', weight: 3 }).addTo(this.map);
+
+                this.markers.push(userMarker, targetMarker);
+                this.line = line;
+
+                this.map.fitBounds(line.getBounds().pad(0.2));
+            }
+
+            showResultModal(score, distKm) {
+                const overlay = document.getElementById('result-overlay');
+                const title = document.getElementById('res-title');
+                const desc = document.getElementById('res-desc');
+                const points = document.getElementById('res-score');
+                const bar = document.getElementById('iter-progress');
+
+                const distDisplay = distKm < 1 ? `${Math.round(distKm * 1000)} metres` : `${Math.round(distKm)} km`;
+
+                if (score >= 4500) { title.textContent = "🏆 LLEGENDA!"; title.style.color = "#0F9D58"; }
+                else if (score >= 3000) { title.textContent = "😎 MOLT BÉ!"; title.style.color = "#1a73e8"; }
+                else if (score >= 1000) { title.textContent = "😐 NO ESTÀ MAL..."; title.style.color = "#F4B400"; }
+                else { title.textContent = "💀 DESASTRE"; title.style.color = "#DB4437"; }
+
+                desc.textContent = `Eres a ${distDisplay} de ${this.target.city}.`;
+                points.textContent = score;
+
+                const pct = (score / 5000) * 100;
+                bar.style.width = `${pct}%`;
+                bar.style.backgroundColor = title.style.color;
+
+                setTimeout(() => overlay.classList.add('visible'), 1000);
+            }
+
+            updateHud() {
+                document.getElementById('score-disp').textContent = this.totalScore;
+                const pct = Math.min((this.totalScore / this.targetScore) * 100, 100);
+                document.getElementById('total-progress').style.width = `${pct}%`;
+
+                if (pct >= 100) document.getElementById('total-progress').style.backgroundColor = "#FFD700"; // Gold
+            }
+
+            nextLevel() {
+                this.currentIdx++;
+                this.loadLevel();
+            }
+
+            useJoker(type) {
+                if (this.hasGuessed) return;
+
+                // Deduct cost from POTENTIAL score of this round
+                // User said "gastan puntos". I prefer reducing potential gain so score never goes negative.
+                // Or simply subtracting from total score? The prompt implies spending earned points.
+                // But start score is 0. So spending is impossible early on.
+                // Approach: Reduce MAX score for this round.
+
+                if (type === 'country') {
+                    // Zoom to location (Level 6 zoom)
+                    this.roundPotential -= 1000;
+                    this.map.flyTo([this.target.lat, this.target.lng], 6);
+                    document.getElementById('joker-country').disabled = true;
+                } else if (type === 'compass') {
+                    // Show direction text in search bar temporarily
+                    this.roundPotential -= 500;
+                    const hintParts = ["Nord", "Sud", "Est", "Oest"];
+                    // Very rough calculation for fun
+                    const center = this.map.getCenter();
+                    const dLat = this.target.lat - center.lat;
+                    const dLng = this.target.lng - center.lng;
+                    let dir = "";
+                    if (Math.abs(dLat) > Math.abs(dLng)) {
+                        dir = dLat > 0 ? "Nord ⬆️" : "Sud ⬇️";
+                    } else {
+                        dir = dLng > 0 ? "Est ➡️" : "Oest ⬅️";
+                    }
+
+                    const el = document.getElementById('clue-text');
+                    const original = el.value;
+                    el.value = `🧭 La brúixola indica: ${dir}`;
+                    setTimeout(() => el.value = original, 3000);
+
+                    document.getElementById('joker-compass').disabled = true;
+                }
+            }
+
+            clearMap() {
+                this.markers.forEach(m => this.map.removeLayer(m));
+                this.markers = [];
+                if (this.line) this.map.removeLayer(this.line);
+                this.line = null;
+            }
+
+            endGame() {
+                document.getElementById('result-overlay').classList.remove('visible');
+                const overlay = document.getElementById('gameover-overlay');
+                const title = document.getElementById('go-title');
+                const scoreEl = document.getElementById('go-score');
+                const desc = document.getElementById('go-desc');
+
+                scoreEl.textContent = this.totalScore;
+
+                if (this.totalScore >= this.targetScore) {
+                    title.textContent = "🌟 VICTÒRIA HISTÒRICA!";
+                    desc.innerHTML = `Has superat els ${this.targetScore} punts.<br>Ets un veritable mestre de la geografia musical.`;
+                } else {
+                    title.textContent = "😢 FI DEL VIATGE";
+                    desc.innerHTML = `No has arribat als ${this.targetScore} punts.<br>T'has quedat a les portes de la història.`;
+                }
+
+                overlay.classList.add('visible');
+            }
+        }
+
+        // Init
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Net-Music: Història del Documental Musical</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --bg-color: #141414;
+            --text-color: #e5e5e5;
+            --netflix-red: #E50914;
+            --card-bg: #2f2f2f;
+            --hover-scale: 1.4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* RESTORE SCROLLBAR */
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+            background: #141414;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #141414;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--netflix-red);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.5s;
+        }
+
+        header.scrolled {
+            background: #141414;
+        }
+
+        .logo {
+            color: var(--netflix-red);
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            align-items: center;
+        }
+
+        .nav-links span {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-links span:hover {
+            color: white;
+        }
+
+        .score-board {
+            font-weight: bold;
+        }
+
+        /* VOLUME CONTROL */
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type=range] {
+            accent-color: var(--netflix-red);
+            cursor: pointer;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            height: 80vh;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding-left: 50px;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #141414 10%, transparent 60%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(to top, #141414, transparent);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 500px;
+        }
+
+        .hero-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 5rem;
+            margin-bottom: 10px;
+            line-height: 0.9;
+            text-shadow: 2px 2px 4px black;
+        }
+
+        .hero-desc {
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px black;
+            margin-bottom: 20px;
+        }
+
+        .btn-play {
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+
+        .btn-play:hover {
+            transform: scale(1.05);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            position: relative;
+            z-index: 20;
+            margin-top: -100px;
+            padding-bottom: 50px;
+        }
+
+        .category-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 20px 50px 10px 50px;
+            color: #e5e5e5;
+            transition: color 0.2s;
+        }
+
+        .category-title:hover {
+            color: white;
+        }
+
+        /* STRIP WRAPPERS & ARROWS */
+        .strip-wrapper {
+            position: relative;
+            /* Extra padding to prevent arrows from covering content */
+            padding: 0 70px;
+        }
+
+        .scroll-btn {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 60px;
+            background: transparent;
+            /* Cleaner look */
+            color: white;
+            font-size: 4rem;
+            border: none;
+            cursor: pointer;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+            /* Always slightly visible */
+            transition: all 0.3s;
+            text-shadow: 0 0 5px black;
+        }
+
+        .strip-wrapper:hover .scroll-btn {
+            opacity: 1;
+        }
+
+        .scroll-btn:hover {
+            transform: scale(1.2);
+            color: var(--netflix-red);
+        }
+
+        .scroll-btn.left {
+            left: 0;
+        }
+
+        .scroll-btn.right {
+            right: 0;
+        }
+
+        /* STRIPS */
+        .strip {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            padding: 20px 0;
+        }
+
+        .card {
+            flex: 0 0 auto;
+            width: 280px;
+            height: 157px;
+            background-color: #333;
+            border-radius: 4px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1), z-index 0.3s, border 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            /* Keep content inside */
+        }
+
+        .card.draggable {
+            cursor: grab;
+        }
+
+        .card:hover {
+            transform: scale(var(--hover-scale));
+            z-index: 100;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        /* CENTERED INFO ON HOVER */
+        .card-info {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            /* Darker background for readability */
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+
+            /* Center Content */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .card:hover .card-info {
+            opacity: 1;
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px black;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.8rem;
+            color: #ddd;
+            line-height: 1.3;
+        }
+
+        .drop-zone {
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            min-height: 160px;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(229, 9, 20, 0.2);
+            border-color: var(--netflix-red);
+        }
+
+        /* MODALS */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .modal.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .profile-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .profile:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+            background-color: var(--netflix-red);
+            background-size: cover;
+            margin-bottom: 10px;
+        }
+
+        .profile-name {
+            color: #808080;
+            font-size: 1.2rem;
+        }
+
+        .profile:hover .profile-name {
+            color: white;
+        }
+
+        .modal h1 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 4rem;
+            color: var(--netflix-red);
+            margin-bottom: 10px;
+        }
+
+        .modal p {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: white;
+            text-align: center;
+            max-width: 600px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Soft Focus Queue.m4a" type="audio/mp3">
+    </audio>
+
+    <header id="navbar">
+        <div class="logo">NET-MUSIC</div>
+        <div class="nav-links">
+            <div id="volume-control">
+                <span style="font-size: 1.2rem;">🔊</span>
+                <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+            </div>
+            <span>Inici</span>
+            <span>Històries</span>
+        </div>
+        <div class="score-board">CLASSIFICATS: <span id="score">0</span>/29</div>
+    </header>
+
+    <div class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-title" id="hero-title">NET-MUSIC ORIGINALS</div>
+            <div class="hero-desc" id="hero-desc">Descobreix les històries ocultes darrere de les grans obres mestres.
+            </div>
+            <button class="btn-play" onclick="scrollToGame()">▶ JUGAR</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="game-area">
+
+        <!-- Unsorted / Trends -->
+        <div class="category-title">Tendències (Novetats per classificar)</div>
+        <div class="strip-wrapper">
+            <button class="scroll-btn left" onclick="scrollStrip('unsorted-row', -300)">‹</button>
+            <div class="strip" id="unsorted-row" style="min-height: 180px;"></div>
+            <button class="scroll-btn right" onclick="scrollStrip('unsorted-row', 300)">›</button>
+        </div>
+
+        <!-- Medieval -->
+        <div class="category-title">Edat Mitjana</div>
+        <div class="strip-wrapper">
+            <button class="scroll-btn left" onclick="scrollStrip('medieval', -300)">‹</button>
+            <div class="strip drop-zone" id="medieval" data-era="medieval"></div>
+            <button class="scroll-btn right" onclick="scrollStrip('medieval', 300)">›</button>
+        </div>
+
+        <!-- Renaissance -->
+        <div class="category-title">Renaixement</div>
+        <div class="strip-wrapper">
+            <button class="scroll-btn left" onclick="scrollStrip('renaissance', -300)">‹</button>
+            <div class="strip drop-zone" id="renaissance" data-era="renaissance"></div>
+            <button class="scroll-btn right" onclick="scrollStrip('renaissance', 300)">›</button>
+        </div>
+
+        <!-- Baroque -->
+        <div class="category-title">Barroc</div>
+        <div class="strip-wrapper">
+            <button class="scroll-btn left" onclick="scrollStrip('baroque', -300)">‹</button>
+            <div class="strip drop-zone" id="baroque" data-era="baroque"></div>
+            <button class="scroll-btn right" onclick="scrollStrip('baroque', 300)">›</button>
+        </div>
+
+        <!-- Classicism -->
+        <div class="category-title">Classicisme</div>
+        <div class="strip-wrapper">
+            <button class="scroll-btn left" onclick="scrollStrip('classicism', -300)">‹</button>
+            <div class="strip drop-zone" id="classicism" data-era="classicism"></div>
+            <button class="scroll-btn right" onclick="scrollStrip('classicism', 300)">›</button>
+        </div>
+
+        <!-- Romanticism -->
+        <div class="category-title">Romanticisme</div>
+        <div class="strip-wrapper">
+            <button class="scroll-btn left" onclick="scrollStrip('romanticism', -300)">‹</button>
+            <div class="strip drop-zone" id="romanticism" data-era="romanticism"></div>
+            <button class="scroll-btn right" onclick="scrollStrip('romanticism', 300)">›</button>
+        </div>
+
+        <!-- 20th Century -->
+        <div class="category-title">Segle XX</div>
+        <div class="strip-wrapper">
+            <button class="scroll-btn left" onclick="scrollStrip('20th', -300)">‹</button>
+            <div class="strip drop-zone" id="20th" data-era="20th"></div>
+            <button class="scroll-btn right" onclick="scrollStrip('20th', 300)">›</button>
+        </div>
+
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-modal" class="modal visible">
+        <h1>QUI ESTÀ JUGANT?</h1>
+        <p>Benvingut a Net-Music. Arrossega les miniatures a la seva època correcta per organitzar el catàleg.</p>
+
+        <div class="profile-container">
+            <div class="profile" onclick="startGame()">
+                <div class="profile-icon" style="background-image: url('img/mozartprodigi.jpg');"></div>
+                <div class="profile-name">Historiador</div>
+            </div>
+            <div class="profile" onclick="startGame()">
+                <div class="profile-icon" style="background-image: url('img/beatles.jpg');"></div>
+                <div class="profile-name">Fanàtic</div>
+            </div>
+            <div class="profile" onclick="startGame()">
+                <div class="profile-icon" style="background-image: url('img/cranidebeethoven.jpg');"></div>
+                <div class="profile-name">Curiós</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WIN MODAL -->
+    <div id="win-modal" class="modal">
+        <h1>MARATÓ COMPLETADA!</h1>
+        <p>Enhorabona! Has classificat totes les curiositats musicals correctament. El catàleg està llest per a
+            l'estrena.</p>
+        <button class="btn-play" onclick="location.reload()">TORNAR A JUGAR</button>
+    </div>
+
+    <script>
+        const ANECDOTES = [
+            // MITJANA
+            { id: "m1", title: "La Mà Guidoniana", desc: "El sistema mnemotècnic de Guido.", era: "medieval", img: "img/guido.jpg" },
+            { id: "m2", title: "Els Trobadors", desc: "Poetes de l'amor cortès.", era: "medieval", img: "img/trobadors.jpg" },
+            { id: "m3", title: "Hildegard von Bingen", desc: "La visionària del Rin.", era: "medieval", img: "img/hildegard.jpg" },
+            { id: "m5", title: "Alfons X el Savi", desc: "Cantigas de Santa Maria.", era: "medieval", img: "img/alfonsX.jpg" },
+
+            // RENAIXEMENT
+            { id: "r1", title: "Josquin des Prez", desc: "El mestre del graffiti musical.", era: "renaissance", img: "img/josquin.jpg" },
+            { id: "r2", title: "Palestrina", desc: "El salvador de la polifonia.", era: "renaissance", img: "img/palestrina.jpg" },
+            { id: "r3", title: "Carlo Gesualdo", desc: "Príncep, músic i assassí.", era: "renaissance", img: "img/gesualdo.jpg" },
+            { id: "r4", title: "Impremta Musical", desc: "La invenció de Petrucci.", era: "renaissance", img: "img/imprempta.jpg" },
+            { id: "r5", title: "Els Castrati", desc: "Les veus dels àngels.", era: "renaissance", img: "img/castratti.jpg" },
+
+            // BARROC
+            { id: "b1", title: "La Mort de Lully", desc: "Un accident de direcció fatal.", era: "baroque", img: "img/mortdelully.jpg" },
+            { id: "b2", title: "Bach a la Presó", desc: "Un geni tancat per tossut.", era: "baroque", img: "img/bach.jpg" },
+            { id: "b3", title: "El Duel de Händel", desc: "Espases en un carrer fosc.", era: "baroque", img: "img/duelhaendel.jpg" },
+            { id: "b4", title: "Vivaldi el Roig", desc: "El capellà de l'orfenat.", era: "baroque", img: "img/vivaldi.jpg" },
+            { id: "b5", title: "L'Òpera Pública", desc: "L'espectacle de Venècia.", era: "baroque", img: "img/operapublica.jpg" },
+
+            // CLASSICISME
+            { id: "c1", title: "El Rèquiem", desc: "L'últim encàrrec de Mozart.", era: "classicism", img: "img/requiemmozart.jpg" },
+            { id: "c2", title: "Simfonia Sorpresa", desc: "Haydn desperta el públic.", era: "classicism", img: "img/simfoniasorpresa.jpg" },
+            { id: "c3", title: "Fúria de Beethoven", desc: "Esborrant a Napoleó.", era: "classicism", img: "img/napoleonheroica.jpg" },
+            { id: "c4", title: "Mozart Nen", desc: "Prodigi a les corts d'Europa.", era: "classicism", img: "img/mozartprodigi.jpg" },
+            { id: "c5", title: "Els Adéus", desc: "La protesta silenciosa de Haydn.", era: "classicism", img: "img/simfoniaadeus.jpg" },
+
+            // ROMANTICISME
+            { id: "ro1", title: "Lisztomania", desc: "El primer rockstar de la història.", era: "romanticism", img: "img/listz.jpg" },
+            { id: "ro2", title: "Crani de Beethoven", desc: "El misteri de l'autòpsia.", era: "romanticism", img: "img/cranidebeethoven.jpg" },
+            { id: "ro3", title: "Dit de Schumann", desc: "La tragèdia del pianista.", era: "romanticism", img: "img/ditdeschumann.jpg" },
+            { id: "ro4", title: "Wagner i el Rei", desc: "Un castell per a una òpera.", era: "romanticism", img: "img/wagnerielrei.jpg" },
+            { id: "ro5", title: "Paganini", desc: "El violinista del diable.", era: "romanticism", img: "img/paganini.jpg" },
+
+            // S.XX
+            { id: "s1", title: "Consagració Primavera", desc: "L'aldarull de París.", era: "20th", img: "img/consagracioprimavera.jpg" },
+            { id: "s2", title: "4'33\"", desc: "El so del silenci absolut.", era: "20th", img: "img/433.jpg" },
+            { id: "s3", title: "El Theremin", desc: "Música sense tocar res.", era: "20th", img: "img/theremin.jpg" },
+            { id: "s4", title: "Beatles a l'Estudi", desc: "Experimentació psicodèlica.", era: "20th", img: "img/beatles.jpg" },
+            { id: "s5", title: "Música Concreta", desc: "Sons industrials i cintes.", era: "20th", img: "img/musicaconcreta.jpg" }
+        ];
+
+        let score = 0;
+        const totalItems = ANECDOTES.length;
+        const bgMusic = document.getElementById('bg-music');
+
+        function init() {
+            window.addEventListener('scroll', () => {
+                const nav = document.getElementById('navbar');
+                if (window.scrollY > 50) nav.classList.add('scrolled');
+                else nav.classList.remove('scrolled');
+            });
+
+            const randomFeatured = ANECDOTES[Math.floor(Math.random() * ANECDOTES.length)];
+            document.getElementById('hero').style.backgroundImage = `url('${randomFeatured.img}')`;
+            document.getElementById('hero-title').textContent = randomFeatured.title;
+            document.getElementById('hero-desc').textContent = randomFeatured.desc;
+
+            const shuffled = [...ANECDOTES].sort(() => Math.random() - 0.5);
+            const container = document.getElementById('unsorted-row');
+
+            shuffled.forEach(item => {
+                const card = createCard(item);
+                container.appendChild(card);
+            });
+
+            document.querySelector('.score-board').innerHTML = `CLASSIFICATS: <span id="score">0</span>/${totalItems}`;
+            setupDropZones();
+        }
+
+        function createCard(item) {
+            const card = document.createElement('div');
+            card.className = 'card draggable';
+            card.draggable = true;
+            card.style.backgroundImage = `url('${item.img}')`;
+            card.dataset.era = item.era;
+            card.id = item.id;
+
+            card.innerHTML = `
+                <div class="card-info">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-desc">${item.desc}</div>
+                </div>
+            `;
+
+            card.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', item.id);
+            });
+            return card;
+        }
+
+        function setupDropZones() {
+            const zones = document.querySelectorAll('.drop-zone');
+            zones.forEach(zone => {
+                zone.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    zone.classList.add('drag-over');
+                });
+                zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    const id = e.dataTransfer.getData('text/plain');
+                    const card = document.getElementById(id);
+                    if (card) checkDrop(card, zone);
+                });
+            });
+        }
+
+        function checkDrop(card, zone) {
+            const targetEra = zone.dataset.era;
+            const cardEra = card.dataset.era;
+
+            if (targetEra === cardEra) {
+                zone.appendChild(card);
+                card.draggable = false;
+                card.classList.remove('draggable');
+                card.style.cursor = 'default';
+                score++;
+                document.getElementById('score').innerText = score;
+
+                card.style.border = "3px solid #46d369";
+                setTimeout(() => card.style.border = "none", 1000);
+
+                if (score === totalItems) {
+                    setTimeout(() => {
+                        document.getElementById('win-modal').classList.add('visible');
+                    }, 1000);
+                }
+            } else {
+                card.style.animation = "shake 0.5s";
+                setTimeout(() => card.style.animation = "", 500);
+            }
+        }
+
+        function startGame() {
+            document.getElementById('start-modal').classList.remove('visible');
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(e => console.log("Audio needs interaction"));
+        }
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        function scrollToGame() {
+            document.getElementById('game-area').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function scrollStrip(id, amount) {
+            const strip = document.getElementById(id);
+            if (strip) strip.scrollLeft += amount;
+        }
+
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = `
+            @keyframes shake {
+                0% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+                100% { transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        init();
+    </script>
+</body>
+
+</html>

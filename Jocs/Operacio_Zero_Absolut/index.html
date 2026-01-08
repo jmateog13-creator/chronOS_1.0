@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPERACIÓ: ZERO ABSOLUT</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Teko:wght@400;700&display=swap');
+
+        :root {
+            --bg-dark: #050a10;
+            --ice-blue: #a5f2f3;
+            --alert-red: #ff4444;
+            --success-green: #00ff66;
+            --ui-bg: rgba(10, 20, 30, 0.95);
+            --font-head: 'Teko', sans-serif;
+            --font-code: 'Share Tech Mono', monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('img/fonsjoc.jpg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-color: var(--bg-dark);
+            color: var(--ice-blue);
+            font-family: var(--font-code);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        /* --- FROZEN OVERLAY --- */
+        #frozen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgb(255, 255, 255);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0) 40%, rgba(200, 240, 255, 0.8) 100%);
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        /* ... (rest of CSS unchanged) ... */
+
+        /* ... (rest of CSS unchanged) ... */
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .generator-core {
+            position: relative;
+            width: 60vh;
+            height: 60vh;
+            border-radius: 50%;
+            border: 10px solid #334;
+            background: url('img/ludwid.jpg') no-repeat center/cover;
+            box-shadow: 0 0 50px rgba(165, 242, 243, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s;
+        }
+
+        /* VALVES */
+        .valve {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: url('img/valvula.jpg') no-repeat center/cover;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s, filter 0.3s;
+            filter: drop-shadow(0 0 5px var(--ice-blue));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: black;
+            font-weight: bold;
+            text-shadow: 0 0 2px white;
+        }
+
+        .valve:hover {
+            transform: scale(1.1) rotate(45deg);
+        }
+
+        .valve.active {
+            filter: drop-shadow(0 0 15px var(--success-green)) hue-rotate(90deg);
+            pointer-events: none;
+            transform: rotate(90deg);
+        }
+
+        .valve.locked {
+            filter: grayscale(1) brightness(0.5);
+            pointer-events: none;
+        }
+
+        /* STARTER HANDLE (CLIMAX) */
+        #starter-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 200px;
+            /* Track height */
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            display: none;
+            /* Hidden until end */
+            border: 2px dashed var(--alert-red);
+        }
+
+        #handle-grip {
+            width: 80px;
+            height: 60px;
+            background: var(--alert-red);
+            margin: 10px auto;
+            border-radius: 5px;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px var(--alert-red);
+            position: absolute;
+            top: 0;
+            left: 10px;
+            transition: top 0.1s;
+            /* Smooth visual follow but reliable logic */
+        }
+
+        #handle-grip:active {
+            cursor: grabbing;
+        }
+
+        /* --- UI LAYER (BOTTOM) --- */
+        .dialogue-interface {
+            position: absolute;
+            bottom: 20px;
+            width: 90%;
+            max-width: 800px;
+            background: var(--ui-bg);
+            border: 2px solid var(--ice-blue);
+            border-radius: 10px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            grid-template-rows: auto auto;
+            gap: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            z-index: 500;
+        }
+
+        .waveform-container {
+            grid-row: 1 / 3;
+            background: black;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #waveform {
+            width: 100%;
+            height: 100%;
+        }
+
+        .char-info {
+            grid-column: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(165, 242, 243, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .char-name {
+            font-family: var(--font-head);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--ice-blue);
+        }
+
+        .status-light {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success-green);
+            box-shadow: 0 0 10px var(--success-green);
+            animation: blink 2s infinite;
+        }
+
+        .text-box {
+            grid-column: 2;
+            font-size: 1rem;
+            line-height: 1.4;
+            min-height: 60px;
+        }
+
+        .options-grid {
+            grid-column: 1 / 3;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            display: none;
+            /* Hidden unless asking */
+        }
+
+        .opt-btn {
+            background: rgba(0, 50, 70, 0.5);
+            border: 1px solid var(--ice-blue);
+            color: var(--ice-blue);
+            padding: 12px;
+            cursor: pointer;
+            font-family: var(--font-code);
+            transition: 0.2s;
+            text-align: left;
+        }
+
+        .opt-btn:hover {
+            background: var(--ice-blue);
+            color: black;
+        }
+
+        /* --- UTILS & ANIMATIONS --- */
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.3s;
+        }
+
+        .pulse-red {
+            animation: pulseRed 1s infinite;
+        }
+
+        @keyframes pulseRed {
+            0% {
+                box-shadow: 0 0 20px var(--alert-red);
+            }
+
+            50% {
+                box-shadow: 0 0 60px var(--alert-red);
+            }
+
+            100% {
+                box-shadow: 0 0 20px var(--alert-red);
+            }
+        }
+
+        /* SCREENS */
+        #start-overlay,
+        #death-screen,
+        #win-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #start-overlay {
+            background: url('https://images.unsplash.com/photo-1478719059408-592965723cbc?q=80&w=2000&auto=format&fit=crop') center/cover;
+        }
+
+        .title-glitch {
+            font-family: var(--font-head);
+            font-size: 5rem;
+            letter-spacing: 10px;
+            margin: 0;
+            text-shadow: 0 0 30px var(--ice-blue);
+        }
+
+        .start-btn {
+            margin-top: 50px;
+            padding: 20px 50px;
+            font-size: 2rem;
+            background: transparent;
+            border: 2px solid var(--ice-blue);
+            color: var(--ice-blue);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+            background: var(--ice-blue);
+            color: black;
+            box-shadow: 0 0 50px var(--ice-blue);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUDIO CONTROLS -->
+    <div
+        style="position:fixed; top:20px; right:20px; z-index:2000; display:flex; align-items:center; background:rgba(0,0,0,0.7); padding:10px; border:1px solid var(--ice-blue); border-radius:30px;">
+        <span style="color:var(--ice-blue); margin-right:10px; font-size:1.2rem;">🔊</span>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"
+            style="width:100px; accent-color:var(--ice-blue);">
+    </div>
+    <audio id="bg-music" loop>
+        <source src="audio/Midnight Over The Ice Shelf.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- FROZEN OVERLAY -->
+    <div id="frozen-overlay"></div>
+
+    <!-- START SCREEN -->
+    <div id="start-overlay">
+        <div
+            style="background:rgba(0,0,0,0.7); padding: 50px; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <h1 class="title-glitch">ZERO ABSOLUT</h1>
+            <p style="letter-spacing: 5px;">ANTARCTICA // SURVIVAL PROTOCOL</p>
+            <button class="start-btn" onclick="GAME.start()">CONNECTAR</button>
+        </div>
+    </div>
+
+    <!-- GAME LAYER -->
+    <div class="game-container">
+        <!-- GENERATOR -->
+        <div class="generator-core">
+            <div id="valve-container">
+                <!-- Valves JS -->
+            </div>
+
+            <div id="starter-handle">
+                <div id="handle-grip">|||</div>
+                <div
+                    style="position:absolute; bottom:10px; width:100%; text-align:center; font-size:0.8rem; pointer-events:none;">
+                    PULL</div>
+            </div>
+        </div>
+
+        <!-- DIALOGUE UI -->
+        <div class="dialogue-interface">
+            <!-- New Portrait Image -->
+            <div class="portrait-container" id="portrait-box"
+                style="display:none; grid-row: 1/3; width:100px; height:100px; border:2px solid var(--ice-blue); background-size:cover; margin-right:10px;">
+            </div>
+
+            <div class="waveform-container" id="wave-box">
+                <canvas id="waveform"></canvas>
+            </div>
+            <div class="char-info">
+                <span id="char-name" class="char-name">SYSTEM</span>
+                <div class="status-light" id="status-light"></div>
+            </div>
+            <div class="text-box" id="dialogue-text"></div>
+            <div class="options-grid" id="options-area"></div>
+        </div>
+    </div>
+
+    <!-- DEATH SCREEN -->
+    <div id="death-screen" class="hidden">
+        <h1 style="color:var(--ice-blue); font-size:4rem;">SYSTEM FAILED</h1>
+        <p>Temperatura Crítica Assolida.</p>
+        <p>Connexió Perduda.</p>
+        <button class="start-btn" onclick="location.reload()">REINICIAR</button>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-screen" class="hidden" style="background: radial-gradient(#224, #000);">
+        <h1 style="color:var(--success-green); font-size:4rem;">HO HAS ACONSEGUIT</h1>
+        <p>GENERADOR LUDWIG RESTAURAT</p>
+        <p>Sistemes Vitals: 100%</p>
+        <button class="start-btn" onclick="location.reload()">NOVA MISSIÓ</button>
+    </div>
+
+    <script>
+        /* --- NARRATIVE DATA --- */
+        const STORY_DATA = [
+            {
+                id: 1,
+                era: "EDAT MITJANA",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Iniciant seqüència d'arrencada. Protocol 1: Identifiqui la textura original del Cant Gregorià.",
+                options: ["Polifonia (moltes veus)", "Monodia (una sola veu)", "Melodia Acompanyada"],
+                correct: 1
+            },
+            {
+                id: 2,
+                era: "EDAT MITJANA",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Accés concedit. Protocol 2: Temàtica lírica dels Trobadors als castells.",
+                options: ["De Déu i la Bíblia", "D'Amor i cavallers", "De política"],
+                correct: 1
+            },
+            {
+                id: 3,
+                era: "RENAIXEMENT",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Analitzant nucli del Renaixement. Protocol 3: Definició de Polifonia.",
+                options: ["Una sola veu", "Moltes veus sonant a la vegada", "Música sense veu"],
+                correct: 1
+            },
+            {
+                id: 4,
+                era: "RENAIXEMENT",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Càrrega de dades històriques. Protocol 4: Tecnologia de difusió de partitures.",
+                options: ["La Màquina d'Escriure", "La Impremta", "L'Ordinador"],
+                correct: 1
+            },
+            {
+                id: 5,
+                era: "BARROC",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Detectant paràmetres Barrocs. Protocol 5: Objectiu del volum i velocitat.",
+                options: ["L'Equilibri", "El Contrast (Fort/Fluix)", "La Monotonia"],
+                correct: 1
+            },
+            {
+                id: 6,
+                era: "BARROC",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Protocol 6: Identificació de l'instrument rei de corda pinçada.",
+                options: ["El Piano", "El Clavicèmbal", "L'Orgue Hammond"],
+                correct: 1
+            },
+            {
+                id: 7,
+                era: "CLASSICISME",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Calibrant lògica del Classicisme. Protocol 7: Valor suprem de l'època.",
+                options: ["Els sentiments", "La Raó i l'Ordre", "El luxe exagerat"],
+                correct: 1
+            },
+            {
+                id: 8,
+                era: "CLASSICISME",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Protocol 8: Textura de melodia clara amb suport suau.",
+                options: ["Melodia Acompanyada", "Polifonia complexa", "Monodia"],
+                correct: 0
+            },
+            {
+                id: 9,
+                era: "ROMANTICISME",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Augmentant pressió emocional. Protocol 9: Definició de Rubato.",
+                options: ["Robar un instrument", "Canviar la velocitat lliurement", "Tocar sempre igual"],
+                correct: 1
+            },
+            {
+                id: 10,
+                era: "SEGLE XX",
+                speaker: "SYSTEM LUDWIG",
+                dialogue: "Protocol Final. Segle XX: Estil d'atmòsfera i somni.",
+                options: ["Expressionisme", "Impressionisme", "Barroc"],
+                correct: 1
+            }
+        ];
+
+        /* --- LOGIC --- */
+        const GAME = {
+            temp: 100, // Starts hot, drops on error
+            valvesOpen: 0,
+            activeNode: 0,
+            isLocked: false,
+            timeoutId: null,
+            busy: false, // TRAFFIC CONTROL
+
+            start: function () {
+                document.getElementById('start-overlay').style.display = 'none';
+
+                // Audio Init
+                const music = document.getElementById('bg-music');
+                music.volume = 0.5;
+                music.play().catch(e => console.log("Audio play failed", e));
+
+                // Volume Slider
+                const slider = document.getElementById('vol-slider');
+                slider.addEventListener('input', (e) => {
+                    music.volume = e.target.value;
+                });
+
+                this.initValves();
+                this.playDialogue("DRA. NEUVILLE", "Enginyer? M'escoltes? El fred ens està matant. Has d'activar el LUDWIG ara mateix! Obre les vàlvules manualment!", "#a5f2f3", false);
+            },
+
+            initValves: function () {
+                const container = document.getElementById('valve-container');
+                container.innerHTML = ""; // Clear existing if restart
+                // Adjust radius for larger core (75vh ~ 500-800px)
+                // Let's use a dynamic approach or just larger implementation
+                // 75vh diameter = 37.5vh radius.
+                // In generic screens, height ~800px -> 300px radius.
+                // We want valves inside or on edge? "radius + 50" was outside?
+                // Original: 50vh (25vh r) + 150px translation.
+                // Let's try 32vh for radius to keep it responsive-ish
+                const radius = window.innerHeight * 0.25;
+                const total = STORY_DATA.length;
+
+                for (let i = 0; i < total; i++) {
+                    const angle = (i / total) * Math.PI * 2;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+
+                    const v = document.createElement('div');
+                    v.className = 'valve';
+                    v.style.transform = `translate(${x}px, ${y}px)`;
+                    v.id = `valve-${i}`;
+                    v.textContent = i + 1;
+
+                    if (i === 0) {
+                        v.onclick = () => this.triggerValve(i);
+                        v.classList.add('pulse-red');
+                    } else {
+                        v.classList.add('locked');
+                    }
+
+                    container.appendChild(v);
+                }
+            },
+
+            triggerValve: function (id) {
+                if (this.isLocked || this.busy) return;
+                const v = document.getElementById(`valve-${id}`);
+                v.classList.remove('pulse-red');
+
+                // Trigger Question
+                const q = STORY_DATA[id];
+                this.playDialogue(q.speaker, q.dialogue, "#00ff66", true, q.options, q.correct);
+            },
+
+            resolveAnswer: function (isCorrect, correctIndex) {
+                if (this.busy) return;
+                this.busy = true; // LOCK INPUT
+
+                const ui = document.getElementById('options-area');
+                ui.innerHTML = ""; // Clear options
+
+                if (isCorrect) {
+                    this.valvesOpen++;
+                    const v = document.getElementById(`valve-${this.activeNode}`);
+                    v.classList.add('active'); // Green turn
+                    v.onclick = null;
+
+                    this.triggerEffect('steam');
+
+                    this.playDialogue("SYSTEM", "PROTOCOL ACCEPTAT. Pressió restablerta.", "#00ff66", false);
+
+                    // Next Valve logic
+                    this.activeNode++;
+                    setTimeout(() => {
+                        this.busy = false; // RELEASE LOCK
+                        if (this.activeNode < STORY_DATA.length) {
+                            const next = document.getElementById(`valve-${this.activeNode}`);
+                            next.classList.remove('locked');
+                            next.classList.add('pulse-red');
+                            next.onclick = () => this.triggerValve(this.activeNode);
+                        } else {
+                            // WIN PHASE
+                            this.initClimax();
+                        }
+                    }, 1500); // Wait for dialogue slightly
+
+                } else {
+                    this.temp -= 25;
+                    this.updateFreeze();
+                    this.triggerEffect('shake');
+                    this.playDialogue("DRA. NEUVILLE", "NO!! La temperatura cau en picat! Concentra't o morirem aquí!", "#ff4444", false);
+
+                    if (this.temp <= 0) {
+                        setTimeout(() => this.gameOver(), 2000);
+                        return;
+                    }
+
+                    setTimeout(() => {
+                        this.busy = false; // RELEASE LOCK
+                        const v = document.getElementById(`valve-${this.activeNode}`);
+                        v.classList.add('pulse-red');
+                    }, 2000);
+                }
+            },
+
+            updateFreeze: function () {
+                const opacity = (100 - this.temp) / 100;
+                document.getElementById('frozen-overlay').style.opacity = opacity;
+            },
+
+            initClimax: function () {
+                this.playDialogue("DRA. NEUVILLE", "Està llest! Tira de la palanca vermella del nucli amb totes les teves forces!", "#ff4444", false);
+                document.getElementById('valve-container').style.display = 'none';
+
+                const handle = document.getElementById('starter-handle');
+                handle.style.display = 'block';
+
+                // Drag Logic
+                const grip = document.getElementById('handle-grip');
+                let isDragging = false;
+                let startY = 0;
+
+                const onMove = (e) => {
+                    if (!isDragging) return;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    let delta = clientY - startY;
+                    if (delta < 0) delta = 0;
+                    if (delta > 140) delta = 140; // Max drag
+                    grip.style.top = delta + 'px';
+
+                    if (delta >= 130) {
+                        isDragging = false;
+                        document.removeEventListener('mousemove', onMove);
+                        document.removeEventListener('mouseup', onEnd);
+                        this.winGame();
+                    }
+                };
+
+                const onEnd = () => {
+                    isDragging = false;
+                    grip.style.top = '0px'; // Reset if released too early
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onEnd);
+                };
+
+                grip.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startY = e.clientY;
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onEnd);
+                });
+
+                grip.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    startY = e.touches[0].clientY;
+                    document.addEventListener('touchmove', onMove);
+                    document.addEventListener('touchend', onEnd);
+                });
+            },
+
+            winGame: function () {
+                this.triggerEffect('steam');
+                setTimeout(() => {
+                    document.getElementById('win-screen').classList.remove('hidden');
+                }, 1000);
+            },
+
+            gameOver: function () {
+                document.getElementById('death-screen').classList.remove('hidden');
+            },
+
+            /* UI SYSTEM */
+            playDialogue: function (speaker, text, color, isQuestion, options = [], correctIdx = 0) {
+                const nameLink = document.getElementById('char-name');
+                const textBox = document.getElementById('dialogue-text');
+                const optArea = document.getElementById('options-area');
+                const waveform = document.getElementById('waveform');
+                const portrait = document.getElementById('portrait-box');
+                const waveBox = document.getElementById('wave-box');
+
+                nameLink.textContent = speaker;
+                nameLink.style.color = color;
+                document.getElementById('status-light').style.background = color;
+                document.getElementById('status-light').style.boxShadow = `0 0 10px ${color}`;
+                document.querySelector('.dialogue-interface').style.borderColor = color;
+
+                // Portrait Logic
+                if (speaker === "DRA. NEUVILLE") {
+                    portrait.style.display = 'block';
+                    portrait.style.backgroundImage = "url('img/doctora.jpg')";
+                    portrait.style.borderColor = color;
+                    waveBox.style.display = 'none';
+                } else {
+                    portrait.style.display = 'none';
+                    waveBox.style.display = 'flex';
+                }
+
+                // Typing effect
+                // CLEAR previous timeout
+                if (this.timeoutId) clearTimeout(this.timeoutId);
+
+                textBox.textContent = "";
+                optArea.innerHTML = "";
+                optArea.style.display = 'none';
+
+                let i = 0;
+                const self = this;
+
+                function type() {
+                    if (i < text.length) {
+                        textBox.textContent += text.charAt(i);
+                        i++;
+                        // Waveform animation simulation?
+                        if (waveBox.style.display !== 'none') {
+                            waveform.style.opacity = Math.random();
+                        }
+                        self.timeoutId = setTimeout(type, 20);
+                    } else {
+                        self.timeoutId = null;
+                        if (waveBox.style.display !== 'none') {
+                            waveform.style.opacity = 0.2;
+                        }
+
+                        if (isQuestion) {
+                            optArea.style.display = 'grid';
+                            // Shuffle options
+                            const indices = options.map((_, idx) => idx);
+                            indices.sort(() => Math.random() - 0.5);
+
+                            indices.forEach(idx => {
+                                const btn = document.createElement('button');
+                                btn.className = 'opt-btn';
+                                btn.textContent = "> " + options[idx];
+                                btn.onclick = () => GAME.resolveAnswer(idx === correctIdx, correctIdx);
+                                optArea.appendChild(btn);
+                            });
+                        }
+                    }
+                }
+                type();
+            },
+
+            triggerEffect: function (type) {
+                if (type === 'shake') {
+                    document.body.classList.add('shake');
+                    setTimeout(() => document.body.classList.remove('shake'), 500);
+                }
+                // Steam effect could be visual, but limited by single file constraints.
+            }
+        };
+
+        // Initial Draw Waveform
+        const canvas = document.getElementById('waveform');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 100; canvas.height = 100;
+        ctx.fillStyle = "#00ff00";
+        function drawWave() {
+            ctx.clearRect(0, 0, 100, 100);
+            ctx.fillRect(0, 45, 100, 10); // Base line
+            requestAnimationFrame(drawWave);
+        }
+        drawWave();
+
+    </script>
+</body>
+
+</html>

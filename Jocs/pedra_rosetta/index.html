@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Enigma de la Pedra Rosetta</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700&family=Charm:wght@400;700&display=swap');
+
+        :root {
+            --temple-dark: #1a1510;
+            --stone-base: #c2b280;
+            --stone-dark: #8c7b50;
+            --gold: #ffd700;
+            --parchment: #f4e4bc;
+            --text-dark: #3e2723;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--temple-dark);
+            background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                url('img/bg_pyramids.png');
+            background-size: cover;
+            background-position: center;
+            color: var(--stone-base);
+            font-family: 'Cinzel', serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 90vw;
+            max-width: 900px;
+            height: 80vh;
+            background: #2d241c;
+            border: 15px solid var(--stone-dark);
+            border-image: linear-gradient(to bottom, #8c7b50, #4a3c2c) 1;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 100px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        header h1 {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 2.5rem;
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        #era-badge {
+            background: var(--stone-dark);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            border: 1px solid var(--gold);
+        }
+
+        /* Puzzle Area */
+        #puzzle-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .tablet {
+            width: 200px;
+            height: 200px;
+            background: #c2b280;
+            border: 5px solid #8c7b50;
+            border-radius: 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .tablet:hover {
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .tablet img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            filter: sepia(0.5) contrast(1.2);
+        }
+
+        .tablet-label {
+            position: absolute;
+            bottom: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #3e2723;
+            text-transform: uppercase;
+        }
+
+        /* Input Area */
+        #input-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        #answer-input {
+            background: var(--parchment);
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            width: 60%;
+            text-align: center;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            color: var(--text-dark);
+            outline: none;
+            text-transform: uppercase;
+        }
+
+        #submit-btn {
+            padding: 10px 40px;
+            background: var(--stone-dark);
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #submit-btn:hover {
+            background: var(--gold);
+            color: var(--text-dark);
+        }
+
+        /* Feedback */
+        #hint-text {
+            font-family: 'Charm', cursive;
+            font-size: 1.4rem;
+            color: var(--gold);
+            text-shadow: 1px 1px 2px black;
+            font-style: italic;
+            margin-top: 15px;
+            letter-spacing: 1px;
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+
+        .correct-flash {
+            animation: glow 1s alternate infinite;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 10px var(--gold);
+            }
+
+            to {
+                box-shadow: 0 0 40px var(--gold);
+            }
+        }
+
+
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            color: var(--gold);
+        }
+
+        #start-screen h1 {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        #start-screen p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            color: var(--parchment);
+        }
+
+        #start-btn-main {
+            padding: 20px 60px;
+            font-size: 2rem;
+            background: var(--gold);
+            color: var(--temple-dark);
+            border: none;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            transition: all 0.3s;
+        }
+
+        #start-btn-main:hover {
+            transform: scale(1.1);
+            background: #fff;
+        }
+
+        /* Door Animation */
+        #door-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--stone-dark);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: var(--gold);
+            text-shadow: 2px 2px 10px black;
+        }
+
+        .door-slide-right {
+            transform: translateX(100%);
+            transition: transform 1.5s ease-in;
+        }
+
+        /* Progress Bar */
+        #progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        #progress-inner {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        /* Final Screen */
+        #win-screen {
+            display: none;
+            text-align: center;
+        }
+
+        /* Audio Controls */
+        #audio-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(26, 21, 16, 0.8);
+            padding: 10px 15px;
+            border: 2px solid var(--gold);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+        }
+
+        #volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 5px;
+            background: var(--stone-dark);
+            outline: none;
+            border-radius: 5px;
+        }
+
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: var(--gold);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #volume-slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: var(--gold);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="start-screen">
+            <h1>L'ENIGMA DE LA<br>PEDRA ROSETTA</h1>
+            <p>Benvingut, explorador. Per obrir les portes del temple, hauràs de desxifrar els jeroglífics musicals de
+                totes les èpoques.</p>
+            <p style="font-size: 1.2rem; margin-bottom: 40px; opacity: 0.8;">Inspira't en les pistes misterioses...</p>
+            <button id="start-btn-main">ENTRAR AL TEMPLE</button>
+        </div>
+        <div id="progress">
+            <div id="progress-inner"></div>
+        </div>
+
+        <div id="audio-controls">
+            <span>MÚSICA</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+        </div>
+
+        <!-- Audio Element -->
+        <audio id="bg-music" loop>
+            <source src="audio/Hall of Sand and Echo.m4a" type="audio/mpeg">
+        </audio>
+
+        <header>
+            <h1>L'ENIGMA DE LA PEDRA ROSETTA</h1>
+        </header>
+
+        <div id="era-badge">EDAT MITJANA</div>
+
+        <div id="puzzle-area">
+            <!-- Tablets rendered here -->
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="answer-input" placeholder="ESCRIU AQUÍ..." autocomplete="off">
+            <button id="submit-btn">OBRIR LA PORTA</button>
+            <div id="hint-text">Pista: --</div>
+        </div>
+
+        <div id="win-screen">
+            <h1>HAS DESCOBERT EL TEMPLE!</h1>
+            <p>Ets un mestre dels jeroglífics musicals.</p>
+            <button id="submit-btn" onclick="location.reload()">TORNAR A COMENÇAR</button>
+        </div>
+
+        <div id="door-overlay">LA PORTA S'OBRE...</div>
+    </div>
+
+    <script>
+        const LEVELS = [
+            {
+                id: "mitjana_1",
+                era: "Edat Mitjana",
+                img: "img/monodia.jpg",
+                labels: ["Un", "Dia"],
+                answer: "MONODIA",
+                hint: "Sóc el principi de tot cant, una sola línia sense companyia. Si sumes l'únic ('UN') i la llum del ('DIA'), em trobaràs."
+            },
+            {
+                id: "mitjana_2",
+                era: "Edat Mitjana",
+                img: "img/llati.jpg",
+                labels: ["Llauna", "Te"],
+                answer: "LLATÍ",
+                hint: "Llengua morta però molt viva a l'església. Obre una 'LLAUNA' i pren un 'TE'."
+            },
+            {
+                id: "renaix_1",
+                era: "Renaixement",
+                img: "img/polifonia.jpg",
+                labels: ["Poli", "Fon", "Iaia"],
+                answer: "POLIFONIA",
+                hint: "Moltes veus que s'entrellacen. Un agent ('POLI'), un so llunyà ('FON') i l'àvia de la casa ('IAIA')."
+            },
+            {
+                id: "renaix_2",
+                era: "Renaixement",
+                img: "img/cor.jpg",
+                labels: ["Cor"],
+                answer: "COR",
+                hint: "Batega dins teu, però quan són molts, canten plegats."
+            },
+            {
+                id: "barroc_1",
+                era: "Barroc",
+                img: "img/barroc.jpg",
+                labels: ["Bar", "Pedra"],
+                answer: "BARROC",
+                hint: "Època d'ornaments i excessos. On prens una copa ('BAR') i el que trobes a la muntanya ('ROC')."
+            },
+            {
+                id: "barroc_2",
+                era: "Barroc",
+                img: "img/opera.jpg",
+                labels: ["O", "Pera"],
+                answer: "ÒPERA",
+                hint: "Drama i música units. Una vocal rodona ('O') i una fruita sucosa ('PERA')."
+            },
+            {
+                id: "classic_1",
+                era: "Classicisme",
+                img: "img/sonata.jpg",
+                labels: ["So", "Nata"],
+                answer: "SONATA",
+                hint: "Estructura musical perfecta. Allò que escoltes ('SO') i la part més dolça de la llet ('NATA')."
+            },
+            {
+                id: "classic_2",
+                era: "Classicisme",
+                img: "img/mozart.jpg",
+                labels: ["Moto", "Z", "Art"],
+                answer: "MOZART",
+                hint: "El nen prodigi. Va en 'MOTO' (casi), la lletra final ('Z') i tot el seu talent és 'ART'."
+            },
+            {
+                id: "roman_1",
+                era: "Romanticisme",
+                img: "img/passio.jpg",
+                labels: ["Pa", "Sí", "O"],
+                answer: "PASSIÓ",
+                hint: "Sentiment romàntic desbordant. Aliment bàsic ('PA'), afirmació ('SÍ') i final rodó ('O')."
+            },
+            {
+                id: "roman_2",
+                era: "Romanticisme",
+                img: "img/piano.jpg",
+                labels: ["Pi", "A", "No"],
+                answer: "PIANO",
+                hint: "L'instrument rei del XIX. Nombre infinit ('PI'), la primera lletra ('A') i una negació ('NO')."
+            },
+            {
+                id: "sxx_1",
+                era: "Segle XX",
+                img: "img/soroll.jpg",
+                labels: ["So", "Roll"],
+                answer: "SOROLL",
+                hint: "Pels futuristes és música, per altres molèstia. Allò que escoltes ('SO') i alguna cosa que gira ('ROLL')."
+            },
+            {
+                id: "sxx_2",
+                era: "Segle XX",
+                img: "img/jazz.jpg",
+                labels: ["Ja", "Zzz"],
+                answer: "JAZZ",
+                hint: "Improvisació i ritme trencat. Riu fort ('JA') i després posa't a dormir ('ZZZ')."
+            }
+        ];
+
+        let currentLevelIndex = 0;
+        const input = document.getElementById('answer-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const puzzleArea = document.getElementById('puzzle-area');
+        const eraBadge = document.getElementById('era-badge');
+        const hintText = document.getElementById('hint-text');
+        const progressInner = document.getElementById('progress-inner');
+
+        function loadLevel() {
+            const level = LEVELS[currentLevelIndex];
+            eraBadge.textContent = level.era;
+            hintText.textContent = "Pista: " + level.hint;
+            input.value = "";
+            input.focus();
+
+            puzzleArea.innerHTML = "";
+
+            // Render Single Large Tablet
+            const tablet = document.createElement('div');
+            tablet.className = 'tablet';
+            tablet.style.width = "400px"; // Wider for composite image
+            tablet.style.height = "300px";
+
+            const img = document.createElement('img');
+            img.src = level.img;
+            img.onerror = () => {
+                img.style.display = 'none';
+                tablet.innerHTML = `<p style='text-align:center; padding:10px;'>[IMATGE NO TROBADA]<br>${level.img}</p>`;
+            };
+
+            const label = document.createElement('div');
+            label.className = 'tablet-label';
+            label.textContent = level.labels.join(" + "); // Show components as text hint
+
+            tablet.appendChild(img);
+            tablet.appendChild(label);
+            puzzleArea.appendChild(tablet);
+
+            progressInner.style.width = ((currentLevelIndex / LEVELS.length) * 100) + "%";
+        }
+
+        function getEmojiFallback(label) {
+            // Deprecated fallback logic, keeping simplified placeholder above
+            return "❓";
+        }
+
+        function checkAnswer() {
+            const level = LEVELS[currentLevelIndex];
+            const userAnswer = input.value.trim().toUpperCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove accents for comparison
+
+            const correctAnswer = level.answer.toUpperCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            if (userAnswer === correctAnswer) {
+                success();
+            } else {
+                fail();
+            }
+        }
+
+        function success() {
+            document.getElementById('game-container').classList.add('correct-flash');
+
+            // Door overlay
+            const door = document.getElementById('door-overlay');
+            door.style.display = 'flex';
+
+            setTimeout(() => {
+                door.style.display = 'none';
+                document.getElementById('game-container').classList.remove('correct-flash');
+                currentLevelIndex++;
+                if (currentLevelIndex < LEVELS.length) {
+                    loadLevel();
+                } else {
+                    showWinScreen();
+                }
+            }, 1500);
+        }
+
+        function fail() {
+            const container = document.getElementById('game-container');
+            container.classList.add('shake');
+            input.style.backgroundColor = "#ffcdd2";
+            setTimeout(() => {
+                container.classList.remove('shake');
+                input.style.backgroundColor = "var(--parchment)";
+            }, 500);
+        }
+
+        function showWinScreen() {
+            puzzleArea.style.display = 'none';
+            document.getElementById('input-area').style.display = 'none';
+            eraBadge.style.display = 'none';
+            document.getElementById('win-screen').style.display = 'block';
+            progressInner.style.width = "100%";
+        }
+
+        submitBtn.addEventListener('click', checkAnswer);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        loadLevel();
+
+        // Audio Logic
+        const music = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+        const startScreen = document.getElementById('start-screen');
+        const startBtnMain = document.getElementById('start-btn-main');
+
+        // Set initial volume
+        music.volume = 0.5;
+
+        // Start Game & Audio
+        startBtnMain.addEventListener('click', () => {
+            startScreen.style.opacity = '0';
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+            }, 500);
+
+            music.play().then(() => {
+                console.log("Audio playing");
+            }).catch(e => console.log("Audio moved to user interaction", e));
+        });
+
+        // Volume slider control
+        volumeSlider.addEventListener('input', (e) => {
+            music.volume = e.target.value;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Nevera Musical ❄️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-kitchen: #e0f7fa;
+            --fridge-color: #b2ebf2;
+            --fridge-border: #80deea;
+            --magnet-shadow: rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-kitchen);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: radial-gradient(#b2dfdb 15%, transparent 16%), radial-gradient(#b2dfdb 15%, transparent 16%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+        }
+
+        /* Header */
+        header {
+            padding: 10px 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #0097a7;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .era-selector {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Game Area */
+        #kitchen {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* The Fridge */
+        #fridge {
+            width: 400px;
+            height: 600px;
+            background: var(--fridge-color);
+            border: 10px solid var(--fridge-border);
+            border-radius: 40px 40px 0 0;
+            position: relative;
+            box-shadow: 15px 15px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            transition: transform 0.3s;
+        }
+
+        #fridge::before {
+            content: '';
+            position: absolute;
+            right: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        #fridge-handle {
+            position: absolute;
+            left: 10px;
+            top: 40%;
+            width: 15px;
+            height: 100px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .fridge-label {
+            font-family: 'Fredoka One', cursive;
+            color: white;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            pointer-events: none;
+        }
+
+        /* Magnets Area (Table) */
+        #table {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: #d7ccc8;
+            border-top: 5px solid #a1887f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            z-index: 20;
+            overflow-x: auto;
+        }
+
+        /* Magnets */
+        .magnet {
+            width: 110px;
+            height: 110px;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            transition: transform 0.2s;
+            position: relative;
+            user-select: none;
+        }
+
+        .magnet img {
+            width: 100%;
+            height: 80%;
+            object-fit: contain;
+            pointer-events: none;
+            /* mix-blend-mode: multiply; Removed for PNGs with transparency */
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .magnet-name {
+            font-size: 0.7rem;
+            margin-top: 2px;
+            line-height: 1;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2px 4px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .magnet:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+            z-index: 100;
+        }
+
+        .magnet.placed {
+            position: absolute;
+            cursor: grab;
+        }
+
+        /* Win Animation */
+        @keyframes openFridge {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .fridge-open {
+            animation: openFridge 0.5s ease;
+            background: #fff9c4 !important;
+        }
+
+        /* Modal */
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn {
+            background: #00bcd4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Soft Launch & Chill.m4a" type="audio/mp3">
+    </audio>
+
+    <header>
+        <h1>La Nevera Musical</h1>
+        <div class="header-controls">
+            <div id="volume-control">
+                <span>🔊</span>
+                <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+            </div>
+            <div class="era-selector" id="current-era">Carregant...</div>
+        </div>
+    </header>
+
+    <div id="kitchen">
+        <div id="fridge">
+            <div id="fridge-handle"></div>
+            <div class="fridge-label" id="fridge-title">BARROC</div>
+            <!-- Magnets placed here -->
+        </div>
+    </div>
+
+    <div id="table">
+        <!-- Magnets spawn here -->
+    </div>
+
+    <!-- START MODAL -->
+    <div id="modal">
+        <div class="modal-box">
+            <h2>Decora la Nevera! ❄️</h2>
+            <p>Arrossega els imants que pertanyen a l'època mostrada a la nevera.</p>
+            <p>Si t'equivoques, l'imant caurà!</p>
+            <p><strong>Objectiu:</strong> Enganxa els 5 imants correctes de cada època.</p>
+            <button class="btn" onclick="startGame()">▶ COMENÇAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Images are in ./img/ (relative to this file)
+        const MAGNETS_DB = [
+            // 1. Edat Mitjana
+            { name: "El Castell", era: "Edat Mitjana", img: "img/castell.png" },
+            { name: "Partitura Neumes", era: "Edat Mitjana", img: "img/neumes.png" },
+            { name: "El Monestir", era: "Edat Mitjana", img: "img/monestir.png" },
+            { name: "Monjo / Guido", era: "Edat Mitjana", img: "img/guido.png" },
+            { name: "Viola de Roda", era: "Edat Mitjana", img: "img/violaderoda.png" },
+            // 2. Renaixement
+            { name: "La Impremta", era: "Renaixement", img: "img/imprenta.png" },
+            { name: "Home de Vitruvi", era: "Renaixement", img: "img/vitrubi.png" },
+            { name: "Partitura Polifonia", era: "Renaixement", img: "img/polifonia.png" },
+            { name: "La Corona", era: "Renaixement", img: "img/corona.png" },
+            { name: "Cúpula", era: "Renaixement", img: "img/cupula.png" },
+            // 3. Barroc
+            { name: "Violí", era: "Barroc", img: "img/violi.png" },
+            { name: "Perruca Blanca", era: "Barroc", img: "img/perrucablanca.png" },
+            { name: "Orgue de Tubs", era: "Barroc", img: "img/orgue.png" },
+            { name: "Màscara Teatre", era: "Barroc", img: "img/mascarateatre.png" },
+            { name: "Ornament Daurat", era: "Barroc", img: "img/ornamentdaurat.png" },
+            // 4. Classicisme
+            { name: "Temple Grec", era: "Classicisme", img: "img/templegrec.png" },
+            { name: "Piano", era: "Classicisme", img: "img/piano.png" },
+            { name: "Partitura Sonata", era: "Classicisme", img: "img/sonata.png" },
+            { name: "Quartet de Corda", era: "Classicisme", img: "img/quartetcorda.png" },
+            { name: "Mozart", era: "Classicisme", img: "img/mozart.png" },
+            // 5. Romanticisme
+            { name: "Gran Piano", era: "Romanticisme", img: "img/granpiano.png" },
+            { name: "Beethoven", era: "Romanticisme", img: "img/beethoven.png" },
+            { name: "Tempesta", era: "Romanticisme", img: "img/tempesta.png" },
+            { name: "Sabatilla Ballet", era: "Romanticisme", img: "img/ballet.png" },
+            { name: "Cor Trencat", era: "Romanticisme", img: "img/cortrencat.png" },
+            // 6. Segle XX
+            { name: "Ràdio Antiga", era: "Segle XX", img: "img/radio.png" },
+            { name: "Saxòfon", era: "Segle XX", img: "img/saxofon.png" },
+            { name: "Guitarra Elèctrica", era: "Segle XX", img: "img/guitarraelectrica.png" },
+            { name: "Art Abstracte", era: "Segle XX", img: "img/artabstracte.png" },
+            { name: "Claqueta Cinema", era: "Segle XX", img: "img/claquetacinema.png" }
+        ];
+
+        const ERAS = [
+            "Edat Mitjana",
+            "Renaixement",
+            "Barroc",
+            "Classicisme",
+            "Romanticisme",
+            "Segle XX"
+        ];
+
+        // --- STATE ---
+        let currentEraIndex = 0;
+        let placedInEra = 0;
+        const TOTAL_PER_ERA = 5;
+        let gameActive = true;
+
+        const bgMusic = document.getElementById('bg-music');
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'stick') {
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'drop') {
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        // --- LOGIC ---
+        function init() {
+            // Wait for user to click Start
+            loadLevel(currentEraIndex);
+        }
+
+        function startGame() {
+            document.getElementById('modal').style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(console.error);
+        }
+
+        function loadLevel(eraIndex) {
+            const tray = document.getElementById('table');
+            tray.innerHTML = ''; // Clear tray
+
+            const fridge = document.getElementById('fridge');
+            // Remove existing magnets (keep handle and label)
+            Array.from(fridge.children).forEach(c => {
+                if (c.classList.contains('magnet')) c.remove();
+            });
+
+            // Reset counters
+            placedInEra = 0;
+
+            // Update Title or Era Display
+            const eraName = ERAS[eraIndex];
+            document.getElementById('current-era').innerText = eraName;
+            document.getElementById('fridge-title').innerText = eraName.toUpperCase();
+
+            // 1. Get 5 Correct Magnets
+            const correctMagnets = MAGNETS_DB.filter(m => m.era === eraName).map(m => ({ ...m, correct: true }));
+
+            // 2. Get 5 Incorrect Magnets (Random from other eras)
+            const otherMagnets = MAGNETS_DB.filter(m => m.era !== eraName);
+            const incorrectMagnets = [];
+
+            // Shuffle otherMagnets to get random ones
+            const shuffledOthers = otherMagnets.sort(() => 0.5 - Math.random());
+
+            // Take first 5
+            for (let i = 0; i < 5 && i < shuffledOthers.length; i++) {
+                incorrectMagnets.push({ ...shuffledOthers[i], correct: false });
+            }
+
+            // 3. Combine and Shuffle
+            const levelMagnets = [...correctMagnets, ...incorrectMagnets].sort(() => 0.5 - Math.random());
+
+            levelMagnets.forEach((data) => {
+                // Create Magnet
+                const mag = document.createElement('div');
+                mag.className = 'magnet';
+                mag.dataset.era = data.era;
+                mag.dataset.correct = data.correct; // Store correctness
+                mag.innerHTML = `
+                    <img src="${data.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="fallback-icon" style="display:none; font-size:2rem;">🧲</div>
+                    <div class="magnet-name">${data.name}</div>
+                `;
+
+                // Append to tray
+                tray.appendChild(mag);
+
+                // Drag Logic
+                makeDraggable(mag);
+            });
+
+            // Hide Next Level Button if visible
+            const nextBtn = document.getElementById('next-level-btn');
+            if (nextBtn) nextBtn.style.display = 'none';
+        }
+
+        function checkLevelCompletion() {
+            if (placedInEra >= TOTAL_PER_ERA) {
+                playSound('win');
+                showNextLevelButton();
+            }
+        }
+
+        function showNextLevelButton() {
+            let btn = document.getElementById('next-level-btn');
+            if (!btn) {
+                btn = document.createElement('button');
+                btn.id = 'next-level-btn';
+                btn.innerText = "Nivell Següent >>";
+                btn.style.position = 'absolute';
+                btn.style.top = '50%';
+                btn.style.left = '50%';
+                btn.style.transform = 'translate(-50%, -50%)';
+                btn.style.padding = '20px 40px';
+                btn.style.fontSize = '2rem';
+                btn.style.background = '#4CAF50';
+                btn.style.color = 'white';
+                btn.style.border = 'none';
+                btn.style.borderRadius = '10px';
+                btn.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+                btn.style.zIndex = '2000';
+                btn.style.cursor = 'pointer';
+                btn.onclick = nextLevel;
+                document.body.appendChild(btn);
+            }
+            btn.style.display = 'block';
+
+            if (currentEraIndex >= ERAS.length - 1) {
+                btn.innerText = "🎉 JOC COMPLETAT! 🎉";
+                btn.onclick = () => alert("Felicitats! Has completat totes les eres!");
+            } else {
+                btn.innerText = "Nivell Següent >>";
+                btn.style.position = 'absolute'; /* Ensure centered */
+                btn.onclick = nextLevel;
+            }
+        }
+
+        function nextLevel() {
+            currentEraIndex++;
+            if (currentEraIndex < ERAS.length) {
+                loadLevel(currentEraIndex);
+            }
+        }
+
+        function makeDraggable(el) {
+            let isDragging = false;
+            let startX, startY;
+
+            const onDown = (e) => {
+                isDragging = true;
+
+                // If in table, move to body to drag freely
+                if (el.parentElement === document.getElementById('table')) {
+                    const rect = el.getBoundingClientRect();
+                    el.style.position = 'absolute';
+                    el.style.left = rect.left + 'px';
+                    el.style.top = rect.top + 'px';
+                    document.body.appendChild(el);
+                }
+
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+
+                startX = clientX - el.offsetLeft;
+                startY = clientY - el.offsetTop;
+
+                el.style.zIndex = 1000;
+                playSound('drop');
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+
+                el.style.left = (clientX - startX) + 'px';
+                el.style.top = (clientY - startY) + 'px';
+            };
+
+            const onUp = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                el.style.zIndex = '';
+
+                // Check drop
+                const fridge = document.getElementById('fridge');
+                const fridgeRect = fridge.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+
+                // Simple overlap check
+                if (elRect.left < fridgeRect.right && elRect.right > fridgeRect.left &&
+                    elRect.top < fridgeRect.bottom && elRect.bottom > fridgeRect.top) {
+
+                    if (el.dataset.correct === 'true') {
+                        // Stick
+                        playSound('stick');
+                        // Move to fridge container relative
+                        const relLeft = elRect.left - fridgeRect.left;
+                        const relTop = elRect.top - fridgeRect.top;
+                        el.style.left = relLeft + 'px';
+                        el.style.top = relTop + 'px';
+                        fridge.appendChild(el);
+                        el.classList.add('placed');
+
+                        const count = fridge.querySelectorAll('.magnet.placed').length; // Count only placed magnets
+                        placedInEra = count;
+                        checkLevelCompletion();
+
+                    } else {
+                        // REJECT / FALL
+                        playSound('drop'); // Or a 'wrong' sound
+
+                        // Animate falling down
+                        el.style.transition = 'top 0.5s ease-in, opacity 0.5s';
+                        el.style.top = (window.innerHeight + 200) + 'px'; // Fall off screen
+                        el.style.opacity = '0';
+
+                        // Remove after animation
+                        setTimeout(() => {
+                            el.remove();
+                        }, 500);
+                    }
+
+                } else {
+                    // Return to table
+                    const table = document.getElementById('table');
+                    table.appendChild(el);
+                    el.style.position = 'relative';
+                    el.style.left = 'auto';
+                    el.style.top = 'auto';
+                    playSound('drop');
+                }
+            };
+
+            el.addEventListener('mousedown', onDown);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+
+            el.addEventListener('touchstart', onDown);
+            window.addEventListener('touchmove', onMove, { passive: false });
+            window.addEventListener('touchend', onUp);
+        }
+
+        // Start init
+        window.onload = init;
+
+    </script>
+
+</body>
+
+</html>

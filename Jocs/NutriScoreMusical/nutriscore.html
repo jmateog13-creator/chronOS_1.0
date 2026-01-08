@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScore Musical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0fdf4;
+            /* Light green background like Yuka */
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --nutrient-high-color: #ef4444;
+            --nutrient-med-color: #f59e0b;
+            --nutrient-low-color: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        header {
+            background: var(--accent-green);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        #diet-target {
+            background: #065f46;
+            color: #d1fae5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Product Card Area */
+        .product-area {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .product-image-container {
+            width: 120px;
+            height: 120px;
+            background: #e5e7eb;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .product-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+
+        .product-author {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        /* Nutrition Label */
+        .nutrition-label {
+            width: 100%;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .nutrient-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .nutrient-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .nutrient-icon {
+            font-size: 1.2rem;
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .nutrient-info {
+            flex-grow: 1;
+        }
+
+        .nutrient-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nutrient-bar-bg {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .nutrient-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .bar-red {
+            background-color: #ef4444;
+        }
+
+        .bar-orange {
+            background-color: #f97316;
+        }
+
+        .bar-yellow {
+            background-color: #eab308;
+        }
+
+        .bar-green {
+            background-color: #22c55e;
+        }
+
+        .bar-darkgreen {
+            background-color: #15803d;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            padding: 20px;
+            gap: 15px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-reject {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .btn-accept {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .btn-icon-large {
+            font-size: 1.5rem;
+        }
+
+        /* Modal / Feedback */
+        #feedback-modal,
+        #start-modal,
+        #win-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        #feedback-modal,
+        #win-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        #feedback-modal.active,
+        #win-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #win-modal {
+            z-index: 30;
+            /* Higher than feedback */
+            background: rgba(255, 255, 255, 0.98);
+        }
+
+        #start-modal {
+            background: white;
+            z-index: 20;
+        }
+
+        .feedback-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .feedback-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .feedback-desc {
+            margin-bottom: 20px;
+            color: #4b5563;
+        }
+
+        .correct-text {
+            color: var(--accent-green);
+        }
+
+        .incorrect-text {
+            color: var(--accent-red);
+        }
+
+        #score-display {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Soft Launch Glow.m4a" type="audio/mp3">
+    </audio>
+
+    <div id="game-container">
+        <header>
+            <div>DIETA OBJECTIU</div>
+            <div id="diet-target">CARREGANT...</div>
+            <div id="volume-control">
+                <span>🔊</span>
+                <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+            </div>
+            <div id="score-display">Punts: 0</div>
+        </header>
+
+        <div class="product-area">
+            <div class="product-image-container">
+                <img id="product-img" src="" alt="Food Item">
+            </div>
+            <div class="product-title" id="product-title">Títol Obra</div>
+            <div class="product-author" id="product-author">Compositor</div>
+
+            <div class="nutrition-label">
+                <!-- Melodia -->
+                <div class="nutrient-row">
+                    <div class="nutrient-icon">🍭</div>
+                    <div class="nutrient-info">
+                        <div class="nutrient-name">
+                            Melodia (Sucre)
+                            <span id="label-melody">Alta</span>
+                        </div>
+                        <div class="nutrient-bar-bg">
+                            <div id="bar-melody" class="nutrient-bar-fill bar-red"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Dissonància -->
+                <div class="nutrient-row">
+                    <div class="nutrient-icon">🥓</div>
+                    <div class="nutrient-info">
+                        <div class="nutrient-name">
+                            Dissonància (Greixos)
+                            <span id="label-dissonance">Baixa</span>
+                        </div>
+                        <div class="nutrient-bar-bg">
+                            <div id="bar-dissonance" class="nutrient-bar-fill bar-green"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Textura -->
+                <div class="nutrient-row">
+                    <div class="nutrient-icon">🍞</div>
+                    <div class="nutrient-info">
+                        <div class="nutrient-name">
+                            Textura (Fibra)
+                            <span id="label-texture">Espessa</span>
+                        </div>
+                        <div class="nutrient-bar-bg">
+                            <div id="bar-texture" class="nutrient-bar-fill bar-orange"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Instrumentació -->
+                <div class="nutrient-row">
+                    <div class="nutrient-icon">🧪</div>
+                    <div class="nutrient-info">
+                        <div class="nutrient-name">
+                            Instr. (Additius)
+                            <span id="label-instrument">Natural</span>
+                        </div>
+                        <div class="nutrient-bar-bg">
+                            <div id="bar-instrument" class="nutrient-bar-fill bar-darkgreen"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-reject" onclick="handleDecision(false)">
+                <span class="btn-icon-large">❌</span>
+                REBUTJAR
+            </button>
+            <button class="btn btn-accept" onclick="handleDecision(true)">
+                <span class="btn-icon-large">✅</span>
+                ACCEPTAR
+            </button>
+        </div>
+
+        <!-- Start Modal -->
+        <div id="start-modal">
+            <div class="feedback-icon">🥗</div>
+            <div class="feedback-title">NutriScore Musical</div>
+            <div class="feedback-desc">
+                <p>Vigila la teva dieta musical!</p>
+                <p>Accepta l'obra si encaixa amb la <strong>ÈPOCA (Dieta)</strong> demanada.</p>
+                <p><strong>Objectiu:</strong> Arriba als 100 punts per guanyar!</p>
+            </div>
+            <button class="btn btn-accept" style="flex: 0; min-width: 200px;" onclick="startGame()">COMENÇAR</button>
+        </div>
+
+        <!-- Feedback Modal -->
+        <div id="feedback-modal">
+            <div class="feedback-icon" id="fb-icon">🎉</div>
+            <div class="feedback-title" id="fb-title">Correcte!</div>
+            <div class="feedback-desc" id="fb-desc">Aquesta obra pertany a l'època.</div>
+            <button class="btn btn-accept" style="flex: 0; min-width: 150px;" onclick="nextRound()">SEGÜENT</button>
+        </div>
+
+        <!-- Win Modal -->
+        <div id="win-modal">
+            <div class="feedback-icon">🏆</div>
+            <div class="feedback-title" style="color: #f59e0b;">Enhorabona!</div>
+            <div class="feedback-desc">Has assolit una dieta musical perfecta de 100 punts!</div>
+            <button class="btn btn-accept" style="background-color: #f59e0b; color: white; flex: 0; min-width: 200px;"
+                onclick="location.reload()">JUGAR DE NOU</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DADES DEL JOC & CONFIGURACIÓ ---
+
+        const ERAS = ["EDAT MITJANA", "RENAIXEMENT", "BARROC", "CLASSICISME", "ROMANTICISME", "SEGLE XX"];
+
+        // Images mapped to filenames
+        const PRODUCTS_DB = [
+            // EDAT MITJANA
+            {
+                era: "EDAT MITJANA",
+                title: "Cant Gregorià (Puer Natus Est)",
+                author: "Anònim",
+                img: "img/gregoria.jpg",
+                nutrients: {
+                    melody: { val: 20, label: "Simple (Baix)", color: "bar-green" },
+                    dissonance: { val: 0, label: "0% (Nul·la)", color: "bar-darkgreen" },
+                    texture: { val: 10, label: "Monòdica (Lleugera)", color: "bar-green" },
+                    instr: { val: 0, label: "Veu (Natural)", color: "bar-darkgreen" }
+                }
+            },
+            {
+                era: "EDAT MITJANA",
+                title: "Organum",
+                author: "Leonin",
+                img: "img/organum,.jpg",
+                nutrients: {
+                    melody: { val: 30, label: "Ondulant", color: "bar-green" },
+                    dissonance: { val: 15, label: "Baixa", color: "bar-green" },
+                    texture: { val: 40, label: "Polifonia Prim.", color: "bar-yellow" },
+                    instr: { val: 0, label: "Veu (Natural)", color: "bar-darkgreen" }
+                }
+            },
+            {
+                era: "EDAT MITJANA",
+                title: "Cantigas de Santa Maria",
+                author: "Alfons X",
+                img: "img/cantiguas.jpg",
+                nutrients: {
+                    melody: { val: 50, label: "Enganxosa", color: "bar-yellow" },
+                    dissonance: { val: 10, label: "Mínima", color: "bar-green" },
+                    texture: { val: 30, label: "Monòdica + Acomp.", color: "bar-green" },
+                    instr: { val: 30, label: "Instruments Antics", color: "bar-yellow" }
+                }
+            },
+
+            // RENAIXEMENT
+            {
+                era: "RENAIXEMENT",
+                title: "Missa Papae Marcelli",
+                author: "Palestrina",
+                img: "img/missapapamarcelli.jpg",
+                nutrients: {
+                    melody: { val: 60, label: "Equilibrada", color: "bar-green" },
+                    dissonance: { val: 5, label: "Molt Baixa", color: "bar-darkgreen" },
+                    texture: { val: 80, label: "Polifonia Perfecta", color: "bar-orange" },
+                    instr: { val: 0, label: "Veu (A Capella)", color: "bar-darkgreen" }
+                }
+            },
+            {
+                era: "RENAIXEMENT",
+                title: "Madrigal (Il Bianco e Dolce Cigno)",
+                author: "Arcadelt",
+                img: "img/madrigal.jpg",
+                nutrients: {
+                    melody: { val: 70, label: "Expressiva", color: "bar-yellow" },
+                    dissonance: { val: 20, label: "Moderada", color: "bar-green" },
+                    texture: { val: 60, label: "Rica", color: "bar-yellow" },
+                    instr: { val: 0, label: "Veu", color: "bar-darkgreen" }
+                }
+            },
+            {
+                era: "RENAIXEMENT",
+                title: "Dansa Pavana",
+                author: "Anònim",
+                img: "img/dansapavana.jpg",
+                nutrients: {
+                    melody: { val: 50, label: "Quadriculada", color: "bar-green" },
+                    dissonance: { val: 5, label: "Baixa", color: "bar-green" },
+                    texture: { val: 40, label: "Homofònica", color: "bar-green" },
+                    instr: { val: 40, label: "Consort", color: "bar-yellow" }
+                }
+            },
+
+            // BARROC
+            {
+                era: "BARROC",
+                title: "La Primavera",
+                author: "Vivaldi",
+                img: "img/primavera.jpg",
+                nutrients: {
+                    melody: { val: 90, label: "Ornamentada (Alta)", color: "bar-red" },
+                    dissonance: { val: 30, label: "Baixa/Mitja", color: "bar-green" },
+                    texture: { val: 60, label: "Melodia Acomp.", color: "bar-yellow" },
+                    instr: { val: 60, label: "Corda + Clavecí", color: "bar-orange" }
+                }
+            },
+            {
+                era: "BARROC",
+                title: "Tocata i Fuga",
+                author: "J.S. Bach",
+                img: "img/tocataiuga.jpg",
+                nutrients: {
+                    melody: { val: 60, label: "Complexa", color: "bar-yellow" },
+                    dissonance: { val: 50, label: "Tensió Passatgera", color: "bar-yellow" },
+                    texture: { val: 100, label: "Contrapunt Dens", color: "bar-red" },
+                    instr: { val: 50, label: "Orgue (Mecànic)", color: "bar-orange" }
+                }
+            },
+            {
+                era: "BARROC",
+                title: "Al·leluia (El Messies)",
+                author: "Händel",
+                img: "img/laleluia.jpg",
+                nutrients: {
+                    melody: { val: 80, label: "Triomfal (Alta)", color: "bar-orange" },
+                    dissonance: { val: 10, label: "Baixa", color: "bar-green" },
+                    texture: { val: 70, label: "Coral Massiva", color: "bar-orange" },
+                    instr: { val: 70, label: "Orquestra + Cor", color: "bar-orange" }
+                }
+            },
+
+            // CLASSICISME
+            {
+                era: "CLASSICISME",
+                title: "Petita Serenata Nocturna",
+                author: "Mozart",
+                img: "img/petitaserenatanocturna.jpg",
+                nutrients: {
+                    melody: { val: 95, label: "Molt Clara", color: "bar-red" },
+                    dissonance: { val: 5, label: "Nul·la", color: "bar-darkgreen" },
+                    texture: { val: 40, label: "Melodia + Acomp.", color: "bar-green" },
+                    instr: { val: 50, label: "Corda (Equilibrada)", color: "bar-green" }
+                }
+            },
+            {
+                era: "CLASSICISME",
+                title: "Simfonia de la Sorpresa",
+                author: "Haydn",
+                img: "img/simofniasorpresa.jpg",
+                nutrients: {
+                    melody: { val: 80, label: "Simple i Juganera", color: "bar-orange" },
+                    dissonance: { val: 10, label: "Molt Baixa", color: "bar-green" },
+                    texture: { val: 40, label: "Neta", color: "bar-green" },
+                    instr: { val: 60, label: "Orquestra Clàssica", color: "bar-green" }
+                }
+            },
+            {
+                era: "CLASSICISME",
+                title: "Sonata Facile",
+                author: "Mozart",
+                img: "img/sonatafacile.jpg",
+                nutrients: {
+                    melody: { val: 90, label: "Ingènua", color: "bar-red" },
+                    dissonance: { val: 0, label: "0%", color: "bar-darkgreen" },
+                    texture: { val: 20, label: "Baix Alberti", color: "bar-green" },
+                    instr: { val: 30, label: "Piano", color: "bar-green" }
+                }
+            },
+
+            // ROMANTICISME
+            {
+                era: "ROMANTICISME",
+                title: "Cavalcada de les Valquíries",
+                author: "Wagner",
+                img: "img/valquirias.jpg",
+                nutrients: {
+                    melody: { val: 70, label: "Èpica", color: "bar-yellow" },
+                    dissonance: { val: 60, label: "Tensió Dramàtica", color: "bar-orange" },
+                    texture: { val: 90, label: "Densitat Màxima", color: "bar-red" },
+                    instr: { val: 100, label: "Orquestra Gegant", color: "bar-red" }
+                }
+            },
+            {
+                era: "ROMANTICISME",
+                title: "Nocturn Op.9 No.2",
+                author: "Chopin",
+                img: "img/nocturno.jpg",
+                nutrients: {
+                    melody: { val: 100, label: "Emotiva (Sucre Alt)", color: "bar-red" },
+                    dissonance: { val: 40, label: "Expressiva", color: "bar-yellow" },
+                    texture: { val: 50, label: "Rubato", color: "bar-yellow" },
+                    instr: { val: 30, label: "Piano Sol", color: "bar-green" }
+                }
+            },
+            {
+                era: "ROMANTICISME",
+                title: "Simfonia Fantàstica",
+                author: "Berlioz",
+                img: "img/simfoniafantastica.jpg",
+                nutrients: {
+                    melody: { val: 60, label: "Narrativa", color: "bar-yellow" },
+                    dissonance: { val: 50, label: "Mitjana", color: "bar-orange" },
+                    texture: { val: 70, label: "Complexa", color: "bar-orange" },
+                    instr: { val: 90, label: "Gran Orquestra", color: "bar-red" }
+                }
+            },
+
+            // SEGLE XX
+            {
+                era: "SEGLE XX",
+                title: "La Consagració de la Primavera",
+                author: "Stravinsky",
+                img: "img/consagracioprimavera.jpg",
+                nutrients: {
+                    melody: { val: 10, label: "Fragmentada", color: "bar-green" },
+                    dissonance: { val: 100, label: "EXTREMA", color: "bar-red" },
+                    texture: { val: 90, label: "Poliritmia Caòtica", color: "bar-red" },
+                    instr: { val: 95, label: "Violència Orquestral", color: "bar-red" }
+                }
+            },
+            {
+                era: "SEGLE XX",
+                title: "Pierrot Lunaire",
+                author: "Schönberg",
+                img: "img/pierrotlunaire.jpg",
+                nutrients: {
+                    melody: { val: 0, label: "Atonal (Sense Sucre)", color: "bar-darkgreen" },
+                    dissonance: { val: 90, label: "Alta", color: "bar-red" },
+                    texture: { val: 40, label: "Puntillista", color: "bar-yellow" },
+                    instr: { val: 40, label: "Sprechstimme", color: "bar-orange" }
+                }
+            },
+            {
+                era: "SEGLE XX",
+                title: "Take Five (Jazz)",
+                author: "Dave Brubeck",
+                img: "img/takefive.jpg",
+                nutrients: {
+                    melody: { val: 70, label: "Improvisada", color: "bar-yellow" },
+                    dissonance: { val: 40, label: "Notes Blaves", color: "bar-yellow" },
+                    texture: { val: 50, label: "Swing/Síncope", color: "bar-orange" },
+                    instr: { val: 50, label: "Quartet Jazz", color: "bar-yellow" }
+                }
+            }
+        ];
+
+        // --- ESTAT DEL JOC ---
+        let currentDiet = ""; // Era objectiu
+        let currentProduct = null;
+        let score = 0;
+        let deck = [];
+        const bgMusic = document.getElementById('bg-music');
+
+        // --- ELEMENTS DEL DOM ---
+        const domDietTarget = document.getElementById('diet-target');
+        const domScore = document.getElementById('score-display');
+        const domImg = document.getElementById('product-img');
+        const domTitle = document.getElementById('product-title');
+        const domAuthor = document.getElementById('product-author');
+
+        const domMelodyLabel = document.getElementById('label-melody');
+        const domMelodyBar = document.getElementById('bar-melody');
+        const domDissonanceLabel = document.getElementById('label-dissonance');
+        const domDissonanceBar = document.getElementById('bar-dissonance');
+        const domTextureLabel = document.getElementById('label-texture');
+        const domTextureBar = document.getElementById('bar-texture');
+        const domInstrumentLabel = document.getElementById('label-instrument');
+        const domInstrumentBar = document.getElementById('bar-instrument');
+
+        const domModal = document.getElementById('feedback-modal');
+        const domStartModal = document.getElementById('start-modal');
+        const domWinModal = document.getElementById('win-modal');
+
+        const domFbIcon = document.getElementById('fb-icon');
+        const domFbTitle = document.getElementById('fb-title');
+        const domFbDesc = document.getElementById('fb-desc');
+
+        // --- FUNCIONS --
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            domStartModal.style.display = 'none';
+            initGame();
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(console.error);
+        }
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        function initGame() {
+            score = 0;
+            updateScore();
+            nextRound();
+        }
+
+        function pickRandomDiet() {
+            const randomIndex = Math.floor(Math.random() * ERAS.length);
+            return ERAS[randomIndex];
+        }
+
+        function updateScore() {
+            domScore.textContent = `Punts: ${score}`;
+        }
+
+        function nextRound() {
+            if (score >= 100) {
+                domWinModal.classList.add('active');
+                return;
+            }
+
+            // Reset Modal
+            domModal.classList.remove('active');
+
+            // 1. Set Diet Goal
+            currentDiet = pickRandomDiet();
+            domDietTarget.textContent = currentDiet;
+
+            // 2. Pick Product
+            if (deck.length === 0) {
+                deck = shuffle([...PRODUCTS_DB]);
+            }
+            currentProduct = deck.pop();
+
+            // 3. Render Product
+            renderProduct(currentProduct);
+        }
+
+        function renderProduct(prod) {
+            domTitle.textContent = prod.title;
+            domAuthor.textContent = prod.author;
+            domImg.src = prod.img;
+            // Basic fallback
+            domImg.onerror = function () {
+                this.src = 'https://ui-avatars.com/api/?name=Music&background=random&length=1&font-size=0.5';
+            };
+
+            // Bars
+            setBar(domMelodyBar, domMelodyLabel, prod.nutrients.melody);
+            setBar(domDissonanceBar, domDissonanceLabel, prod.nutrients.dissonance);
+            setBar(domTextureBar, domTextureLabel, prod.nutrients.texture);
+            setBar(domInstrumentBar, domInstrumentLabel, prod.nutrients.instr);
+        }
+
+        function setBar(barElem, labelElem, nutrientData) {
+            // Reset classes
+            barElem.className = 'nutrient-bar-fill';
+
+            // Set width and color class
+            setTimeout(() => {
+                barElem.style.width = `${nutrientData.val}%`;
+                barElem.classList.add(nutrientData.color);
+            }, 50);
+
+            labelElem.textContent = nutrientData.label;
+        }
+
+        function handleDecision(accepted) {
+            const isMatch = (currentProduct.era === currentDiet);
+            let correct = false;
+
+            if (accepted && isMatch) {
+                correct = true; // Accepted a matching era -> Good
+            } else if (!accepted && !isMatch) {
+                correct = true; // Rejected a non-matching era -> Good
+            } else {
+                correct = false;
+            }
+
+            showFeedback(correct, isMatch);
+        }
+
+        function showFeedback(correct, wasMatch) {
+            if (correct) {
+                score += 10;
+                domFbIcon.textContent = "🎉";
+                domFbTitle.textContent = "Ben fet!";
+                domFbTitle.className = "feedback-title correct-text";
+                domFbDesc.innerHTML = wasMatch
+                    ? `Exacte! <b>${currentProduct.title}</b> és del <b>${currentProduct.era}</b>, per tant encaixa amb la dieta.`
+                    : `Ben vist! <b>${currentProduct.title}</b> és del <b>${currentProduct.era}</b>, no del ${currentDiet}.`;
+            } else {
+                domFbIcon.textContent = "🫠";
+                domFbTitle.textContent = "Error...";
+                domFbTitle.className = "feedback-title incorrect-text";
+                domFbDesc.innerHTML = wasMatch
+                    ? `Vaja... Hauries d'haver acceptat. <b>${currentProduct.title}</b> ÉS del ${currentDiet}.`
+                    : `Incorrecte. No hauries d'haver acceptat. <b>${currentProduct.title}</b> és del <b>${currentProduct.era}</b>.`;
+            }
+            updateScore();
+            domModal.classList.add('active');
+        }
+
+    </script>
+</body>
+
+</html>

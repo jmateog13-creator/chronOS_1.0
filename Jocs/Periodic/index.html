@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Cronista Musical: Edició Especial</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap');
+
+        :root {
+            --paper-bg: #f4e4bc;
+            --ink-color: #2c2c2c;
+            --highlight: #b22222;
+            --success: #2e8b57;
+            --chronos-gold: #ffd700;
+            --font-head: 'Playfair Display', serif;
+            --font-body: 'Merriweather', serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            background-image: radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%);
+            font-family: var(--font-body);
+            color: var(--ink-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- MAIN CONTAINER --- */
+        #game-container {
+            width: 98%;
+            height: 98%;
+            background: var(--paper-bg);
+            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border: 8px double var(--ink-color);
+            border-radius: 4px;
+        }
+
+        header {
+            border-bottom: 4px solid var(--ink-color);
+            padding: 10px 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--ink-color);
+        }
+
+        h1 {
+            font-family: var(--font-head);
+            font-size: 3rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            border-top: 2px solid var(--ink-color);
+            padding: 10px 0;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            flex: 1;
+            display: none;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 50px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .instructions {
+            max-width: 600px;
+            background: #fff;
+            padding: 40px;
+            border: 4px double var(--ink-color);
+            box-shadow: 20px 20px 0 var(--ink-color);
+            margin-bottom: 30px;
+        }
+
+        .instructions h2 {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            margin-top: 0;
+        }
+
+        .instructions ul {
+            text-align: left;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        /* --- NEWSROOM (MENU) --- */
+        #newsroom-screen {
+            align-items: center;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .eras-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 10px;
+        }
+
+        .era-card {
+            background: #fff;
+            border: 2px solid var(--ink-color);
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            box-shadow: 8px 8px 0px var(--ink-color);
+        }
+
+        .era-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--highlight);
+            background: #fdfdfd;
+        }
+
+        .era-card.completed {
+            background: #e8f5e9;
+            border-color: var(--success);
+            box-shadow: 8px 8px 0px var(--success);
+        }
+
+        .era-card.completed h2 {
+            color: var(--success);
+        }
+
+        .era-card h2 {
+            font-family: var(--font-head);
+            margin: 0 0 15px 0;
+            font-size: 2rem;
+            color: var(--ink-color);
+        }
+
+        .era-progress {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        /* --- EDITOR (GAMEPLAY) --- */
+        #editor-screen {
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .layout-zone {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: #fff;
+            border: 1px solid var(--ink-color);
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+        }
+
+        .layout-zone::before {
+            content: 'LAYOUT #72-C';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.7rem;
+            opacity: 0.3;
+            font-family: monospace;
+        }
+
+        .drop-zone {
+            border: 2px dashed #999;
+            background: #fafafa;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 15px;
+            transition: all 0.2s;
+        }
+
+        .drop-zone#zone-headline {
+            min-height: 100px;
+            border-width: 3px;
+        }
+
+        .drop-zone#zone-sub {
+            min-height: 70px;
+            font-style: italic;
+        }
+
+        .drop-zone.drag-over {
+            background: #eee;
+            border-color: var(--highlight);
+            transform: scale(1.01);
+        }
+
+        /* Removed duplicate .drop-zone::after */
+
+        /* --- TELETYPE (SOURCE) --- */
+        .teletype-zone {
+            height: 200px;
+            background: #2c2c2c;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            border-top: 6px solid var(--ink-color);
+            box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.5);
+            align-items: center;
+        }
+
+        .fragment {
+            background: #fff;
+            padding: 20px;
+            border: 2px solid var(--ink-color);
+            cursor: grab;
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            font-size: 1.1rem;
+            line-height: 1.4;
+            min-width: 250px;
+            max-width: 300px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .fragment:hover {
+            transform: translateY(-5px);
+            background: #f0f0f0;
+        }
+
+        .fragment.dragging {
+            opacity: 0.5;
+        }
+
+        /* --- STYLING INSIDE ZONES --- */
+        .drop-zone .fragment {
+            width: 100%;
+            height: 100%;
+            box-shadow: none;
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        #zone-headline .fragment {
+            font-family: var(--font-head);
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        #zone-sub .fragment {
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+
+        #zone-body1 .fragment,
+        #zone-body2 .fragment {
+            font-size: 1rem;
+            text-align: justify;
+        }
+
+        /* --- CONTROLS --- */
+        .btn {
+            background: var(--ink-color);
+            color: #fff;
+            border: 2px solid var(--ink-color);
+            padding: 12px 24px;
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: transparent;
+            color: var(--ink-color);
+        }
+
+        .btn-print {
+            background: var(--highlight);
+            border-color: var(--highlight);
+            font-size: 1.3rem;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-print:hover {
+            background: #8b0000;
+            color: #fff;
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        #stamp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg) scale(3);
+            border: 10px solid var(--success);
+            color: var(--success);
+            font-size: 6rem;
+            font-weight: 900;
+            padding: 40px;
+            text-transform: uppercase;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+        }
+
+        #stamp.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(-20deg) scale(1);
+        }
+
+        .tts-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.3;
+        }
+
+        .tts-btn:hover {
+            opacity: 1;
+        }
+
+        /* --- NPC REACTIONS --- */
+        #npc-container {
+            width: 120px;
+            margin-left: 10px;
+            margin-bottom: 10px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom center;
+            z-index: 2000;
+        }
+
+        #npc-container.win {
+            transform: scale(3) translateY(-20px) translateX(-50px);
+        }
+
+        #npc-container.lose {
+            transform: scale(2.5) translateY(-20px);
+        }
+
+        #npc-container.win,
+        #npc-container.lose {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(4);
+            margin: 0;
+        }
+
+        #npc-img {
+            width: 100%;
+            border: 4px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            background: var(--paper-bg);
+        }
+
+        /* --- AUDIO CONTROLS --- */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--ink-color);
+        }
+
+        .audio-controls label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #vol-slider {
+            cursor: pointer;
+            accent-color: var(--ink-color);
+        }
+
+        #feedback-msg {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--ink-color);
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 5px;
+            display: none;
+            z-index: 200;
+        }
+
+        /* --- LEVEL SELECTOR --- */
+        #level-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .level-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .level-dot.active {
+            background: var(--ink-color);
+            color: #fff;
+            transform: scale(1.2);
+        }
+
+        .level-dot.completed {
+            background: var(--success);
+            color: #fff;
+        }
+
+        /* --- DROP ZONE LABELS & FEEDBACK --- */
+        .drop-zone::before {
+            content: attr(data-label);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            z-index: 0;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .drop-zone.correct {
+            border: 3px solid var(--success);
+            background: rgba(46, 139, 87, 0.1);
+        }
+
+        .drop-zone.incorrect {
+            border: 3px solid var(--highlight);
+            background: rgba(139, 0, 0, 0.1);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <header>
+            <h1>El Cronista Musical</h1>
+            <div class="sub-header">
+                <span>Edició Especial: Història de la Música</span>
+                <span id="date-display">30 de Novembre, 2025</span>
+                <span>Preu: 10 Muses</span>
+            </div>
+        </header>
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <div class="instructions">
+                <h2>Benvingut, Editor!</h2>
+                <p>La història de la música està en perill i només tu pots posar ordre al diari més prestigiós del
+                    temps.</p>
+                <ul>
+                    <li>Escull una <b>època musical</b> al menú.</li>
+                    <li>Arrossega els fragments per reconstruir la notícia.</li>
+                    <li>Compte! Les frases del <b>cos</b> estan dividides; hauràs de fer que bordin perfectament.</li>
+                    <li>Clica <b>IMPRIMIR</b> per validar la teva feina.</li>
+                </ul>
+                <button class="btn btn-print" onclick="startGame()">COMENÇAR L'EDICIÓ</button>
+            </div>
+        </div>
+
+        <!-- NEWSROOM (MENU) -->
+        <div id="newsroom-screen" class="screen">
+            <div class="eras-grid" id="eras-grid">
+                <!-- Eras generated by JS -->
+            </div>
+        </div>
+
+        <!-- EDITOR (GAME) -->
+        <div id="editor-screen" class="screen">
+            <!-- Top Controls -->
+            <div
+                style="width:100%; display:flex; justify-content:space-between; align-items:center; padding: 10px; background: rgba(255,255,255,0.8);">
+                <button class="btn" onclick="showNewsroom()">← Tornar</button>
+                <div id="level-selector"></div>
+                <div class="audio-controls">
+                    <label>Music 📻</label>
+                    <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"
+                        oninput="updateVolume(this.value)">
+                </div>
+                <button class="btn btn-print" onclick="validateOrder()">🖨️ IMPRIMIR</button>
+            </div>
+
+            <!-- Center: Layout Zone (Target) -->
+            <div class="layout-zone">
+                <div class="drop-zone" id="zone-headline" data-label="TITULAR" ondrop="drop(event)"
+                    ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" id="zone-sub" data-label="SUBTÍTOL" ondrop="drop(event)"
+                    ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" id="zone-body1" data-label="COS DE LA NOTÍCIA 1" ondrop="drop(event)"
+                    ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" id="zone-body2" data-label="COS DE LA NOTÍCIA 2" ondrop="drop(event)"
+                    ondragover="allowDrop(event)"></div>
+            </div>
+
+            <!-- Bottom: Source Zone & NPC -->
+            <div style="display: flex; width: 100%; align-items: flex-end;">
+                <div class="teletype-zone" id="source-zone">
+                    <!-- Fragments go here -->
+                </div>
+
+                <!-- NPC Feedback (Fixed bottom right) -->
+                <div id="npc-container">
+                    <img id="npc-img" src="img/npc_editor_happy.png">
+                </div>
+            </div>
+        </div>
+
+        <!-- BACKGROUND MUSIC -->
+        <audio id="bg-music" loop>
+            <source src="audio/Morning Edition Rag.m4a" type="audio/mpeg">
+        </audio>
+
+        <!-- FEEDBACK STAMP -->
+        <div id="stamp">APROVAT</div>
+        <div id="feedback-msg"></div>
+
+    </div>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATABASE (48 LEVELS) ---
+        const DATABASE = {
+            medieval: {
+                name: "Edat Mitjana",
+                bg: "img/bg_mitjana.jpg",
+                levels: [
+                    {
+                        id: "m1",
+                        parts: {
+                            headline: "EL PAPA GREGORI UNIFICA ELS CANTS",
+                            sub: "Neix el Cant Gregorià per posar ordre a la litúrgia.",
+                            body1: "Fins ara, cada regió cantava a la seva manera, creant un autèntic caos...",
+                            body2: "...i per això el Papa ha recopilat les melodies perquè tota la cristiandat canti amb una sola veu."
+                        }
+                    },
+                    {
+                        id: "m2",
+                        parts: {
+                            headline: "UN MONJO INVENTA LES NOTES",
+                            sub: "Guido d'Arezzo crea un sistema revolucionari per llegir música.",
+                            body1: "Els cantants tenien problemes per recordar les melodies de memòria, però Guido...",
+                            body2: "...ha utilitzat l'himne a Sant Joan per anomenar les notes i crear la base del solfeu modern."
+                        }
+                    },
+                    {
+                        id: "m3",
+                        parts: {
+                            headline: "ELS TROBADORS CANTEN A L'AMOR",
+                            sub: "La música surt dels monestirs i arriba als castells medievals.",
+                            body1: "Poetes i músics viatgen de cort en cort cantant en llengua vulgar sobre...",
+                            body2: "...temes prohibits com l'amor cortès i les gestes èpiques dels cavallers."
+                        }
+                    },
+                    {
+                        id: "m4",
+                        parts: {
+                            headline: "HILDEGARD: LA VEU DE DÉU",
+                            sub: "Una abadessa compon melodies que desafien les normes de l'època.",
+                            body1: "Hildegard von Bingen afirma rebre visions divines que transforma en música molt...",
+                            body2: "...més expressiva del que era habitual, convertint-se en una compositora llegendària."
+                        }
+                    }
+                ]
+            },
+            renaixement: {
+                name: "Renaixement",
+                bg: "img/bg_renaixement.jpg",
+                levels: [
+                    {
+                        id: "r1",
+                        parts: {
+                            headline: "LA IMPREMTA ARRIBA A LA MÚSICA",
+                            sub: "Ottaviano Petrucci imprimeix el primer llibre de partitures.",
+                            body1: "Abans tota la música s'havia de copiar a mà amb un cost altíssim, però ara...",
+                            body2: "...la nova tecnologia permetrà que les partitures arribin a les mans de tothom."
+                        }
+                    },
+                    {
+                        id: "r2",
+                        parts: {
+                            headline: "L'HOME ÉS EL CENTRE DE TOT",
+                            sub: "L'Humanisme transforma l'art i el pensament europeu.",
+                            body1: "Ja no tot gira entorn del món diví; l'ésser humà passa a ser qui...",
+                            body2: "...inspira els artistes a buscar la bellesa i la proporció clàssica perduda."
+                        }
+                    },
+                    {
+                        id: "r3",
+                        parts: {
+                            headline: "PALESTRINA SALVA LA POLIFONIA",
+                            sub: "El Concili de Trento volia prohibir la música complexa a l'església.",
+                            body1: "Es deia que no s'entenia la lletra sagrada, però el mestre ha demostrat que...",
+                            body2: "...la complexitat i la claredat poden caminar juntes cap a la perfecció musical."
+                        }
+                    },
+                    {
+                        id: "r4",
+                        parts: {
+                            headline: "EL MADRIGAL: EMOCIÓ PURA",
+                            sub: "Música profana que pinta el significat de les paraules amb sons.",
+                            body1: "Si el text diu 'pujar', la melodia s'enfila cap amunt de tal manera que...",
+                            body2: "...està preparant el terreny per al naixement imminent d'un nou gènere: l'òpera."
+                        }
+                    }
+                ]
+            },
+            barroc: {
+                name: "Barroc",
+                bg: "img/bg_barroc.jpg",
+                levels: [
+                    {
+                        id: "b1",
+                        parts: {
+                            headline: "NAIXEMENT DE L'ÒPERA",
+                            sub: "Monteverdi estrena 'L'Orfeo' i canvia la història per sempre.",
+                            body1: "Intel·lectuals de Florència volen recuperar el teatre grec barrejant música i drama en...",
+                            body2: "...una sola experiència que es convertirà en l'espectacle més luxós d'Europa."
+                        }
+                    },
+                    {
+                        id: "b2",
+                        parts: {
+                            headline: "ELS CASTRATI: ESTRELLES DEL POP",
+                            sub: "Cantants amb veu d'àngel i una capacitat sobrehumana.",
+                            body1: "El públic embogeix amb trinos impossibles i potències vocals tan bèsties que...",
+                            body2: "...estrelles com Farinelli s'han convertit en autèntiques icones de masses mundials."
+                        }
+                    },
+                    {
+                        id: "b3",
+                        parts: {
+                            headline: "BACH: EL MESTRE DE LA FUGA",
+                            sub: "La complexitat matemàtica feta música per la glòria divina.",
+                            body1: "Johann Sebastian Bach és capaç de teixir diverses melodies alhora amb un rigor...",
+                            body2: "...quasi matemàtic que el situa com el cim del contrapunt de tota la història."
+                        }
+                    },
+                    {
+                        id: "b4",
+                        parts: {
+                            headline: "EL SECRET DE STRADIVARIUS",
+                            sub: "Els millors violins del món es fabriquen ara a Cremona.",
+                            body1: "Antonio Stradivari construeix instruments amb un so tan brillant i especial que...",
+                            body2: "...molts pensen que el secret es troba en un vernís màgic o en la fusta escollida."
+                        }
+                    }
+                ]
+            },
+            classicisme: {
+                name: "Classicisme",
+                bg: "img/bg_classicisme.jpg",
+                levels: [
+                    {
+                        id: "c1",
+                        parts: {
+                            headline: "MOZART: EL NEN PRODIGI",
+                            sub: "Viatja per Europa sorprenent reis i emperadors des de petit.",
+                            body1: "Amb només 6 anys toca el piano i el violí amb una destresa que...",
+                            body2: "...deixa bocabadats als emperadors i marca l'inici d'una carrera sense precedents."
+                        }
+                    },
+                    {
+                        id: "c2",
+                        parts: {
+                            headline: "HAYDN I LA SEVA SORPRESA",
+                            sub: "El pare de la simfonia demostra el seu gran sentit de l'humor.",
+                            body1: "Haydn va decidir incloure un fort cop de timbal al mig d'una melodia suau...",
+                            body2: "...per despertar de cop al públic que sovint es quedava adormit durant el Segon Acte."
+                        }
+                    },
+                    {
+                        id: "c3",
+                        parts: {
+                            headline: "ADÉU CLAVICÈMBAL, HOLA PIANO",
+                            sub: "Bartolomeo Cristofori inventa un nou instrument amb martells.",
+                            body1: "El nou 'pianoforte' permet fer matisos de volum i expressivitat, cosa que...",
+                            body2: "...farà que el piano sigui proclamat oficialment com el nou rei del teclat."
+                        }
+                    },
+                    {
+                        id: "c4",
+                        parts: {
+                            headline: "BEETHOVEN ARRIBA A VIENA",
+                            sub: "El jove pianista alemany vol conquerir la capital de la música.",
+                            body1: "Viatja des de Bonn amb la intenció d'estudiar amb Haydn i demostrar que...",
+                            body2: "...el seu caràcter i la seva ràbia musical estan a punt de trencar amb tot l'establert."
+                        }
+                    }
+                ]
+            },
+            romanticisme: {
+                name: "Romanticisme",
+                bg: "img/bg_romanticisme.jpg",
+                levels: [
+                    {
+                        id: "rom1",
+                        parts: {
+                            headline: "BEETHOVEN TREMOLEJA EL MÓN",
+                            sub: "Estrena la 9a Simfonia malgrat estar totalment sord.",
+                            body1: "L'Oda a l'Alegria és un cant a la germanor universal que aconsegueix que...",
+                            body2: "...el públic s'aixequi emocionat davant d'un mestre que ja no pot sentir els aplaudiments."
+                        }
+                    },
+                    {
+                        id: "rom2",
+                        parts: {
+                            headline: "PACTAR AMB EL DIABLE?",
+                            sub: "Paganini toca el violí com ningú humà podria fer-ho.",
+                            body1: "La seva tècnica és tan increïble que han començat a circular rumors obscurs sobre...",
+                            body2: "...un pacte amb forces ocultes per aconseguir una agilitat mai vista en un mortal."
+                        }
+                    },
+                    {
+                        id: "rom3",
+                        parts: {
+                            headline: "EL TEMPLE DE WAGNER",
+                            sub: "Construeix un teatre a Bayreuth només per a les seves pròpies òperes.",
+                            body1: "Wagner creu en l'Obra d'Art Total on música, teatre i arts visuals s'uneixen en...",
+                            body2: "...una experiència èpica que transporta als espectadors directament a les mitologies nòrdiques."
+                        }
+                    },
+                    {
+                        id: "rom4",
+                        parts: {
+                            headline: "MÀGIA AL BALLET RUS",
+                            sub: "Txaikovski posa música als contes de fades més famosos.",
+                            body1: "El Llac dels Cignes i El Trencanous eleven el gènere del ballet gràcies a...",
+                            body2: "...uns melodies carregades de fantasia que han situat a Rússia al centre del món artístic."
+                        }
+                    }
+                ]
+            },
+            segle20: {
+                name: "Segle XX",
+                bg: "img/bg_sxx.jpg",
+                levels: [
+                    {
+                        id: "s1",
+                        parts: {
+                            headline: "ESCÀNDOL I RITME A PARÍS",
+                            sub: "L'estrena de Stravinsky acaba amb una gran baralla al teatre.",
+                            body1: "La seva música salvatge i els ritmes trencats van provocar tal estat de nervis que...",
+                            body2: "...el públic va començar a barallar-se a les butaques durant el naixement de la música moderna."
+                        }
+                    },
+                    {
+                        id: "s2",
+                        parts: {
+                            headline: "PINTAR AMB SONS",
+                            sub: "Debussy i l'Impressionisme musical conquereixen l'atmosfera.",
+                            body1: "Busca capturar la llum i el color utilitzant escales exòtiques i harmonies que...",
+                            body2: "...floten en l'aire com si fossin un quadre de somnis pintat exclusivament amb sons."
+                        }
+                    },
+                    {
+                        id: "s3",
+                        parts: {
+                            headline: "EL JAZZ CONQUEREIX EUROPA",
+                            sub: "Els nous ritmes americans arriben amb força al vell continent.",
+                            body1: "Després de la guerra, el swing i el blues van fascinar tant als compositors que...",
+                            body2: "...instruments com el saxòfon o la bateria van entrar triomfants a les sales de concert tradicionals."
+                        }
+                    },
+                    {
+                        id: "s4",
+                        parts: {
+                            headline: "MÚSICA PER ALS ULLS",
+                            sub: "El setè art necessita grans bandes sonores per emocionar.",
+                            body1: "La música guia les emocions dels espectadors de cinema sense que ells en siguin...",
+                            body2: "...gaire conscients, convertint als autors de cinema en els herois de la música actual."
+                        }
+                    }
+                ]
+            }
+        };
+
+        // --- STATE ---
+        let currentEraId = null;
+        let currentLevelIndex = 0;
+        let progress = JSON.parse(localStorage.getItem('cronista_progress')) || {};
+
+        // --- DOM ELEMENTS ---
+        const newsroomScreen = document.getElementById('newsroom-screen');
+        const editorScreen = document.getElementById('editor-screen');
+        const erasGrid = document.getElementById('eras-grid');
+        const sourceZone = document.getElementById('source-zone');
+        const levelSelector = document.getElementById('level-selector');
+        const stamp = document.getElementById('stamp');
+        const feedbackMsg = document.getElementById('feedback-msg');
+        const bgMusic = document.getElementById('bg-music');
+        const npcContainer = document.getElementById('npc-container');
+        const npcImg = document.getElementById('npc-img');
+
+        // --- INIT ---
+        function init() {
+            renderEras();
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            newsroomScreen.classList.add('active');
+            if (bgMusic.paused) {
+                bgMusic.play();
+                bgMusic.volume = 0.5;
+            }
+        }
+
+        function renderEras() {
+            erasGrid.innerHTML = '';
+            Object.keys(DATABASE).forEach(key => {
+                const era = DATABASE[key];
+                const completedCount = countCompleted(key);
+                const isCompleted = completedCount === era.levels.length;
+
+                const card = document.createElement('div');
+                card.className = `era-card ${isCompleted ? 'completed' : ''}`;
+                card.onclick = () => openEra(key);
+
+                card.innerHTML = `
+                <h2>${era.name}</h2>
+                <div class="era-progress">${completedCount} / ${era.levels.length} Notícies</div>
+                ${isCompleted ? '<div style="margin-top:10px; color:var(--success); font-weight:900;">✅ COMPLETADA</div>' : ''}
+            `;
+                erasGrid.appendChild(card);
+            });
+        }
+
+        function countCompleted(eraId) {
+            if (!progress[eraId]) return 0;
+            return progress[eraId].filter(Boolean).length;
+        }
+
+        function openEra(eraId) {
+            currentEraId = eraId;
+            currentLevelIndex = 0; // Start at first level or find first incomplete? Let's start at 0.
+
+            // Initialize progress array for this era if not exists
+            if (!progress[eraId]) {
+                progress[eraId] = new Array(DATABASE[eraId].levels.length).fill(false);
+            }
+
+            newsroomScreen.classList.remove('active');
+            editorScreen.classList.add('active');
+            loadLevel(currentLevelIndex);
+            renderLevelSelector();
+        }
+
+        function showNewsroom() {
+            editorScreen.classList.remove('active');
+            newsroomScreen.classList.add('active');
+            renderEras();
+        }
+
+        function renderLevelSelector() {
+            levelSelector.innerHTML = '';
+            const levels = DATABASE[currentEraId].levels;
+            levels.forEach((lvl, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `level-dot ${idx === currentLevelIndex ? 'active' : ''} ${progress[currentEraId][idx] ? 'completed' : ''}`;
+                dot.textContent = idx + 1;
+                dot.onclick = () => loadLevel(idx);
+                levelSelector.appendChild(dot);
+            });
+        }
+
+        function loadLevel(index) {
+            currentLevelIndex = index;
+            renderLevelSelector();
+
+            const level = DATABASE[currentEraId].levels[index];
+            const parts = level.parts;
+
+            // Clear Zones
+            document.querySelectorAll('.drop-zone').forEach(zone => zone.innerHTML = '');
+
+            // Create Fragments (Scrambled)
+            const fragments = [
+                { type: 'headline', text: parts.headline },
+                { type: 'sub', text: parts.sub },
+                { type: 'body1', text: parts.body1 },
+                { type: 'body2', text: parts.body2 }
+            ];
+
+            // Shuffle
+            fragments.sort(() => Math.random() - 0.5);
+
+            sourceZone.innerHTML = '';
+            fragments.forEach(frag => {
+                const el = document.createElement('div');
+                el.className = 'fragment';
+                el.draggable = true;
+                el.dataset.type = frag.type; // Store correct type for validation
+                el.innerHTML = `
+                ${frag.text}
+                <button class="tts-btn" onclick="readText('${frag.text.replace(/'/g, "\\'")}')">🔈</button>
+            `;
+                el.ondragstart = drag;
+                sourceZone.appendChild(el);
+            });
+
+            // Reset Feedback
+            stamp.classList.remove('active');
+            npcContainer.classList.remove('win', 'lose');
+            npcImg.src = 'img/npc_editor_happy.png';
+        }
+
+        // --- DRAG & DROP ---
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.innerHTML);
+            ev.dataTransfer.setData("type", ev.target.dataset.type);
+            ev.target.classList.add('dragging');
+            window.draggedElement = ev.target;
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+
+            // If dropping on a zone that already has an element, swap? Or just append?
+            // Simple version: Only allow one item per zone. If full, return to source.
+
+            if (ev.currentTarget.children.length > 0) {
+                // Zone full, move existing back to source
+                const existing = ev.currentTarget.children[0];
+                sourceZone.appendChild(existing);
+            }
+
+            ev.currentTarget.appendChild(window.draggedElement);
+            window.draggedElement.classList.remove('dragging');
+        }
+
+        // Handle drag leave to remove highlight
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.ondragleave = () => zone.classList.remove('drag-over');
+        });
+
+        // Allow dropping back to source
+        sourceZone.ondragover = allowDrop;
+        sourceZone.ondrop = (ev) => {
+            ev.preventDefault();
+            sourceZone.classList.remove('drag-over');
+            sourceZone.appendChild(window.draggedElement);
+            window.draggedElement.classList.remove('dragging');
+        }
+
+
+        // --- VALIDATION ---
+        function validateOrder() {
+            const zones = {
+                headline: document.getElementById('zone-headline'),
+                sub: document.getElementById('zone-sub'),
+                body1: document.getElementById('zone-body1'),
+                body2: document.getElementById('zone-body2')
+            };
+
+            let correct = 0;
+            let total = 4;
+            let allFilled = true;
+
+            // Reset classes
+            document.querySelectorAll('.drop-zone').forEach(z => {
+                z.classList.remove('correct', 'incorrect');
+            });
+
+            for (const [key, zone] of Object.entries(zones)) {
+                if (zone.children.length === 0) {
+                    allFilled = false;
+                    zone.classList.add('incorrect'); // Mark empty as incorrect
+                } else {
+                    const type = zone.children[0].dataset.type;
+                    if (type === key) {
+                        correct++;
+                        zone.classList.add('correct');
+                    } else {
+                        zone.classList.add('incorrect');
+                    }
+                }
+            }
+
+            if (!allFilled) {
+                showFeedback("Falten peces! Revisa tota la pàgina.", false);
+                return;
+            }
+
+            if (correct === total) {
+                // WIN
+                playSound('typewriter');
+                stamp.classList.add('active');
+                npcContainer.classList.add('win');
+                npcImg.src = 'img/npc_editor_happy.png';
+                showFeedback("EDICIÓ CORRECTA! PUBLICANT...", true);
+
+                // Save Progress
+                progress[currentEraId][currentLevelIndex] = true;
+                localStorage.setItem('cronista_progress', JSON.stringify(progress));
+
+                setTimeout(() => {
+                    npcContainer.classList.remove('win');
+                    // Next Level
+                    if (currentLevelIndex < DATABASE[currentEraId].levels.length - 1) {
+                        loadLevel(currentLevelIndex + 1);
+                    } else {
+                        showFeedback("ERA COMPLETADA AMB ÈXIT!", true);
+
+                        if (typeof Rewards !== 'undefined') {
+                            Rewards.unlockCard(
+                                `periodic_${currentEraId}`,
+                                `Editor: ${DATABASE[currentEraId].name}`,
+                                'Has completat l\'edició especial d\'aquesta època!',
+                                '../../img/card_periodic.png'
+                            );
+                        }
+
+                        setTimeout(showNewsroom, 2000);
+                    }
+                }, 3000); // Wait a bit more to enjoy the big NPC
+
+            } else {
+                // LOSE
+                npcContainer.classList.add('lose');
+                npcImg.src = 'img/npc_editor_angry.png';
+                showFeedback(`Error en l'ordre! Revisa els fragments.`, false);
+
+                setTimeout(() => {
+                    npcContainer.classList.remove('lose');
+                }, 2000);
+            }
+        }
+
+        // --- AUDIO ---
+        function updateVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        // --- UTILS ---
+        function showFeedback(msg, isSuccess) {
+            feedbackMsg.textContent = msg;
+            feedbackMsg.style.backgroundColor = isSuccess ? 'var(--success)' : 'var(--highlight)';
+            feedbackMsg.style.display = 'block';
+            setTimeout(() => {
+                feedbackMsg.style.display = 'none';
+            }, 3000);
+        }
+
+        function readText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ca-ES';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playSound(type) {
+            // Placeholder for sound effects
+            // const audio = new Audio(`snd/${type}.m4a`);
+            // audio.play();
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+
+</html>
+```

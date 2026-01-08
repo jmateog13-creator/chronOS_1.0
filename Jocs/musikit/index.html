@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusiKit: Muntatge Musical</title>
+    <style>
+        :root {
+            /* BLUEPRINT THEME */
+            --blueprint-blue: #0051ba;
+            --blueprint-grid: rgba(255, 255, 255, 0.2);
+            --blueprint-line: #ffffff;
+            --bg-color: #003380;
+            --text-color: #ffffff;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            /* Technical font */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* Blueprint Grid Background */
+            background-image:
+                linear-gradient(var(--blueprint-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--blueprint-grid) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid var(--blueprint-line);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .brand {
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 2px solid var(--blueprint-line);
+            padding: 5px 10px;
+        }
+
+        .level-info {
+            font-size: 18px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Volume Control */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+        }
+
+        input[type=range] {
+            accent-color: white;
+            cursor: pointer;
+        }
+
+        /* Main Layout */
+        .workspace {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        /* Toolbox (Inventory) */
+        .toolbox {
+            width: 320px;
+            background: rgba(0, 81, 186, 0.5);
+            /* Semi-transparent blue */
+            border: 2px solid var(--blueprint-line);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        .toolbox-title {
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px dashed var(--blueprint-line);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .part {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--blueprint-line);
+            padding: 10px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .part:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(5px);
+            z-index: 10;
+        }
+
+        /* Custom Tooltip on Hover */
+        .part:hover::after {
+            content: attr(data-desc);
+            position: absolute;
+            left: 105%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 150px;
+            background: #002244;
+            border: 1px solid white;
+            padding: 10px;
+            font-size: 0.8rem;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 0 10px black;
+        }
+
+        .part:active {
+            cursor: grabbing;
+        }
+
+        .part.dragging {
+            opacity: 0.5;
+        }
+
+        .part-icon {
+            width: 60px;
+            height: 60px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px solid white;
+            /* Framing logic as requested */
+            background-color: #004499;
+            /* Fallback */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .part-name {
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        /* Assembly Zone */
+        .assembly-zone {
+            flex: 1;
+            border: 4px solid var(--blueprint-line);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Blueprint Lines Decoration */
+        .assembly-zone::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            bottom: 20px;
+            right: 20px;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+        }
+
+        .project-title {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--blueprint-line);
+            color: var(--blueprint-blue);
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .blueprint-box {
+            width: 80%;
+            height: 70%;
+            /* Motherboard / Slot styling */
+            border: 2px solid var(--blueprint-line);
+            background: rgba(0, 60, 140, 0.8);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            position: relative;
+            transition: all 0.3s;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Technical Crosshairs in corners */
+        .blueprint-box::after {
+            content: '+';
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .blueprint-box.drag-over {
+            background: rgba(255, 255, 255, 0.1);
+            border-style: dashed;
+        }
+
+        .blueprint-box.shake {
+            animation: shake 0.5s;
+            border-color: var(--error-color);
+        }
+
+        .blueprint-box.success {
+            border-color: var(--success-color);
+            box-shadow: 0 0 30px var(--success-color);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .assembled-part {
+            width: 110px;
+            height: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            border: 2px solid white;
+            padding: 5px;
+            background: var(--blueprint-blue);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            position: relative;
+        }
+
+        /* Remove X */
+        .assembled-part::after {
+            content: 'x';
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            font-size: 0.8rem;
+            color: #ccc;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .assembled-part:hover::after {
+            opacity: 1;
+        }
+
+        .assembled-part .part-icon {
+            width: 70px;
+            height: 70px;
+            border: 1px solid white;
+        }
+
+        .assembled-part span {
+            margin-top: 5px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Controls */
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .action-btn {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: white;
+            color: var(--blueprint-blue);
+            box-shadow: 0 0 15px white;
+        }
+
+        .btn-clear {
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+
+        .btn-clear:hover {
+            background: var(--error-color);
+            color: white;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal {
+            background: var(--blueprint-blue);
+            padding: 40px;
+            border: 4px solid white;
+            text-align: center;
+            max-width: 600px;
+            color: white;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal h1 {
+            margin-top: 0;
+            border-bottom: 2px solid white;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .modal p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Clockwork Blueprints.m4a" type="audio/mp3">
+    </audio>
+
+    <div id="start-modal" class="modal-overlay">
+        <div class="modal">
+            <h1>PROJ_MUSIKIT_V2.0</h1>
+            <p>
+                <b>SISTEMA DE MUNTATGE MUSICAL ACTIVAT.</b><br><br>
+                Objectiu: Construir l'estructura musical de cada època.<br>
+                Requisit: Arrossega els <b>CONCEPTES</b> i <b>INSTRUMENTS</b> clau al plànol.<br>
+                <br>
+                <i>Nota: Passa el ratolí per sobre per veure informació tècnica.</i>
+            </p>
+            <button class="action-btn btn-build" onclick="game.startLevel()">INICIAR PROTOCOL</button>
+        </div>
+    </div>
+
+    <div id="feedback-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h1 id="fb-title">ESTRUCTURA ESTABLE</h1>
+            <p id="fb-msg">Paràmetres nominals. Audio optimitzat.</p>
+            <button class="action-btn btn-build" onclick="game.nextLevel()">SEGÜENT FASE</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="brand">MusiKit</div>
+
+        <div class="level-info" id="level-info">FASE 1/6: STARTUP</div>
+
+        <div class="header-controls">
+            <div class="volume-control">
+                <label>AUDIO:</label>
+                <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5"
+                    oninput="game.setVolume(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="toolbox" id="toolbox">
+            <div class="toolbox-title">COMPONENTES</div>
+            <!-- Parts injected here -->
+        </div>
+
+        <div class="assembly-zone" id="assembly-zone">
+            <div class="project-title" id="project-title">PROJECTE CÀRREGAT...</div>
+
+            <div class="blueprint-box" id="blueprint-box">
+                <!-- Dropped parts go here -->
+            </div>
+
+            <div class="controls">
+                <button class="action-btn btn-clear" onclick="game.resetLevel()">REINICIAR</button>
+                <button class="action-btn btn-build" onclick="game.checkBuild()">COMPROVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database requiring Concepts + Instruments
+        // Updated with REAL filenames found in directory
+        const MANUALS_DB = [
+            {
+                era: "Edat Mitjana",
+                work: "Cant Gregorià",
+                required: ["Monodia", "Veu"],
+                forbidden: ["Polifonia", "Violí", "Piano"],
+                parts: [
+                    { name: "Veu", icon: "veu.jpg", type: "inst", desc: "Instrument humà natural" },
+                    { name: "Monodia", icon: "monodia.jpg", type: "concept", desc: "Una sola línia melòdica" },
+                    { name: "Polifonia", icon: "polifonia.jpg", type: "concept", desc: "Múltiples veus simultànies" },
+                    { name: "Piano", icon: "piano.jpg", type: "inst", desc: "Instrument de teclat percussor" },
+                    { name: "Violí", icon: "violi.jpg", type: "inst", desc: "Corda fregada aguda" }
+                ]
+            },
+            {
+                era: "Renaixement",
+                work: "Missa Polifònica",
+                required: ["Polifonia", "Veu"],
+                forbidden: ["Monodia", "Sintetitzador"],
+                parts: [
+                    { name: "Veu", icon: "veu.jpg", type: "inst", desc: "Coral a capella" },
+                    { name: "Polifonia", icon: "polifonia.jpg", type: "concept", desc: "Teixit de veus independents" },
+                    { name: "Monodia", icon: "monodia.jpg", type: "concept", desc: "Cant pla simple" },
+                    { name: "Llaüt", icon: "llaud.jpg", type: "inst", desc: "Corda polsada antiga" },
+                    { name: "Sintetitzador", icon: "sinte.jpg", type: "inst", desc: "Generador d'ones" }
+                ]
+            },
+            {
+                era: "Barroc",
+                work: "Concert",
+                required: ["Baix Continu", "Contrast", "Clavecí"],
+                forbidden: ["Piano", "Forma Sonata"],
+                parts: [
+                    { name: "Clavecí", icon: "clave.jpg", type: "inst", desc: "Teclat de corda pinçada" },
+                    { name: "Baix Continu", icon: "baixcontinu.jpg", type: "concept", desc: "Base harmònica ininterrompuda" },
+                    { name: "Contrast", icon: "contrast.jpg", type: "concept", desc: "Lluita entre solista i tutti" },
+                    { name: "Piano", icon: "piano.jpg", type: "inst", desc: "Anacronisme per l'època" },
+                    { name: "Forma Sonata", icon: "sonata.jpg", type: "concept", desc: "Estructura clàssica posterior" },
+                    { name: "Violí", icon: "violi.jpg", type: "inst", desc: "Rei de l'orquestra barroca" }
+                ]
+            },
+            {
+                era: "Classicisme",
+                work: "Sonata per a Piano",
+                required: ["Forma Sonata", "Piano"],
+                forbidden: ["Baix Continu", "Contrast", "Caos"],
+                parts: [
+                    { name: "Piano", icon: "piano.jpg", type: "inst", desc: "El nou instrument rei" },
+                    { name: "Forma Sonata", icon: "sonata.jpg", type: "concept", desc: "Estructura lògica A-B-A" },
+                    { name: "Baix Continu", icon: "baixcontinu.jpg", type: "concept", desc: "Antiga base barroca" },
+                    { name: "Contrast", icon: "contrast.jpg", type: "concept", desc: "Dinàmica barroca" },
+                    { name: "Caos", icon: "atonal.jpg", type: "concept", desc: "Sense ordre tonal" }
+                ]
+            },
+            {
+                era: "Romanticisme",
+                work: "Lied Expressiu",
+                required: ["Expressió", "Piano", "Veu"],
+                forbidden: ["Racionalisme", "Electrònica"],
+                parts: [
+                    { name: "Piano", icon: "piano.jpg", type: "inst", desc: "Acompanyament emotiu" },
+                    { name: "Veu", icon: "veu.jpg", type: "inst", desc: "Melodia poètica" },
+                    { name: "Expressió", icon: "romanticisme.jpg", type: "concept", desc: "Sentiment sobre raó" },
+                    { name: "Forma Sonata", icon: "sonata.jpg", type: "concept", desc: "Massa rígid" },
+                    { name: "Electrònica", icon: "electronica.jpg", type: "concept", desc: "Tecnologia futura" }
+                ]
+            },
+            {
+                era: "Segle XX",
+                work: "Experimental",
+                required: ["Atonalisme", "Electrònica", "Sintetitzador"],
+                forbidden: ["Forma Sonata", "Llaüt"],
+                parts: [
+                    { name: "Atonalisme", icon: "atonal.jpg", type: "concept", desc: "Trencament de l'harmonia" },
+                    { name: "Electrònica", icon: "electronica.jpg", type: "concept", desc: "Nous timbres digitals" },
+                    { name: "Sintetitzador", icon: "sinte.jpg", type: "inst", desc: "Instrument electrònic" },
+                    { name: "Llaüt", icon: "llaud.jpg", type: "inst", desc: "Massa antic" },
+                    { name: "Forma Sonata", icon: "sonata.jpg", type: "concept", desc: "Estructura clàssica" }
+                ]
+            }
+        ];
+
+        class Game {
+            constructor() {
+                this.currentLevelIndex = 0;
+                this.levelQueue = []; // For randomization
+                this.toolbox = document.getElementById('toolbox');
+                this.blueprintBox = document.getElementById('blueprint-box');
+                this.assembledParts = [];
+                this.bgMusic = document.getElementById('bg-music');
+
+                this.setupDropZone();
+            }
+
+            setVolume(val) {
+                this.bgMusic.volume = val;
+            }
+
+            startLevel() {
+                document.getElementById('start-modal').classList.add('hidden');
+
+                // Shuffle levels for random order
+                this.levelQueue = [...MANUALS_DB].sort(() => Math.random() - 0.5);
+                this.currentLevelIndex = 0;
+
+                this.loadLevel();
+
+                // Try play music
+                this.bgMusic.volume = document.getElementById('vol').value;
+                this.bgMusic.play().catch(e => console.log("Interaction needed for audio"));
+            }
+
+            loadLevel() {
+                if (this.currentLevelIndex >= this.levelQueue.length) {
+                    this.showFeedback("MUNTATGE FINALITZAT!", "Has completat tots els projectes!", true);
+                    return;
+                }
+
+                const level = this.levelQueue[this.currentLevelIndex];
+                document.getElementById('level-info').textContent = `FASE ${this.currentLevelIndex + 1}/${this.levelQueue.length}: ${level.era.toUpperCase()}`;
+                document.getElementById('project-title').innerHTML = `PROJECTE: ${level.work.toUpperCase()} <span style="font-size: 0.8em; margin-left:10px; opacity:0.7;">[OBJECTIU: ${level.required.length} PECES]</span>`;
+
+                this.resetLevel();
+
+                // Populate Toolbox
+                this.toolbox.innerHTML = '<div class="toolbox-title">COMPONENTES</div>';
+                const shuffledParts = [...level.parts].sort(() => Math.random() - 0.5);
+
+                shuffledParts.forEach(p => {
+                    const el = document.createElement('div');
+                    el.className = 'part';
+                    el.draggable = true;
+                    // Store tooltip usage
+                    el.dataset.desc = p.desc;
+
+                    const imgSrc = `img/${p.icon}`;
+
+                    el.innerHTML = `
+                        <div class="part-icon" style="background-image: url('${imgSrc}');"></div>
+                        <span class="part-name">${p.name}</span>
+                    `;
+
+                    el.addEventListener('dragstart', e => {
+                        el.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', JSON.stringify(p));
+                    });
+                    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+                    this.toolbox.appendChild(el);
+                });
+            }
+
+            setupDropZone() {
+                this.blueprintBox.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    this.blueprintBox.classList.add('drag-over');
+                });
+                this.blueprintBox.addEventListener('dragleave', () => this.blueprintBox.classList.remove('drag-over'));
+                this.blueprintBox.addEventListener('drop', e => this.handleDrop(e));
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                this.blueprintBox.classList.remove('drag-over');
+                const rawData = e.dataTransfer.getData('text/plain');
+                if (!rawData) return;
+
+                const partData = JSON.parse(rawData);
+
+                // Prevent duplicates
+                if (this.assembledParts.find(p => p.name === partData.name)) return;
+
+                this.assembledParts.push(partData);
+
+                // Create visual element in blueprint
+                const el = document.createElement('div');
+                el.className = 'assembled-part';
+                const imgSrc = `img/${partData.icon}`;
+                el.dataset.desc = partData.desc; // Tooltip here too?
+
+                el.innerHTML = `
+                    <div class="part-icon" style="background-image: url('${imgSrc}'); border: 2px solid white;"></div>
+                    <span>${partData.name}</span>
+                `;
+
+                // Clicking removing for better UX
+                el.style.cursor = "pointer";
+                el.onclick = () => {
+                    this.assembledParts = this.assembledParts.filter(p => p.name !== partData.name);
+                    el.remove();
+                };
+
+                this.blueprintBox.appendChild(el);
+            }
+
+            resetLevel() {
+                this.assembledParts = [];
+                this.blueprintBox.innerHTML = '';
+                this.blueprintBox.className = 'blueprint-box';
+            }
+
+            checkBuild() {
+                const level = this.levelQueue[this.currentLevelIndex];
+                const currentNames = this.assembledParts.map(p => p.name).sort();
+                const requiredNames = [...level.required].sort();
+
+                const isCorrect = JSON.stringify(currentNames) === JSON.stringify(requiredNames);
+
+                if (isCorrect) {
+                    this.blueprintBox.classList.add('success');
+                    setTimeout(() => {
+                        this.showFeedback("ESTRUCTURA ESTABLE", "Configuració correcta. Estabilitat al 100%.", true);
+                    }, 500);
+                } else {
+                    this.blueprintBox.classList.add('shake');
+                    setTimeout(() => this.blueprintBox.classList.remove('shake'), 500);
+
+                    let msg = "Error en paràmetres.";
+                    const missing = level.required.filter(n => !currentNames.includes(n));
+                    const extra = currentNames.filter(n => !level.required.includes(n));
+
+                    if (missing.length > 0) msg = `FATAL: Falta ${missing.join(", ")}.`;
+                    else if (extra.length > 0) msg = `FATAL: Sobra ${extra.join(", ")}.`;
+
+                    const originalTitle = document.getElementById('project-title').textContent;
+                    document.getElementById('project-title').textContent = `⚠️ ${msg}`;
+                    document.getElementById('project-title').style.color = "#ff5555";
+                    setTimeout(() => {
+                        document.getElementById('project-title').textContent = originalTitle;
+                        document.getElementById('project-title').style.color = "var(--blueprint-blue)";
+                    }, 3000);
+                }
+            }
+
+            showFeedback(title, msg, isWin) {
+                const modal = document.getElementById('feedback-modal');
+                document.getElementById('fb-title').textContent = title;
+                document.getElementById('fb-msg').textContent = msg;
+
+                const btn = modal.querySelector('button');
+                if (isWin) {
+                    btn.textContent = "SEGÜENT FASE";
+                    btn.onclick = () => {
+                        modal.classList.add('hidden');
+                        if (title !== "MUNTATGE FINALITZAT!") {
+                            this.currentLevelIndex++;
+                            this.loadLevel();
+                        } else {
+                            location.reload();
+                        }
+                    };
+                }
+                modal.classList.remove('hidden');
+            }
+
+            nextLevel() {
+                // Handled in showFeedback
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

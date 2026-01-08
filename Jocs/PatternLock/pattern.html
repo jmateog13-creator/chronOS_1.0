@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PatternLock X: Smartphone Unlock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --accent: #00d2ff;
+            --error: #ff4d4d;
+            --success: #4dff88;
+        }
+
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+        }
+
+        /* --- PHONE MOCKUP --- */
+        #phone-shell {
+            width: 360px;
+            height: 740px;
+            background: #111;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 210, 255, 0.2);
+            position: relative;
+            border: 4px solid #334155;
+        }
+
+        #phone-screen {
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80') center/cover;
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
+        }
+
+        #phone-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.4);
+            z-index: 1;
+        }
+
+        /* --- CONTENT --- */
+        #content-layer {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px;
+        }
+
+        #clock {
+            font-size: 4rem;
+            font-weight: 300;
+            margin-bottom: 5px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #date {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 50px;
+        }
+
+        #status-msg {
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 0 20px;
+            margin-bottom: 40px;
+            min-height: 2.5em;
+        }
+
+        #era-target {
+            color: var(--accent);
+            font-weight: 600;
+            display: block;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 8px;
+            text-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+
+        /* --- PATTERN GRID --- */
+        #pattern-area {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+
+        #pattern-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        #dots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+        }
+
+        .dot-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transition: transform 0.2s, background 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .dot.active {
+            background: white;
+            transform: scale(1.5);
+            box-shadow: 0 0 20px white;
+        }
+
+        .dot.success {
+            background: var(--success);
+            box-shadow: 0 0 20px var(--success);
+        }
+
+        .dot.error {
+            background: var(--error);
+            box-shadow: 0 0 20px var(--error);
+        }
+
+        .dot-label {
+            position: absolute;
+            top: 65%;
+            font-size: 0.7rem;
+            text-align: center;
+            width: 90px;
+            opacity: 0.8;
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            line-height: 1.1;
+        }
+
+        .active+.dot-label {
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        /* --- HUD / FOOTER --- */
+        #footer {
+            margin-top: auto;
+            margin-bottom: 40px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        #lives-bar {
+            display: flex;
+            gap: 5px;
+        }
+
+        .heart {
+            color: var(--error);
+            font-size: 20px;
+        }
+
+        /* Volume slider */
+        #vol-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type=range] {
+            width: 100px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        /* --- FEEDBACK FULLSCREEN --- */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 100;
+            display: flex;
+            /* Show by default as start screen */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            backdrop-filter: blur(5px);
+        }
+
+        #overlay h2 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        #overlay p {
+            font-size: 1.05rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .instr {
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-action {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-action:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="phone-shell">
+        <div id="phone-screen">
+            <div id="content-layer">
+                <div id="clock">12:00</div>
+                <div id="date">Dimarts, 9 Desembre</div>
+
+                <div id="status-msg">
+                    Dibuixa el patró del:
+                    <span id="era-target">BARROC</span>
+                </div>
+
+                <div id="pattern-area">
+                    <svg id="pattern-svg">
+                        <polyline id="polyline" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="6"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                        <line id="drag-line" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="6"
+                            stroke-linecap="round" display="none" />
+                    </svg>
+                    <div id="dots-grid">
+                        <!-- 9 nodes here -->
+                    </div>
+                </div>
+
+                <div id="footer">
+                    <div id="lives-bar"></div>
+                    <div id="vol-control">
+                        🎵 <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
+                    </div>
+                </div>
+            </div>
+
+            <div id="overlay">
+                <h2 id="overlay-title">PATRÓ MUSICAL</h2>
+                <div class="instr" id="overlay-instr">
+                    <b>INSTRUCCIONS:</b><br><br>
+                    - Connecta els punts que pertanyen a l'època indicada.<br>
+                    - Has d'unir TOTS els conceptes correctes sense aixecar el dit.<br>
+                    - Si toques un concepte d'una altra època, perdràs una vida.<br>
+                    - Tens 3 intents per seguretat.
+                </div>
+                <p id="overlay-msg"></p>
+                <button class="btn-action" id="start-btn" onclick="startGame()">COMENÇAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bgm" loop>
+        <source src="audio/Grey Rooms, Soft Echoes.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // --- DATA ---
+        const DATABASE = [
+            { id: 'medieval', name: "Edat Mitjana", nodes: ["Cant Gregorià", "Monodia", "Neumes", "Monestir", "Trobador", "Cant Pla", "Modes", "Còdex"] },
+            { id: 'renaissance', name: "Renaixement", nodes: ["Polifonia", "Humanisme", "Madrigal", "Motet", "Viola de mà", "A Capella", "Imitació", "Missa"] },
+            { id: 'baroque', name: "Barroc", nodes: ["Baix Continu", "Clavicèmbal", "Bach", "Òpera", "Contrast", "Concerto", "Ornament", "Vivaldi"] },
+            { id: 'classicism', name: "Classicisme", nodes: ["Equilibri", "Simfonia", "Mozart", "Piano", "Sonata", "Senzillesa", "Clarinet", "Haydn"] },
+            { id: 'romanticism', name: "Romanticisme", nodes: ["Passió", "Rubato", "Lied", "Chopin", "Virtuosisme", "Nacionalisme", "Opera Italiana", "Wagner"] },
+            { id: 'modern', name: "Segle XX", nodes: ["Atonalisme", "Dodecafonisme", "Sintetitzador", "Jazz", "Electronic", "Cage", "Minimalisme", "Soroll"] }
+        ];
+
+        const DISTRACTORS = ["Heavy Metal", "Trap", "Smartphone", "TikTok", "Fortnite", "Streaming", "Auto-tune", "DJ set", "Influencer"];
+
+        // --- STATE ---
+        let currentEraIdx = 0;
+        let lives = 3;
+        let currentNodes = [];
+        let path = [];
+        let isDragging = false;
+        let gridData = [];
+
+        // --- DOM ---
+        const grid = document.getElementById('dots-grid');
+        const eraLabel = document.getElementById('era-target');
+        const livesBar = document.getElementById('lives-bar');
+        const svgLine = document.getElementById('polyline');
+        const dragLine = document.getElementById('drag-line');
+        const overlay = document.getElementById('overlay');
+        const bgm = document.getElementById('bgm');
+        const volSlider = document.getElementById('volume');
+
+        // --- INIT ---
+        function init() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            volSlider.oninput = () => bgm.volume = volSlider.value;
+            // startLevel() is now called via startGame
+        }
+
+        function startGame() {
+            overlay.style.display = 'none';
+            bgm.play().catch(() => { });
+            currentEraIdx = 0;
+            lives = 3;
+            startLevel();
+        }
+
+        function startLevel() {
+            if (currentEraIdx >= DATABASE.length) {
+                victory();
+                return;
+            }
+
+            const era = DATABASE[currentEraIdx];
+            eraLabel.innerText = era.name;
+            updateLives();
+
+            // Pick 4-5 correct nodes
+            let correct = [...era.nodes].sort(() => Math.random() - 0.5).slice(0, 4);
+            let wrong = [...DISTRACTORS].sort(() => Math.random() - 0.5).slice(0, 5);
+            let pool = [...correct, ...wrong].sort(() => Math.random() - 0.5);
+
+            grid.innerHTML = '';
+            gridData = [];
+
+            pool.forEach((label, i) => {
+                const isCorrect = era.nodes.includes(label);
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'dot-wrapper';
+
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.id = `dot-${i}`;
+
+                const lbl = document.createElement('div');
+                lbl.className = 'dot-label';
+                lbl.innerText = label;
+
+                wrapper.appendChild(dot);
+                wrapper.appendChild(lbl);
+                grid.appendChild(wrapper);
+
+                gridData.push({ i, label, isCorrect, dot });
+            });
+
+            resetPath();
+        }
+
+        function resetPath() {
+            path = [];
+            isDragging = false;
+            svgLine.setAttribute('points', '');
+            dragLine.style.display = 'none';
+            gridData.forEach(d => d.dot.className = 'dot');
+        }
+
+        // --- INPUT ---
+        grid.addEventListener('pointerdown', e => {
+            isDragging = true;
+            checkTouch(e);
+        });
+
+        document.addEventListener('pointermove', e => {
+            if (!isDragging) return;
+            checkTouch(e);
+
+            const rect = grid.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (path.length > 0) {
+                const lastIdx = path[path.length - 1];
+                const lastDot = gridData[lastIdx].dot;
+                const lastRect = lastDot.getBoundingClientRect();
+                const lastX = (lastRect.left + lastRect.width / 2) - rect.left;
+                const lastY = (lastRect.top + lastRect.height / 2) - rect.top;
+
+                dragLine.style.display = 'block';
+                dragLine.setAttribute('x1', lastX);
+                dragLine.setAttribute('y1', lastY);
+                dragLine.setAttribute('x2', x);
+                dragLine.setAttribute('y2', y);
+            }
+        });
+
+        document.addEventListener('pointerup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            dragLine.style.display = 'none';
+            validate();
+        });
+
+        function checkTouch(e) {
+            const targets = document.elementsFromPoint(e.clientX, e.clientY);
+            const dotEl = targets.find(el => el.classList.contains('dot'));
+            if (dotEl) {
+                const idx = parseInt(dotEl.id.split('-')[1]);
+                if (!path.includes(idx)) {
+                    path.push(idx);
+                    gridData[idx].dot.classList.add('active');
+                    updateLine();
+                }
+            }
+        }
+
+        function updateLine() {
+            const rect = grid.getBoundingClientRect();
+            const points = path.map(idx => {
+                const d = gridData[idx].dot;
+                const r = d.getBoundingClientRect();
+                return `${(r.left + r.width / 2) - rect.left},${(r.top + r.height / 2) - rect.top}`;
+            }).join(' ');
+            svgLine.setAttribute('points', points);
+        }
+
+        // --- LOGIC ---
+        function validate() {
+            if (path.length < 2) {
+                resetPath();
+                return;
+            }
+
+            const error = path.some(idx => !gridData[idx].isCorrect);
+            const correctCount = path.filter(idx => gridData[idx].isCorrect).length;
+            const totalCorrectInGrid = gridData.filter(d => d.isCorrect).length;
+
+            if (error) {
+                fail();
+            } else if (correctCount === totalCorrectInGrid) {
+                success();
+            } else {
+                // Incomplete pattern? Let user keep drawing if they want, 
+                // but usually pattern ends when you lift finger. 
+                // If they connected SOME but not all correct ones, is it a fail?
+                // In metro_music, you need to connect them all.
+                fail();
+            }
+        }
+
+        function fail() {
+            lives--;
+            updateLives();
+            path.forEach(idx => gridData[idx].dot.classList.add('error'));
+            svgLine.setAttribute('stroke', 'var(--error)');
+
+            if (lives <= 0) {
+                setTimeout(() => {
+                    showOverlay("ACCÉS DENEGAT", "Has superat el límit d'intents de seguretat.");
+                    document.getElementById('overlay-instr').style.display = 'none';
+                    document.getElementById('start-btn').innerText = "REINTENTAR";
+                }, 800);
+            } else {
+                setTimeout(resetPath, 1000);
+            }
+        }
+
+        function success() {
+            path.forEach(idx => gridData[idx].dot.classList.add('success'));
+            svgLine.setAttribute('stroke', 'var(--success)');
+            currentEraIdx++;
+
+            setTimeout(() => {
+                if (currentEraIdx < DATABASE.length) {
+                    startLevel();
+                } else {
+                    victory();
+                }
+            }, 1000);
+        }
+
+        function updateLives() {
+            livesBar.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                livesBar.innerHTML += `<span class="heart">${i < lives ? '❤' : '🖤'}</span>`;
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            document.getElementById('date').innerText = now.toLocaleDateString('ca-ES', options);
+        }
+
+        function victory() {
+            showOverlay("DESBLOQUEJAT", "Felicitats! Has accedit a tota la història musical.");
+            document.getElementById('overlay-instr').style.display = 'none';
+            document.getElementById('start-btn').innerText = "TORNAR A JUGAR";
+        }
+
+        function showOverlay(title, msg) {
+            overlay.style.display = 'flex';
+            document.getElementById('overlay-title').innerText = title;
+            document.getElementById('overlay-msg').innerText = msg;
+        }
+
+        function resetGame() {
+            startGame();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

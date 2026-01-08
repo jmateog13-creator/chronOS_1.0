@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPERATION X: LA 10a SIMFONIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #050505;
+            --neon-blue: #00f3ff;
+            --neon-red: #ff003c;
+            --neon-green: #00ff66;
+            --neon-purple: #bc13fe;
+            --font-main: 'Orbitron', sans-serif;
+            --font-code: 'Share Tech Mono', monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-black);
+            color: var(--neon-blue);
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- LAYERS --- */
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 1. START SCREEN */
+        #start-screen {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('img/fonsinicial.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 100;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .start-card {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--neon-blue);
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 0 50px var(--neon-blue);
+        }
+
+        .instruction-box {
+            font-family: var(--font-code);
+            text-align: left;
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px dashed var(--neon-blue);
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .cta-btn {
+            background: var(--neon-blue);
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: var(--font-main);
+            font-weight: bold;
+            cursor: pointer;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* 2. GAME LAYER (Vault & Grid) */
+        #game-layer {
+            z-index: 10;
+            display: none;
+        }
+
+        #vault-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('img/fonsjoc.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .vault-door {
+            width: 60vh;
+            height: 60vh;
+            border-radius: 50%;
+            border: 20px solid #333;
+            background: conic-gradient(from 0deg, #111 0%, #222 50%, #111 100%);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 100px black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 3s ease-in-out;
+        }
+
+        /* LASER GRID OVERLAY */
+        #grid-overlay {
+            position: absolute;
+            z-index: 20;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            width: 50vh;
+            height: 50vh;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .node {
+            border: 2px solid var(--neon-red);
+            background: rgba(20, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(2px);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 0 10px var(--neon-red), inset 0 0 20px rgba(255, 0, 0, 0.1);
+        }
+
+        /* Laser Beam Effect */
+        .node::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-red), 0 0 20px var(--neon-red);
+            opacity: 0.8;
+            pointer-events: none;
+            animation: laserFlicker 2s infinite;
+        }
+
+        .node::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-red), 0 0 20px var(--neon-red);
+            opacity: 0.8;
+            pointer-events: none;
+            animation: laserFlicker 3s infinite reverse;
+        }
+
+        .node:hover {
+            border-color: #ff5555;
+            background: rgba(255, 0, 60, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px var(--neon-red);
+        }
+
+        .node.hacked {
+            border-color: var(--neon-green);
+            background: rgba(0, 20, 0, 0.8);
+            box-shadow: 0 0 20px var(--neon-green);
+            animation: hackedPulse 1s ease-out;
+        }
+
+        .node.hacked::before,
+        .node.hacked::after {
+            display: none;
+        }
+
+        @keyframes laserFlicker {
+
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            52% {
+                opacity: 0.8;
+            }
+
+            54% {
+                opacity: 0.2;
+            }
+
+            56% {
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes hackedPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 50px white;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* 3. VISUAL NOVEL OVERLAY */
+        #vn-overlay {
+            z-index: 200;
+            pointer-events: none;
+            /* Click through usually, but enabling pointer for buttons */
+            display: none;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 50px;
+        }
+
+        .dialog-box {
+            pointer-events: auto;
+            width: 80%;
+            max-width: 900px;
+            background: rgba(0, 10, 20, 0.95);
+            border: 2px solid var(--neon-purple);
+            /* Shadow's color default */
+            display: flex;
+            align-items: flex-end;
+            padding: 0;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .char-portrait {
+            width: 200px;
+            height: 200px;
+            background: #000;
+            border-right: 2px solid var(--neon-purple);
+            flex-shrink: 0;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .dialog-content {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .char-name {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--neon-purple);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .char-text {
+            font-family: var(--font-code);
+            font-size: 1.1rem;
+            color: white;
+            line-height: 1.5;
+            min-height: 60px;
+        }
+
+        .next-arrow {
+            color: var(--neon-purple);
+            font-size: 1.5rem;
+            animation: bounce 1s infinite;
+            float: right;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* 4. TERMINAL (Hacking) */
+        #terminal-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .terminal-window {
+            width: 600px;
+            background: #001100;
+            border: 2px solid var(--neon-green);
+            padding: 20px;
+            font-family: var(--font-code);
+            color: var(--neon-green);
+            box-shadow: 0 0 50px var(--neon-green);
+        }
+
+        .opt-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        .opt-btn:hover {
+            background: var(--neon-green);
+            color: black;
+        }
+
+        /* 5. KEYPAD & WIN */
+        #keypad-container {
+            position: absolute !important;
+            right: 50px !important;
+            top: 50% !important;
+            bottom: auto !important;
+            left: auto !important;
+            transform: translateY(-50%) !important;
+            z-index: 60;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--neon-blue);
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .key-btn {
+            width: 50px;
+            height: 50px;
+            background: #111;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-size: 1.5rem;
+            margin: 2px;
+            cursor: pointer;
+        }
+
+        #win-screen {
+            z-index: 300;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* UTILS */
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(5px);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LAYER 1: START SCREEN -->
+    <div id="start-screen" class="layer">
+        <div class="start-card">
+            <h1 style="font-size:3rem; margin:0; text-shadow: 0 0 20px var(--neon-blue);">OPERATION X</h1>
+            <h2 style="color:white; font-size:1.2rem; letter-spacing: 5px;">LA 10a SIMFONIA</h2>
+
+            <div class="instruction-box">
+                <p>> TARGET: BEETHOVEN'S LOST MANUSCRIPT</p>
+                <p>> OBSTACLE: LASER GRID [MUSA AI SYSTEM]</p>
+                <p>> MISSION:</p>
+                <p>1. Hackeja els 9 Nodes Làser.</p>
+                <p>2. Obtén els fragments del codi.</p>
+                <p>3. Obre la Cambra Cuirassada.</p>
+            </div>
+
+            <button class="cta-btn" onclick="GAME.startStory()">INICIAR MISSIÓ</button>
+        </div>
+    </div>
+
+    <!-- LAYER 2: GAMEPLAY -->
+    <div id="game-layer" class="layer">
+        <div id="vault-bg">
+            <div class="vault-door">
+                <!-- Padlock removed -->
+            </div>
+        </div>
+        <div id="grid-overlay"></div> <!-- Nodes go here -->
+    </div>
+
+    <!-- LAYER 3: TERMINAL (Game Modal) -->
+    <div id="terminal-modal">
+        <div class="terminal-window">
+            <div
+                style="border-bottom:1px solid var(--neon-green); margin-bottom:10px; display:flex; justify-content:space-between;">
+                <span>TERMINAL_ACCESS</span>
+                <span style="color:red">LOCKED</span>
+            </div>
+            <p id="term-q" style="font-size:1.1rem; margin-bottom:20px;">...</p>
+            <div id="term-opts"></div>
+        </div>
+    </div>
+
+    <!-- LAYER 4: KEYPAD -->
+    <div id="keypad-container">
+        <input type="text" id="code-display" readonly placeholder="_ _ _ _ _ _ _ _ _"
+            style="background:black; color:var(--neon-blue); font-size:1.5rem; text-align:center; padding:5px; border:none; width:200px; margin-bottom:10px; font-family:var(--font-code); letter-spacing:5px;">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr);">
+            <!-- Keys generated by JS -->
+        </div>
+    </div>
+
+    <!-- LAYER 5: VISUAL NOVEL OVERLAY -->
+    <div id="vn-overlay" class="layer">
+        <div class="dialog-box" onclick="VN.next()">
+            <div class="char-portrait" id="vn-img"></div>
+            <div class="dialog-content">
+                <div class="char-name" id="vn-name">NAME</div>
+                <div class="char-text" id="vn-text">Text goes here...</div>
+                <div class="next-arrow">▼</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYER 6: WIN SCREEN -->
+    <div id="win-screen" class="layer" style="background: url('img/simfoniafinal.jpg') no-repeat center center/cover;">
+        <div style="background:rgba(0,0,0,0.8); padding:40px; border:2px solid var(--neon-blue); text-align:center;">
+            <h1 style="color:var(--neon-blue); font-size:3rem; margin:0 0 20px 0;">MISSIÓ COMPLERTA</h1>
+            <p style="color:white; font-size:1.2rem;">LA SIMFONIA ÉS TEVA</p>
+            <button class="cta-btn" onclick="location.reload()" style="margin-top:20px;">SORTIR</button>
+        </div>
+    </div>
+
+    <!-- AUDIO CONTROLS (Top Right) -->
+    <div
+        style="position:fixed; top:20px; right:20px; z-index:1000; display:flex; align-items:center; background:rgba(0,0,0,0.7); padding:10px; border:1px solid var(--neon-blue); border-radius:30px;">
+        <span style="color:var(--neon-blue); margin-right:10px; font-size:1.2rem;">🔊</span>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"
+            style="width:100px; accent-color:var(--neon-blue);">
+    </div>
+    <audio id="bg-music" loop>
+        <source src="audio/Neon Infiltration.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        /* --- ASSETS --- */
+        const ASSETS = {
+            shadow: 'img/shadow.jpg',
+            musa_calm: 'img/IA.jpg',
+            musa_angry: 'img/IA.jpg' // Used with CSS Filter
+        };
+
+        /* AUDIO LOGIC */
+        const music = document.getElementById('bg-music');
+        const slider = document.getElementById('vol-slider');
+        music.volume = 0.5;
+
+        slider.addEventListener('input', (e) => {
+            music.volume = e.target.value;
+        });
+
+        /* --- DIALOGUE SCRIPTS --- */
+        const SCRIPTS = {
+            intro: [
+                { who: "SHADOW", img: ASSETS.shadow, text: "Ja hi sóc. Terrat del Banc Central de Música. Fa fred...", color: "#bc13fe" },
+                { who: "SHADOW", img: ASSETS.shadow, text: "La 10a Simfonia de Beethoven hauria de ser al fons d'aquesta cambra cuirassada." },
+                { who: "MUSA", img: ASSETS.musa_calm, text: "ALERTA. Intrusió detectada. Identifica't.", color: "#00f3ff" },
+                { who: "SHADOW", img: ASSETS.shadow, text: "Merda, és la IA guardiana. Musa v4.0. He de hackejar la graella làser abans que em bloquegi." }
+            ],
+            mid: [
+                { who: "MUSA", img: ASSETS.musa_angry, text: "ERROR DE SISTEMA. Algú està manipulant els meus protocols històrics!", color: "#ff003c" },
+                { who: "SHADOW", img: ASSETS.shadow, text: "Només em falten uns quants nodes. Aguanta..." }
+            ],
+            win: [
+                { who: "MUSA", img: ASSETS.musa_calm, text: "ACCÉS AUTORITZAT. Codi Mestre acceptat. Benvingut, Maestro.", color: "#00f3ff" },
+                { who: "SHADOW", img: ASSETS.shadow, text: "Increïble... És real. La música que ningú ha escoltat mai.", color: "#bc13fe" }
+            ]
+        };
+
+        /* --- DATA --- */
+        /* NEW QUESTIONS (UNIQUE from Bank) & SUCCESS DIALOGUES */
+        const QUESTIONS = [
+            {
+                id: 0,
+                proto: "TROBADOR_DATA",
+                intro: "Detectant arxius medievals. Músics errants que no cantaven a Déu...",
+                q: "De què tractaven les cançons dels Trobadors?",
+                opts: ["De Déu i la Bíblia", "D'Amor i cavallers", "De política"],
+                c: 1,
+                success: "Amor cortès identificat. Massa sentimentalisme pel meu gust."
+            },
+            {
+                id: 1,
+                proto: "HILDEGARD_V",
+                intro: "Analitzant registres històrics. Una dona en un món d'homes. I monja.",
+                q: "Qui va ser la primera compositora famosa de la història (i era una monja)?",
+                opts: ["Maria Antonieta", "Hildegard von Bingen", "Santa Cecília"],
+                c: 1,
+                success: "Hildegard von Bingen. Una ment brillant en una època fosca."
+            },
+            {
+                id: 2,
+                proto: "RELIGIOUS_FORM",
+                intro: "Estructura litúrgica detectada. La forma més elevada de l'art sacre.",
+                q: "Com es diu la forma musical més important de la música religiosa d'aquesta època?",
+                opts: ["L'Òpera", "La Missa", "La Simfonia"],
+                c: 1,
+                success: "La Missa. Solemne. Perfecta. I avorrida."
+            },
+            {
+                id: 3,
+                proto: "PROFANA_MODE",
+                intro: "Música no religiosa. L'antítesi de la pregària.",
+                q: "La música profana parlava de...",
+                opts: ["Amor i diversió", "Déu i sants", "Matemàtiques"],
+                c: 0,
+                success: "Música profana. Amor i diversió. Humans... sempre perdent el temps."
+            },
+            {
+                id: 4,
+                proto: "VIVALDI_SEASONS",
+                intro: "Barroc italià. Un violí que imita la natura.",
+                q: "Quina obra famosa va escriure Vivaldi?",
+                opts: ["La Novena Simfonia", "Les Quatre Estacions", "El Cant dels Ocells"],
+                c: 1,
+                success: "Les Quatre Estacions. Vivaldi sabia programar el clima musical."
+            },
+            {
+                id: 5,
+                proto: "PIANO_MECH",
+                intro: "Anàlisi de hardware. Un instrument de teclat amb dinàmica variable.",
+                q: "Per què el Piano es deia 'Piano-Forte'?",
+                opts: ["Perquè pesava molt", "Perquè podia tocar fluix (Piano) i fort (Forte)", "Perquè era italià"],
+                c: 1,
+                success: "Piano-Forte. La clau és la sensibilitat. Una cosa que a mi no em cal."
+            },
+            {
+                id: 6,
+                proto: "BEETHOVEN_HEALTH",
+                intro: "Beethoven. El geni. Però el seu maquinari biològic fallava.",
+                q: "Quin problema de salut tenia Beethoven?",
+                opts: ["Era cec", "Era sord", "No podia caminar"],
+                c: 1,
+                success: "Sordesa. I tot i així, va crear la perfecció. Això és digne de respecte."
+            },
+            {
+                id: 7,
+                proto: "ROMANTIC_CHAOS",
+                intro: "Romanticisme. El trencament de les regles clàssiques.",
+                q: "La música romàntica busca l'equilibri?",
+                opts: ["Sí, tot està controlat", "No, busca el contrast extrem i la passió desbordada", "Li és igual"],
+                c: 1,
+                success: "Passió desbordada. El caos emocional dels humans al seu màxim exponent."
+            },
+            {
+                id: 8,
+                proto: "SXX_INNOVA",
+                intro: "Segle XX. Ruptura total amb el passat. L'algoritme canvia.",
+                q: "Els artistes del segle XX volen seguir component com Mozart?",
+                opts: ["Sí, exactament igual", "No, volen innovar i ser originals", "No els agrada Mozart"],
+                c: 1,
+                success: "Innovació. Trencar per crear. Una lògica arriscada però eficient."
+            },
+        ];
+
+        /* --- VISUAL NOVEL SYSTEM --- */
+        const VN = {
+            queue: [],
+            active: false,
+            callback: null,
+            timeoutId: null,
+
+            play: function (scriptId, onComplete) {
+                // Handle named scripts or raw arrays
+                if (typeof scriptId === 'string' && SCRIPTS[scriptId]) {
+                    this.queue = [...SCRIPTS[scriptId]];
+                } else if (Array.isArray(scriptId)) {
+                    this.queue = [...scriptId];
+                } else {
+                    console.error("Script not found");
+                    if (onComplete) onComplete();
+                    return;
+                }
+
+                this.callback = onComplete;
+                this.active = true;
+                document.getElementById('vn-overlay').style.display = 'flex';
+                this.next();
+            },
+
+            next: function () {
+                if (this.queue.length === 0) {
+                    this.end();
+                    return;
+                }
+                const line = this.queue.shift();
+                this.render(line);
+            },
+
+            render: function (line) {
+                const img = document.getElementById('vn-img');
+                const name = document.getElementById('vn-name');
+                const text = document.getElementById('vn-text');
+                const box = document.querySelector('.dialog-box');
+
+                img.style.backgroundImage = `url('${line.img}')`;
+
+                // MUSA ANGRY FILTER LOGIC
+                if (line.who === "MUSA" && line.color === "#ff003c") {
+                    img.style.filter = "sepia(1) hue-rotate(-50deg) saturate(3)";
+                    img.style.borderRightColor = "#ff003c";
+                } else {
+                    img.style.filter = "none";
+                    img.style.borderRightColor = line.color || "white";
+                }
+
+                name.textContent = line.who;
+                name.style.color = line.color || "white";
+                box.style.borderColor = line.color || "white";
+
+                // Typewriter
+                // CLEAR previous timeout
+                if (this.timeoutId) clearTimeout(this.timeoutId);
+
+                text.textContent = "";
+                let i = 0;
+                const speed = 20;
+                const self = this; // Capture 'this'
+
+                function type() {
+                    if (i < line.text.length) {
+                        text.textContent += line.text.charAt(i);
+                        i++;
+                        self.timeoutId = setTimeout(type, speed);
+                    }
+                }
+                type();
+            },
+
+            end: function () {
+                this.active = false;
+                if (this.timeoutId) clearTimeout(this.timeoutId);
+                document.getElementById('vn-overlay').style.display = 'none';
+                if (this.callback) this.callback();
+            }
+        };
+
+        /* --- GAME LOGIC --- */
+        const GAME = {
+            secretCode: [],
+            hackedNodes: 0,
+            inputCode: "",
+            isHackInProgress: false, // Prevent double clicks
+
+            init: function () {
+                this.generateCode();
+                this.setupKeypad();
+                this.renderGrid();
+                // Waiting for start button
+            },
+
+            startStory: function () {
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('game-layer').style.display = 'block';
+                // START MUSIC
+                document.getElementById('bg-music').play().catch(e => console.log("Audio needs interaction"));
+
+                // Play Intro Dialogue, then enable game
+                VN.play('intro', () => {
+                    console.log("Game Start");
+                });
+            },
+
+            generateCode: function () {
+                for (let i = 0; i < 9; i++) this.secretCode.push(Math.floor(Math.random() * 10));
+                console.log("CODE:", this.secretCode);
+            },
+
+            renderGrid: function () {
+                const grid = document.getElementById('grid-overlay');
+                grid.innerHTML = "";
+                for (let i = 0; i < 9; i++) {
+                    const d = document.createElement('div');
+                    d.className = 'node';
+                    d.id = `node-${i}`;
+                    d.innerHTML = `<span class="node-label">LASER ${i + 1}</span>`;
+                    d.onclick = () => this.tryHack(i);
+                    grid.appendChild(d);
+                }
+            },
+
+            setupKeypad: function () {
+                const k = document.querySelector('#keypad-container div:last-child');
+                k.innerHTML = "";
+                [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach(n => {
+                    k.innerHTML += `<button class="key-btn" onclick="GAME.key(${n})">${n}</button>`;
+                });
+                k.innerHTML += `<button class="key-btn" onclick="GAME.clear()" style="border-color:red; color:red">X</button>`;
+                k.innerHTML += `<button class="key-btn" onclick="GAME.key(0)">0</button>`;
+                k.innerHTML += `<button class="key-btn" onclick="GAME.submit()" style="border-color:green; color:green">OK</button>`;
+            },
+
+            tryHack: function (id) {
+                if (VN.active || this.isHackInProgress) return;
+                const node = document.getElementById(`node-${id}`);
+                if (node.classList.contains('hacked')) return;
+
+                this.isHackInProgress = true;
+                const q = QUESTIONS[id];
+
+                // 1. Trigger Narrative (Musa speaks)
+                const dialog = [
+                    { who: "MUSA", img: this.getMusaImage(), text: q.intro, color: this.getMusaColor() }
+                ];
+
+                VN.play(dialog, () => {
+                    // 2. Show Terminal AFTER dialogue
+                    this.showTerminal(id);
+                    // this.isHackInProgress = false; // Moved to resolveHack
+                });
+            },
+
+            getMusaImage: function () {
+                return ASSETS.musa_calm; /* Logic handled in VN.render filter */
+            },
+
+            getMusaColor: function () {
+                return this.hackedNodes >= 5 ? "#ff003c" : "#00f3ff";
+            },
+
+            showTerminal: function (id) {
+                const q = QUESTIONS[id];
+                const modal = document.getElementById('terminal-modal');
+                document.getElementById('term-q').textContent = q.q;
+                const opts = document.getElementById('term-opts');
+                opts.innerHTML = "";
+
+                // Shuffle logic
+                const correctAns = q.opts[q.c];
+                const shuffled = [...q.opts].sort(() => Math.random() - 0.5);
+
+                shuffled.forEach((o, idx) => {
+                    // We need to pass the index of the CORRECT answer within the NEW shuffled array
+                    // The 'idx' passes the clicked index. 'resolveHack' checks (ans === corr)
+                    // So we must pass the index of 'correctAns' in 'shuffled' as the 3rd argument.
+                    const correctIdx = shuffled.indexOf(correctAns);
+                    opts.innerHTML += `<button class="opt-btn" onclick="GAME.resolveHack(${id}, ${idx}, ${correctIdx})">> ${o}</button>`;
+                });
+                modal.style.display = 'flex';
+            },
+
+            resolveHack: function (id, ans, corr) {
+                const modal = document.getElementById('terminal-modal');
+                if (ans === corr) {
+                    modal.style.display = 'none';
+
+                    // SUCCESS NARRATIVE TRIGGER
+                    const q = QUESTIONS[id];
+                    const successDialog = [
+                        { who: "MUSA", img: this.getMusaImage(), text: q.success, color: this.getMusaColor() }
+                    ];
+
+                    VN.play(successDialog, () => {
+                        const node = document.getElementById(`node-${id}`);
+                        node.classList.add('hacked');
+                        node.innerHTML = `<span class="node-label" style="color:#00ff66">${this.secretCode[id]}</span>`;
+                        this.hackedNodes++;
+                        this.isHackInProgress = false; // Release lock
+                        this.checkEvents();
+                    });
+                } else {
+                    document.querySelector('.terminal-window').classList.add('shake');
+                    setTimeout(() => document.querySelector('.terminal-window').classList.remove('shake'), 500);
+                }
+            },
+
+            checkEvents: function () {
+                if (this.hackedNodes === 5) {
+                    VN.play('mid', () => { });
+                }
+                if (this.hackedNodes === 9) {
+                    document.getElementById('grid-overlay').style.opacity = '0.3';
+                    document.getElementById('keypad-container').style.display = 'flex';
+                }
+            },
+
+            key: function (n) {
+                if (this.inputCode.length < 9) {
+                    this.inputCode += n;
+                    document.getElementById('code-display').value = this.inputCode;
+                }
+            },
+            clear: function () {
+                this.inputCode = "";
+                document.getElementById('code-display').value = "";
+            },
+            submit: function () {
+                if (this.inputCode === this.secretCode.join('')) {
+                    document.getElementById('keypad-container').style.display = 'none';
+                    document.getElementById('grid-overlay').style.display = 'none';
+                    // Open Vault Animation
+                    document.querySelector('.vault-door').style.transform = 'rotate(180deg) scale(0.9)';
+
+                    setTimeout(() => {
+                        VN.play('win', () => {
+                            document.querySelector('.vault-door').style.display = 'none';
+                            document.getElementById('win-screen').style.display = 'flex';
+                        });
+                    }, 2000);
+                } else {
+                    this.inputCode = "";
+                    document.getElementById('code-display').value = "ERROR";
+                    setTimeout(() => this.clear(), 1000);
+                }
+            }
+        };
+
+        window.onload = () => GAME.init();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instal·lador de S.O. Històric</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --win-gray: #c0c0c0;
+            --win-blue: #000080;
+            --win-teal: #008080;
+            --win-text: #000;
+            --win-border-light: #fff;
+            --win-border-dark: #808080;
+            --win-shadow: #404040;
+        }
+
+        body {
+            background-color: var(--win-teal);
+            font-family: 'Tahoma', 'Segoe UI', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* --- BIOS / START SCREEN --- */
+        #bios-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            font-family: 'VT323', monospace;
+            padding: 40px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            font-size: 20px;
+            line-height: 1.4;
+        }
+
+        #bios-screen p {
+            margin: 5px 0;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #fff;
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        #bios-screen button {
+            margin-top: 50px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 10px 30px;
+            font-family: inherit;
+            font-size: 24px;
+            cursor: pointer;
+            width: fit-content;
+        }
+
+        #bios-screen button:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* --- LAYOUT --- */
+        #game-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            background: var(--win-teal);
+        }
+
+        #file-pool {
+            flex: 0 0 65%;
+            position: relative;
+            background: var(--win-teal);
+            border-right: 3px inset rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 10;
+        }
+
+        #operation-zone {
+            flex: 1;
+            background: var(--win-teal);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 30px;
+            position: relative;
+            z-index: 5;
+            justify-content: flex-start;
+        }
+
+        /* --- ICONS --- */
+        .icon {
+            width: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            cursor: grab;
+            text-align: center;
+            color: white;
+            font-size: 11px;
+            text-shadow: 1px 1px 1px black;
+            padding: 5px;
+            border: 1px solid transparent;
+            z-index: 20;
+        }
+
+        .icon:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px dotted rgba(255, 255, 255, 0.6);
+        }
+
+        .icon-img {
+            width: 32px;
+            height: 32px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 4px;
+        }
+
+        /* Win95 Icon Assets */
+        .icon-exe {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='6' width='24' height='20' fill='%23c0c0c0' stroke='%23000'/%3E%3Cpath d='M4 6h24v4H4z' fill='%23000080'/%3E%3Cpath d='M8 14h16M8 18h16M8 22h16' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E");
+        }
+
+        .icon-txt {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 4h14l6 6v18H6z' fill='%23fff' stroke='%23000'/%3E%3Cpath d='M20 4v6h6' fill='none' stroke='%23000'/%3E%3Cpath d='M10 14h12M10 18h12M10 22h12' stroke='%23808080'/%3E%3C/svg%3E");
+        }
+
+        .icon-docx {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 4h14l6 6v18H6z' fill='%23fff' stroke='%23000'/%3E%3Cpath d='M20 4v6h6' fill='none' stroke='%23000'/%3E%3Cpath d='M10 14h12M10 18h12M10 22h12' stroke='%230000ff'/%3E%3Crect x='8' y='12' width='16' height='14' fill='none' stroke='%23000'/%3E%3C/svg%3E");
+        }
+
+        .icon-sys {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' fill='%23808080' stroke='%23000'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23c0c0c0' stroke='%23000'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='%23000'/%3E%3C/svg%3E");
+        }
+
+        /* --- WINDOWS --- */
+        .window {
+            background: var(--win-gray);
+            border: 2px solid var(--win-border-light);
+            border-right-color: var(--win-text);
+            border-bottom-color: var(--win-text);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title-bar {
+            background: var(--win-blue);
+            color: white;
+            padding: 3px 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .win-btn {
+            width: 16px;
+            height: 14px;
+            background: var(--win-gray);
+            border: 1px solid #fff;
+            border-right-color: #000;
+            border-bottom-color: #000;
+            font-size: 9px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #000;
+            cursor: pointer;
+        }
+
+        .window-content {
+            padding: 15px;
+        }
+
+        /* --- INSTALLER --- */
+        #installer {
+            width: 420px;
+            z-index: 10;
+        }
+
+        .progress-container {
+            height: 22px;
+            background: #fff;
+            border: 2px inset #808080;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--win-blue);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .drop-target {
+            height: 120px;
+            border: 2px dashed #808080;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f0f0f0;
+            font-size: 13px;
+            color: #444;
+            text-align: center;
+            padding: 15px;
+            gap: 10px;
+        }
+
+        .drop-target.hover {
+            background: #fff;
+            border-color: var(--win-blue);
+            color: var(--win-blue);
+        }
+
+        /* --- RECYCLE BIN --- */
+        #trash-window {
+            width: 180px;
+            margin-top: auto;
+            margin-bottom: 20px;
+        }
+
+        .trash-zone {
+            height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid transparent;
+            font-size: 12px;
+            gap: 10px;
+        }
+
+        .trash-zone.hover {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #f00;
+        }
+
+        /* --- TASKBAR --- */
+        #taskbar {
+            height: 32px;
+            background: var(--win-gray);
+            border-top: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            padding: 2px 10px;
+            z-index: 100;
+            gap: 15px;
+        }
+
+        #start-btn {
+            height: 24px;
+            padding: 0 12px;
+            border: 2px solid #fff;
+            border-right-color: #000;
+            border-bottom-color: #000;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            gap: 8px;
+            background: var(--win-gray);
+        }
+
+        #volume-control {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        #volume-slider {
+            width: 80px;
+            height: 4px;
+            accent-color: var(--win-blue);
+            cursor: pointer;
+        }
+
+        /* --- ERA MENU --- */
+        #era-modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #era-window {
+            width: 380px;
+        }
+
+        .era-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+
+        .era-item {
+            padding: 10px 15px;
+            background: #fff;
+            border: 1px inset #808080;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .era-item:hover {
+            background: var(--win-blue);
+            color: #fff;
+        }
+
+        .era-item.completed {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .era-item.completed::after {
+            content: '✅';
+            font-size: 12px;
+        }
+
+        /* --- BSOD --- */
+        #bsod {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0000AA;
+            color: #fff;
+            font-family: 'VT323', monospace;
+            padding: 60px;
+            z-index: 3000;
+            font-size: 26px;
+            line-height: 1.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .blink {
+            animation: blink 0.8s infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- BIOS SCREEN -->
+    <div id="bios-screen">
+        <p>CHRONOS BIOS v4.0.26</p>
+        <p>Copyright (C) 1985-2026, ChronOS Corp.</p>
+        <br>
+        <p>CPU: Retro-Processor @ 133MHz</p>
+        <p>Memory Test: 512MB OK</p>
+        <p>Detecting IDE drives... [OK]</p>
+        <br>
+        <p>> INITIALIZING HISTORICAL DATA PROTOCOL...</p>
+        <p>> LOADING DRIVERS...</p>
+        <p>> SEARCHING FOR OPERATING SYSTEM...</p>
+        <br>
+        <p class="blink">SYSTEM READY. PLEASE START INSTALLATION.</p>
+        <br>
+        <button onclick="startWizard()">[ F1: SETUP WIZARD ]</button>
+    </div>
+
+    <!-- MAIN GAME AREA -->
+    <div id="game-container" class="hidden">
+
+        <!-- LEFT: FILE POOL (The Pool) -->
+        <div id="file-pool">
+            <!-- 50 Icons will be spawned here -->
+        </div>
+
+        <!-- RIGHT: OPERATION ZONE (The Controls) -->
+        <div id="operation-zone">
+
+            <!-- INSTALLER WINDOW -->
+            <div class="window" id="installer">
+                <div class="title-bar">
+                    <span>Instal·lador S.O. Històric</span>
+                    <div class="win-btn">X</div>
+                </div>
+                <div class="window-content">
+                    <strong id="installer-title" style="font-size: 16px;">Triau una versió del sistema...</strong><br>
+                    <small id="installer-subtitle" style="color: #666;">Copiant fitxers de sistema: 10 requerits</small>
+
+                    <div class="progress-container">
+                        <div class="progress-fill" id="progress-bar"></div>
+                    </div>
+
+                    <div id="status-text" style="font-size:12px; margin-bottom:12px; font-weight: bold;">
+                        Fitxers instal·lats: 0/10
+                    </div>
+
+                    <div class="drop-target" id="installer-drop">
+                        <div style="font-size: 30px;">📂</div>
+                        <span>Arrossegueu fitxers valids aquí</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECYCLE BIN WINDOW -->
+            <div class="window" id="trash-window">
+                <div class="title-bar">
+                    <span>Paperera</span>
+                </div>
+                <div class="window-content trash-zone" id="trash-drop">
+                    <div style="font-size: 45px;">🗑️</div>
+                    <span style="font-weight: bold;">RECICLEU AQUÍ</span>
+                    <small style="color: #666;">Buidat automàtic</small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ERA MENU MODAL -->
+    <div id="era-modal-container" class="hidden">
+        <div class="window" id="era-window">
+            <div class="title-bar">
+                <span>Versió S.O. - Selecció</span>
+                <div class="win-btn" onclick="toggleEraMenu()">X</div>
+            </div>
+            <div class="window-content">
+                <p style="margin-top:0; font-size: 13px;">Seleccioneu la branca temporal per actualitzar:</p>
+                <div class="era-list">
+                    <div class="era-item" data-era="MT" onclick="selectEra('MT')">MS-DOS: Edat Mitjana</div>
+                    <div class="era-item" data-era="RN" onclick="selectEra('RN')">Win 3.1: Renaixement</div>
+                    <div class="era-item" data-era="BR" onclick="selectEra('BR')">Workgroups: Barroc</div>
+                    <div class="era-item" data-era="CL" onclick="selectEra('CL')">ChronOS: Classicisme '95</div>
+                    <div class="era-item" data-era="RM" onclick="selectEra('RM')">ChronOS: Romanticisme '98</div>
+                    <div class="era-item" data-era="S20" onclick="selectEra('S20')">ChronOS: Segle XX Millennium</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BSOD SCREEN -->
+    <div id="bsod" class="hidden" onclick="location.reload()">
+        <p>*** FATAL SYSTEM ERROR 0x0000000C (0x0F0F0F0F) ***</p>
+        <br>
+        <p>INCOMPATIBILITAT TEMPORAL DETECTADA DURANT L'INSTAL·LACIÓ.</p>
+        <p>S'ha intentat carregar un recurs que no pertany a l'època seleccionada.</p>
+        <br>
+        <p>Instruccions per a l'usuari:</p>
+        <p>* Envieu els fitxers incorrectes a la Paperera de Reciclatge.</p>
+        <p>* Assegureu-vos que el fitxer sigui compatible amb la versió del S.O.</p>
+        <p>* Reinicieu el sistema per intentar-ho de nou.</p>
+        <br>
+        <p style="text-align:center; margin-top:60px;">[ Premeu qualsevol tecla per reiniciar ]</p>
+    </div>
+
+    <!-- TASKBAR -->
+    <div id="taskbar" class="hidden">
+        <div id="start-btn" onclick="toggleEraMenu()">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M2 2h20v20H2z'/%3E%3Cpath fill='%23FFF' d='M4 4h16v16H4z'/%3E%3Cpath fill='%23000080' d='M5 5h14v8H5z'/%3E%3C/svg%3E"
+                width="16">
+            Inici
+        </div>
+
+        <div id="volume-control">
+            <span>🔊 VOL:</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Still Air, Small Movements.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const ERA_DATA = {
+            'MT': { name: "Edat Mitjana", files: ["Cant Gregorià", "Monestirs", "Trobadors", "Hildegard von Bingen", "Notació Neumàtica", "Monodia", "Organum", "Guido d'Arezzo", "Ars Nova", "Polifonia Primitiva"] },
+            'RN': { name: "Renaixement", files: ["Polifonia", "Humanisme", "Madrigal", "Josquin des Prez", "Palestrina", "Impremta Musical", "Viola de gamba", "Contrapunt", "Orlando di Lasso", "Escola Veneciana"] },
+            'BR': { name: "Barroc", files: ["Baix Continu", "Òpera", "J.S. Bach", "Ornamentació", "Antonio Vivaldi", "Contrast Forte/Piano", "Clavicèmbal", "G.F. Händel", "Claudio Monteverdi", "Suite i Concert"] },
+            'CL': { name: "Classicisme", files: ["W.A. Mozart", "Simetria i Ordre", "Sonata", "L. van Beethoven", "Orquestra Moderna", "Melodia Acompanyada", "Clarinet", "J. Haydn", "Quartet de Corda", "Christoph W. Gluck"] },
+            'RM': { name: "Romanticisme", files: ["Individualisme", "F. Chopin", "Simfonia Coral", "Virtuosisme", "Lied", "Richard Wagner", "Poema Simfònic", "Johannes Brahms", "P.I. Tchaikovsky", "Giuseppe Verdi"] },
+            'S20': { name: "Segle XX", files: ["Atonalitat", "Arnold Schönberg", "Igor Stravinsky", "Música Electrònica", "Sintetitzador", "Minimalisme", "Dissonància", "Jazz i Blues", "George Gershwin", "John Cage"] }
+        };
+
+        const EXTENSIONS = [".exe", ".txt", ".docx", ".sys"];
+        const ICON_CLASSES = { ".exe": "icon-exe", ".txt": "icon-txt", ".docx": "icon-docx", ".sys": "icon-sys" };
+
+        let currentEra = null;
+        let filesInstalled = 0;
+        let completedEras = [];
+        let draggedFileData = null;
+
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        volumeSlider.oninput = (e) => {
+            bgMusic.volume = e.target.value;
+        };
+
+        function startWizard() {
+            document.getElementById('bios-screen').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
+            document.getElementById('taskbar').classList.remove('hidden');
+
+            // Start music on user interaction
+            bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
+
+            toggleEraMenu();
+        }
+
+        function toggleEraMenu() {
+            const modal = document.getElementById('era-modal-container');
+            modal.classList.toggle('hidden');
+            updateMenuUI();
+        }
+
+        function updateMenuUI() {
+            document.querySelectorAll('.era-item').forEach(item => {
+                if (completedEras.includes(item.dataset.era)) item.classList.add('completed');
+            });
+        }
+
+        function selectEra(eraKey) {
+            currentEra = eraKey;
+            filesInstalled = 0;
+            toggleEraMenu();
+
+            document.getElementById('installer-title').innerText = "Instal·lant " + ERA_DATA[eraKey].name;
+            updateInstallerUI();
+            spawnIcons();
+        }
+
+        function spawnIcons() {
+            const pool = document.getElementById('file-pool');
+            pool.innerHTML = '';
+
+            // 10 correct files
+            const correctOnes = [...ERA_DATA[currentEra].files].map(name => ({ name, correct: true }));
+
+            // 40 UNIQUE distractors (no repeats)
+            let possibleDistractors = [];
+            Object.keys(ERA_DATA).forEach(k => {
+                if (k !== currentEra) {
+                    ERA_DATA[k].files.forEach(f => {
+                        if (!possibleDistractors.includes(f)) possibleDistractors.push(f);
+                    });
+                }
+            });
+
+            // Shuffle distractors and pick 40 unique ones
+            possibleDistractors.sort(() => Math.random() - 0.5);
+            let distractors = possibleDistractors.slice(0, 40).map(name => ({ name, correct: false }));
+
+            const allFiles = [...correctOnes, ...distractors].sort(() => Math.random() - 0.5);
+
+            allFiles.forEach((fileObj, i) => {
+                const ext = EXTENSIONS[Math.floor(Math.random() * EXTENSIONS.length)];
+                const icon = document.createElement('div');
+                icon.className = 'icon';
+                icon.draggable = true;
+                icon.innerHTML = `<div class="icon-img ${ICON_CLASSES[ext]}"></div><div>${fileObj.name}${ext}</div>`;
+
+                // Position in pool (randomized grid)
+                const col = i % 7;
+                const row = Math.floor(i / 7);
+                icon.style.left = (20 + col * 105 + Math.random() * 15) + 'px';
+                icon.style.top = (20 + row * 95 + Math.random() * 15) + 'px';
+
+                icon.dataset.name = fileObj.name;
+                icon.dataset.correct = fileObj.correct;
+
+                icon.ondragstart = () => {
+                    draggedFileData = { isCorrect: fileObj.correct, element: icon };
+                    icon.style.opacity = "0.5";
+                };
+                icon.ondragend = () => {
+                    icon.style.opacity = "1";
+                };
+
+                pool.appendChild(icon);
+            });
+        }
+
+        function updateInstallerUI() {
+            document.getElementById('progress-bar').style.width = (filesInstalled * 10) + "%";
+            document.getElementById('status-text').innerText = `Fitxers instal·lats: ${filesInstalled}/10`;
+
+            if (filesInstalled >= 10) {
+                if (!completedEras.includes(currentEra)) completedEras.push(currentEra);
+                setTimeout(() => {
+                    alert("¡Sistema " + ERA_DATA[currentEra].name + " actualitzat amb èxit!");
+                    toggleEraMenu();
+                }, 400);
+            }
+        }
+
+        // --- Drag & Drop Logic ---
+        const instDrop = document.getElementById('installer-drop');
+        const trashDrop = document.getElementById('trash-drop');
+
+        [instDrop, trashDrop].forEach(zone => {
+            zone.ondragover = e => { e.preventDefault(); zone.classList.add('hover'); };
+            zone.ondragleave = () => zone.classList.remove('hover');
+        });
+
+        instDrop.ondrop = e => {
+            e.preventDefault();
+            instDrop.classList.remove('hover');
+            if (!draggedFileData) return;
+
+            if (draggedFileData.isCorrect) {
+                filesInstalled++;
+                draggedFileData.element.remove();
+                updateInstallerUI();
+            } else {
+                document.getElementById('bsod').classList.remove('hidden');
+            }
+            draggedFileData = null;
+        };
+
+        trashDrop.ondrop = e => {
+            e.preventDefault();
+            trashDrop.classList.remove('hover');
+            if (!draggedFileData) return;
+            draggedFileData.element.remove();
+            draggedFileData = null;
+        };
+
+    </script>
+</body>
+
+</html>

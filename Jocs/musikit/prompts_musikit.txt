@@ -1,0 +1,87 @@
+================================================================================
+PROJECT: MUSIKIT - BLUEPRINT STYLE ICONS
+STYLE: Technical Drawing, Blueprint, White Line Art on Blue Background, Minimalist.
+Background Color for Context: #0051ba (IKEA Blue) or similar Dark Blue.
+LINE COLOR: White or Light Chalk.
+ASPECT RATIO: --ar 1:1
+================================================================================
+
+--- MUSICAL CONCEPTS (ABSTRACT) ---
+
+[CONCEPT_MONODIA] (Medieval)
+PROMPT:
+A minimalist technical blueprint drawing representing "Monodia" (Single Melody). A single, clean, flowing waveform line centered on a blueprint grid background. White chalk style. Technical schematic feel. No extra noise. --ar 1:1
+
+[CONCEPT_POLYPHONY] (Renaissance)
+PROMPT:
+A minimalist technical blueprint drawing representing "Polyphony" (Multiple Melodies). Three distinct flowing lines interweaving harmoniously like a braid or DNA helix, on a blueprint grid background. White chalk style. Technical schematic. --ar 1:1
+
+[CONCEPT_BASSO_CONTINUO] (Baroque)
+PROMPT:
+A minimalist technical blueprint drawing representing "Basso Continuo". A thick, solid, straight horizontal line at the bottom, with pillars or smaller lines growing upwards from it. Representing foundation and support. Blueprint grid background. White lines. --ar 1:1
+
+[CONCEPT_CONTRAST] (Baroque)
+PROMPT:
+A minimalist technical blueprint drawing representing "Contrast". A design split in half: one side is dense with many lines, the other is empty or has a single thin line. Representing loud/soft or light/dark. Blueprint grid background. White lines. --ar 1:1
+
+[CONCEPT_FORM_ABA] (Classicism)
+PROMPT:
+A minimalist technical blueprint drawing representing "Sonata Form" (ABA). Three geometrical shapes in a row: A Circle, a Triangle, and a Circle (A-B-A structure). Symmetrical and balanced. Blueprint grid background. White lines. --ar 1:1
+
+[CONCEPT_ROMANTICISM] (Expression)
+PROMPT:
+A minimalist technical blueprint drawing representing "Romantic Expression". A chaotic, explosive splash or jagged line breaking out of a strict square box. Representing breaking rules and emotion. Blueprint grid background. White lines. --ar 1:1
+
+[CONCEPT_ATONAL] (20th Century)
+PROMPT:
+A minimalist technical blueprint drawing representing "Atonality". Scattered geometric points and disconnected short lines floating without a center or gravity. Abstract and random. Blueprint grid background. White lines. --ar 1:1
+
+[CONCEPT_ELECTRONIC] (20th Century)
+PROMPT:
+A minimalist technical blueprint drawing representing "Electronic Music". A square wave and a sawtooth wave (synthesizer shapes) or a circuit board node pattern. Technical and digital. Blueprint grid background. White lines. --ar 1:1
+
+--- INSTRUMENTS & TOOLS ---
+
+[INST_VOICE]
+PROMPT:
+A simple technical blueprint icon of a human profile silhouette speaking or singing (sound waves coming from mouth). Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_VIOLIN]
+PROMPT:
+A simple technical blueprint icon of a violin. Top-down view, schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_PIANO]
+PROMPT:
+A simple technical blueprint icon of piano keys (octave section). Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_FLUTE]
+PROMPT:
+A simple technical blueprint icon of a recorder flute. Vertical orientation. Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_LUTE]
+PROMPT:
+A simple technical blueprint icon of a lute or guitar. Round body, bent neck. Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_DRUM]
+PROMPT:
+A simple technical blueprint icon of a drum or tympani. Side view. Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_HARPSICHORD] (Clavicembalo)
+PROMPT:
+A simple technical blueprint icon of a harpsichord. Wing shape body with keyboard. Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_ELECTRIC_GUITAR]
+PROMPT:
+A simple technical blueprint icon of an electric guitar (Stratocaster shape). Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_MICROPHONE]
+PROMPT:
+A simple technical blueprint icon of a stage microphone. Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_SYNTH]
+PROMPT:
+A simple technical blueprint icon of a synthesizer keyboard with knobs. Schematic style. Minimalist white lines on blueprint blue. --ar 1:1
+
+[INST_ORCHESTRA]
+PROMPT:
+A simple technical blueprint icon representing an orchestra. A semicircle of dots or music stands. Schematic style. Minimalist white lines on blueprint blue. --ar 1:1

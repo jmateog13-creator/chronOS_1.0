@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusiDex GO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ffcc00;
+            --secondary: #3366cc;
+            --danger: #ff4444;
+            --success: #44ff44;
+            --bg-forest: #2d5a27;
+            --bg-city: #4a4a4a;
+            --bg-cave: #2c2c2c;
+            --pixel-font: 'Press Start 2P', cursive;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--pixel-font);
+            background: #1a1a1a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            height: 95vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #333;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #bg-layer {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background-size: cover;
+            background-position: center;
+            transition: background 0.5s ease;
+            filter: blur(6px) brightness(0.6);
+            z-index: 0;
+        }
+
+        /* --- HUD --- */
+        #hud {
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            z-index: 10;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #lives-display {
+            color: var(--danger);
+        }
+
+        #counter-display {
+            color: var(--primary);
+        }
+
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type=range] {
+            cursor: pointer;
+            accent-color: var(--primary);
+            width: 80px;
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 40px;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            color: var(--primary);
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-shadow: 4px 4px #000;
+        }
+
+        .instructions {
+            background: #333;
+            border: 4px solid #555;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 600px;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .instructions ul {
+            text-align: left;
+            margin-top: 15px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .instructions li::before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        /* --- WILD AREA --- */
+        #wild-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 40px;
+        }
+
+        #wild-box {
+            width: 320px;
+            height: 320px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: bounce 2s infinite ease-in-out;
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border: 8px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        #wild-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
+        }
+
+        #wild-box.attack {
+            animation: shake 0.2s infinite;
+            filter: drop-shadow(0 0 20px red);
+            color: red;
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-30px);
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(3px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-4px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        #hint-bubble {
+            background: white;
+            color: black;
+            padding: 20px 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            font-size: 16px;
+            margin-top: 40px;
+            border: 6px solid #000;
+            position: relative;
+            box-shadow: 0 10px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        #hint-bubble::after {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px;
+            border-style: solid;
+            border-color: transparent transparent white transparent;
+        }
+
+        /* --- INTERACTION --- */
+        #interaction-bar {
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.85);
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            border-top: 6px solid white;
+        }
+
+        .era-ball {
+            aspect-ratio: 1;
+            background-color: #eee;
+            background-size: cover;
+            background-position: center;
+            border: 4px solid #000;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .era-ball:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .era-ball:active {
+            transform: scale(0.9);
+        }
+
+        .era-ball span {
+            position: absolute;
+            bottom: 5px;
+            background: #fdfefe;
+            border: 2px solid #e74c3c;
+            color: #333;
+            font-size: 8px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            display: block;
+            pointer-events: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            white-space: nowrap;
+        }
+
+        /* Show text on hover */
+        .era-ball:hover span {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .era-ball .image-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+
+        .ball-mitjana {
+            background-image: url("img/bolamitjana.png");
+        }
+
+        .ball-renaix {
+            background-image: url("img/bolarenaixement.png");
+        }
+
+        .ball-barroc {
+            background-image: url("img/bolabarroc.png");
+        }
+
+        .ball-classic {
+            background-image: url("img/bolaclassic.png");
+        }
+
+        .ball-roman {
+            background-image: url("img/bolaromanticisme.png");
+        }
+
+        .ball-sxx {
+            background-image: url("img/bolasegleXX.png");
+        }
+
+        /* Remove the top-half overlay logic since we have full ball images */
+        .era-ball .top {
+            display: none;
+        }
+
+        /* --- MODAL --- */
+        #modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 40px;
+        }
+
+        #dex-screen {
+            background: #fdfefe;
+            border: 12px solid #e74c3c;
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            color: #333;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-radius: 20px;
+            box-shadow: inset -10px -10px 0 rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        #dex-header {
+            border-bottom: 4px solid #e74c3c;
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 16px;
+            color: #e74c3c;
+        }
+
+        #dex-content {
+            font-size: 14px;
+            line-height: 1.8;
+            max-height: 250px;
+            overflow-y: auto;
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            border: 4px solid #bdc3c7;
+            color: #2c3e50;
+        }
+
+        #dex-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #d1f2eb;
+            padding: 10px;
+            border-radius: 10px;
+            border: 4px solid #a3e4d7;
+            align-self: center;
+            width: 150px;
+            height: 150px;
+        }
+
+        #dex-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .btn-pixel {
+            margin-top: 30px;
+            padding: 15px 30px;
+            background: var(--primary);
+            color: #000;
+            border: 6px solid #000;
+            font-family: var(--pixel-font);
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #997a00;
+            transition: all 0.1s;
+        }
+
+        .btn-pixel:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #997a00;
+        }
+
+        /* --- FEEDBACK --- */
+        #notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            text-align: center;
+            display: none;
+            z-index: 50;
+            pointer-events: none;
+            text-shadow: 6px 6px #000;
+        }
+
+        @media (max-width: 600px) {
+            #interaction-bar {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            #wild-box {
+                width: 150px;
+                height: 150px;
+                font-size: 80px;
+            }
+
+            #start-screen h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Catch ‘Em on the Go.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="game-container">
+        <div id="bg-layer"></div>
+        <!-- PANTALLA D'INICI -->
+        <div id="start-screen">
+            <h1>MUSIDEX GO</h1>
+            <div class="instructions">
+                <h2>INSTRUCCIONS:</h2>
+                <ul>
+                    <li>Troba les 24 criatures musicals que s'amaguen per la història.</li>
+                    <li>Llegeix la **Pista** per saber de quina època és cada monstre.</li>
+                    <li>Llança la **Bola de l'Època** correcta per atrapar-lo.</li>
+                    <li>Si falles 5 vegades, perdràs la teva llicència de caçador!</li>
+                </ul>
+            </div>
+            <button class="btn-pixel" onclick="game.start()">COMENÇAR PARTIDA</button>
+        </div>
+
+        <div id="hud">
+            <div id="lives-display">❤️ LLICÈNCIA: 5</div>
+            <div class="volume-controls">
+                <span>🔊</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                    oninput="game.setVolume(this.value)">
+            </div>
+            <div id="counter-display">DEX: 0/24</div>
+        </div>
+
+        <div id="wild-area">
+            <div id="wild-box"><img id="wild-img" src="" alt="?"></div>
+            <div id="hint-bubble">Espiant el bosc musical...</div>
+        </div>
+
+        <div id="interaction-bar">
+            <div class="era-ball ball-mitjana" onclick="game.attemptCatch('mitjana')" title="EDAT MITJANA">
+                <div class="top"></div>
+                <span>MITJANA</span>
+            </div>
+            <div class="era-ball ball-renaix" onclick="game.attemptCatch('renaix')" title="RENAIXEMENT">
+                <div class="top"></div>
+                <span>RENAIX.</span>
+            </div>
+            <div class="era-ball ball-barroc" onclick="game.attemptCatch('barroc')" title="BARROC">
+                <div class="top"></div>
+                <span>BARROC</span>
+            </div>
+            <div class="era-ball ball-classic" onclick="game.attemptCatch('classic')" title="CLASSICISME">
+                <div class="top"></div>
+                <span>CLASSIC.</span>
+            </div>
+            <div class="era-ball ball-roman" onclick="game.attemptCatch('roman')" title="ROMANTICISME">
+                <div class="top"></div>
+                <span>ROMAN.</span>
+            </div>
+            <div class="era-ball ball-sxx" onclick="game.attemptCatch('sxx')" title="SEGLE XX">
+                <div class="top"></div>
+                <span>S. XX</span>
+            </div>
+        </div>
+
+        <div id="notification">GOTCHA!</div>
+
+        <div id="modal-overlay">
+            <div id="dex-screen">
+                <div id="dex-header">
+                    <span id="dex-name">MONSTER</span>
+                    <span id="dex-era">ERA</span>
+                </div>
+                <div id="dex-icon"><img id="dex-img" src="" alt="Monster"></div>
+                <div id="dex-content">
+                    Lore content here...
+                </div>
+                <button id="modal-btn" class="btn-pixel" onclick="game.handleModalAction()">CONTINUAR CAÇA</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MONSTERS = [
+            // --- EDAT MITJANA ---
+            { id: 1, name: "GREGOMON", era: "mitjana", img: "gregomon.png", hint: "Visc al monestir i canto sol.", dex: "HABITAT: Monestirs. Aquesta criatura solitària només sap cantar una línia melòdica (Monodia) en llatí. Mai fa servir instruments." },
+            { id: 2, name: "TROBACAT", era: "mitjana", img: "trobacat.png", hint: "Visc al castell i canto amor.", dex: "HABITAT: Castells. Un felí poeta que viatja divertint als nobles. Canta en la llengua del poble sobre cavallers i amor, mai en llatí." },
+            { id: 3, name: "LLAÜTSAUR", era: "mitjana", img: "llautsar.png", hint: "Tinc forma de pera.", dex: "TRAKKING: Se'l reconeix pel seu cos de fusta amb forma de pera. És l'instrument de corda preferit dels dracs medievals i els trobadors." },
+            { id: 4, name: "ACAPELLIX", era: "mitjana", img: "acapellix.png", hint: "Odio els instruments.", dex: "HABILITAT: Veu Pura. Aquest esperit odia la tecnologia i els instruments. Només es comunica mitjançant la veu humana (A Cappella)." },
+            // --- RENAIXEMENT ---
+            { id: 5, name: "HUMANITRON", era: "renaix", img: "humanitron.png", hint: "L'home és el centre de tot.", dex: "EVOLUCIÓ: Ha deixat de mirar només a Déu (Teocentrisme) per centrar-se en l'Ésser Humà (Humanisme). És molt intel·ligent." },
+            { id: 6, name: "GUTENBIRD", era: "renaix", img: "gutenbird.png", hint: "Faig llibres molt ràpid.", dex: "HABILITAT: Còpia Ràpida. Ocell metàl·lic capaç de crear milers de partitures en segons gràcies al seu mecanisme d'Impremta." },
+            { id: 7, name: "POLIFOX", era: "renaix", img: "polifox.png", hint: "Tinc moltes veus alhora.", dex: "BIOLOGIA: Té múltiples caps que canten melodies diferents alhora (Polifonia), però sempre aconsegueixen sonar equilibrats i bells." },
+            { id: 8, name: "PALESTRINUS", era: "renaix", img: "palestrinus.png", hint: "La superstar del Vaticà.", dex: "LLEGENDA: El guardià de la música religiosa al Vaticà. El seu cant és tan pur que va salvar la polifonia de ser prohibida." },
+            // --- BARROC ---
+            { id: 9, name: "CLAVICLAW", era: "barroc", img: "claviclaw.png", hint: "Sóc el rei del teclat pinçat.", dex: "ATAC: Corda Pinçada. El seu so és metàl·lic i constant. És l'avantpassat del piano, però no pot canviar el volum." },
+            { id: 10, name: "OPERADRAM", era: "barroc", img: "operadram.png", hint: "Sóc teatre cantat.", dex: "COMPORTAMENT: Molt dramàtic. Li encanta disfressar-se i explicar històries cantant (Òpera). Va néixer a Itàlia." },
+            { id: 11, name: "VIVALDOG", era: "barroc", img: "vivaldog.png", hint: "Pèl-roig de 4 estacions.", dex: "RARESA: Un gos capellà amb el pelatge vermell. Pot invocar el clima de les 'Quatre Estacions' amb el seu violí màgic." },
+            { id: 12, name: "FORTEFLUIX", era: "barroc", img: "fortefluix.png", hint: "M'encanta el contrast.", dex: "HABILITAT: Dinàmica Extrema. No sap estar quiet. Passa de cridar (Fort) a xiuxiuejar (Fluix) sense avisar. Busca el contrast." },
+            // --- CLASSICISME ---
+            { id: 13, name: "RACIONOWL", era: "classic", img: "racionowl.png", hint: "Tot ha de tenir lògica.", dex: "PERSONALITAT: Obsessionat amb l'Ordre i la Raó. Odia el desordre del Barroc. Les seves plomes estan perfectament equilibrades." },
+            { id: 14, name: "WOLFGANGSTER", era: "classic", img: "wolfgangster.png", hint: "Nen prodigi de Viena.", dex: "LLEGENDA: Va començar a compondre quan era un cadell. La seva música és elegant i perfecta. Viu a Viena." },
+            { id: 15, name: "PIANOFORTE", era: "classic", img: "pianoforte.png", hint: "Puc tocar suau i fort.", dex: "EVOLUCIÓ: La versió millorada del Claviclaw. Aquest monstre pot colpejar les cordes fort o fluix segons l'emoció." },
+            { id: 16, name: "MELODUCK", era: "classic", img: "meloduck.png", hint: "Sóc clara i acompanyada.", dex: "ESTRUCTURA: Sempre neda amb una Melodia Clara a la superfície, mentre les seves potes fan un Acompanyament suau sota l'aigua." },
+            // --- ROMANTICISME ---
+            { id: 17, name: "EMOTIBEAR", era: "roman", img: "emotibear.png", hint: "Només importen els sentiments.", dex: "HABILITAT: Cor Gegant. No utilitza la raó, només els Sentiments. Plora i riu amb molta facilitat. La passió és el seu aliment." },
+            { id: 18, name: "LUDWIGAR", era: "roman", img: "ludwigar.png", hint: "No hi sento, però composo.", dex: "LLEGENDA: Un geni vell i malhumorat. Tot i estar Sord, va compondre himnes poderosos. Fa de pont entre dues èpoques." },
+            { id: 19, name: "RUBATOSNAKE", era: "roman", img: "rubatosnake.png", hint: "Estiro el temps com vull.", dex: "ATAC: Temps Elàstic. Aquesta serp pot accelerar o frenar el ritme de la música (Rubato) per hipnotitzar la seva presa." },
+            { id: 20, name: "TEMPESTUS", era: "roman", img: "tempestus.png", hint: "Sóc la natura salvatge.", dex: "HABITAT: Boscos foscos i nits de tempesta. Als romàntics els encanta la seva fúria incontrolable." },
+            // --- SEGLE XX ---
+            { id: 21, name: "DISSONANT", era: "sxx", img: "dissonant.png", hint: "Sono malament expressament.", dex: "COMPORTAMENT: Agressiu. Li agrada xocar notes entre elles (Dissonància) per crear tensió, por i angoixa." },
+            { id: 22, name: "DODECAPUS", era: "sxx", img: "dodecapus.png", hint: "Tinc 12 notes sense ordre.", dex: "BIOLOGIA: Un pop matemàtic amb 12 tentacles. Utilitza les 12 notes de l'escala sense cap ordre ni jerarquia (Dodecafonisme)." },
+            { id: 23, name: "DEBUSSYPUFF", era: "sxx", img: "debussypuff.png", hint: "Sóc una atmosfera borrosa.", dex: "HABILITAT: Boira Onírica. No té línies clares, és com un somni borrós (Impressionisme). Li agrada la llum de la lluna." },
+            { id: 24, name: "RADIOMOUSE", era: "sxx", img: "radiomouse.png", hint: "Escolto música a casa.", dex: "TECNOLOGIA: Un ratolí elèctric. Gràcies a ell, la música ja no viu només als concerts, sinó que viatja per l'aire fins a casa." }
+        ];
+
+        const BACKGROUNDS = {
+            mitjana: 'url("img/fonsmitjana.jpg")',
+            renaix: 'url("img/fonsrenaixement.jpg")',
+            barroc: 'url("img/fonsrenaixement.jpg")', // Placeholder if missing
+            classic: 'url("img/fonsclassicisme.jpg")',
+            roman: 'url("img/fonsromanticisme.jpg")',
+            sxx: 'url("img/fonssegleXX.jpg")'
+        };
+
+        class Game {
+            constructor() {
+                this.lives = 5;
+                this.caught = [];
+                this.currentMonster = null;
+                this.isProcessing = false;
+                this.music = document.getElementById('bg-music');
+                this.started = false;
+            }
+
+            start() {
+                document.getElementById('start-screen').style.display = 'none';
+                this.started = true;
+                this.music.play().catch(e => console.log("Music auto-play blocked"));
+                this.setVolume(document.getElementById('volume-slider').value);
+                this.nextMonster();
+                this.updateHUD();
+            }
+
+            setVolume(val) {
+                this.music.volume = val;
+            }
+
+            updateHUD() {
+                document.getElementById('lives-display').innerText = `❤️ LLICÈNCIA: ${this.lives}`;
+                document.getElementById('counter-display').innerText = `DEX: ${this.caught.length}/24`;
+            }
+
+            nextMonster() {
+                document.getElementById('modal-overlay').style.display = 'none';
+
+                if (this.caught.length === 24) { this.victory(); return; }
+                if (this.lives <= 0) { this.gameOver(); return; }
+
+                const available = MONSTERS.filter(m => !this.caught.includes(m.id));
+                this.currentMonster = available[Math.floor(Math.random() * available.length)];
+
+                const box = document.getElementById('wild-box');
+                document.getElementById('wild-img').src = `img/${this.currentMonster.img}`;
+                box.classList.remove('attack');
+
+                document.getElementById('hint-bubble').innerText = this.currentMonster.hint;
+
+                const bg = BACKGROUNDS[this.currentMonster.era] || '#000';
+                document.getElementById('bg-layer').style.backgroundImage = bg;
+
+                this.isProcessing = false;
+            }
+
+            attemptCatch(era) {
+                if (this.isProcessing || !this.started) return;
+                this.isProcessing = true;
+
+                if (era === this.currentMonster.era) {
+                    this.success();
+                } else {
+                    this.fail();
+                }
+            }
+
+            success() {
+                const notif = document.getElementById('notification');
+                notif.innerText = "GOTCHA!";
+                notif.style.color = "var(--success)";
+                notif.style.display = "block";
+
+                setTimeout(() => {
+                    notif.style.display = "none";
+                    this.caught.push(this.currentMonster.id);
+                    this.updateHUD();
+                    this.openDex();
+                }, 1000);
+            }
+
+            fail() {
+                const box = document.getElementById('wild-box');
+                box.classList.add('attack');
+
+                const notif = document.getElementById('notification');
+                notif.innerText = "HA ESCAPAT!";
+                notif.style.color = "var(--danger)";
+                notif.style.display = "block";
+
+                this.lives--;
+                this.updateHUD();
+
+                setTimeout(() => {
+                    notif.style.display = "none";
+                    if (this.lives <= 0) {
+                        this.gameOver();
+                    } else {
+                        this.nextMonster();
+                    }
+                }, 1200);
+            }
+
+            openDex() {
+                document.getElementById('modal-overlay').style.display = 'flex';
+                document.getElementById('dex-name').innerText = this.currentMonster.name;
+                document.getElementById('dex-era').innerText = this.currentMonster.era.toUpperCase();
+                document.getElementById('dex-img').src = `img/${this.currentMonster.img}`;
+                document.getElementById('dex-content').innerText = this.currentMonster.dex;
+                document.getElementById('modal-btn').innerText = "CONTINUAR CAÇA";
+                this.modalState = "dex";
+                document.getElementById('dex-icon').style.display = 'flex';
+            }
+
+            handleModalAction() {
+                if (this.modalState === "dex") {
+                    this.nextMonster();
+                } else {
+                    location.reload();
+                }
+            }
+
+            gameOver() {
+                document.getElementById('modal-overlay').style.display = 'flex';
+                document.getElementById('dex-name').innerText = "GAME OVER";
+                document.getElementById('dex-era').innerText = "LLICÈNCIA PERDUDA";
+                document.getElementById('dex-icon').style.display = 'none';
+                document.getElementById('dex-content').innerText = "Has fallat 5 vegades i la teva llicència de caçador de monstres ha estat revocada. El món de la música continua en perill...";
+                document.getElementById('modal-btn').innerText = "REINTENTAR";
+                this.modalState = "end";
+            }
+
+            victory() {
+                document.getElementById('modal-overlay').style.display = 'flex';
+                document.getElementById('dex-name').innerText = "VICTÒRIA!";
+                document.getElementById('dex-era').innerText = "DEX COMPLETADA";
+                document.getElementById('dex-icon').style.display = 'none';
+                document.getElementById('dex-content').innerText = "INCREÏBLE! Ets el millor caçador de monstres musicals. Has atrapat les 24 criatures i has salvat la història de la música!";
+                document.getElementById('modal-btn').innerText = "TORNAR A JUGAR";
+                this.modalState = "end";
+            }
+        }
+
+        const game = new Game();
+    </script>
+</body>
+
+</html>

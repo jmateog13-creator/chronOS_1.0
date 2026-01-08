@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Draft Històric: La Nit dels Elegits</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Roboto+Condensed:wght@700&display=swap');
+
+        :root {
+            --court-wood: #dbb48c;
+            --paint: #e65100;
+            --line: #fff;
+            --text-dark: #222;
+        }
+
+        body {
+            background-color: #333;
+            background-image:
+                radial-gradient(#d2b48c 2px, transparent 2px),
+                radial-gradient(#d2b48c 2px, transparent 2px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-color: #5d4037;
+            font-family: 'Roboto Condensed', sans-serif;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            background: #222;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            border-bottom: 4px solid var(--paint);
+            height: 80px;
+        }
+
+        h1 {
+            font-family: 'Russo One', sans-serif;
+            text-transform: uppercase;
+            font-size: 2rem;
+            margin: 0;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type=range] {
+            accent-color: var(--paint);
+            cursor: pointer;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1400px;
+            height: calc(100vh - 80px);
+            /* Subtract header */
+            display: grid;
+            grid-template-rows: 320px 1fr;
+            /* Podium height increased for cards */
+            gap: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* PODIUM SECTION */
+        #podium-section {
+            background: #222;
+            border: 4px solid #444;
+            border-bottom: 4px solid var(--paint);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIiBmaWxsLW9wYWNpdHk9IjAuMDUiPjxwYXRoIGQ9Ik0wIDIwaDIwVjBIMHYyMHptMjAgMjBoMjBWMjBIMjB2MjB6TTAgNDBoMjBWMjBIMHYyMHoyMCAwaDIwVjBIMjB2MjB6IiBmaWxsPSIjZmZmIi8+PC9zdmc+');
+        }
+
+        .jumbotron-text {
+            color: var(--paint);
+            font-family: 'Russo One', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            animation: blink 2s infinite;
+            text-shadow: 0 0 10px rgba(230, 81, 0, 0.5);
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ROOKIE CARD */
+        #current-prospect {
+            background: #fff;
+            color: #000;
+            width: 220px;
+            /* Card size */
+            height: 300px;
+            border-radius: 10px;
+            text-align: center;
+            transform: rotate(-2deg);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            cursor: grab;
+            transition: transform 0.2s;
+            position: relative;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 5px solid white;
+        }
+
+        #current-prospect:hover {
+            transform: rotate(0deg) scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            z-index: 50;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            background-color: #eee;
+            border-bottom: 2px solid var(--paint);
+        }
+
+        .card-info {
+            flex: 1;
+            padding: 5px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .prospect-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'Russo One', sans-serif;
+            text-transform: uppercase;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .badge-pos {
+            background: #333;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .prospect-stats {
+            font-size: 0.8rem;
+            font-family: monospace;
+            color: #555;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px;
+            border-radius: 3px;
+        }
+
+        /* FRANCHISE GRID */
+        #franchise-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            padding-bottom: 10px;
+        }
+
+        .franchise-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            /* Align top */
+            padding: 5px;
+            justify-content: center;
+            /* Center everything */
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+            border: 4px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .franchise-card.drag-over {
+            transform: scale(1.02);
+            border-color: #e65100;
+            background: #fff;
+        }
+
+        .team-logo {
+            width: 180px;
+            height: 180px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 5px;
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .team-name {
+            color: #333;
+            font-family: 'Russo One', sans-serif;
+            font-size: 1.1rem;
+            margin: 0;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .team-slogan {
+            color: #666;
+            font-style: italic;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .roster-count {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #333;
+            color: #fff;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .draft-caps {
+            display: flex;
+            gap: 5px;
+            margin-top: auto;
+            /* Push to bottom */
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            padding-top: 5px;
+        }
+
+        .drafted-mini {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-size: cover;
+            border: 2px solid white;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* MODALS */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .modal.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal h1 {
+            color: gold;
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal p {
+            font-size: 1.5rem;
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .btn-start,
+        .btn-restart {
+            background: var(--paint);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: 'Russo One', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn-start:hover,
+        .btn-restart:hover {
+            transform: scale(1.05);
+            background: #ff6d00;
+        }
+
+        /* FOUL MODAL */
+        .foul-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: #fff;
+            border: 5px solid #d32f2f;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+        }
+
+        .foul-modal.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .foul-icon {
+            font-size: 80px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .foul-title {
+            font-family: 'Russo One', sans-serif;
+            color: #d32f2f;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .foul-text {
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Fast Break Thunder.m4a" type="audio/mp3">
+    </audio>
+
+    <header>
+        <h1>NBA DRAFT HISTÒRIC 🏀</h1>
+        <div id="volume-control">
+            <span>🔊</span>
+            <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+        </div>
+    </header>
+
+    <div id="game-container">
+        <!-- Podium -->
+        <div id="podium-section">
+            <div class="jumbotron-text">🔴 ON THE CLOCK: PICK #<span id="pick-num">1</span></div>
+            <div id="prospect-container">
+                <!-- Prospect Card Injected Here -->
+            </div>
+        </div>
+
+        <!-- Teams -->
+        <div id="franchise-grid">
+            <!-- Teams Injected Here -->
+        </div>
+    </div>
+
+    <!-- START MODAL -->
+    <div id="start-modal" class="modal visible">
+        <h1>BENVINGUT AL DRAFT</h1>
+        <p>Ets el General Manager de la Història de la Música.<br>
+            La teva missió és assignar cada <strong>Rookie (Compositor)</strong> a la seva <strong>Franquícia
+                (Època)</strong> correcta.</p>
+        <button class="btn-start" onclick="startGame()">COMENÇAR DRAFT</button>
+    </div>
+
+    <!-- WIN MODAL -->
+    <div id="win-modal" class="modal">
+        <h1>LEAGUE CHAMPIONS! 🏆</h1>
+        <p>Has completat els fitxatges de totes les èpoques amb èxit!</p>
+        <button class="btn-restart" onclick="location.reload()">NOVA TEMPORADA</button>
+    </div>
+
+    <!-- FOUL MODAL -->
+    <div id="foul-modal" class="foul-modal">
+        <span class="foul-icon">🚫</span>
+        <div class="foul-title">TURNOVER!</div>
+        <div class="foul-text">Aquest jugador no encaixa en aquest equip!</div>
+        <button class="btn-start" style="font-size: 1rem; padding: 10px 30px; background: #333;"
+            onclick="closeFoul()">CONTINUAR</button>
+    </div>
+
+    <script>
+        const GAME_DATA = {
+            franchises: [
+                {
+                    id: "mitjana",
+                    name: "The Gregorian Monks",
+                    city: "Edat Mitjana",
+                    colors: ["#5d4037", "#ffffff"],
+                    img: "img/monks.png",
+                    slogan: "Defense & Silence"
+                },
+                {
+                    id: "renaix",
+                    name: "Florence Humanists",
+                    city: "Renaixement",
+                    colors: ["#ffd700", "#800000"],
+                    img: "img/humanists.png",
+                    slogan: "Perfect Harmony"
+                },
+                {
+                    id: "barroc",
+                    name: "Basso Continuo Ballers",
+                    city: "Barroc",
+                    colors: ["#4b0082", "#ffd700"],
+                    img: "img/bassocontinuo.png",
+                    slogan: "Ornament Offense"
+                },
+                {
+                    id: "classic",
+                    name: "Vienna Rationalists",
+                    city: "Classicisme",
+                    colors: ["#000000", "#ffffff"],
+                    img: "img/rationalism.png",
+                    slogan: "Trust the Form"
+                },
+                {
+                    id: "roman",
+                    name: "Sturm und Dunkers",
+                    city: "Romanticisme",
+                    colors: ["#ff0000", "#000000"],
+                    img: "img/sturm.png",
+                    slogan: "Passion & Power"
+                },
+                {
+                    id: "sxx",
+                    name: "Atonal All-Stars",
+                    city: "Segle XX",
+                    colors: ["#00ff00", "#333333"],
+                    img: "img/atonal.png",
+                    slogan: "Break the Rules"
+                }
+            ],
+            prospects: [
+                // EDAT MITJANA
+                { name: "Guido d'Arezzo", position: "Coach", era: "mitjana", stats: "Hand Signs: 99", img: "img/guido.png" },
+                { name: "Alfons X", position: "Small Forward", era: "mitjana", stats: "Cantigas: 420", img: "img/alfons.png" },
+                { name: "Leonin", position: "Center", era: "mitjana", stats: "Organum: 2.0", img: "img/leonin.png" },
+
+                // RENAIXEMENT
+                { name: "Josquin des Prez", position: "Point Guard", era: "renaix", stats: "Polyphony: 100", img: "img/josquin.png" },
+                { name: "Palestrina", position: "Shooting Guard", era: "renaix", stats: "Clarity: 99", img: "img/palestrina.png" },
+                { name: "Tomás L. de Victoria", position: "Power Forward", era: "renaix", stats: "Mysticism: 95", img: "img/victoria.png" },
+
+                // BARROC
+                { name: "J.S. Bach", position: "The GOAT", era: "barroc", stats: "Fugues: Infinite", img: "img/bach.png" },
+                { name: "A. Vivaldi", position: "Small Forward", era: "barroc", stats: "Speed: Presto", img: "img/vivaldi.png" },
+                { name: "G.F. Händel", position: "Center", era: "barroc", stats: "Oratorios: Huge", img: "img/handel.png" },
+
+                // CLASSICISME
+                { name: "W.A. Mozart", position: "Rookie of the Year", era: "classic", stats: "Talent: Godlike", img: "img/mozart.png" },
+                { name: "J. Haydn", position: "Veteran Leader", era: "classic", stats: "Symphonies: 104", img: "img/haydn.png" },
+
+                // ROMANTICISME (Beethoven moved here!)
+                { name: "L. van Beethoven", position: "Power Forward", era: "roman", stats: "Power: Fortissimo", img: "img/beethoven.png" },
+                { name: "F. Chopin", position: "Point Guard", era: "roman", stats: "Touch: Delicate", img: "img/chopin.png" },
+                { name: "R. Wagner", position: "Center", era: "roman", stats: "Drama: 1000%", img: "img/wagner.png" },
+                { name: "P.I. Tchaikovsky", position: "Shooting Guard", era: "roman", stats: "Melody: Elite", img: "img/tchaikovsky.png" },
+
+                // SEGLE XX
+                { name: "I. Stravinsky", position: "Power Forward", era: "sxx", stats: "Rhythm: Savage", img: "img/stravinsky.png" },
+                { name: "A. Schoenberg", position: "Coach", era: "sxx", stats: "System: 12-Tone", img: "img/schoemberg.png" },
+                { name: "John Cage", position: "Bench", era: "sxx", stats: "Silence: 4'33''", img: "img/cage.png" }
+            ]
+        };
+
+        // State
+        let queue = [];
+        let currentProspect = null;
+        let pickNum = 1;
+        const totalProspects = GAME_DATA.prospects.length;
+        const bgMusic = document.getElementById('bg-music');
+
+        function init() {
+            // Render Franchises
+            const grid = document.getElementById('franchise-grid');
+            GAME_DATA.franchises.forEach(fran => {
+                const card = document.createElement('div');
+                card.className = 'franchise-card';
+                card.dataset.id = fran.id;
+                card.style.borderTop = `5px solid ${fran.colors[0]}`;
+
+                card.innerHTML = `
+                    <div class="roster-count" id="count-${fran.id}">0</div>
+                    <div class="team-logo" style="background-image: url('${fran.img}')"></div>
+                    <div class="team-name">${fran.name}</div>
+                    <div class="team-slogan">${fran.slogan}</div>
+                    <div class="draft-caps" id="caps-${fran.id}"></div>
+                `;
+
+                card.ondragover = e => { e.preventDefault(); card.classList.add('drag-over'); };
+                card.ondragleave = e => { card.classList.remove('drag-over'); };
+                card.ondrop = handleDrop;
+
+                grid.appendChild(card);
+            });
+
+            // Queue
+            queue = [...GAME_DATA.prospects].sort(() => Math.random() - 0.5);
+            nextProspect();
+        }
+
+        function nextProspect() {
+            const container = document.getElementById('prospect-container');
+            container.innerHTML = '';
+
+            if (queue.length === 0) {
+                // Determine Win
+                setTimeout(() => {
+                    document.getElementById('win-modal').classList.add('visible');
+                }, 1000);
+                return;
+            }
+
+            currentProspect = queue.pop();
+            document.getElementById('pick-num').textContent = pickNum;
+
+            const card = document.createElement('div');
+            card.id = 'current-prospect';
+            card.draggable = true;
+
+            // Layout: Image Top, Info Bottom
+            card.innerHTML = `
+                <div class="card-image" style="background-image: url('${currentProspect.img}')"></div>
+                <div class="card-info">
+                    <div class="prospect-name">${currentProspect.name}</div>
+                    <div><span class="badge-pos">${currentProspect.position}</span></div>
+                    <div class="prospect-stats">${currentProspect.stats}</div>
+                </div>
+            `;
+
+            card.ondragstart = (e) => {
+                card.style.opacity = '0.5';
+            };
+
+            card.ondragend = (e) => {
+                card.style.opacity = '1';
+            }
+
+            container.appendChild(card);
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const card = e.target.closest('.franchise-card');
+            card.classList.remove('drag-over');
+
+            if (!currentProspect) return;
+
+            const targetEra = card.dataset.id;
+            const prospectEra = currentProspect.era;
+
+            if (targetEra === prospectEra) {
+                // Drafted!
+                const caps = document.getElementById(`caps-${targetEra}`);
+                const mini = document.createElement('div');
+                mini.className = 'drafted-mini';
+                mini.style.backgroundImage = `url('${currentProspect.img}')`;
+                caps.appendChild(mini);
+
+                // Update count
+                const count = document.getElementById(`count-${targetEra}`);
+                count.textContent = parseInt(count.textContent) + 1;
+
+                pickNum++;
+                nextProspect();
+            } else {
+                // Wrong team!
+                showFoul();
+            }
+        }
+
+        function showFoul() {
+            const modal = document.getElementById('foul-modal');
+            modal.classList.add('visible');
+            // Play generic buzzer if available? Or just visual.
+        }
+
+        function closeFoul() {
+            document.getElementById('foul-modal').classList.remove('visible');
+        }
+
+        function startGame() {
+            document.getElementById('start-modal').classList.remove('visible');
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(e => console.log("Audio needs interaction"));
+        }
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oficina Postal del Temps (Steampunk)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Rye&display=swap');
+
+        :root {
+            --wood: #3e2723;
+            --brass: #bcaaa4;
+            --gold: #ffecb3;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier Prime', monospace;
+            background-color: #000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+            position: relative;
+            background: url('img/fons.jpg') no-repeat center center;
+            background-size: cover;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            border: 4px solid #5d4037;
+        }
+
+        /* --- UI ELEMENTS --- */
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border: 2px solid #cd7f32;
+            border-radius: 10px;
+            color: #ffecb3;
+            font-size: 1.2rem;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border: 2px solid #cd7f32;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffecb3;
+            z-index: 10;
+        }
+
+        input[type=range] {
+            accent-color: #cd7f32;
+        }
+
+        /* --- GAME AREA --- */
+
+        #office {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Tubes Area */
+        #tubes-container {
+            flex: 0 0 65%;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: flex-start;
+            padding-top: 40px;
+            position: relative;
+        }
+
+        .tube {
+            width: 160px;
+            height: 400px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            transition: transform 0.2s;
+        }
+
+        .tube-img {
+            order: 1;
+            /* Image first */
+            width: 100%;
+            height: 320px;
+            /* Specific height for image area */
+            background: url('img/bustia.png') no-repeat center top;
+            background-size: contain;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .tube-label {
+            order: 2;
+            /* Label below */
+            background: #20100a;
+            color: #ffecb3;
+            border: 2px solid #cd7f32;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-family: 'Rye', serif;
+            font-size: 1rem;
+            text-align: center;
+            margin-top: 5px;
+            /* Space between tube and label */
+            z-index: 2;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Animation class for suction */
+        .suction-effect {
+            position: absolute;
+            top: 60px;
+            /* Adjusted down slightly for larger tube */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            background: url('img/efectesucció.png') no-repeat center center;
+            background-size: contain;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .perform-suction {
+            animation: suckAnim 0.4s ease-out forwards;
+        }
+
+        @keyframes suckAnim {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0.2) translateY(-50px);
+            }
+        }
+
+
+        /* Desk Area */
+        #desk {
+            flex: 1;
+            position: relative;
+        }
+
+        /* --- CAPSULES (Letters) --- */
+        .letter {
+            width: 220px;
+            /* Even bigger */
+            height: 90px;
+            background: url('img/carta.png') no-repeat center center;
+            background-size: contain;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+            transition: transform 0.1s;
+            z-index: 100;
+        }
+
+        .letter:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+            z-index: 200;
+        }
+
+        /* Text Label on Capsule */
+        .capsule-label {
+            background: #fff9c4;
+            padding: 4px 10px;
+            border: 1px solid #8d6e63;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #3e2723;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* --- MODALS --- */
+        #start-screen,
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ffecb3;
+            z-index: 50;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-family: 'Rye', serif;
+            font-size: 3.5rem;
+            color: #cd7f32;
+            text-shadow: 0 0 10px #e65100;
+            margin-bottom: 20px;
+        }
+
+        #start-screen p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .btn-start {
+            background: #cd7f32;
+            color: #20100a;
+            border: 2px solid #ffecb3;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Rye', serif;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(205, 127, 50, 0.5);
+            transition: all 0.3s;
+        }
+
+        .btn-start:hover {
+            background: #ffecb3;
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Rust and Ribbon Gears.m4a" type="audio/mp3">
+    </audio>
+
+    <div id="game-container">
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>OFICINA PNEUMÀTICA</h1>
+            <p>Benvingut a la sala de classificació de vapor.<br>Envia les càpsules de missatges arrossegant-les al nom
+                de l'època corresponent abans que la pressió pugi massa!</p>
+            <p style="font-size: 1rem; color: #ffcc80;">(Supera 5 nivells per guanyar l'ascens)</p>
+            <button class="btn-start" onclick="startGame()">ACTIVAR SISTEMA</button>
+        </div>
+
+        <!-- HUD & Controls -->
+        <div id="hud" class="hidden">
+            PRESSIÓ (Temps): <span id="time">50</span>s | CÀPSULES: <span id="score">0</span>/<span id="target">5</span>
+            | NIV: <span id="level">1</span>/5
+        </div>
+
+        <div id="volume-control" class="hidden">
+            <span>🔊</span>
+            <input type="range" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+        </div>
+
+        <!-- Main Office -->
+        <div id="office" class="hidden">
+
+            <div id="tubes-container">
+                <!-- Tub 1: Edat Mitjana -->
+                <div class="tube" data-era="edat_mitjana">
+                    <div class="tube-img"></div>
+                    <div class="suction-effect"></div>
+                    <div class="tube-label">Edat Mitjana</div>
+                </div>
+                <!-- Tub 2: Renaixement -->
+                <div class="tube" data-era="renaixement">
+                    <div class="tube-img"></div>
+                    <div class="suction-effect"></div>
+                    <div class="tube-label">Renaixement</div>
+                </div>
+                <!-- Tub 3: Barroc -->
+                <div class="tube" data-era="barroc">
+                    <div class="tube-img"></div>
+                    <div class="suction-effect"></div>
+                    <div class="tube-label">Barroc</div>
+                </div>
+                <!-- Tub 4: Classicisme -->
+                <div class="tube" data-era="classicisme">
+                    <div class="tube-img"></div>
+                    <div class="suction-effect"></div>
+                    <div class="tube-label">Classicisme</div>
+                </div>
+                <!-- Tub 5: Romanticisme -->
+                <div class="tube" data-era="romanticisme">
+                    <div class="tube-img"></div>
+                    <div class="suction-effect"></div>
+                    <div class="tube-label">Romanticisme</div>
+                </div>
+                <!-- Tub 6: Segle XX -->
+                <div class="tube" data-era="segle_xx">
+                    <div class="tube-img"></div>
+                    <div class="suction-effect"></div>
+                    <div class="tube-label">Segle XX</div>
+                </div>
+            </div>
+
+            <div id="desk">
+                <!-- Capsules appear here -->
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay" class="hidden">
+            <h2 id="end-title">JORNADA FINALITZADA</h2>
+            <p id="end-msg">Resultat...</p>
+            <button class="btn-start" onclick="location.reload()">NOVA JORNADA</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: ["Cant Gregorià", "Monodia", "Neumes", "Trobador", "Ars Antiqua"],
+            renaixement: ["Polifonia", "Madrigal", "Palestrina", "Llaüt", "Impremta"],
+            barroc: ["Baix Continu", "Clavicèmbal", "Bach", "Fuga", "Opera Naixement"],
+            classicisme: ["Simfonia", "Mozart", "Sonata", "Equilibri", "Haydn"],
+            romanticisme: ["Lied", "Chopin", "Piano Virtuos", "Passió", "Wagner"],
+            segle_xx: ["Atonalitat", "Stravinsky", "Dodecafonia", "Jazz", "Avantguarda"]
+        };
+
+        // --- STATE ---
+        let level = 1;
+        let score = 0;
+        let target = 5;
+        let time = 60;
+        let timerInterval;
+
+        const bgMusic = document.getElementById('bg-music');
+
+        // --- AUDIO ---
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        // --- GAME LOGIC ---
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('office').classList.remove('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            document.getElementById('volume-control').classList.remove('hidden');
+
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(e => console.log("Audio requires interaction"));
+
+            startLevel();
+        }
+
+        function startLevel() {
+            score = 0;
+            target = 4 + level;
+            time = 60 - ((level - 1) * 5); // Harder time limit
+            if (time < 20) time = 20;
+
+            updateHUD();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                time--;
+                document.getElementById('time').textContent = time;
+                if (time <= 0) endGame(false);
+            }, 1000);
+
+            spawnCapsules();
+            setupDropZones();
+        }
+
+        function updateHUD() {
+            document.getElementById('level').textContent = level;
+            document.getElementById('score').textContent = score;
+            document.getElementById('target').textContent = target;
+            document.getElementById('time').textContent = time;
+        }
+
+        function spawnCapsules() {
+            const desk = document.getElementById('desk');
+            desk.innerHTML = '';
+
+            // --- GRID SPAWNING LOGIC TO PREVENT OVERLAP ---
+            // Define a grid (e.g. 5 columns x 3 rows) within the "desk" area
+            const cols = 5;
+            const rows = 3;
+            let slots = [];
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    // Coordinates in % (centering in cell roughly)
+                    // X: (c * 20%) + offset
+                    // Y: (r * 33%) + offset
+                    slots.push({
+                        left: (c * 18) + 2, // Slight margin
+                        top: (r * 30) + 5
+                    });
+                }
+            }
+
+            // Shuffle available slots
+            slots = slots.sort(() => Math.random() - 0.5);
+
+            // Spawn capsules
+            for (let i = 0; i < target; i++) {
+                // If we run out of slots, we stop (or duplicate position, but unlikely with max target ~10 and 15 slots)
+                if (i < slots.length) {
+                    createCapsule(slots[i]);
+                }
+            }
+        }
+
+        function createCapsule(pos) {
+            const desk = document.getElementById('desk');
+
+            // Random Era
+            const eras = Object.keys(DB);
+            const era = eras[Math.floor(Math.random() * eras.length)];
+            const pool = DB[era];
+            const text = pool[Math.floor(Math.random() * pool.length)];
+
+            const c = document.createElement('div');
+            c.className = 'letter';
+            c.dataset.era = era;
+            c.draggable = true;
+
+            // Add Label
+            c.innerHTML = `<div class="capsule-label">${text}</div>`;
+
+            // Position from Grid
+            c.style.left = pos.left + '%';
+            c.style.top = pos.top + '%';
+            c.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+
+            // Drag Events
+            c.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', era);
+                c.classList.add('dragging');
+                setTimeout(() => c.style.opacity = '0.5', 0);
+            });
+
+            c.addEventListener('dragend', () => {
+                c.classList.remove('dragging');
+                c.style.opacity = '1';
+            });
+
+            desk.appendChild(c);
+        }
+
+        function setupDropZones() {
+            document.querySelectorAll('.tube').forEach(tube => {
+                tube.addEventListener('dragover', e => e.preventDefault());
+                tube.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const tube = e.currentTarget;
+            const tubeEra = tube.dataset.era;
+            const capsuleEra = e.dataTransfer.getData('text/plain');
+            const draggingEl = document.querySelector('.dragging');
+
+            if (tubeEra === capsuleEra) {
+                // Correct!
+                if (draggingEl) draggingEl.remove();
+                score++;
+                updateHUD();
+
+                // Play Suction Animation
+                const suction = tube.querySelector('.suction-effect');
+                suction.classList.remove('perform-suction');
+                void suction.offsetWidth; // Trigger reflow
+                suction.classList.add('perform-suction');
+
+                // Check Level/Win
+                if (score >= target) {
+                    if (level >= 5) {
+                        endGame(true);
+                    } else {
+                        level++;
+                        setTimeout(startLevel, 1000); // Small delay before next level
+                    }
+                }
+            } else {
+                // Wrong!
+                // Maybe shake animation or sound?
+                // For now, it just snaps back (default dragend behavior)
+            }
+        }
+
+        function endGame(win) {
+            clearInterval(timerInterval);
+            const overlay = document.getElementById('feedback-overlay');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            overlay.classList.remove('hidden');
+
+            if (win) {
+                title.textContent = "MESTRE DEL VAPOR!";
+                title.style.color = "#cd7f32";
+                msg.textContent = "Felicitats! Has completat els 5 nivells d'entrenament.";
+            } else {
+                title.textContent = "SUBSISTEMA FALLIT";
+                title.style.color = "#ef5350";
+                msg.textContent = "La pressió ha estat excessiva. Torna a intentar-ho.";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

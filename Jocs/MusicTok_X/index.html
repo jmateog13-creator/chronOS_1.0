@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicTok: El Challenge Històric</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #fe2c55;
+            --secondary: #25f4ee;
+            --success: #00ff00;
+            /* Bright Green */
+            --error: #ff0000;
+            /* Bright Red */
+            --background: #000;
+            --text: #fff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #121212;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #phone-frame {
+            width: 100%;
+            max-width: 400px;
+            /* Mobile width simulation */
+            height: 100%;
+            max-height: 850px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #111, #222);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 var(--secondary);
+            color: #fff;
+        }
+
+        h1 span {
+            color: var(--primary);
+        }
+
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .story-btn {
+            background: linear-gradient(45deg, #333, #444);
+            border: 2px solid #555;
+            border-radius: 15px;
+            padding: 20px 10px;
+            color: #fff;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .story-btn:hover {
+            transform: scale(1.05);
+            border-color: var(--secondary);
+        }
+
+        /* --- GAME FEED --- */
+        #game-feed {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: none;
+            /* Hidden initially */
+            background: #111;
+        }
+
+        /* Background Video Simulation */
+        .video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #2a2a2a, #000);
+            z-index: 1;
+            opacity: 0.5;
+            animation: pulseBg 5s infinite alternate;
+        }
+
+        @keyframes pulseBg {
+            from {
+                opacity: 0.3;
+            }
+
+            to {
+                opacity: 0.6;
+            }
+
+            0% {
+                filter: hue-rotate(0deg);
+            }
+
+            100% {
+                filter: hue-rotate(30deg);
+            }
+        }
+
+        /* Post Content */
+        .post-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .post-text {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-align: center;
+            line-height: 1.4;
+            color: #fff;
+            /* Ensure bright white */
+            text-shadow:
+                0 0 10px #000,
+                0 0 20px #000,
+                2px 2px 0px rgba(0, 0, 0, 0.8);
+            /* Stronger shadow for readability */
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            /* Subtle backdrop */
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(2px);
+        }
+
+        .post-overlay {
+            position: absolute;
+            bottom: 60px;
+            /* Space for progress bar */
+            left: 10px;
+            right: 80px;
+            /* Space for sidebar */
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+            text-align: left;
+        }
+
+        .username {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .hashtags {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Sidebar Actions */
+        .sidebar {
+            position: absolute;
+            bottom: 80px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .action-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-like {
+            color: #fff;
+        }
+
+        .btn-report {
+            color: #fff;
+        }
+
+        .btn-like:active {
+            transform: scale(0.9);
+        }
+
+        .btn-report:active {
+            transform: scale(0.9);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: #333;
+            z-index: 20;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .score-display {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            z-index: 20;
+            text-shadow: 0 0 5px #000;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        /* --- FEEDBACK OVERLAY --- */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            text-align: center;
+        }
+
+        #feedback-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        #feedback-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        /* New Animations */
+        .success-flash {
+            animation: successFlash 0.5s ease-out;
+        }
+
+        @keyframes successFlash {
+            0% {
+                box-shadow: inset 0 0 0 0 rgba(0, 255, 0, 0);
+                background-color: rgba(0, 255, 0, 0);
+            }
+
+            50% {
+                box-shadow: inset 0 0 50px 20px rgba(0, 255, 0, 0.5);
+                background-color: rgba(0, 255, 0, 0.2);
+            }
+
+            100% {
+                box-shadow: inset 0 0 0 0 rgba(0, 255, 0, 0);
+                background-color: rgba(0, 255, 0, 0);
+            }
+        }
+
+        .error-flash {
+            animation: errorFlash 0.5s ease-out;
+        }
+
+        @keyframes errorFlash {
+            0% {
+                box-shadow: inset 0 0 0 0 rgba(255, 0, 0, 0);
+                background-color: rgba(255, 0, 0, 0);
+            }
+
+            50% {
+                box-shadow: inset 0 0 50px 20px rgba(255, 0, 0, 0.5);
+                background-color: rgba(255, 0, 0, 0.2);
+            }
+
+            100% {
+                box-shadow: inset 0 0 0 0 rgba(255, 0, 0, 0);
+                background-color: rgba(255, 0, 0, 0);
+            }
+        }
+
+        /* Swipe Animation */
+        .swipe-up {
+            animation: swipeUp 0.5s forwards;
+        }
+
+        @keyframes swipeUp {
+            to {
+                transform: translateY(-100%);
+                opacity: 0.5;
+            }
+        }
+
+        /* End Screen */
+        #end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 60;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #333;
+            margin-bottom: 20px;
+            border: 3px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        #end-title {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        #end-score {
+            color: #ccc;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="phone-frame">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>Music<span>Tok</span></h1>
+            <p style="margin-bottom: 30px; opacity: 0.8; color: #fff;">Tria la teva era per moderar:</p>
+            <div class="stories-grid">
+                <div class="story-btn" onclick="startGame('EDAT_MITJANA')">EDAT MITJANA</div>
+                <div class="story-btn" onclick="startGame('RENAIXEMENT')">RENAIXEMENT</div>
+                <div class="story-btn" onclick="startGame('BARROC')">BARROC</div>
+                <div class="story-btn" onclick="startGame('CLASSICISME')">CLASSICISME</div>
+                <div class="story-btn" onclick="startGame('ROMANTICISME')">ROMANTICISME</div>
+                <div class="story-btn" onclick="startGame('SEGLE_XX')">SEGLE XX</div>
+            </div>
+        </div>
+
+        <!-- Game Feed -->
+        <div id="game-feed">
+            <div class="video-bg"></div>
+            <div class="score-display">Puntuació: <span id="score">0</span></div>
+
+            <div id="current-post" class="post-container">
+                <div class="post-text" id="post-title">...</div>
+                <div class="post-overlay">
+                    <span class="username" id="post-user">@music_fan</span>
+                    <span class="description" id="post-desc">...</span>
+                    <span class="hashtags" id="post-tags">...</span>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="action-btn btn-like" onclick="handleAction('like')">❤️</div>
+                <div class="action-btn btn-report" onclick="handleAction('report')">🚨</div>
+                <div class="action-btn" style="font-size: 1.2rem;">💬<br><span style="font-size: 0.6rem">1.2k</span>
+                </div>
+                <div class="action-btn" style="font-size: 1.2rem;">↪️<br><span style="font-size: 0.6rem">Share</span>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay (Toast) -->
+        <div id="feedback-overlay" onclick="closeFeedback()">
+            <div id="feedback-icon">❌</div>
+            <div id="feedback-text">Incorrecte!</div>
+            <div style="font-size: 0.8rem; opacity: 0.7; color: #fff;">Toca per continuar</div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen">
+            <div class="avatar" id="end-avatar">😎</div>
+            <h2 id="end-title">Influencer Històric</h2>
+            <p id="end-score">15/15 encerts</p>
+            <div class="story-btn" onclick="location.reload()" style="margin-top: 20px; width: 80%;">NOU REPTE</div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- AUDIO ENGINE ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                // Happy "Ding"
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.1); // C6
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'error') {
+                // Boxy "Buzz"
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'swipe') {
+                // Whoosh
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+
+        // --- DATA ---
+        const DB = {
+            EDAT_MITJANA: [
+                { text: "POV: Quan el monjo de costat desafina en el cant gregorià 🙄🙏", tags: "#Monodia #MonestirLife" },
+                { text: "Aquí no hi ha ritme, només fe 🙌", tags: "#RitmeLliure #Gregoria" },
+                { text: "Compondre sense firmar? 🤷‍♂️ Total, és per Déu.", tags: "#Anonim #EdatMitjana" },
+                { text: "Avui toca missa de 3 hores. Let's go! 🕯️", tags: "#Missa #Llatí" }
+            ],
+            RENAIXEMENT: [
+                { text: "Challenge: Cantar a 4 veus sense perdre's 🎶👯‍♂️", tags: "#Polifonia #ACapella" },
+                { text: "Quan descobreixes l'acord perfecte 😇", tags: "#Humanisme #Harmonia" },
+                { text: "Madrigals > Motets. Change my mind. ☕", tags: "#Madrigal #Profà" },
+                { text: "Impremta musical recent sortida del forn! 🖨️🎼", tags: "#Petrucci #Tecnologia" }
+            ],
+            BARROC: [
+                { text: "Massa ornamentació? Mai és suficient! ✨🎻", tags: "#MoreIsMore #Barroc" },
+                { text: "El Baix Continu no para mai, literalment 😩🎹", tags: "#NonStop #Cembalo" },
+                { text: "Drama, perruques i Castrats. El meu dia a dia 💅", tags: "#Opera #Drama" },
+                { text: "Vivaldi treient la 500a obra igual que l'anterior... 🔥", tags: "#Vivaldi #CopyPaste" }
+            ],
+            CLASSICISME: [
+                { text: "Tot perfectament equilibrat, com ha de ser ⚖️🎼", tags: "#Simetria #MozartStyle" },
+                { text: "Estructura 4+4 compassos. Satisfacció pura 🤤", tags: "#Ordre #Sonata" },
+                { text: "El piano forte és el futur, adéu clavicèmbal 👋", tags: "#Piano #Revolucio" },
+                { text: "Simfonia 40: El banger de l'estiu 🎻☀️", tags: "#Mozart #Hit" }
+            ],
+            ROMANTICISME: [
+                { text: "Plorant amb aquest solo de piano 😭💔", tags: "#Rubato #SentimentsAlMaxim" },
+                { text: "L'orquestra és tan gran que no hi cap a l'escenari 🎻🎺🥁", tags: "#Epica #Wagner" },
+                { text: "La música ha d'expressar el turment de l'ànima 🥀", tags: "#SturmUndDrang #Sentiment" },
+                { text: "Virtuosisme extrem o res 🎹⚡", tags: "#Liszt #Paganini" }
+            ],
+            SEGLE_XX: [
+                { text: "Atonalitat check! ✅ A qui li importa la tonalitat? 🚫🎹", tags: "#Caos #Dodecafonisme" },
+                { text: "Això és música o soroll? Sí. 🔨🔊", tags: "#Sorolls #Futurisme" },
+                { text: "4 minuts i 33 segons de silenci absolut. Masterpiece. 🤫", tags: "#Cage #Silenci" },
+                { text: "Mix de sintetitzadors i sons d'ocells 🐦🎛️", tags: "#MusicaConcreta #Electronic" }
+            ]
+        };
+
+        // --- STATE ---
+        let currentEraKey = "";
+        let currentIndex = 0;
+        let score = 0;
+        let currentPost = null;
+        const TOTAL_ROUNDS = 15;
+
+        // --- DOM ---
+        const startScreen = document.getElementById('start-screen');
+        const gameFeed = document.getElementById('game-feed');
+        const endScreen = document.getElementById('end-screen');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreEl = document.getElementById('score');
+
+        const postTitle = document.getElementById('post-title');
+        const postUser = document.getElementById('post-user');
+        const postTags = document.getElementById('post-tags');
+        const postContainer = document.getElementById('current-post');
+        const phoneFrame = document.getElementById('phone-frame');
+
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const fbIcon = document.getElementById('feedback-icon');
+        const fbText = document.getElementById('feedback-text');
+
+        function startGame(era) {
+            currentEraKey = era;
+            currentIndex = 0;
+            score = 0;
+            updateHUD();
+
+            startScreen.style.display = 'none';
+            gameFeed.style.display = 'block';
+
+            loadNextPost();
+        }
+
+        function loadNextPost() {
+            if (currentIndex >= TOTAL_ROUNDS) {
+                endGame();
+                return;
+            }
+
+            // Reset animations
+            postContainer.classList.remove('swipe-up');
+            phoneFrame.classList.remove('success-flash', 'error-flash');
+
+            // Logic: 50% chance Correct, 50% chance Fake
+            const isCorrect = Math.random() > 0.5;
+            let postData;
+            let actualEra;
+
+            if (isCorrect) {
+                const eraPosts = DB[currentEraKey];
+                postData = eraPosts[Math.floor(Math.random() * eraPosts.length)];
+                actualEra = currentEraKey;
+            } else {
+                // Pick random other era
+                const eras = Object.keys(DB).filter(e => e !== currentEraKey);
+                const randomEra = eras[Math.floor(Math.random() * eras.length)];
+                const eraPosts = DB[randomEra];
+                postData = eraPosts[Math.floor(Math.random() * eraPosts.length)];
+                actualEra = randomEra;
+            }
+
+            currentPost = { ...postData, correctEra: isCorrect, actualEraName: actualEra };
+
+            // Render
+            postTitle.innerHTML = postData.text; // InnerHTML to allow emojis
+            postTags.textContent = postData.tags;
+            postUser.textContent = "@music_user_" + Math.floor(Math.random() * 9999);
+
+            // Update Progress
+            const progress = (currentIndex / TOTAL_ROUNDS) * 100;
+            progressBar.style.width = progress + "%";
+        }
+
+        window.handleAction = function (action) {
+            if (feedbackOverlay.style.display === 'flex') return;
+
+            let success = false;
+
+            if (action === 'like') {
+                // User thinks it IS correct
+                if (currentPost.correctEra) success = true;
+            } else if (action === 'report') {
+                // User thinks it is FAKE
+                if (!currentPost.correctEra) success = true;
+            }
+
+            if (success) {
+                score++;
+                triggerAnimation('success');
+                playSound('success');
+
+                // Fast forward
+                postContainer.classList.add('swipe-up');
+                updateHUD();
+
+                setTimeout(() => {
+                    currentIndex++;
+                    loadNextPost();
+                }, 500);
+            } else {
+                triggerAnimation('error');
+                playSound('error');
+
+                // Show blocking error
+                feedbackOverlay.style.display = 'flex';
+                fbIcon.textContent = "🤡";
+                fbText.innerHTML = `Error!<br>Això era: ${currentPost.actualEraName ? formatEra(currentPost.actualEraName) : 'Altra època'}`;
+            }
+        }
+
+        function triggerAnimation(type) {
+            phoneFrame.classList.remove('success-flash', 'error-flash');
+            void phoneFrame.offsetWidth; // Trigger reflow
+            if (type === 'success') {
+                phoneFrame.classList.add('success-flash');
+            } else {
+                phoneFrame.classList.add('error-flash');
+            }
+        }
+
+        window.closeFeedback = function () {
+            feedbackOverlay.style.display = 'none';
+            postContainer.classList.add('swipe-up');
+            playSound('swipe');
+            updateHUD();
+
+            setTimeout(() => {
+                currentIndex++;
+                loadNextPost();
+            }, 500);
+        }
+
+        function updateHUD() {
+            scoreEl.textContent = score;
+        }
+
+        function endGame() {
+            gameFeed.style.display = 'none';
+            endScreen.style.display = 'flex';
+            playSound('success');
+
+            document.getElementById('end-score').textContent = `${score} / ${TOTAL_ROUNDS} encerts`;
+
+            if (score >= 12) {
+                document.getElementById('end-title').textContent = "INFLUENCER HISTÒRIC 👑";
+                document.getElementById('end-avatar').textContent = "👑";
+            } else if (score >= 8) {
+                document.getElementById('end-title').textContent = "Usuari Normalet 😐";
+                document.getElementById('end-avatar').textContent = "😐";
+            } else {
+                document.getElementById('end-title').textContent = "Shadowbanned 🚫";
+                document.getElementById('end-avatar').textContent = "🚫";
+            }
+        }
+
+        function formatEra(key) {
+            return key.replace('_', ' ');
+        }
+
+    </script>
+</body>
+
+</html>
