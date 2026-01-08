@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Els Timbalers - Casino Musical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Roboto+Condensed:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: white;
+            font-family: 'Roboto Condensed', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            background-image: url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Overlay for darkness/contrast */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* HEADER & UI */
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 20;
+        }
+
+        h1 {
+            font-family: 'Righteous', cursive;
+            font-size: 3rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff8800;
+            margin: 0;
+            transform: skew(-5deg);
+        }
+
+        #level-indicator {
+            font-size: 2rem;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border: 2px solid #ffd700;
+            border-radius: 50px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        /* VOLUME SLIDER */
+        #volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        #volume-slider {
+            width: 100px;
+            accent-color: #ffd700;
+            cursor: pointer;
+        }
+
+        /* QUESTION BOARD */
+        #question-board {
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.8);
+            border: 4px solid #ffd700;
+            border-radius: 20px;
+            padding: 20px 40px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            max-width: 800px;
+            animation: pulseBoard 3s infinite alternate;
+        }
+
+        @keyframes pulseBoard {
+            0% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            }
+
+            100% {
+                box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+            }
+        }
+
+        #era-text {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        #instruction-text {
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+
+        /* DRUMS CONTAINER */
+        #stage {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            width: 900px;
+            height: 400px;
+            margin: 40px auto 0;
+            /* Center stage horizontally */
+        }
+
+        .drum-container {
+            position: absolute;
+            top: 50px;
+            width: 200px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            cursor: pointer;
+            transition: left 0.5s ease-in-out, transform 0.2s;
+        }
+
+        /* Initial Positions (will be managed by JS, but defaults here) */
+        #drum-0 {
+            left: 50px;
+        }
+
+        #drum-1 {
+            left: 350px;
+        }
+
+        #drum-2 {
+            left: 650px;
+        }
+
+        .drum-container:hover {
+            transform: scale(1.05);
+        }
+
+        .drum-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .drum-label {
+            position: absolute;
+            top: -60px;
+            /* Above drum */
+            width: 140%;
+            left: -20%;
+            background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.9), transparent);
+            color: #fff;
+            font-size: 1.3rem;
+            text-align: center;
+            padding: 10px 0;
+            text-shadow: 0 2px 4px black;
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 0.5s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* FEEDBACK */
+        #feedback-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px black;
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+        }
+
+        .win-text {
+            color: #00ff00;
+        }
+
+        .lose-text {
+            color: #ff0000;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #play-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 200px;
+            transition: transform 0.2s;
+        }
+
+        #play-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #play-btn img {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Jackpot Jamboree.m4a" type="audio/mp3">
+    </audio>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1 style="font-size: 5rem; margin-bottom: 20px;">ELS TIMBALERS</h1>
+        <p style="font-size: 1.5rem; color: #ffd700; margin-bottom: 40px;">Endevina el concepte musical correcte per a
+            cada època!</p>
+        <button id="play-btn" onclick="startGame()">
+            <img src="img/botonjugar.png" alt="JUGAR">
+        </button>
+    </div>
+
+    <!-- Gameplay UI -->
+    <div id="ui-container">
+        <h1>TIMBALERS CASINO</h1>
+        <div id="volume-container">
+            <span>🔊</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                oninput="setVolume(this.value)">
+        </div>
+        <div id="level-indicator">NIVELL 1/6</div>
+    </div>
+
+    <div id="question-board">
+        <div id="era-text">EDAT MITJANA</div>
+        <div id="instruction-text">Quin concepte pertany a questa època?</div>
+    </div>
+
+    <div id="stage">
+        <!-- Drum 1 -->
+        <div class="drum-container" id="drum-0" onclick="checkAnswer(0)">
+            <img src="img/timbal.png" class="drum-img" id="drum-img-0">
+            <div class="drum-label" id="label-0">???</div>
+        </div>
+        <!-- Drum 2 -->
+        <div class="drum-container" id="drum-1" onclick="checkAnswer(1)">
+            <img src="img/timbal.png" class="drum-img" id="drum-img-1">
+            <div class="drum-label" id="label-1">???</div>
+        </div>
+        <!-- Drum 3 -->
+        <div class="drum-container" id="drum-2" onclick="checkAnswer(2)">
+            <img src="img/timbal.png" class="drum-img" id="drum-img-2">
+            <div class="drum-label" id="label-2">???</div>
+        </div>
+    </div>
+
+    <div id="feedback-overlay">JACKPOT!</div>
+
+    <script>
+        // DATA: Concepts per Era (Valid vs Invalid)
+        const ERAS_DATA = [
+            {
+                name: "EDAT MITJANA",
+                valid: ["Cant Gregorià", "Neumes", "Monjos", "A capella", "Sacra"],
+                invalid: ["Piano", "Orquestra", "Òpera", "Jazz", "Sintetitzador", "Violí Elèctric"]
+            },
+            {
+                name: "RENAIXEMENT",
+                valid: ["Madrigal", "Polifonia", "Llaüt", "Impremta", "Humanisme"],
+                invalid: ["Tecno", "Baix Elèctric", "Simfonia", "Fuga Complexa", "Heavy Metal"]
+            },
+            {
+                name: "BARROC",
+                valid: ["Fuga", "Clavecí", "Baix Continu", "Ornamentació", "Concert"],
+                invalid: ["Minimalisme", "Saxofon", "Atonalisme", "Rap", "Gregorià Simple"]
+            },
+            {
+                name: "CLASSICISME",
+                valid: ["Sonata", "Simfonia", "Quartet de Corda", "Equilibri", "Clarinet"],
+                invalid: ["Sorollisme", "Sintetitzador", "Baix Alberti (Fals)", "Distorsió"]
+            },
+            {
+                name: "ROMANTICISME",
+                valid: ["Lied", "Poema Simfònic", "Passió", "Virtuosisme", "Piano"],
+                invalid: ["Fuga", "Neumes", "House", "Autotune", "Madrigal"]
+            },
+            {
+                name: "SEGLE XX",
+                valid: ["Atonalisme", "Minimalisme", "Jazz", "Electrònica", "Dissonància"],
+                invalid: ["Sonata Clàssica", "Madrigal", "Cant Gregorià", "Llaüt"]
+            }
+        ];
+
+        // GAME STATE
+        let levelQueue = [];
+        let currentLevelIndex = 0;
+        let currentCorrectDrumId = -1; // 0, 1, or 2 (The ID of the drum that holds the win)
+        let isInputLocked = true;
+
+        // Positions for the 3 drums (left pixels)
+        const POSITIONS = [50, 350, 650];
+        // Track where each physical drum (ID 0,1,2) is currently located (Slot 0,1,2)
+        // index is Drum ID, value is Slot Index
+        let drumSlots = [0, 1, 2];
+
+        const bgMusic = document.getElementById('bg-music');
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        // Init volume
+        bgMusic.volume = 0.5;
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            bgMusic.play().catch(e => console.log("Audio play failed interaction required"));
+
+            generateLevelQueue();
+            loadLevel();
+        }
+
+        function generateLevelQueue() {
+            levelQueue = [];
+
+            // For each era, create 2 rounds
+            ERAS_DATA.forEach(era => {
+                for (let i = 0; i < 2; i++) {
+                    levelQueue.push({
+                        eraName: era.name,
+                        valid: era.valid,
+                        invalid: era.invalid
+                    });
+                }
+            });
+
+            // Shuffle the entire queue (Disordered Eras)
+            shuffleArray(levelQueue);
+        }
+
+        async function loadLevel() {
+            if (currentLevelIndex >= levelQueue.length) {
+                alert("ENHORABONA! Has guanyat el GRAN JACPKOT MUSICAL!");
+                location.reload();
+                return;
+            }
+
+            const levelData = levelQueue[currentLevelIndex];
+            isInputLocked = true; // Lock input during animation
+
+            // UI Update
+            document.getElementById('level-indicator').textContent = `NIVELL ${currentLevelIndex + 1}/${levelQueue.length}`;
+            document.getElementById('era-text').textContent = levelData.eraName;
+            document.getElementById('instruction-text').textContent = "Atenció... on és la resposta correcta?";
+
+            // Reset Drums Visuals
+            for (let i = 0; i < 3; i++) {
+                document.getElementById(`drum-img-${i}`).src = "img/timbal.png";
+                document.getElementById(`label-${i}`).style.opacity = 0;
+                document.getElementById(`label-${i}`).style.animation = 'none';
+            }
+
+            // Logic Setup
+            const correctConcept = getRandom(levelData.valid);
+
+            // Get 2 unique distractors
+            let distractors = [];
+            while (distractors.length < 2) {
+                let d = getRandom(levelData.invalid);
+                if (!distractors.includes(d)) distractors.push(d);
+            }
+
+            // Assign content to drums
+            // We assign logical content to Drum IDs 0, 1, 2.
+            // We will decide which Drum ID holds the winner.
+            currentCorrectDrumId = Math.floor(Math.random() * 3);
+            let distractorIdx = 0;
+
+            for (let i = 0; i < 3; i++) {
+                const label = document.getElementById(`label-${i}`);
+                if (i === currentCorrectDrumId) {
+                    label.textContent = correctConcept;
+                    label.style.color = "#fff"; // No hint color, user must know!
+                } else {
+                    label.textContent = distractors[distractorIdx];
+                    label.style.color = "#fff";
+                    distractorIdx++;
+                }
+
+                // Reset positions before shuffle
+                // Visually move them back to standard 0,1,2 slots
+                drumSlots[i] = i;
+                updateDrumPositions(false); // No animation for reset
+            }
+
+            // START SEQUENCE
+
+            // 1. REVEAL (Show labels)
+            await wait(500);
+            for (let i = 0; i < 3; i++) {
+                const label = document.getElementById(`label-${i}`);
+                label.style.opacity = 1;
+            }
+
+            // 2. MEMORIZE TIME
+            await wait(2000);
+
+            // 3. HIDE (Hide labels)
+            for (let i = 0; i < 3; i++) {
+                const label = document.getElementById(`label-${i}`);
+                label.style.opacity = 0;
+            }
+            document.getElementById('instruction-text').textContent = "Barrejant...";
+
+            // 4. SHUFFLE ANIMATION
+            await shuffleSequence();
+
+            // 5. PICK
+            document.getElementById('instruction-text').textContent = "Tria el timbal correcte!";
+            isInputLocked = false;
+        }
+
+        async function shuffleSequence() {
+            const swaps = 6 + Math.floor(Math.random() * 4); // 6 to 9 swaps
+
+            for (let k = 0; k < swaps; k++) {
+                // Pick two unique slots to swap
+                let slotA = Math.floor(Math.random() * 3);
+                let slotB = Math.floor(Math.random() * 3);
+                while (slotA === slotB) {
+                    slotB = Math.floor(Math.random() * 3);
+                }
+
+                // Find which drums are in these slots
+                // drumSlots[drumIndex] = slotIndex
+                let drumA = drumSlots.findIndex(s => s === slotA);
+                let drumB = drumSlots.findIndex(s => s === slotB);
+
+                // Swap their slot data
+                drumSlots[drumA] = slotB;
+                drumSlots[drumB] = slotA;
+
+                // Animate
+                updateDrumPositions(true);
+                await wait(600); // Wait for transition
+            }
+        }
+
+        function updateDrumPositions(animate) {
+            for (let i = 0; i < 3; i++) {
+                const drumEl = document.getElementById(`drum-${i}`);
+                const targetLeft = POSITIONS[drumSlots[i]];
+
+                if (animate) {
+                    drumEl.style.transition = "left 0.5s ease-in-out";
+                } else {
+                    drumEl.style.transition = "none";
+                }
+
+                drumEl.style.left = targetLeft + "px";
+            }
+        }
+
+        function checkAnswer(clickedDrumId) {
+            if (isInputLocked) return;
+            isInputLocked = true;
+
+            const drumImg = document.getElementById(`drum-img-${clickedDrumId}`);
+            const feedback = document.getElementById('feedback-overlay');
+            const label = document.getElementById(`label-${clickedDrumId}`);
+
+            // Reveal this label
+            label.style.opacity = 1;
+
+            if (clickedDrumId === currentCorrectDrumId) {
+                // CORRECT
+                drumImg.src = "img/timbalcorrecte.png";
+                feedback.textContent = "PREMI!";
+                feedback.className = "win-text";
+                feedback.style.display = "block";
+
+                setTimeout(() => {
+                    feedback.style.display = "none";
+                    currentLevelIndex++;
+                    loadLevel();
+                }, 2000);
+            } else {
+                // WRONG
+                drumImg.src = "img/timbalerror.png";
+                feedback.textContent = "ERROR...";
+                feedback.className = "lose-text";
+                feedback.style.display = "block";
+
+                // Show correct one too so they know
+                const correctDrumImg = document.getElementById(`drum-img-${currentCorrectDrumId}`);
+                correctDrumImg.src = "img/timbalcorrecte.png";
+                document.getElementById(`label-${currentCorrectDrumId}`).style.opacity = 1;
+
+                setTimeout(() => {
+                    feedback.style.display = "none";
+                    // Retry same level (Restart sequence)
+                    loadLevel();
+                }, 2500);
+            }
+        }
+
+        function getRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+    </script>
+</body>
+
+</html>

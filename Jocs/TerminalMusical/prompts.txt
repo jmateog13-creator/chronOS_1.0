@@ -1,0 +1,21 @@
+# TERMINAL MUSICAL - ASSET PROMPTS
+# Style: "Isometric or 3D Render, stylized, airport aesthetic mixed with historical themes."
+
+## BACKGROUND
+tm_background: "A futuristic airport tarmac at night, wet ground reflecting runway lights, view from a high angle. In the background, a starry sky with a slight time-travel vortex effect. Dark blue and cyan tones."
+
+## SUITCASES (Variations)
+tm_suitcase_1: "A classic vintage brown leather suitcase with brass buckles and travel stickers. Isometric view, isolated on white background."
+tm_suitcase_2: "A hard-shell modern suitcase, silver metallic texture, sleek design with wheels. Isometric view, isolated on white background."
+tm_suitcase_3: "A retro fabric travel bag or soft suitcase, tweet texture with leather handles, plaid pattern. Isometric view, isolated on white background."
+tm_suitcase_4: "An antique wooden steamer trunk with iron reinforcements and heavy latches, very old fashioned. Isometric view, isolated on white background."
+
+## GATES (Era Specific)
+# These should look like airport gates but with architectural elements of each era.
+
+tm_gate_medieval: "An airport boarding gate made of grey stone with a gothic archway entrance. A digital sign above says 'GATE 01'. Torches on the sides mixed with blue LEDs."
+tm_gate_renaissance: "An airport boarding gate with white marble columns and a dome, Florence cathedral style. Elegant and symmetrical. Digital sign 'GATE 02'."
+tm_gate_baroque: "An airport boarding gate with elaborate gold ornamentation, twisted columns (Solomonic), and dramatic lighting. Digital sign 'GATE 03'."
+tm_gate_classicism: "An airport boarding gate resembling a Greek temple facade, clean lines, white pillars. Very orderly. Digital sign 'GATE 04'."
+tm_gate_romanticism: "An airport boarding gate with a dramatic, misty atmosphere, maybe vines or a ruined castle aesthetic mixed with metal. Intense lighting. Digital sign 'GATE 05'."
+tm_gate_20th: "A hyper-modern, abstract airport gate with steel and glass, Cubist shapes, and neon lights. Digital sign 'GATE 06'."

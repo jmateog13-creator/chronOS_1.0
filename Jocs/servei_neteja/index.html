@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servei de Neteja Musical</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --wall: #2f4f4f;
+            /* Dark Slate Gray / Blackboard Green */
+            --paint-red: #ff5252;
+            --paint-white: #f5f5f5;
+            --sponge: #fff9c4;
+            --chalk-shadow: rgba(255, 255, 255, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Permanent Marker', cursive;
+            /* Chalk font */
+            background-color: #222;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            background: url("img/fonspissarra.jpg") center center / cover no-repeat;
+            border: 15px solid #5d4037;
+            /* Wooden Frame */
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5), 0 0 50px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect x="0" y="0" width="32" height="32" fill="%23fff9c4" rx="5" stroke="black" stroke-width="2"/></svg>') 16 16, auto;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            text-align: center;
+            color: white;
+            cursor: default;
+        }
+
+        h1 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--sponge);
+            transform: rotate(-5deg);
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-era {
+            background: #fff;
+            border: 3px solid #000;
+            color: #000;
+            padding: 15px 25px;
+            font-size: 1.5rem;
+            font-family: 'Permanent Marker', cursive;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-era:hover {
+            transform: scale(1.1) rotate(2deg);
+            background: var(--sponge);
+        }
+
+        /* Wall Interface */
+        #wall-scene {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graffiti {
+            position: absolute;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.5rem;
+            color: var(--paint-white);
+            padding: 10px;
+            transform-origin: center;
+            cursor: crosshair;
+            user-select: none;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .graffiti.false {
+            color: var(--paint-white);
+            /* Looks same as true initially */
+        }
+
+        .graffiti.true {
+            color: var(--paint-white);
+        }
+
+        .graffiti.erased {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .graffiti.error {
+            color: var(--paint-red) !important;
+            font-weight: bold;
+            text-shadow: 0 0 10px red;
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.5rem;
+            color: white;
+            z-index: 15;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            display: none;
+            color: white;
+            text-align: center;
+            cursor: default;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Volume Control */
+        #volume-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            /* Above start screen */
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            /* Readable font */
+        }
+
+        #volume-slider {
+            width: 100px;
+            accent-color: var(--sponge);
+        }
+
+        .era-completed {
+            background-color: #4CAF50 !important;
+            /* Green */
+            border-color: #2E7D32 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Volume -->
+        <div id="volume-controls">
+            <label for="volume-slider">🎵 Vol:</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>SERVEI DE NETEJA</h1>
+
+            <div
+                style="background:rgba(255,255,255,0.1); padding: 20px; border: 2px dashed rgba(255,255,255,0.5); max-width: 600px; margin-bottom: 2rem; border-radius: 10px;">
+                <h3 style="margin-top:0; color:var(--sponge);">NORMES DE NETEJA:</h3>
+                <ul style="text-align:left; font-size:1.2rem; list-style-type: '🧹 ';">
+                    <li>Mantingues premut el clic per esborrar.</li>
+                    <li>Neteja els conceptes incorrectes (Falsos).</li>
+                    <li>Vigila! No esborris la veritat històrica.</li>
+                    <li>3 errors i estàs acomiadat!</li>
+                </ul>
+            </div>
+
+            <p>Tria una època per començar a netejar:</p>
+            <div class="era-grid">
+                <button class="btn-era" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="btn-era" data-era="renaixement">Renaixement</button>
+                <button class="btn-era" data-era="barroc">Barroc</button>
+                <button class="btn-era" data-era="classicisme">Classicisme</button>
+                <button class="btn-era" data-era="romanticisme">Romanticisme</button>
+                <button class="btn-era" data-era="segle_xx">Segle XX</button>
+            </div>
+        </div>
+
+        <!-- Wall -->
+        <div id="wall-scene" class="hidden">
+            <div id="hud">
+                NETEJA: <span id="score">0</span>/<span id="total-false">10</span> | ERRORS: <span id="fails">0</span>/3
+            </div>
+            <!-- Graffiti injected here -->
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="end-title"></h2>
+            <p id="end-msg"></p>
+            <button class="btn-era" onclick="location.reload()">ALTRA PARET</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: {
+                true: ["Cant Gregorià", "Monjos copistes", "Neumes", "Guido d'Arezzo", "Monodia", "Llatí", "Trobadors", "Viola de Roda", "Cantigas", "Llibre Vermell"],
+                false: ["Mozart era monjo", "Piano medieval", "Òpera en llatí", "Jazz al monestir", "Bach va néixer aquí", "Guitarra elèctrica", "Simfonia nº1", "Els Beatles", "Tecno Gregorià", "Wagner"]
+            },
+            renaixement: {
+                true: ["Polifonia", "Impremta", "Humanisme", "Madrigal", "Palestrina", "Llaüt", "Josquin", "Ensalada", "Viola da Gamba", "Victoria"],
+                false: ["Monodia pura", "Cant Gregorià pop", "Piano de cua", "Stravinsky", "Atonalitat", "Barroc", "Òpera rock", "Sintetitzador", "Heavy Metal", "Neumes"]
+            },
+            barroc: {
+                true: ["Baix Continu", "Clavicèmbal", "Vivaldi", "Bach", "Händel", "Òpera", "Fuga", "Contrast", "Castrato", "Ornament"],
+                false: ["Piano fort", "Mozart", "Senzillesa", "Jazz", "Minimalisme", "Cant Gregorià", "Trobadors", "Rock and Roll", "Simfonia Clàssica", "Debussy"]
+            },
+            classicisme: {
+                true: ["Equilibri", "Mozart", "Haydn", "Beethoven", "Piano", "Clarinet", "Simfonia", "Quartet", "Sonata", "Senzillesa"],
+                false: ["Baix Continu", "Clavicèmbal", "Fuga complexa", "Wagner", "Atonalitat", "Jazz", "Soroll", "Cant Gregorià", "Madrigal", "Castrato"]
+            },
+            romanticisme: {
+                true: ["Sentiment", "Wagner", "Verdi", "Chopin", "Lied", "Piano virtuós", "Nacionalisme", "Orquestra gran", "Rubato", "Tuba"],
+                false: ["Equilibri", "Clavicèmbal", "Mozart viu", "Bach", "Vivaldi", "Atonalitat", "Minimalisme", "Gregorià", "Madrigal", "Viola da Gamba"]
+            },
+            segle_xx: {
+                true: ["Atonalitat", "Stravinsky", "Jazz", "Sintetitzador", "Soroll", "Minimalisme", "Dodecafonisme", "Cage", "Electrònica", "Gershwin"],
+                false: ["Mozart", "Bach", "Baix Continu", "Gregorià", "Madrigal", "Castrato", "Llaüt", "Viola de Roda", "Ars Nova", "Händel"]
+            }
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let score = 0;
+        let fails = 0;
+        let totalFalse = 0;
+        let isDragging = false;
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        // Background Music
+        const bgMusic = new Audio('audio/Triple Word Score.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        // Volume Slider
+        const volSlider = document.getElementById('volume-slider');
+        volSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            bgMusic.volume = val;
+            // Also update SFX gain globally if possible, or just read from this value
+        });
+
+        function playSound(type) {
+            // Check volume
+            const masterVol = parseFloat(document.getElementById('volume-slider').value);
+            if (masterVol <= 0) return;
+
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'clean') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1 * masterVol, now); // Apply master vol
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'alarm') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.setValueAtTime(600, now + 0.1);
+                gainNode.gain.setValueAtTime(0.2 * masterVol, now); // Apply master vol
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- LOGIC ---
+        // Initialize Completed Eras visual
+        function updateEraButtons() {
+            const completed = JSON.parse(localStorage.getItem('neteja_completed_eras') || '[]');
+            document.querySelectorAll('.btn-era').forEach(btn => {
+                if (completed.includes(btn.dataset.era)) {
+                    btn.classList.add('era-completed');
+                    btn.innerText = btn.innerText.replace(' ✅', '') + ' ✅';
+                }
+            });
+        }
+        // Call init
+        updateEraButtons();
+
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            if (btn.parentElement.id === 'feedback-overlay') return;
+            btn.addEventListener('click', () => {
+                currentEra = btn.dataset.era;
+                // Try playing music if not playing (user gesture required)
+                if (bgMusic.paused) bgMusic.play().catch(e => console.log("Music play failed", e));
+                startGame();
+            });
+        });
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('wall-scene').classList.remove('hidden');
+
+            score = 0;
+            fails = 0;
+            spawnGraffiti();
+
+            // Mouse tracking for "erasing"
+            const wall = document.getElementById('wall-scene');
+            wall.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+        }
+
+        function spawnGraffiti() {
+            const wall = document.getElementById('wall-scene');
+            // Keep HUD, remove others
+            Array.from(wall.children).forEach(c => {
+                if (c.id !== 'hud') c.remove();
+            });
+
+            const data = DB[currentEra];
+            const all = [];
+
+            data.true.forEach(t => all.push({ text: t, type: 'true' }));
+            data.false.forEach(f => all.push({ text: f, type: 'false' }));
+
+            totalFalse = data.false.length;
+            updateHUD();
+
+            all.sort(() => Math.random() - 0.5);
+
+            // Spawn without overlapping
+            const placedRects = []; // Store {x, y, width, height} in % or pixels
+
+            // Container dims for collision
+            const containerW = wall.clientWidth;
+            const containerH = wall.clientHeight;
+
+            all.forEach(item => {
+                const el = document.createElement('div');
+                el.className = `graffiti ${item.type}`;
+                el.textContent = item.text;
+
+                // Initially append to measure size
+                el.style.visibility = 'hidden';
+                wall.appendChild(el);
+
+                const w = el.offsetWidth;
+                const h = el.offsetHeight;
+
+                let safeX = 0;
+                let safeY = 0;
+                let attempts = 0;
+                const maxAttempts = 50;
+
+                while (attempts < maxAttempts) {
+                    safeX = Math.random() * (containerW - w - 40) + 20; // Padding
+                    safeY = Math.random() * (containerH - h - 40) + 20;
+
+                    let overlap = false;
+                    for (let rect of placedRects) {
+                        // Simple AABB collision check
+                        if (
+                            safeX < rect.x + rect.w &&
+                            safeX + w > rect.x &&
+                            safeY < rect.y + rect.h &&
+                            safeY + h > rect.y
+                        ) {
+                            overlap = true;
+                            break;
+                        }
+                    }
+
+                    if (!overlap) {
+                        break;
+                    }
+                    attempts++;
+                }
+
+                // Apply safe coords
+                el.style.left = safeX + 'px';
+                el.style.top = safeY + 'px';
+                el.style.visibility = 'visible';
+                el.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+
+                // Store rect
+                placedRects.push({ x: safeX, y: safeY, w: w, h: h });
+
+                // Interaction
+                el.addEventListener('mouseover', () => handleErase(el));
+                el.addEventListener('mousedown', () => {
+                    isDragging = true;
+                    handleErase(el);
+                });
+            });
+        }
+
+        function handleErase(el) {
+            if (!isDragging) return;
+            if (el.classList.contains('erased') || el.classList.contains('error')) return;
+
+            if (el.classList.contains('false')) {
+                // Correct erase
+                playSound('clean');
+                el.classList.add('erased');
+                score++;
+                updateHUD();
+
+                if (score >= totalFalse) {
+                    endGame(true);
+                }
+            } else {
+                // Wrong erase (True fact)
+                playSound('alarm');
+                el.classList.add('error');
+                fails++;
+                updateHUD();
+
+                if (fails >= 3) {
+                    endGame(false);
+                }
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('total-false').textContent = totalFalse;
+            document.getElementById('fails').textContent = fails;
+        }
+
+        function endGame(win) {
+            const overlay = document.getElementById('feedback-overlay');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                title.textContent = "PARET NETA!";
+                title.style.color = "#4caf50";
+                msg.textContent = "Has eliminat el vandalisme.";
+
+                // Save progress
+                const completed = JSON.parse(localStorage.getItem('neteja_completed_eras') || '[]');
+                if (!completed.includes(currentEra)) {
+                    completed.push(currentEra);
+                    localStorage.setItem('neteja_completed_eras', JSON.stringify(completed));
+                }
+            } else {
+                title.textContent = "HISTÒRIA BORRADA";
+                title.style.color = "red";
+                msg.textContent = "Has esborrat dades importants!";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

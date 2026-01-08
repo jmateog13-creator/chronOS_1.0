@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Skald's Stone</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap');
+
+        :root {
+            --nordic-dark: #121415;
+            --stone-grey: #4a4e51;
+            --rune-blue: #00f7ff;
+            --rune-glow: rgba(0, 247, 255, 0.6);
+            --gold: #ffd700;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--nordic-dark);
+            color: white;
+            font-family: 'Cinzel', serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle, #2c3e50, #000);
+            transition: background-image 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Particles/Snow */
+        #snow-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Updated Layout */
+        #game-layout {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: row;
+            /* 3 Columns */
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #side-pouch-left,
+        #side-pouch-right {
+            width: 280px;
+            height: 90%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-start;
+            gap: 15px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        #center-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+            gap: 20px;
+        }
+
+        /* UI Panel for Instruction/Clue */
+        #task-panel {
+            background: rgba(18, 20, 21, 0.85);
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 20px 40px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            max-width: 80%;
+            position: relative;
+        }
+
+        #task-panel::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        #level-counter {
+            color: var(--gold);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-family: 'Cinzel Decorative', cursive;
+            letter-spacing: 2px;
+        }
+
+        #instruction {
+            font-size: 2.2rem;
+            text-shadow: 0 2px 10px black;
+            color: var(--rune-blue);
+            font-family: 'Cinzel Decorative', cursive;
+            margin-bottom: 15px;
+        }
+
+        #clue {
+            font-size: 1.1rem;
+            color: #ddd;
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 15px;
+            border-radius: 4px;
+            border-left: 3px solid var(--gold);
+            display: inline-block;
+        }
+
+
+        .rune-stone {
+            width: 120px;
+            /* Increased size */
+            height: 120px;
+            background: transparent;
+            /* No background */
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            transition: transform 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .rune-stone img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+            pointer-events: none;
+            transition: filter 0.2s;
+        }
+
+        .rune-stone:hover {
+            transform: scale(1.15) translateY(-5px);
+            z-index: 50;
+        }
+
+        .rune-stone:hover img {
+            filter: drop-shadow(0 0 10px var(--rune-blue));
+        }
+
+        /* Monolith adjustments */
+        #monolith {
+            width: 340px;
+            height: 520px;
+            background: #1a1a1a;
+            border-radius: 40px 40px 10px 10px;
+            /* More stone-like */
+            border: 6px solid #2a2a2a;
+            box-shadow: 0 20px 60px black, inset 0 0 50px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            position: relative;
+            background-image: url('https://www.transparenttextures.com/patterns/granite.png');
+        }
+
+        .slot {
+            width: 90px;
+            height: 90px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            border: 2px dashed #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: var(--rune-blue);
+            transition: all 0.3s;
+        }
+
+        .slot.filled {
+            border: 2px solid var(--rune-blue);
+            box-shadow: 0 0 20px var(--rune-glow);
+            background: rgba(0, 247, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .slot img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+
+        /* Info Panel */
+        #info-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(14, 16, 18, 0.95);
+            border: 1px solid var(--rune-blue);
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            width: 600px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        #info-panel::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 10px;
+            z-index: -1;
+            background: linear-gradient(45deg, var(--rune-blue), transparent, var(--rune-blue));
+            opacity: 0.3;
+        }
+
+        #info-title {
+            color: var(--gold);
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            font-family: 'Cinzel Decorative', cursive;
+        }
+
+        #info-desc {
+            color: #dcdcdc;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Audio Controls */
+        #audio-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gold);
+            font-family: sans-serif;
+            font-size: 0.8rem;
+        }
+
+        #audio-controls input[type=range] {
+            accent-color: var(--gold);
+        }
+
+        .btn {
+            padding: 15px 50px;
+            background: transparent;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            font-family: 'Cinzel Decorative', cursive;
+            cursor: pointer;
+            margin-top: 40px;
+            font-size: 1.8rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn:hover {
+            background: var(--gold);
+            color: #121415;
+            box-shadow: 0 0 20px var(--gold);
+        }
+
+        /* Effects */
+        .success-flash {
+            animation: thunder 0.6s ease-out;
+        }
+
+        @keyframes thunder {
+            0% {
+                background-color: rgba(255, 255, 255, 0.8);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        #ritual-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            color: var(--gold);
+            text-shadow: 0 0 30px black;
+            z-index: 100;
+            display: none;
+            font-family: 'Cinzel Decorative', cursive;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            box-shadow: 0 0 50px black;
+        }
+
+        #win-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 150;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="snow-canvas"></canvas>
+
+    <!-- Audio Player -->
+    <audio id="bg-music" loop>
+        <!-- Tries two common paths -->
+        <source src="audio/music.m4a" type="audio/mpeg">
+        <source src="audio/bg_music.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="audio-controls">
+        <span style="font-size: 1.2rem;">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1 style="font-size: 6rem; margin-bottom: 20px; color: var(--gold); text-shadow: 0 0 30px var(--gold);">THE
+            SKALD'S STONE</h1>
+        <p style="font-size: 1.6rem; color: #ccc; max-width: 800px; margin-bottom: 50px; line-height: 1.6;">
+            Benvingut, jove Skald.<br>
+            Els déus han dispersat les runes musicals a través del temps.<br>
+            Troba les runes correctes, completa el monòlit i invoca el coneixement antic.
+        </p>
+        <button class="btn" onclick="startGame()">INICIAR RITUAL</button>
+    </div>
+
+    <div id="game-layout">
+
+        <!-- Left Runes -->
+        <div id="side-pouch-left"></div>
+
+        <!-- Center Game -->
+        <div id="center-area">
+
+            <div id="task-panel">
+                <div id="level-counter">RITUAL <span id="current-ritual">1</span>/6</div>
+                <div id="instruction">NOM DE L'ERA</div>
+                <div id="clue">Pista de l'era...</div>
+            </div>
+
+            <div id="monolith">
+                <!-- Slots -->
+                <div class="slot" id="slot-0" data-index="0"></div>
+                <div class="slot" id="slot-1" data-index="1"></div>
+                <div class="slot" id="slot-2" data-index="2"></div>
+            </div>
+        </div>
+
+        <!-- Right Runes -->
+        <div id="side-pouch-right"></div>
+
+        <!-- Rune Info Panel (Hover) -->
+        <div id="info-panel">
+            <h2 id="info-title">Nom de la Runa</h2>
+            <p id="info-desc">Descripció detallada...</p>
+        </div>
+
+        <div class="ritual-complete" id="ritual-msg">RITUAL COMPLET!</div>
+
+        <div id="win-screen">
+            <h1 style="color: var(--gold); font-size: 5rem; text-shadow: 0 0 20px var(--gold);">ETS UN VERITABLE SKALD!
+            </h1>
+            <p style="font-size: 1.8rem; color: white;">Has dominat la història de la música i invocat el favor d'Odin.
+            </p>
+            <button class="btn" onclick="location.reload()">NOVA PARTIDA</button>
+        </div>
+    </div>
+
+    <script>
+        const RUNIC_DATA = [
+            { id: "mitjana", name: "Edat Mitjana", bg: "img/fonsmitjana.jpg", clue: "El silenci del monestir i la veu única (Monodia).", runes: ["Isa", "Algiz", "Ansuz"] },
+            { id: "renaix", name: "Renaixement", bg: "img/fonsrenaixement.jpg", clue: "L'equilibri humà i la polifonia de les veus.", runes: ["Mannaz", "Gebo", "Wunjo"] },
+            { id: "barroc", name: "Barroc", bg: "img/fonsbarroc.jpg", clue: "L'or, el contrast, el baix continu i l'òpera.", runes: ["Fehu", "Dagaz", "Sowilo"] },
+            { id: "classic", name: "Classicisme", bg: "img/fonsclassic.jpg", clue: "La llum de la raó, l'ordre i l'estructura clara.", runes: ["Kenaz", "Tiwaz", "Ingwaz"] },
+            { id: "roman", name: "Romanticisme", bg: "img/fonsromanticisme.jpg", clue: "La tempesta, la passió, el piano i la natura salvatge.", runes: ["Thurisaz", "Uruz", "Laguz"] },
+            { id: "sxx", name: "Segle XX", bg: "img/fonssegleXX.jpg", clue: "El trencament de les normes i la nova tecnologia.", runes: ["Hagalaz", "Eihwaz", "Perthro"] }
+        ];
+
+        const ALL_RUNES = [
+            { name: "Fehu", img: "img/fehu.png", meaning: "Riquesa i Poder", desc: "Simbolitza l'abundància i l'or. En música, representa el mecenatge i la riquesa de les produccions operístiques barroques." },
+            { name: "Uruz", img: "img/uruz.png", meaning: "Força Primordial", desc: "La força indomable de la natura. En el Romanticisme, representa la potència emocional i la força de l'orquestra simfònica." },
+            { name: "Thurisaz", img: "img/thurisaz.png", meaning: "Caos i Conflicte", desc: "El gegant, l'espina. Representa la lluita interna de l'artista romàntic i els contrastos dramàtics." },
+            { name: "Ansuz", img: "img/ansuz.png", meaning: "Senyal Diví / Veu", desc: "La runa d'Odin, el déu de la poesia. Representa el Cant Gregorià, la veu com a instrument diví a l'Edat Mitjana." },
+            { name: "Kenaz", img: "img/kenaz.png", meaning: "Antorcha / Coneixement", desc: "La llum que il·lumina la foscor. Representa la Il·lustració, la raó i la claredat estructural del Classicisme." },
+            { name: "Gebo", img: "img/gebo.png", meaning: "Regal / Intercanvi", desc: "L'equilibri entre donar i rebre. En el Renaixement, simbolitza l'harmonia entre les veus en la polifonia." },
+            { name: "Wunjo", img: "img/wunjo.png", meaning: "Alegria / Perfecció", desc: "La felicitat i la realització. Representa la recerca de la bellesa ideal i la perfecció artística renaixentista." },
+            { name: "Hagalaz", img: "img/hagalaz.png", meaning: "Granís / Disrupció", desc: "La tempesta destructiva que porta canvi. Representa el trencament de la tonalitat i les avantguardes del Segle XX." },
+            { name: "Isa", img: "img/isa.png", meaning: "Gel / Estaticisme", desc: "La quietud i la concentració. Representa la linealitat i la puresa de la monodia medieval, un sol fil de veu." },
+            { name: "Perthro", img: "img/perthro.png", meaning: "Secret / Atzar", desc: "El cubilet dels daus, el misteri. Representa l'experimentació, la música aleatòria i la tecnologia del Segle XX." },
+            { name: "Algiz", img: "img/algiz.png", meaning: "Protecció / Connexió", desc: "L'home connectant amb el diví. Representa l'espiritualitat profunda i la protecció del monestir medieval." },
+            { name: "Sowilo", img: "img/sowilo.png", meaning: "Sol / Èxit", desc: "L'energia solar i la victòria. Representa la brillantor, la glòria i l'espectacularitat del Rei Sol (Lluís XIV) al Barroc." },
+            { name: "Tiwaz", img: "img/tiwaz.png", meaning: "Justícia / Ordre", desc: "L'estrella polar, la guia recta. Representa l'ordre formal, l'estructura de la Sonata i l'equilibri clàssic." },
+            { name: "Mannaz", img: "img/mannaz.png", meaning: "L'Home / Humanitat", desc: "L'ésser humà com a centre de tot. Representa l'Humanisme, que posa l'home i la seva emoció racional al centre." },
+            { name: "Laguz", img: "img/laguz.png", meaning: "Aigua / Fluir", desc: "L'aigua i les emocions profundes. Representa el sentimentalisme, el 'Lied' i la fluïdesa melòdica del Romanticisme." },
+            { name: "Ingwaz", img: "img/ingwaz.png", meaning: "Gestació / Harmonia", desc: "La llavor, el potencial interior. Representa l'harmonia interna, la pau i la simetria de la música clàssica." },
+            { name: "Dagaz", img: "img/dagaz.png", meaning: "Dia / Il·luminació", desc: "El despertar, el canvi de la nit al dia. Representa el contrast extrem (Clarobscur) típic de l'art barroc." },
+            { name: "Eihwaz", img: "img/eihwaz.png", meaning: "Teix / Resistència", desc: "L'arbre yggdrasil que connecta mons. Representa la transformació radical i la resistència al canvi en l'art modern." }
+        ];
+
+        let gameLevels = []; // Will hold shuffled levels
+        let currentEraIndex = 0;
+        let selectedRunes = [null, null, null];
+
+        const pouchLeft = document.getElementById('side-pouch-left');
+        const pouchRight = document.getElementById('side-pouch-right');
+        const instruction = document.getElementById('instruction');
+        const clue = document.getElementById('clue');
+        const ritualMsg = document.getElementById('ritual-msg');
+        const infoPanel = document.getElementById('info-panel');
+        const infoTitle = document.getElementById('info-title');
+        const infoDesc = document.getElementById('info-desc');
+        const audioPlayer = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // Init Game
+        function initGameData() {
+            // Shuffle RUNIC_DATA to create random level order
+            gameLevels = [...RUNIC_DATA].sort(() => Math.random() - 0.5);
+            currentEraIndex = 0;
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            // Play Audio
+            audioPlayer.volume = 0.5;
+            audioPlayer.play().catch(e => console.log("Audio play failed (user interaction needed):", e));
+        }
+
+        // Volume Control
+        volumeSlider.addEventListener('input', (e) => {
+            audioPlayer.volume = e.target.value;
+        });
+
+        function initPouch() {
+            pouchLeft.innerHTML = "";
+            pouchRight.innerHTML = "";
+            let runes = [...ALL_RUNES].sort(() => Math.random() - 0.5);
+
+            runes.forEach((rune, i) => {
+                const el = document.createElement('div');
+                el.className = 'rune-stone';
+                el.draggable = true;
+                el.dataset.name = rune.name;
+                // Just the image, no text
+                el.innerHTML = `<img src="${rune.img}" draggable="false" alt="${rune.name}">`;
+
+                el.addEventListener('dragstart', (e) => {
+                    el.classList.add('dragging');
+                    e.dataTransfer.setData('runeName', rune.name);
+                });
+                el.addEventListener('dragend', () => el.classList.remove('dragging'));
+                el.addEventListener('mouseenter', () => showInfo(rune));
+                el.addEventListener('mouseleave', () => hideInfo());
+
+                // Distribute
+                if (i % 2 === 0) {
+                    pouchLeft.appendChild(el);
+                } else {
+                    pouchRight.appendChild(el);
+                }
+            });
+        }
+
+        function showInfo(rune) {
+            infoTitle.textContent = rune.name + " - " + rune.meaning;
+            infoDesc.textContent = rune.desc;
+            infoPanel.style.display = 'block';
+        }
+
+        function hideInfo() {
+            infoPanel.style.display = 'none';
+        }
+
+        function loadEra() {
+            const era = gameLevels[currentEraIndex];
+            instruction.textContent = `${era.name.toUpperCase()}`;
+            clue.textContent = `Pista: ${era.clue}`;
+            // Change bg
+            document.body.style.backgroundImage = `url('${era.bg}')`;
+
+            selectedRunes = [null, null, null];
+            document.querySelectorAll('.slot').forEach(s => {
+                s.innerHTML = "";
+                s.classList.remove('filled');
+            });
+            document.getElementById('current-ritual').textContent = currentEraIndex + 1;
+        }
+
+        // Drop logic
+        document.querySelectorAll('.slot').forEach(slot => {
+            slot.addEventListener('dragover', e => e.preventDefault());
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                const runeName = e.dataTransfer.getData('runeName');
+                const rune = ALL_RUNES.find(r => r.name === runeName);
+                if (!rune) return;
+
+                const index = parseInt(slot.dataset.index);
+                selectedRunes[index] = runeName;
+                slot.innerHTML = `<img src="${rune.img}" style="width:100%; height:100%; object-fit:contain;">`;
+                slot.classList.add('filled');
+                playStoneSound();
+
+                if (selectedRunes.every(r => r !== null)) {
+                    checkCombination();
+                }
+            });
+        });
+
+        function checkCombination() {
+            const era = gameLevels[currentEraIndex];
+            const correct = era.runes.every(r => selectedRunes.includes(r));
+
+            if (correct) {
+                ritualSuccess();
+            } else {
+                ritualFail();
+            }
+        }
+
+        function ritualSuccess() {
+            document.body.classList.add('success-flash');
+            ritualMsg.style.display = 'block';
+            setTimeout(() => {
+                document.body.classList.remove('success-flash');
+                ritualMsg.style.display = 'none';
+                currentEraIndex++;
+                if (currentEraIndex < gameLevels.length) {
+                    loadEra();
+                } else {
+                    showWin();
+                }
+            }, 2000);
+        }
+
+        function ritualFail() {
+            const mono = document.getElementById('monolith');
+            mono.style.borderColor = '#ff3333';
+            mono.style.boxShadow = '0 0 50px #ff3333';
+            setTimeout(() => {
+                mono.style.borderColor = '#2a2a2a';
+                mono.style.boxShadow = '0 20px 60px black, inset 0 0 50px rgba(0,0,0,0.8)';
+
+                selectedRunes = [null, null, null];
+                document.querySelectorAll('.slot').forEach(s => {
+                    s.innerHTML = "";
+                    s.classList.remove('filled');
+                });
+            }, 1000);
+        }
+
+        function showWin() {
+            document.getElementById('win-screen').style.display = 'flex';
+        }
+
+        // Snow and Audio
+        const canvas = document.getElementById('snow-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+        for (let i = 0; i < 100; i++) {
+            particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, v: 1 + Math.random() * 2, s: 1 + Math.random() * 2 });
+        }
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            particles.forEach(p => {
+                p.y += p.v; if (p.y > canvas.height) p.y = -10;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2); ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function playStoneSound() {
+            if (!window.AudioContext) return;
+            const actx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.connect(gain);
+            gain.connect(actx.destination);
+            osc.frequency.setValueAtTime(100, actx.currentTime);
+            osc.frequency.linearRampToValueAtTime(10, actx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, actx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, actx.currentTime + 0.1);
+            osc.start();
+            osc.stop(actx.currentTime + 0.1);
+        }
+
+        // Initialize
+        initGameData();
+        initPouch();
+        loadEra();
+    </script>
+</body>
+
+</html>

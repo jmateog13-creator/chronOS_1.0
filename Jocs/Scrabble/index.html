@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrabble Musical: Duel de Mestres</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --board-green: #2e7d32;
+            --board-border: #1b5e20;
+            --tile-color: #f5deb3;
+            --tile-shadow: #d2b48c;
+            --text-color: #333;
+            --accent-gold: #ffd700;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background: #2e1d15 url("img/fonsfusta.jpg") center center / cover no-repeat;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            width: 100%;
+            height: 100%;
+            background: #000 url("img/startscreen.jpg") center center / cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            text-align: center;
+        }
+
+        #start-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .instructions-box {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--accent-gold);
+            padding: 20px;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .instructions-box ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .instructions-box strong {
+            color: var(--accent-gold);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: var(--accent-gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .era-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background: var(--tile-color);
+            color: #3e2723;
+            font-weight: bold;
+            transition: transform 0.1s;
+            box-shadow: 0 4px 0 #8d6e63;
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        button:hover {
+            background: #fff3e0;
+        }
+
+        /* Game Layout */
+        #game-container {
+            display: flex;
+            flex: 1;
+            padding: 1rem;
+            gap: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .column {
+            flex: 1;
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 4px;
+            padding: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #d7ccc8;
+        }
+
+        #center-column {
+            flex: 2;
+            flex: 2;
+            background: var(--board-green);
+            border: 12px solid #3e2723;
+            border-radius: 8px;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5), 0 15px 30px rgba(0, 0, 0, 0.6);
+            position: relative;
+            position: relative;
+            justify-content: space-between;
+        }
+
+        /* Player & AI Areas */
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #ddd;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            border: 4px solid var(--accent-gold);
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .score-box {
+            background: #333;
+            color: var(--accent-gold);
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 2rem;
+            font-family: 'Playfair Display', serif;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* Board Area */
+        #definition-area {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 90%;
+            text-align: center;
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        #definition-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .dua-controls {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            box-shadow: none;
+        }
+
+        #board-slots {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            min-height: 80px;
+        }
+
+        .slot {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Tiles */
+        .tile {
+            width: 56px;
+            height: 56px;
+            background: var(--tile-color);
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 var(--tile-shadow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: black;
+            cursor: grab;
+            position: relative;
+            user-select: none;
+        }
+
+        .tile span {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.7rem;
+            font-weight: normal;
+        }
+
+        .tile.dragging {
+            opacity: 0.5;
+        }
+
+        /* Rack */
+        #player-rack {
+            background: #5d4037;
+            padding: 1rem;
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            min-height: 70px;
+            width: 100%;
+            box-sizing: border-box;
+            flex-wrap: wrap;
+        }
+
+        /* Controls */
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+            margin-bottom: 1rem;
+        }
+
+        .action-btn {
+            background: #1976d2;
+            color: white;
+            box-shadow: 0 4px 0 #0d47a1;
+        }
+
+        .action-btn.pass {
+            background: #d32f2f;
+            box-shadow: 0 4px 0 #b71c1c;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            80% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .tile {
+            animation: popIn 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1>Scrabble Musical: Duel de Mestres</h1>
+
+        <div class="instructions-box">
+            <p>Benvingut al repte definitiu de vocabulari musical!</p>
+            <ul>
+                <li><strong>Objectiu:</strong> Forma la paraula secreta relacionada amb l'època musical.</li>
+                <li><strong>Joc:</strong> Arrossega les lletres del teu atril a les caselles buides.</li>
+                <li><strong>Puntuació:</strong> Cada lletra té un valor. Les paraules correctes sumen punts extra!</li>
+                <li><strong>Rivals:</strong> Competeix contra els grans Mestres de la Història.</li>
+            </ul>
+            <p>Pots demanar una <strong>Pista (💡)</strong> si et quedes encallat, però et costarà punts!</p>
+        </div>
+
+        <p>Tria la teva Època per començar:</p>
+        <div class="era-buttons">
+            <button onclick="startGame('EDAT_MITJANA')">Edat Mitjana</button>
+            <button onclick="startGame('RENAIXEMENT')">Renaixement</button>
+            <button onclick="startGame('BARROC')">Barroc</button>
+            <button onclick="startGame('CLASSICISME')">Classicisme</button>
+            <button onclick="startGame('ROMANTICISME')">Romanticisme</button>
+            <button onclick="startGame('SEGLE_XX')">Segle XX</button>
+            <button onclick="startGame('MIX')">Mode Mix (Aleatori)</button>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="game-container" class="hidden">
+        <!-- Player Column -->
+        <div class="column">
+            <h2>Tu</h2>
+            <div class="avatar">
+                <img src="img/personatge.jpg" alt="Jugador">
+            </div>
+            <div class="score-box" id="player-score">0</div>
+            <div style="margin-top: auto; width: 100%;">
+                <h3>El teu Atril</h3>
+                <div id="player-rack" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- Tiles will go here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Board -->
+        <div class="column" id="center-column">
+            <div id="definition-area">
+                <div class="dua-controls">
+                    <button class="icon-btn" onclick="speakDefinition()" title="Llegir definició">🔊</button>
+                    <button class="icon-btn" onclick="useHint()" title="Pista (-5 punts)">💡</button>
+                </div>
+                <p>DEFINICIÓ:</p>
+                <div id="definition-text">...</div>
+            </div>
+
+            <div id="board-slots">
+                <!-- Slots generated dynamically -->
+            </div>
+
+            <div class="game-controls">
+                <button class="action-btn pass" onclick="passTurn()">PASSAR / CANVIAR</button>
+                <button class="action-btn" onclick="playWord()">JUGAR PARAULA</button>
+            </div>
+        </div>
+
+        <!-- AI Column -->
+        <div class="column">
+            <h2>Mestre Rival</h2>
+            <div class="avatar" id="ai-avatar-container">
+                <img id="ai-avatar-img" src="" alt="Rival">
+            </div>
+            <div class="score-box" id="ai-score">0</div>
+            <div id="ai-status" style="margin-top: 1rem; font-style: italic;">Esperant...</div>
+        </div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const DICTIONARY = {
+            EDAT_MITJANA: [
+                { word: "NEUMES", def: "Signes musicals antics previs a la notació actual.", points: 8 },
+                { word: "MONJO", def: "Persona que copiava partitures als monestirs.", points: 7 },
+                { word: "LLAUT", def: "Instrument de corda polsat molt popular.", points: 6 },
+                { word: "GREGORIA", def: "Cant religiós monòdic en llatí.", points: 9 }
+            ],
+            RENAIXEMENT: [
+                { word: "MISSA", def: "Forma musical religiosa principal de la litúrgia.", points: 6 },
+                { word: "COR", def: "Grup de cantants que interpreten junts.", points: 5 },
+                { word: "HUMANISME", def: "Moviment intel·lectual i filosòfic de l'època.", points: 14 },
+                { word: "DANSA", def: "Música per ballar com la Pavana o la Gallarda.", points: 6 }
+            ],
+            BARROC: [
+                { word: "FUGA", def: "Obra complexa contrapuntística, especialitat de Bach.", points: 8 },
+                { word: "OPERA", def: "Teatre cantat nascut a Itàlia.", points: 7 },
+                { word: "CLAVE", def: "Instrument de tecla antic, predecessor del piano.", points: 8 },
+                { word: "VIVALDI", def: "Compositor venecià conegut com 'el capellà pèl-roig'.", points: 12 }
+            ],
+            CLASSICISME: [
+                { word: "SONATA", def: "Forma musical basada en l'ordre i l'estructura.", points: 7 },
+                { word: "MOZART", def: "Nen prodigi de Salzburg, geni del classicisme.", points: 10 },
+                { word: "HAYDN", def: "Compositor austríac, considerat el pare de la simfonia.", points: 9 },
+                { word: "PIANO", def: "Instrument que substitueix el clavecí per la seva dinàmica.", points: 7 }
+            ],
+            ROMANTICISME: [
+                { word: "LIED", def: "Cançó breu per a veu i piano, típica alemanya.", points: 5 },
+                { word: "WAGNER", def: "Compositor d'òperes gegants i drames musicals.", points: 10 },
+                { word: "PASSIO", def: "Sentiment principal que guia l'art romàntic.", points: 8 },
+                { word: "CHOPIN", def: "Compositor polonès, anomenat el 'poeta del piano'.", points: 11 }
+            ],
+            SEGLE_XX: [
+                { word: "JAZZ", def: "Estil nascut a Nova Orleans amb ritme i improvisació.", points: 15 },
+                { word: "ATONAL", def: "Música que no segueix les regles de la tonalitat clàssica.", points: 8 },
+                { word: "CINE", def: "Lloc on la música esdevé banda sonora.", points: 6 },
+                { word: "ROCK", def: "Estil rebel nascut als anys 50 amb guitarra elèctrica.", points: 7 }
+            ]
+        };
+
+        const LETTER_VALUES = {
+            'A': 1, 'B': 3, 'C': 2, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
+            'K': 10, 'L': 1, 'M': 2, 'N': 1, 'O': 1, 'P': 3, 'Q': 5, 'R': 1, 'S': 1, 'T': 1,
+            'U': 1, 'V': 4, 'W': 10, 'X': 8, 'Y': 4, 'Z': 10, 'Ç': 8, '·': 10
+        };
+
+        // --- GAME STATE ---
+        let currentEra = '';
+        let currentWordObj = null;
+        let playerScore = 0;
+        let aiScore = 0;
+        let playerRack = [];
+        let usedWords = [];
+        let isPlayerTurn = true;
+
+        // --- INIT ---
+        function startGame(era) {
+            currentEra = era;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
+
+            // Set AI Avatar based on Era (Flavor)
+            // Set AI Avatar based on Era (Flavor)
+            const avatars = {
+                'EDAT_MITJANA': 'img/mitjana.jpg',
+                'RENAIXEMENT': 'img/renaixement.jpg',
+                'BARROC': 'img/barroc.jpg',
+                'CLASSICISME': 'img/classicisme.jpg',
+                'ROMANTICISME': 'img/romanticisme.jpg',
+                'SEGLE_XX': 'img/segleXX.jpg',
+                'MIX': 'img/barroc.jpg' // Default or random? Let's use Baroque as generic maestro for now or random
+            };
+
+            let avatarSrc = avatars[era];
+            if (era === 'MIX') {
+                // Pick random for mix or just a generic one
+                const keys = Object.keys(avatars).filter(k => k !== 'MIX');
+                avatarSrc = avatars[keys[Math.floor(Math.random() * keys.length)]];
+            }
+
+            document.getElementById('ai-avatar-img').src = avatarSrc || 'img/barroc.jpg';
+
+            nextRound();
+        }
+
+        function nextRound() {
+            // Pick a word
+            let pool = [];
+            if (currentEra === 'MIX') {
+                Object.values(DICTIONARY).forEach(arr => pool.push(...arr));
+            } else {
+                pool = DICTIONARY[currentEra];
+            }
+
+            // Filter used words
+            const available = pool.filter(w => !usedWords.includes(w.word));
+
+            if (available.length === 0) {
+                let msg = `Joc acabat! Puntuació final: ${playerScore}`;
+
+                if (playerScore > aiScore) {
+                    msg += " HAS GUANYAT! 🏆";
+                    // Unlock Reward
+                    if (typeof Rewards !== 'undefined') {
+                        let cardId = 'scrabble_mix';
+                        let cardTitle = 'Mestre de les Paraules';
+
+                        if (currentEra !== 'MIX') {
+                            cardId = `scrabble_${currentEra.toLowerCase()}`;
+                            cardTitle = `Scrabble: ${currentEra.replace('_', ' ')}`;
+                        }
+
+                        Rewards.unlockCard(
+                            cardId,
+                            cardTitle,
+                            'Has demostrat el teu vocabulari musical!',
+                            '../../img/card_scrabble.png'
+                        );
+                    }
+                } else {
+                    msg += " Ha guanyat el Mestre Rival.";
+                }
+
+                alert(msg);
+                location.reload();
+                return;
+            }
+
+            currentWordObj = available[Math.floor(Math.random() * available.length)];
+            usedWords.push(currentWordObj.word);
+
+            // Setup UI
+            document.getElementById('definition-text').innerText = currentWordObj.def;
+            setupBoard(currentWordObj.word.length);
+            fillRackRigged(currentWordObj.word);
+            isPlayerTurn = true;
+            updateStatus("El teu torn.");
+        }
+
+        function setupBoard(length) {
+            const container = document.getElementById('board-slots');
+            container.innerHTML = '';
+            for (let i = 0; i < length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                slot.dataset.index = i;
+                slot.ondrop = drop;
+                slot.ondragover = allowDrop;
+                container.appendChild(slot);
+            }
+        }
+
+        // --- RIGGED RNG ---
+        function fillRackRigged(targetWord) {
+            const rackSize = 7;
+            playerRack = [];
+            const targetLetters = targetWord.split('');
+
+            // 60% of letters guaranteed from the word
+            const guaranteedCount = Math.ceil(targetWord.length * 0.6);
+
+            // Shuffle target letters and pick guaranteed ones
+            targetLetters.sort(() => Math.random() - 0.5);
+            for (let i = 0; i < guaranteedCount; i++) {
+                if (targetLetters[i]) playerRack.push(targetLetters[i]);
+            }
+
+            // Fill rest with random weighted letters
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Simplified distribution
+            while (playerRack.length < rackSize) {
+                playerRack.push(alphabet[Math.floor(Math.random() * alphabet.length)]);
+            }
+
+            // Shuffle rack
+            playerRack.sort(() => Math.random() - 0.5);
+            renderRack();
+        }
+
+        function renderRack() {
+            const container = document.getElementById('player-rack');
+            container.innerHTML = '';
+            playerRack.forEach((char, index) => {
+                const tile = createTile(char, 'rack-' + index);
+                container.appendChild(tile);
+            });
+        }
+
+        function createTile(char, id) {
+            const div = document.createElement('div');
+            div.className = 'tile';
+            div.draggable = true;
+            div.id = id;
+            div.dataset.char = char;
+            div.ondragstart = drag;
+
+            div.innerHTML = `${char}<span>${LETTER_VALUES[char] || 1}</span>`;
+            return div;
+        }
+
+        // --- DRAG & DROP ---
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const tile = document.getElementById(data);
+
+            // Drop target logic
+            let target = ev.target;
+
+            // If dropped on a tile, find parent slot
+            if (target.classList.contains('tile') || target.tagName === 'SPAN') {
+                target = target.closest('.slot') || target.closest('#player-rack');
+            }
+
+            if (target.classList.contains('slot')) {
+                // If slot has a tile, move it back to rack? Or swap? 
+                // Simple version: Only drop if empty
+                if (target.children.length === 0) {
+                    target.appendChild(tile);
+                }
+            } else if (target.id === 'player-rack') {
+                target.appendChild(tile);
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function playWord() {
+            if (!isPlayerTurn) return;
+
+            const slots = document.querySelectorAll('.slot');
+            let formedWord = "";
+            let score = 0;
+            let allFilled = true;
+
+            slots.forEach(slot => {
+                if (slot.children.length > 0) {
+                    const char = slot.children[0].dataset.char;
+                    formedWord += char;
+                    score += (LETTER_VALUES[char] || 1);
+                } else {
+                    allFilled = false;
+                }
+            });
+
+            if (!allFilled) {
+                alert("Has d'omplir totes les caselles!");
+                return;
+            }
+
+            if (formedWord === currentWordObj.word) {
+                // Correct!
+                // Apply 1.5x User Bias
+                const finalScore = Math.ceil(score * 1.5);
+                playerScore += finalScore;
+                updateScores();
+                alert(`Correcte! Has guanyat ${finalScore} punts!`);
+
+                // Clear board
+                slots.forEach(s => s.innerHTML = '');
+                nextRound();
+            } else {
+                alert("Paraula incorrecta. Torna-ho a provar.");
+                // Return tiles to rack
+                slots.forEach(slot => {
+                    if (slot.children.length > 0) {
+                        document.getElementById('player-rack').appendChild(slot.children[0]);
+                    }
+                });
+            }
+        }
+
+        function passTurn() {
+            if (!isPlayerTurn) return;
+            isPlayerTurn = false;
+
+            // 1. Collect all current tiles (from rack and board)
+            const currentTiles = [];
+
+            // From Rack
+            document.querySelectorAll('#player-rack .tile').forEach(t => currentTiles.push(t.dataset.char));
+
+            // From Board
+            document.querySelectorAll('.slot .tile').forEach(t => currentTiles.push(t.dataset.char));
+
+            // Clear board visuals
+            document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
+
+            // 2. Add 3 new letters
+            // Strategy: Add at least 1 letter from the target word if possible, else random.
+            const targetLetters = currentWordObj.word.split('');
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+            for (let i = 0; i < 3; i++) {
+                // Simple rigged: 50% chance to get a needed letter
+                if (Math.random() > 0.5) {
+                    const needed = targetLetters[Math.floor(Math.random() * targetLetters.length)];
+                    currentTiles.push(needed);
+                } else {
+                    currentTiles.push(alphabet[Math.floor(Math.random() * alphabet.length)]);
+                }
+            }
+
+            // 3. Re-render Rack
+            const container = document.getElementById('player-rack');
+            container.innerHTML = '';
+            currentTiles.forEach((char, index) => {
+                // We need unique IDs for drag and drop to work properly
+                const tile = createTile(char, 'tile-' + Date.now() + '-' + index);
+                container.appendChild(tile);
+            });
+
+            updateStatus("El Mestre Rival està pensant...");
+
+            // AI Turn
+            setTimeout(aiTurn, 2000);
+        }
+
+        function aiTurn() {
+            // AI Difficulty Logic
+            // 20% chance to solve it immediately
+            // Increases slightly if it's a very simple word? No, keep it random for now.
+            const difficulty = 0.2;
+
+            if (Math.random() < difficulty) {
+                // AI Solves
+                const aiPoints = currentWordObj.points;
+                aiScore += aiPoints;
+                updateScores();
+                alert(`El Mestre Rival ha trobat la paraula: ${currentWordObj.word} (+${aiPoints} pts)`);
+                nextRound();
+            } else {
+                // AI Passes
+                updateStatus("El Mestre Rival no ho veu clar... Et toca!");
+                isPlayerTurn = true;
+            }
+        }
+
+        function updateScores() {
+            document.getElementById('player-score').innerText = playerScore;
+            document.getElementById('ai-score').innerText = aiScore;
+        }
+
+        function updateStatus(msg) {
+            document.getElementById('ai-status').innerText = msg;
+        }
+
+        // --- DUA FEATURES ---
+        function speakDefinition() {
+            const text = currentWordObj.def;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ca-ES';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function useHint() {
+            if (playerScore < 5) {
+                alert("No tens prous punts (Mínim 5)!");
+                return;
+            }
+
+            // Find first empty slot
+            const slots = document.querySelectorAll('.slot');
+            let emptyIndex = -1;
+            for (let i = 0; i < slots.length; i++) {
+                if (slots[i].children.length === 0) {
+                    emptyIndex = i;
+                    break;
+                }
+            }
+
+            if (emptyIndex !== -1) {
+                playerScore -= 5;
+                updateScores();
+
+                const correctChar = currentWordObj.word[emptyIndex];
+
+                // Check if char is in rack, if so move it. If not, create it (magic).
+                // Priority: Take from rack to teach player.
+                const rack = document.getElementById('player-rack');
+                let foundTile = null;
+                for (let tile of rack.children) {
+                    if (tile.dataset.char === correctChar) {
+                        foundTile = tile;
+                        break;
+                    }
+                }
+
+                if (foundTile) {
+                    slots[emptyIndex].appendChild(foundTile);
+                } else {
+                    // Create new magical tile
+                    const newTile = createTile(correctChar, 'magic-' + Date.now());
+                    newTile.style.border = "2px solid gold";
+                    slots[emptyIndex].appendChild(newTile);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

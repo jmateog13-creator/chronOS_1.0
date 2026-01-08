@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER BUILDER: Luthier Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --lego-yellow: #FFD700;
+            --lego-red: #D32F2F;
+            --lego-blue: #1976D2;
+            --lego-green: #388E3C;
+            --lego-black: #212121;
+            --lego-white: #F5F5F5;
+            --bg-studs: radial-gradient(circle, rgba(0, 0, 0, 0.1) 20%, transparent 21%);
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--lego-yellow);
+            background-image: var(--bg-studs);
+            background-size: 30px 30px;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: var(--lego-black);
+            overflow: hidden;
+            font-size: 14px;
+            /* Base size reduction */
+        }
+
+        /* --- UI OVERLAYS --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            color: var(--lego-red);
+            text-transform: uppercase;
+            text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .btn-start {
+            background: var(--lego-blue);
+            color: white;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            font-family: 'Fredoka One', cursive;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #0d47a1;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-start:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #0d47a1;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        /* --- MAIN LAYOUT --- */
+        #header {
+            background: var(--lego-white);
+            padding: 5px 20px;
+            /* Reduced padding */
+            border-bottom: 5px solid var(--lego-red);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            height: 60px;
+            /* Fixed smaller height */
+        }
+
+        .target-box {
+            background: var(--lego-blue);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        #game-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* --- COLUMNS --- */
+        .column {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 90%;
+        }
+
+        .col-title {
+            text-align: center;
+            font-family: 'Fredoka One', cursive;
+            color: var(--lego-black);
+            font-size: 1.2rem;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* --- SLOT DISPLAY (Top) --- */
+        .slot-display {
+            width: 100%;
+            height: 120px;
+            /* Fixed height instead of aspect ratio */
+            background: #e3f2fd;
+            border: 4px dashed #90caf9;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            /* Reduced font */
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            /* Prevent shrinking */
+        }
+
+        .slot-display.filled {
+            border-style: solid;
+            background: white;
+            border-color: var(--lego-green);
+        }
+
+        .slot-emoji {
+            font-size: 4rem;
+        }
+
+        .slot-text {
+            position: absolute;
+            bottom: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* --- PARTS GRID (Bottom) --- */
+        .parts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+            padding: 5px;
+            flex-grow: 1;
+            /* Take remaining space */
+        }
+
+        .part-card {
+            background: #f5f5f5;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .part-card:hover {
+            transform: scale(1.05);
+            border-color: var(--lego-blue);
+        }
+
+        .part-card.selected {
+            background: #e3f2fd;
+            border-color: var(--lego-blue);
+            box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.2);
+        }
+
+        .part-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .part-name {
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .part-card::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+
+        /* --- BUILD BUTTON --- */
+        #build-btn {
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            font-family: 'Fredoka One', cursive;
+            background: var(--lego-green);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #2e7d32;
+            margin: 0 20px;
+        }
+
+        #build-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #2e7d32;
+        }
+
+        /* --- VOLUME SLIDER --- */
+        .vol-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .vol-control span {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            width: 80px;
+            accent-color: var(--lego-blue);
+            cursor: pointer;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pop {
+            0% {
+                transform: scale(0);
+            }
+
+            80% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pop-in {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* --- CUSTOM ALERT --- */
+        #custom-alert {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-box {
+            background: white;
+            border: 5px solid var(--lego-red);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .btn-alert {
+            background: var(--lego-black);
+            color: white;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Fredoka One';
+        }
+
+        /* --- GLOBAL TOOLTIP --- */
+        #global-tooltip {
+            position: fixed;
+            background: rgba(33, 33, 33, 0.95);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 250px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="overlay">
+        <h1>MASTER BUILDER 🧱</h1>
+        <p style="font-size: 1.5rem; max-width: 600px; color: #555;">
+            Hola constructor! Tenim una comanda especial.<br>
+            Selecciona les <b>3 peces correctes</b> per muntar l'instrument històric que demana el client.
+        </p>
+        <button class="btn-start" onclick="startGame()">COMENÇAR TORN</button>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-screen" class="overlay" style="display:none;">
+        <h1 style="color:var(--lego-green)">INSTRUMENT COMPLET! 🎉</h1>
+        <img id="win-img"
+            style="height:40vh; max-width:80%; object-fit:contain; margin:20px; border:2px solid #ccc; border-radius:10px; background:white;">
+        <div id="win-text" style="font-size:1.5rem; display:none;">🎻</div>
+        <p style="font-size: 1.2rem;">Has creat una obra mestra d'enginyeria.</p>
+        <button class="btn-start" onclick="nextRound()">SEGÜENT CLIENT</button>
+    </div>
+
+    <!-- CUSTOM ALERT -->
+    <div id="custom-alert">
+        <div class="alert-box">
+            <h2 style="color:var(--lego-red); margin-top:0;">ATENCIÓ! ⚠️</h2>
+            <p id="alert-msg" style="font-family:'Roboto'; font-size: 1.1rem;">Missatge...</p>
+            <button class="btn-alert" onclick="closeAlert()">ENTESOS</button>
+        </div>
+    </div>
+
+    <!-- GLOBAL TOOLTIP -->
+    <div id="global-tooltip"></div>
+
+    <!-- MAIN GAME -->
+    <div id="header">
+        <div style="font-family:'Fredoka One'; font-size:1.5rem;">LEGO LUTHERIA</div>
+
+        <div class="vol-control">
+            <span>🎵</span>
+            <input type="range" min="0" max="1" step="0.1" value="0.5"
+                oninput="document.getElementById('bg-music').volume=this.value">
+        </div>
+
+        <div class="target-box" id="target-display">CLIENT: ???</div>
+        <button id="build-btn" onclick="checkBuild()">MUNTAR! 🔨</button>
+        <div style="font-weight:bold;">Taller: <span id="round-disp">1</span>/6</div>
+    </div>
+
+    <audio id="bg-music" src="audio/Brick By Brick.m4a" loop></audio>
+
+    <div id="game-area">
+        <!-- COL 1: COS -->
+        <div class="column">
+            <div class="col-title">1. ESTRUCTURA (Cos)</div>
+            <div class="slot-display" id="slot-body">
+                <div class="slot-emoji" id="disp-body-emoji">❓</div>
+                <div class="slot-text" id="disp-body-text">Buida</div>
+            </div>
+            <div class="parts-grid" id="grid-body"></div>
+        </div>
+
+        <!-- COL 2: MECANISME -->
+        <div class="column">
+            <div class="col-title">2. MECANISME (Acció)</div>
+            <div class="slot-display" id="slot-mech">
+                <div class="slot-emoji" id="disp-mech-emoji">❓</div>
+                <div class="slot-text" id="disp-mech-text">Buida</div>
+            </div>
+            <div class="parts-grid" id="grid-mech"></div>
+        </div>
+
+        <!-- COL 3: FONT -->
+        <div class="column">
+            <div class="col-title">3. ÀNIMA (Son)</div>
+            <div class="slot-display" id="slot-soul">
+                <div class="slot-emoji" id="disp-soul-emoji">❓</div>
+                <div class="slot-text" id="disp-soul-text">Buida</div>
+            </div>
+            <div class="parts-grid" id="grid-soul"></div>
+        </div>
+    </div>
+
+
+    <script>
+        const DB = {
+            "mitjana": {
+                name: "Organistrum", era: "Edat Mitjana", final_img: "mitjanafinal.png",
+                body: { n: "Caixa Roure", img: "mitjanacos.png", desc: "Caixa de fusta robusta per a ressonància greu." },
+                mech: { n: "Manivela", img: "mitjanamec.png", desc: "Mecanisme giratori per fregar les cordes." },
+                soul: { n: "Corda Budell", img: "mitjanafont.png", desc: "Cordes naturals que produeixen un so rústic." }
+            },
+            "renaix": {
+                name: "Llaüt", era: "Renaixement", final_img: "renaixementfinal.png",
+                body: { n: "Cos Pera", img: "renaixementcos.png", desc: "Forma bombada per a una acústica delicada." },
+                mech: { n: "Mànec Trasts", img: "renaixementmec.png", desc: "Mànec amb trastejat per a notes precises." },
+                soul: { n: "Roseta", img: "renaixementfont.png", desc: "Decoració calada que deixa respirar el so." }
+            },
+            "barroc": {
+                name: "Clavicèmbal", era: "Barroc", final_img: "barrocfinal.png",
+                body: { n: "Caixa Pintada", img: "barroccos.png", desc: "Caixa ornamentada amb motius daurats." },
+                mech: { n: "Teclat Invertit", img: "barrocmec.png", desc: "Tecles negres per als naturals, típic de l'època." },
+                soul: { n: "Plectre Ploma", img: "barrocfont.png", desc: "Mecanisme que pinça la corda suaument." }
+            },
+            "classic": {
+                name: "Clarinet", era: "Classicisme", final_img: "classicismefinal.png",
+                body: { n: "Tub Negre", img: "classicismecos.png", desc: "Cos cilíndric de fusta de granadina." },
+                mech: { n: "Claus Plata", img: "classicismemec.png", desc: "Sistema de claus metàl·liques àgil i net." },
+                soul: { n: "Canya", img: "classicismefont.png", desc: "Llengüeta simple que vibra amb l'aire." }
+            },
+            "roman": {
+                name: "Piano Cua", era: "Romanticisme", final_img: "romanticfinal.png",
+                body: { n: "Gran Cua", img: "romanticcos.png", desc: "Caixa de ressonància massiva per a grans sales." },
+                mech: { n: "Martells Feltre", img: "romanticmec.png", desc: "Martells que colpegen amb potència i control." },
+                soul: { n: "Marc Ferro", img: "romanticfont.png", desc: "Estructura de ferro per aguantar la tensió." }
+            },
+            "sxx": {
+                name: "Sintetitzador", era: "Segle XX", final_img: "segleXXfinal.png",
+                body: { n: "Caixa Plàstic", img: "segleXXcos.png", desc: "Carcassa lleugera i resistent." },
+                mech: { n: "Botons i Cables", img: "segleXXmec.png", desc: "Control total sobre els paràmetres del so." },
+                soul: { n: "Ona Digital", img: "segleXXfont.png", desc: "So generat electrònicament per oscil·ladors." }
+            }
+        };
+
+        let keys = Object.keys(DB);
+        let currentLevel = 0;
+        let targetKey = "";
+        let selection = { body: null, mech: null, soul: null };
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            const audio = document.getElementById('bg-music');
+            audio.play().catch(e => console.log("Audio requires interaction"));
+            playRound();
+        }
+
+        function playRound() {
+            if (currentLevel >= keys.length) {
+                showAlert("Joc acabat! Ets el Mestre Constructor Suprem!");
+                // Reload after delay
+                setTimeout(() => location.reload(), 3000);
+                return;
+            }
+
+            targetKey = keys[currentLevel];
+            document.getElementById('target-display').innerText = `CLIENT: ${DB[targetKey].era.toUpperCase()} (${DB[targetKey].name})`;
+            document.getElementById('round-disp').innerText = currentLevel + 1;
+
+            // Reset UI
+            selection = { body: null, mech: null, soul: null };
+            document.querySelectorAll('.slot-display').forEach(el => {
+                el.classList.remove('filled');
+                el.querySelector('.slot-emoji').innerText = "❓";
+                el.querySelector('.slot-text').innerText = "Buida";
+            });
+
+            generateGrids();
+        }
+
+        function generateGrids() {
+            populateGrid('body', 'grid-body');
+            populateGrid('mech', 'grid-mech');
+            populateGrid('soul', 'grid-soul');
+        }
+
+        function populateGrid(type, gridId) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+
+            // Collect all options for this type
+            let options = keys.map(k => ({ key: k, ...DB[k][type] }));
+            // Shuffle
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'part-card pop-in';
+                card.innerHTML = `
+                    <img src="img/${opt.img}" style="width:80%; height:80%; object-fit:contain;">
+                    <div class="part-name">${opt.n}</div>
+                `;
+                card.onclick = () => selectPart(type, opt, card);
+
+                // Tooltip Events
+                card.onmouseenter = () => showTooltip(opt.desc);
+                card.onmouseleave = hideTooltip;
+                card.onmousemove = moveTooltip;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function selectPart(type, opt, cardElement) {
+            // Update Data
+            selection[type] = opt.key;
+
+            // Visual Grid Selection
+            const grid = document.getElementById(`grid-${type}`);
+            grid.querySelectorAll('.part-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+
+            // Visual Slot Update
+            // Visual Slot Update
+            const slot = document.getElementById(`slot-${type}`);
+            slot.classList.add('filled');
+            slot.innerHTML = ''; // Start from scratch
+            // Re-add emoji container structure but with image
+            const imgEl = document.createElement('img');
+            imgEl.src = `img/${opt.img}`;
+            imgEl.className = 'slot-emoji pop-in'; // Reuse pop-in class for animation
+            imgEl.style.width = "80%";
+            imgEl.style.height = "80%";
+            imgEl.style.objectFit = "contain";
+
+            const textEl = document.createElement('div');
+            textEl.className = 'slot-text';
+            textEl.innerText = opt.n;
+
+            slot.appendChild(imgEl);
+            slot.appendChild(textEl);
+
+            // Animation
+            slot.querySelector('.slot-emoji').classList.remove('pop-in');
+            void slot.offsetWidth; // trigger reflow
+            slot.querySelector('.slot-emoji').classList.add('pop-in');
+        }
+
+        function checkBuild() {
+            if (!selection.body || !selection.mech || !selection.soul) {
+                showAlert("⚠️ Falten peces! Has d'omplir els 3 espais.");
+                return;
+            }
+
+            if (selection.body === targetKey && selection.mech === targetKey && selection.soul === targetKey) {
+                // WIN
+                const winScreen = document.getElementById('win-screen');
+                // Use placeholder if image fails (or default to empty)
+                const imgEl = document.getElementById('win-img');
+                const imgName = DB[targetKey].final_img;
+                imgEl.src = `img/${imgName}`;
+                imgEl.onerror = function () { this.style.display = 'none'; document.getElementById('win-text').style.display = 'block'; document.getElementById('win-text').innerHTML = DB[targetKey].body.e; };
+                imgEl.style.display = 'block';
+                document.getElementById('win-text').style.display = 'none';
+
+                winScreen.style.display = 'flex';
+            } else {
+                // FAIL
+                showAlert("💥 BRICK! Les peces no coincideixen amb l'època. Revisa el Brief!");
+            }
+        }
+
+        function nextRound() {
+            document.getElementById('win-screen').style.display = 'none';
+            currentLevel++;
+            playRound();
+        }
+
+        // --- CUSTOM ALERTS & TOOLTIPS ---
+        function showAlert(msg) {
+            document.getElementById('alert-msg').innerText = msg;
+            document.getElementById('custom-alert').style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('custom-alert').style.display = 'none';
+        }
+
+        const tooltip = document.getElementById('global-tooltip');
+        function showTooltip(text) {
+            tooltip.innerText = text;
+            tooltip.style.display = 'block';
+        }
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+        function moveTooltip(e) {
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+        }
+    </script>
+</body>
+
+</html>

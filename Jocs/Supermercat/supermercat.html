@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supermercat de la Història Musical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --merca-green: #007A4D;
+            --merca-yellow: #FCB900;
+            --bg-color: #f3f3f3;
+            --text-color: #333;
+            --card-border: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* HEADER */
+        header {
+            background-color: var(--merca-green);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-icon {
+            font-size: 1.5rem;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--merca-yellow);
+            color: var(--merca-green);
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SCREENS */
+        .screen {
+            display: none;
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* ERA SELECTION */
+        #selection-screen {
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--merca-green);
+            margin-bottom: 30px;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .era-btn {
+            background: white;
+            border: 2px solid var(--merca-green);
+            border-radius: 10px;
+            padding: 30px 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--merca-green);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .era-btn:hover {
+            background: var(--merca-green);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 122, 77, 0.3);
+        }
+
+        /* MARKET SHELF */
+        #market-screen {
+            background: #fff;
+        }
+
+        .department-label {
+            background: var(--merca-yellow);
+            color: var(--merca-green);
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* PRODUCT CARD */
+        .product-card {
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: white;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.2s;
+            position: relative;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .prod-img {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .prod-brand {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .prod-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+            height: 40px;
+            /* Fixed height for alignment */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prod-desc {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
+            height: 40px;
+            overflow: hidden;
+        }
+
+        .prod-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--merca-green);
+            margin-bottom: 15px;
+        }
+
+        .btn-add {
+            background-color: var(--merca-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-add:hover {
+            background-color: #005c3a;
+        }
+
+        .btn-add.added {
+            background-color: #ccc;
+            cursor: default;
+        }
+
+        /* CART/CHECKOUT */
+        #checkout-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-checkout {
+            background: var(--merca-yellow);
+            color: var(--merca-green);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #d49b00;
+        }
+
+        .btn-checkout:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* RECEIPT MODAL */
+        #receipt-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .receipt-paper {
+            background: #fff;
+            width: 350px;
+            padding: 30px;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+
+        .item-status {
+            margin-right: 5px;
+        }
+
+        .bg-correct {
+            color: green;
+            font-weight: bold;
+        }
+
+        .bg-error {
+            color: red;
+            text-decoration: line-through;
+        }
+
+        .error-msg {
+            color: red;
+            font-size: 0.7rem;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .receipt-total {
+            border-top: 2px solid #333;
+            margin-top: 20px;
+            padding-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .receipt-footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .receipt-score {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            border: 2px solid #333;
+            padding: 10px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .prod-img {
+                font-size: 3rem;
+            }
+
+            .btn-checkout {
+                padding: 10px 20px;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="brand-logo">
+            <i class="fas fa-shopping-basket"></i> SUPERMERCAT MUSICAL
+        </div>
+        <div class="cart-icon" onclick="toggleCart()">
+            <i class="fas fa-shopping-cart"></i>
+            <div class="cart-count" id="cart-count">0</div>
+        </div>
+    </header>
+
+    <!-- SELECTION SCREEN -->
+    <div id="selection-screen" class="screen active">
+        <h2>QUÈ VOLS CUINAR AVUI?</h2>
+        <p style="margin-bottom:30px;">Selecciona l'època històrica per començar la teva compra.</p>
+        <div class="era-grid">
+            <button class="era-btn" onclick="startShop('EDAT MITJANA')">EDAT MITJANA</button>
+            <button class="era-btn" onclick="startShop('RENAIXEMENT')">RENAIXEMENT</button>
+            <button class="era-btn" onclick="startShop('BARROC')">BARROC</button>
+            <button class="era-btn" onclick="startShop('CLASSICISME')">CLASSICISME</button>
+            <button class="era-btn" onclick="startShop('ROMANTICISME')">ROMANTICISME</button>
+            <button class="era-btn" onclick="startShop('SEGLE XX')">SEGLE XX</button>
+        </div>
+    </div>
+
+    <!-- MARKET SCREEN -->
+    <div id="market-screen" class="screen">
+        <div class="department-label" id="dept-label">PASSADÍS: EDAT MITJANA</div>
+
+        <div class="product-grid" id="product-grid">
+            <!-- Products injected here -->
+        </div>
+
+        <div style="height: 100px;"></div> <!-- Spacer for fixed footer -->
+    </div>
+
+    <!-- CHECKOUT BAR -->
+    <div id="checkout-bar" style="display:none;">
+        <button class="btn-checkout" onclick="checkout()">PASAR PER CAIXA (<span id="btn-count">0</span>)</button>
+    </div>
+
+    <!-- REVIEW CART MODAL -->
+    <div id="review-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:900; justify-content:center; align-items:center;">
+        <div
+            style="background:white; padding:30px; border-radius:10px; max-width:400px; width:90%; max-height:80vh; overflow-y:auto;">
+            <h2 style="text-align:center; color:var(--merca-green);">REVISAR CARRETÓ</h2>
+            <div id="review-list" style="margin-bottom:20px;">
+                <!-- Items -->
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+                <button onclick="closeReview()"
+                    style="background:#ccc; border:none; padding:10px; border-radius:5px; cursor:pointer; flex:1;">TORNAR</button>
+                <button onclick="confirmCheckout()"
+                    style="background:var(--merca-green); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; flex:1; font-weight:bold;">CONFIRMAR
+                    PAGAMENT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECEIPT MODAL -->
+    <div id="receipt-modal">
+        <div class="receipt-paper">
+            <div class="receipt-header">
+                <div>SUPERMERCATS HISTÒRIA, S.A.</div>
+                <div>C/ Melodia, 12, P.I. Harmonia</div>
+                <div id="receipt-date">09/12/2025 10:30</div>
+            </div>
+
+            <div id="receipt-items">
+                <!-- Items list -->
+            </div>
+
+            <div class="receipt-total">
+                <span>TOTAL</span>
+                <span id="total-price">0.00€</span>
+            </div>
+
+            <div class="receipt-score" id="receipt-score">4/4</div>
+
+            <div class="receipt-footer">
+                <p>GRÀCIES PER LA SEVA VISITA</p>
+                <button class="btn-add" style="margin-top:20px;" onclick="resetGame()">NOVA COMPRA</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATABASE ---
+        // Expanded with duplicates to reach needed count as per user request
+        const PRODUCTS_DB = [
+            // EDAT MITJANA (Need 8 correct)
+            { name: "Monodia", era: "EDAT MITJANA", brand: "Monjes S.A.", desc: "100% Una sola veu. Sense conservants harmònics.", price: 2.50, icon: "🎤", id: "em_1" },
+            { name: "Cant Gregorià", era: "EDAT MITJANA", brand: "Hacendado", desc: "Cant pla tradicional. Ideal per meditar.", price: 1.99, icon: "⛪", id: "em_2" },
+            { name: "Ritme Lliure", era: "EDAT MITJANA", brand: "FreeFlow", desc: "Sense compassos afegits. Flueix com l'aigua.", price: 3.20, icon: "🌊", id: "em_3" },
+            { name: "Text en Llatí", era: "EDAT MITJANA", brand: "RomaClàssic", desc: "Llengua original. No entens res però sona bé.", price: 0.99, icon: "📜", id: "em_4" },
+            // Duplicates/Variants
+            { name: "Monodia (Pack Familiar)", era: "EDAT MITJANA", brand: "Monjes S.A.", desc: "Més veus a l'uníson. Mateix sabor.", price: 3.50, icon: "🎤", id: "em_5" },
+            { name: "Neumes", era: "EDAT MITJANA", brand: "EscripturaAntiga", desc: "Abans del pentagrama. Molt vintage.", price: 4.00, icon: "✒️", id: "em_6" },
+            { name: "Música Religiosa", era: "EDAT MITJANA", brand: "SacredSound", desc: "Per resar millor. 0% Profà.", price: 2.00, icon: "🙏", id: "em_7" },
+            { name: "Trobador", era: "EDAT MITJANA", brand: "ProfàMix", desc: "Música de carrer. Amb amor cortès.", price: 5.00, icon: "🎸", id: "em_8" },
+
+            // RENAIXEMENT
+            { name: "Polifonia", era: "RENAIXEMENT", brand: "MultiVeus", desc: "Moltes veus imitant-se. Una bogeria organitzada.", price: 4.50, icon: "🎼", id: "rn_1" },
+            { name: "A Cappella", era: "RENAIXEMENT", brand: "SenseInstru", desc: "Només veu natural. 0% instruments artificials.", price: 2.99, icon: "🗣️", id: "rn_2" },
+            { name: "Humanisme", era: "RENAIXEMENT", brand: "L'Home&Co", desc: "L'home al centre, Déu de fons.", price: 15.00, icon: "🧠", id: "rn_3" },
+            { name: "Madrigal", era: "RENAIXEMENT", brand: "ItàliaExpress", desc: "Cançó profana en llengua vulgar. Molt drama.", price: 3.75, icon: "🍷", id: "rn_4" },
+            { name: "Imitació", era: "RENAIXEMENT", brand: "Copiat&Enganxat", desc: "Una veu repeteix l'altra. Molt contrapuntístic.", price: 3.50, icon: "🦜", id: "rn_5" },
+            { name: "Coral Luterana", era: "RENAIXEMENT", brand: "Reformes S.L.", desc: "Per cantar en alemany a l'església.", price: 2.10, icon: "⛪", id: "rn_6" },
+            { name: "Viola de Mà", era: "RENAIXEMENT", brand: "CordaPulsada", desc: "L'àvia de la guitarra. So delicat.", price: 12.00, icon: "🎸", id: "rn_7" },
+            { name: "Equilibri", era: "RENAIXEMENT", brand: "ZenMusic", desc: "Proporcions perfectes. Res sobra.", price: 9.99, icon: "⚖️", id: "rn_8" },
+
+            // BARROC
+            { name: "Baix Continu", era: "BARROC", brand: "CimentHarmònic", desc: "La base que ho aguanta tot. Imprescindible.", price: 5.95, icon: "🎻", id: "br_1" },
+            { name: "Contrast Fort", era: "BARROC", brand: "Llum&Ombra", desc: "Fort-Fluix, Clar-Fosc. Sense termes mitjos.", price: 2.50, icon: "🔦", id: "br_2" },
+            { name: "Ornamentació", era: "BARROC", brand: "RococóLux", desc: "Notes extra per tot arreu. Molt carregat.", price: 8.99, icon: "💍", id: "br_3" },
+            { name: "Doctrina Afectes", era: "BARROC", brand: "EmocióPura", desc: "Una sola emoció per moure't l'ànima.", price: 6.00, icon: "😭", id: "br_4" },
+            { name: "Clavicèmbal", era: "BARROC", brand: "TeclaPulsada", desc: "No té dinàmica, però té molt ritme.", price: 10.00, icon: "🎹", id: "br_5" },
+            { name: "Òpera Seria", era: "BARROC", brand: "DramaQueen", desc: "Herois mitològics i castrati.", price: 15.00, icon: "🎭", id: "br_6" },
+            { name: "Concerto Grosso", era: "BARROC", brand: "TuttiFrutti", desc: "Orquestra vs Solistes. Molta canya.", price: 7.50, icon: "🎻", id: "br_7" },
+            { name: "Mecànica", era: "BARROC", brand: "RellotgeSuís", desc: "Ritmes constants i motors.", price: 4.20, icon: "⚙️", id: "br_8" },
+
+            // CLASSICISME
+            { name: "Forma Sonata", era: "CLASSICISME", brand: "Estructura10", desc: "Exposició, Desenvolupament, Reexposició. Perfecte.", price: 7.50, icon: "📐", id: "cl_1" },
+            { name: "Melodia Acompanyada", era: "CLASSICISME", brand: "Clar&Net", desc: "Melodia clara amb coixí suau. Fàcil d'empassar.", price: 4.20, icon: "🎹", id: "cl_2" },
+            { name: "Fraseig Regular", era: "CLASSICISME", brand: "Simetria+", desc: "Pregunta i resposta de 4 compassos. Molt ordenat.", price: 3.00, icon: "📏", id: "cl_3" },
+            { name: "Baix d'Alberti", era: "CLASSICISME", brand: "Arpegiat", desc: "L'acompanyament pianístic per excel·lència.", price: 2.95, icon: "🎹", id: "cl_4" },
+            { name: "Senzillesa", era: "CLASSICISME", brand: "Natural 100%", desc: "Sense excessos barrocs. Tot molt natural.", price: 1.50, icon: "🌿", id: "cl_5" },
+            { name: "Graus Tonals", era: "CLASSICISME", brand: "TònicaDominant", desc: "La tensió i el repòs ben definits.", price: 3.30, icon: "🎯", id: "cl_6" },
+            { name: "Piano Forte", era: "CLASSICISME", brand: "Dinàmica", desc: "Ara pots fer fort i fluix! Revolucionari.", price: 20.00, icon: "🎹", id: "cl_7" },
+            { name: "Música de Cambra", era: "CLASSICISME", brand: "QuartetPack", desc: "Música per a pocs amics. Molt íntim.", price: 5.50, icon: "🎻", id: "cl_8" },
+
+            // ROMANTICISME
+            { name: "Rubato", era: "ROMANTICISME", brand: "TempsElàstic", desc: "Roba temps al compàs. Llibertat total.", price: 5.50, icon: "⏳", id: "rm_1" },
+            { name: "Virtuosisme", era: "ROMANTICISME", brand: "PaganiniPro", desc: "Tocar impossibles. Només per a experts.", price: 12.00, icon: "🔥", id: "rm_2" },
+            { name: "Cromatismo", era: "ROMANTICISME", brand: "ColorTotal", desc: "Totes les tecles del piano. Molta tensió.", price: 4.80, icon: "🎨", id: "rm_3" },
+            { name: "Subjectivitat", era: "ROMANTICISME", brand: "Jo,Jo,Jo", desc: "Els meus sentiments importen més que la forma.", price: 9.99, icon: "❤️", id: "rm_4" },
+            { name: "Lied", era: "ROMANTICISME", brand: "PoesiaMusicada", desc: "Piano i veu. Per plorar sol a la cambra.", price: 3.50, icon: "📝", id: "rm_5" },
+            { name: "Orquestra Gegant", era: "ROMANTICISME", brand: "SimfoniaXXL", desc: "Més instruments, més volum, més tot.", price: 50.00, icon: "🎺", id: "rm_6" },
+            { name: "Nacionalisme", era: "ROMANTICISME", brand: "PatriaMia", desc: "Folklore de la meva terra.", price: 4.00, icon: "🚩", id: "rm_7" },
+            { name: "Poema Simfònic", era: "ROMANTICISME", brand: "HistòriaSonora", desc: "Música que explica un conte sense paraules.", price: 6.50, icon: "📖", id: "rm_8" },
+
+            // SEGLE XX
+            { name: "Atonalisme", era: "SEGLE XX", brand: "SenseCentre", desc: "Sense tònica ni regles antigues. Llibertat o caos?", price: 6.66, icon: "🌀", id: "sx_1" },
+            { name: "Dodecafonisme", era: "SEGLE XX", brand: "Sèrie12", desc: "12 notes amb igualtat de drets. Matemàtiques pures.", price: 12.12, icon: "🔢", id: "sx_2" },
+            { name: "Polirítmia", era: "SEGLE XX", brand: "RitmeCaos", desc: "Dos ritmes alhora. T'explotarà el cap.", price: 5.00, icon: "🥁", id: "sx_3" },
+            { name: "Dissonància", era: "SEGLE XX", brand: "Crunchy", desc: "Sona xocant i no resol. Per a paladars forts.", price: 3.50, icon: "⚡", id: "sx_4" },
+            { name: "Electrònica", era: "SEGLE XX", brand: "Endollat", desc: "Sintetitzadors i cintes magnètiques.", price: 15.00, icon: "🔌", id: "sx_5" },
+            { name: "Aleatorietat", era: "SEGLE XX", brand: "SortLliure", desc: "El que surti. Música d'atzar.", price: 1.00, icon: "🎲", id: "sx_6" },
+            { name: "Minimalisme", era: "SEGLE XX", brand: "Repetició", desc: "Menys és més. Menys és més. Menys és més.", price: 2.22, icon: "🔁", id: "sx_7" },
+            { name: "Sorollisme", era: "SEGLE XX", brand: "Futurisme", desc: "El soroll de les màquines és música.", price: 0.50, icon: "🏭", id: "sx_8" }
+        ];
+
+        // --- STATE ---
+        let currentEra = "";
+        let cart = []; // Store IDs
+        let currentShelf = [];
+
+        // --- DOM ---
+        const screenSelection = document.getElementById('selection-screen');
+        const screenMarket = document.getElementById('market-screen');
+        const gridEl = document.getElementById('product-grid');
+        const deptLabel = document.getElementById('dept-label');
+        const checkoutBar = document.getElementById('checkout-bar');
+        const cartCountEl = document.getElementById('cart-count');
+        const btnCountEl = document.getElementById('btn-count');
+        const receiptModal = document.getElementById('receipt-modal');
+        const reviewModal = document.getElementById('review-modal');
+        const reviewList = document.getElementById('review-list');
+
+        // --- LOGIC ---
+        function startShop(era) {
+            currentEra = era;
+            cart = [];
+            updateCartUI();
+
+            // Generate Shelf
+            // 1. Get correct items (8)
+            const correctItems = PRODUCTS_DB.filter(p => p.era === era);
+
+            // 2. Get random distractors (6)
+            const otherItems = PRODUCTS_DB.filter(p => p.era !== era);
+            const distractors = shuffle(otherItems).slice(0, 6);
+
+            // 3. Combine and shuffle
+            currentShelf = shuffle([...correctItems, ...distractors]);
+
+            // Render
+            renderShelf();
+
+            // Show Screen
+            screenSelection.classList.remove('active');
+            screenMarket.classList.add('active');
+            checkoutBar.style.display = 'flex';
+            deptLabel.textContent = `PASSADÍS TEMÀTIC: ${era}`;
+            window.scrollTo(0, 0);
+        }
+
+        function renderShelf() {
+            gridEl.innerHTML = "";
+            currentShelf.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "product-card";
+                card.innerHTML = `
+                    <div class="prod-img">${item.icon}</div>
+                    <div class="prod-brand">${item.brand}</div>
+                    <div class="prod-name">${item.name}</div>
+                    <div class="prod-desc">${item.desc}</div>
+                    <div class="prod-price">${item.price.toFixed(2)}€</div>
+                    <button class="btn-add" id="btn-${item.id}" onclick="toggleCart('${item.id}')">AFEGIR</button>
+                `;
+                gridEl.appendChild(card);
+
+                // Update button state if item is already in cart
+                if (cart.includes(item.id)) {
+                    const btn = document.getElementById(`btn-${item.id}`);
+                    btn.textContent = "AL CARRETÓ (X)";
+                    btn.classList.add('added');
+                    btn.style.backgroundColor = "#ccc";
+                }
+            });
+        }
+
+        function toggleCart(itemId) {
+            const index = cart.indexOf(itemId);
+            const btn = document.getElementById(`btn-${itemId}`);
+
+            if (index === -1) {
+                // Add
+                cart.push(itemId);
+                btn.textContent = "AL CARRETÓ (X)";
+                btn.classList.add('added');
+                btn.style.backgroundColor = "#ccc"; // Visual feedback
+            } else {
+                // Remove
+                cart.splice(index, 1);
+                btn.textContent = "AFEGIR";
+                btn.classList.remove('added');
+                btn.style.backgroundColor = ""; // Revert to CSS default
+            }
+
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            cartCountEl.textContent = cart.length;
+            btnCountEl.textContent = cart.length;
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert("El carretó és buit! Compra alguna cosa.");
+                return;
+            }
+
+            // Show confirmation modal
+            reviewModal.style.display = 'flex';
+            renderReviewList();
+        }
+
+        function renderReviewList() {
+            reviewList.innerHTML = "";
+            cart.forEach(itemId => {
+                const item = PRODUCTS_DB.find(p => p.id === itemId);
+                const row = document.createElement('div');
+                row.style.display = "flex";
+                row.style.justifyContent = "space-between";
+                row.style.padding = "10px";
+                row.style.borderBottom = "1px solid #eee";
+                row.innerHTML = `<span>${item.icon} ${item.name}</span> <span>${item.price.toFixed(2)}€</span>`;
+                reviewList.appendChild(row);
+            });
+        }
+
+        function closeReview() {
+            reviewModal.style.display = 'none';
+        }
+
+        function confirmCheckout() {
+            closeReview();
+            generateReceipt();
+        }
+
+        function generateReceipt() {
+            const itemsList = document.getElementById('receipt-items');
+            itemsList.innerHTML = "";
+            let total = 0;
+
+            cart.forEach(itemId => {
+                const item = PRODUCTS_DB.find(p => p.id === itemId);
+                const isCorrect = (item.era === currentEra);
+                const line = document.createElement('div');
+
+                total += item.price;
+
+                if (isCorrect) {
+                    line.className = "receipt-item";
+                    line.innerHTML = `
+                        <div><span class="item-status">✔️</span>${item.name}</div>
+                        <div>${item.price.toFixed(2)}€</div>
+                    `;
+                } else {
+                    line.className = "receipt-item";
+                    line.innerHTML = `
+                        <div>
+                            <span class="item-status bg-error">DEVOLUCIÓ</span> <span style="text-decoration:line-through">${item.name}</span>
+                            <span class="error-msg">ERROR: Això és del ${item.era}!</span>
+                        </div>
+                        <div style="text-decoration:line-through">${item.price.toFixed(2)}€</div>
+                    `;
+                }
+                itemsList.appendChild(line);
+            });
+
+            document.getElementById('total-price').textContent = total.toFixed(2) + "€";
+
+            const totalCorrectAvailable = 8;
+            const correctBought = cart.filter(id => PRODUCTS_DB.find(p => p.id === id).era === currentEra).length;
+
+            document.getElementById('receipt-score').textContent = `PUNTUACIÓ: ${correctBought}/${totalCorrectAvailable}`;
+
+            // Show Modal
+            receiptModal.style.display = 'flex';
+
+            // Date
+            const now = new Date();
+            document.getElementById('receipt-date').textContent = now.toLocaleString('es-ES');
+        }
+
+        function resetGame() {
+            receiptModal.style.display = 'none';
+            screenMarket.classList.remove('active');
+            screenSelection.classList.add('active');
+            checkoutBar.style.display = 'none';
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+    </script>
+</body>
+
+</html>

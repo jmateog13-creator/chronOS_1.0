@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Simulator: Prepare the Exam</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Patrick+Hand&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="game-container">
+
+        <!-- Header / Instructions -->
+        <header>
+            <div class="header-left">
+                <h1>Teacher Simulator: Prepara l'Examen</h1>
+                <p>Ets el professor! Arrossega les preguntes de <span id="current-era-display">...</span> al full
+                    d'examen.</p>
+            </div>
+
+            <div class="header-right">
+                <div id="stats">
+                    <span>Encerts: <span id="score">0</span>/5</span>
+                    <span id="feedback-msg"></span>
+                </div>
+                <!-- Volume Control -->
+                <div class="volume-control">
+                    <span>Música:</span>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <div id="desk">
+
+            <!-- Questions Pile (Messy) -->
+            <div id="question-pile">
+                <!-- Generated via JS -->
+            </div>
+
+            <!-- Trash Can / Paperera -->
+            <div id="trash-can">
+                <div class="trash-icon">🗑️</div>
+                <span>PAPERERA</span>
+            </div>
+
+            <!-- Exam Sheet (Drop Zone) -->
+            <div id="exam-sheet-zone">
+                <div id="exam-paper">
+                    <h2>EXAMEN D'HISTÒRIA DE LA MÚSICA</h2>
+                    <h3 id="paper-era-title">ÈPOCA: [ERA]</h3>
+                    <div id="drop-zone-content">
+                        <p class="placeholder-text">Arrossega aquí les preguntes...</p>
+                    </div>
+                    <div class="stamp-area" id="grade-stamp"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Start Screen Modal -->
+    <div id="start-screen" class="modal">
+        <div class="modal-content blackboard">
+            <h1>Teacher Simulator</h1>
+            <div class="instructions">
+                <p>Benvingut, Professor!</p>
+                <p>La teva missió és preparar l'examen d'Història de la Música.</p>
+                <ul>
+                    <li>Selecciona 5 preguntes correctes de l'època.</li>
+                    <li>Llença les preguntes incorrectes a la <strong>PAPERERA</strong>.</li>
+                </ul>
+            </div>
+            <button id="start-game-btn">COMENÇAR</button>
+        </div>
+    </div>
+
+    <!-- Era Selection Modal -->
+    <div id="era-menu" class="modal hidden">
+        <div class="modal-content blackboard">
+            <h2>SELECCIONA ÈPOCA</h2>
+            <div class="era-grid">
+                <button class="era-select-btn" data-era="EDAT MITJANA">EDAT MITJANA</button>
+                <button class="era-select-btn" data-era="RENAIXEMENT">RENAIXEMENT</button>
+                <button class="era-select-btn" data-era="BARROC">BARROC</button>
+                <button class="era-select-btn" data-era="CLASSICISME">CLASSICISME</button>
+                <button class="era-select-btn" data-era="ROMANTICISME">ROMANTICISME</button>
+                <button class="era-select-btn" data-era="SEGLE XX">SEGLE XX</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Audio -->
+    <audio id="bg-music" loop>
+        <source src="audio/Faculty_Lounge.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>EXAMEN LLEST!</h2>
+            <p>Has seleccionat correctament les preguntes.</p>
+            <div class="victory-actions">
+                <button id="menu-btn">Tornar al Menú</button>
+                <button id="next-level-btn">Següent Era</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

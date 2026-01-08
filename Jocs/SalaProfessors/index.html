@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Professors - Avaluació Final</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Indie+Flower&family=Patrick+Hand&family=Permanent+Marker&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --wood-color: #5d4037;
+            --wood-dark: #3e2723;
+            --paper-color: #fdfbf7;
+            --ink-blue: #1a237e;
+            --ink-red: #d32f2f;
+            --ink-green: #388e3c;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            /* Prevent text selection for game feel */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier Prime', monospace;
+            background-color: var(--wood-color);
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20zM0 20h20v20H0V20z' fill='%233e2723' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+
+        #volume-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        #volume-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .hidden {
+            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            background: #000 url("img/fonsinicial.jpg") center center / cover no-repeat;
+            color: white;
+            z-index: 100;
+        }
+
+        #start-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        /* Instructions Memo */
+        .memo-board {
+            background: #fff;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transform: rotate(-1deg);
+            position: relative;
+            z-index: 10;
+        }
+
+        .memo-board::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.5);
+            /* Tape look */
+            border: 1px solid #ddd;
+            transform: translateX(-50%) rotate(2deg);
+        }
+
+        .memo-title {
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            text-decoration: underline;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #d32f2f;
+        }
+
+        .memo-list {
+            list-style-type: decimal;
+            text-align: left;
+            padding-left: 20px;
+            font-size: 1.1rem;
+            line-height: 1.6rem;
+            color: #333;
+        }
+
+        .memo-list li {
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 4rem;
+            text-shadow: 4px 4px 0px #000;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #ffca28;
+            transform: rotate(-2deg);
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 800px;
+        }
+
+        .btn-era {
+            background: #fff;
+            color: #333;
+            border: none;
+            padding: 20px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 5px 5px 0px #000;
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-transform: uppercase;
+        }
+
+        .btn-era:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px #000;
+            background: #ffecb3;
+        }
+
+        .btn-era:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000;
+        }
+
+        /* --- GAME SCREEN (DESK) --- */
+        #desk-screen {
+            perspective: 1000px;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px var(--shadow);
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--ink-red);
+            transform: rotate(-1deg);
+            z-index: 10;
+        }
+
+        /* EXAM PAPER */
+        #exam-paper {
+            width: 700px;
+            height: 850px;
+            background-color: var(--paper-color);
+            box-shadow: 0 10px 30px var(--shadow);
+            padding: 40px;
+            position: relative;
+            transform-origin: center;
+            transition: transform 0.5s ease-in-out, left 0.5s ease-in-out;
+            overflow: hidden;
+            /* Lined paper effect */
+            background-image: linear-gradient(#999 1px, transparent 1px);
+            background-size: 100% 2rem;
+            line-height: 2rem;
+        }
+
+        /* Student Photo ID */
+        .student-photo {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 100px;
+            height: 120px;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            background: #eee;
+            transform: rotate(2deg);
+        }
+
+        .student-photo::before {
+            content: 'DNI';
+            position: absolute;
+            bottom: 2px;
+            right: 5px;
+            font-size: 0.6rem;
+            color: #333;
+            font-family: sans-serif;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1px 3px;
+        }
+
+        /* Student Photo ID */
+        .student-photo {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 100px;
+            height: 120px;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            background: #eee;
+            transform: rotate(2deg);
+        }
+
+        .student-photo::before {
+            content: 'DNI';
+            position: absolute;
+            bottom: 2px;
+            right: 5px;
+            font-size: 0.6rem;
+            color: #333;
+            font-family: sans-serif;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1px 3px;
+        }
+
+        /* Paper Header */
+        .exam-header {
+            border-bottom: 2px solid #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            background: var(--paper-color);
+            /* Cover lines */
+        }
+
+        .exam-info {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .student-handwriting {
+            font-family: 'Patrick Hand', cursive;
+            color: var(--ink-blue);
+            font-size: 1.4rem;
+            margin-left: 10px;
+        }
+
+        /* Marks (Red Line Strikethrough) */
+        .strike-line {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            right: 10px;
+            height: 4px;
+            background: rgba(211, 47, 47, 0.8);
+            transform: scaleX(0) rotate(-1deg);
+            transform-origin: left;
+            transition: transform 0.2s ease-out;
+            pointer-events: none;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            z-index: 5;
+        }
+
+        .marked .strike-line {
+            transform: scaleX(1) rotate(-1deg);
+        }
+
+        /* Questions */
+        .question-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 0;
+            /* Align with lines */
+            padding: 0 10px;
+            height: 4rem;
+            /* 2 lines height */
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .question-row:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .q-num {
+            width: 30px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .q-text {
+            flex-grow: 1;
+            font-size: 1rem;
+            line-height: 1.2rem;
+            padding-top: 0.4rem;
+        }
+
+        .q-answer {
+            font-family: 'Patrick Hand', cursive;
+            color: var(--ink-blue);
+            font-size: 1.3rem;
+            margin-left: 10px;
+            display: block;
+        }
+
+        /* Marks (Tick/Cross) */
+        .mark {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 2rem;
+            opacity: 0;
+            transform: scale(0.5) rotate(-10deg);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .mark.visible {
+            opacity: 1;
+            transform: scale(1) rotate(var(--rotation));
+        }
+
+        .mark-correct {
+            color: var(--ink-green);
+        }
+
+        .mark-incorrect {
+            color: var(--ink-red);
+        }
+
+        /* STAMPS UI */
+        #stamp-pad {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .stamp-tool {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            box-shadow: 0 5px 15px var(--shadow);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.2rem;
+            transition: transform 0.1s;
+            background: #eee;
+        }
+
+        .stamp-tool:hover {
+            transform: translateY(-5px);
+        }
+
+        .stamp-tool:active {
+            transform: translateY(2px);
+        }
+
+        .stamp-pass {
+            background: #e8f5e9;
+            color: var(--ink-green);
+            border-color: var(--ink-green);
+        }
+
+        .stamp-fail {
+            background: #ffebee;
+            color: var(--ink-red);
+            border-color: var(--ink-red);
+        }
+
+        /* Final Stamp on Paper */
+        .final-stamp {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 4rem;
+            border: 5px solid;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            opacity: 0;
+            transform: scale(2) rotate(-15deg);
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        .final-stamp.stamped {
+            animation: stamp-slam 0.3s forwards;
+        }
+
+        @keyframes stamp-slam {
+            0% {
+                opacity: 0;
+                transform: scale(3) rotate(-15deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(0.9) rotate(-15deg);
+            }
+
+            100% {
+                opacity: 0.8;
+                transform: scale(1) rotate(-15deg);
+            }
+        }
+
+        .stamp-result-pass {
+            color: var(--ink-green);
+            border-color: var(--ink-green);
+        }
+
+        .stamp-result-fail {
+            color: var(--ink-red);
+            border-color: var(--ink-red);
+        }
+
+        /* --- MODAL --- */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 5px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            font-family: 'Courier Prime', monospace;
+            border-top: 10px solid var(--ink-red);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--ink-red);
+        }
+
+        .btn-modal {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1rem;
+        }
+
+        .btn-modal:hover {
+            background: #555;
+        }
+
+        /* --- DECORATION --- */
+        .coffee-cup {
+            position: absolute;
+            top: 50px;
+            right: 100px;
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 8px solid #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .coffee-inner {
+            width: 60px;
+            height: 60px;
+            background: #3e2723;
+            border-radius: 50%;
+            opacity: 0.9;
+        }
+
+        .pen {
+            position: absolute;
+            bottom: 150px;
+            left: 50px;
+            width: 300px;
+            height: 20px;
+            background: var(--ink-red);
+            transform: rotate(45deg);
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen">
+        <div id="volume-controls">
+            <span style="font-size: 1.2rem;">🎵</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.3"
+                oninput="updateVolume(this.value)">
+        </div>
+        <h1>Sala de Professors</h1>
+
+        <div class="memo-board">
+            <div class="memo-title">MEMORÀNDUM: AVALUACIÓ FINAL</div>
+            <ul class="memo-list">
+                <li>Revisa les respostes de l'examen amb la <strong>pauta oficial</strong>.</li>
+                <li>Fes clic a les respostes <strong>incorrectes</strong> per marcar-les.</li>
+                <li>Si té <strong>menys de 3 errades</strong>: Posa el segell <span
+                        style="color:green; font-weight:bold;">APROVAT</span>.</li>
+                <li>Si té <strong>3 o més errades</strong>: Posa el segell <span
+                        style="color:red; font-weight:bold;">SUSPÈS</span>.</li>
+                <li>Afanya't! Els alumnes estan impacients.</li>
+            </ul>
+        </div>
+
+        <p
+            style="font-size: 1.5rem; margin-bottom: 1rem; position: relative; z-index: 10; color: #ffca28; text-shadow: 2px 2px 0 #000;">
+            Tria l'època per començar:</p>
+        <div class="era-grid" style="position: relative; z-index: 10;">
+            <button class="btn-era" onclick="startGame('medieval')">Edat Mitjana</button>
+            <button class="btn-era" onclick="startGame('renaixement')">Renaixement</button>
+            <button class="btn-era" onclick="startGame('barroc')">Barroc</button>
+            <button class="btn-era" onclick="startGame('classicisme')">Classicisme</button>
+            <button class="btn-era" onclick="startGame('romanticisme')">Romanticisme</button>
+            <button class="btn-era" onclick="startGame('segle20')">Segle XX</button>
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="desk-screen" class="screen hidden">
+        <!-- Decor -->
+        <div class="coffee-cup">
+            <div class="coffee-inner"></div>
+        </div>
+        <div class="pen"></div>
+
+        <!-- HUD -->
+        <div id="hud">
+            Exàmens: <span id="exams-display">0</span> |
+            Expedients: <span id="faults-display">0</span>/4
+        </div>
+
+        <!-- ERASER -->
+        <div class="eraser-tool" onclick="clearMarks()">ESBORRAR</div>
+
+        <!-- EXAM PAPER -->
+        <div id="exam-paper">
+            <div class="exam-header">
+                <div class="exam-info">
+                    <span>INSTITUT DE MÚSICA</span>
+                    <span>EXAMEN FINAL</span>
+                </div>
+                <div class="exam-info" style="margin-top: 10px;">
+                    <div>
+                        <span style="display:block">NOM: <span id="student-name"
+                                class="student-handwriting"></span></span>
+                        <span style="display:block">GRUP: <span class="student-handwriting">3r ESO</span></span>
+                        <span style="display:block">DATA: <span id="exam-date"
+                                class="student-handwriting"></span></span>
+                    </div>
+                    <img id="student-avatar" class="student-photo" src="" alt="Foto Alumne">
+                </div>
+            </div>
+
+            <div id="questions-container">
+                <!-- Questions injected here -->
+            </div>
+
+            <div id="final-stamp" class="final-stamp"></div>
+        </div>
+
+        <!-- STAMP TOOLS -->
+        <div id="stamp-pad">
+            <div class="stamp-tool stamp-pass" onclick="submitExam('pass')">APROVAT</div>
+            <div class="stamp-tool stamp-fail" onclick="submitExam('fail')">SUSPÈS</div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay" class="hidden">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-title">Error!</div>
+            <p id="modal-msg">Missatge d'error</p>
+            <button class="btn-modal" id="modal-btn" onclick="closeModal()">Continuar</button>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATABASE ---
+        const ALUMNES_DB = [
+            // Catalans (Nois)
+            { name: "Pol Garriga", img: "img/niñocatalan.jpg" },
+            { name: "Pau Soler", img: "img/niñocatalan.jpg" },
+            { name: "Biel Torres", img: "img/niñocatalan.jpg" },
+            { name: "Carles Martí", img: "img/niñocatalan.jpg" },
+            { name: "Marc Vila", img: "img/niñocatalan.jpg" },
+            { name: "Roger Esteva", img: "img/niñocatalan.jpg" },
+
+            // Catalans (Noies)
+            { name: "Jana Riera", img: "img/niñacatalana.jpg" },
+            { name: "Ona Mas", img: "img/niñacatalana.jpg" },
+            { name: "Clara Macià", img: "img/niñacatalana.jpg" },
+            { name: "Laia Font", img: "img/niñacatalana.jpg" },
+            { name: "Aina Bosch", img: "img/niñacatalana.jpg" },
+
+            // Marroquins
+            { name: "Mohamed El Amrani", img: "img/nilomarroqui.jpg" },
+            { name: "Youssef Zaid", img: "img/nilomarroqui.jpg" },
+            { name: "Fatima Benali", img: "img/niñamarroqui.jpg" },
+
+            // Internacional / Anglesos
+            { name: "Kevin Smith", img: "img/niñointernaconal.jpg" },
+            { name: "Liam O'Connor", img: "img/niñointernaconal.jpg" },
+            { name: "Jessica Jones", img: "img/niñainternacional.jpg" },
+            { name: "Sofia Rossi", img: "img/niñainternacional.jpg" },
+
+            // Castellans (Assignats per aparença)
+            { name: "Antonio García", img: "img/niñocatalan.jpg" },
+            { name: "Manuel González", img: "img/niñocatalan.jpg" },
+            { name: "Lucía Pérez", img: "img/niñacatalana.jpg" },
+
+            // Xinesos (Assignats a Internacional per manca d'imatge específica en llista actual, ajusta si tens imatges)
+            { name: "Chen Wei", img: "img/niñointernaconal.jpg" },
+            { name: "Li Na", img: "img/niñainternacional.jpg" },
+
+            // Ucraïnesos
+            { name: "Dmytro Shevchenko", img: "img/niñoucraniano.jpg" },
+            { name: "Olena Kovalenko", img: "img/niñaucraniana.jpg" }
+        ];
+
+        const FUNNY_ANSWERS = [
+            "", // Empty
+            "No ho sé, profe...",
+            "Això no entrava a l'examen!",
+            "La resposta és el teu cor ❤️",
+            "Visca el Barça!",
+            "Ho ha fet un mag 🧙‍♂️",
+            "M'he deixat les ulleres a casa",
+            "Puc anar al lavabo?",
+            "Lorem ipsum dolor sit amet...",
+            "El meu gos s'ha menjat els deures",
+            "Mozart era youtuber?",
+            "No m'agrada la música antiga",
+            "Ho posaré al TikTok",
+            "Bad Bunny és millor"
+        ];
+
+        const EXAMEN_DB = {
+            medieval: {
+                context: [
+                    { q: "Qui tenia el poder cultural?", true: "L'Església i els Monestirs", false: ["La Burgesia", "Els Reis Absolutistes"] },
+                    { q: "Quina era la funció de la música?", true: "Lloar a Déu (Litúrgia)", false: ["Entretenir al poble", "Expressar sentiments personals"] }
+                ],
+                caracteristiques: [
+                    { q: "Com és la textura principal?", true: "Monòdica (una sola veu)", false: ["Polifònica complexa", "Melodia acompanyada"] },
+                    { q: "Quin ritme s'utilitzava?", true: "Lliure (segons el text)", false: ["Compàs de 4/4 marcat", "Ritme sincopat de jazz"] }
+                ],
+                instruments: [
+                    { q: "Quin instrument és típic?", true: "Llaüt i Arpa", false: ["Piano de cua", "Guitarra elèctrica"] },
+                    { q: "Es feien servir instruments a l'església?", true: "No, només veu (A cappella)", false: ["Sí, grans orquestres", "Sí, bateries i baixos"] }
+                ],
+                formes: [
+                    { q: "Quina és la forma religiosa principal?", true: "Cant Gregorià", false: ["Simfonia", "Òpera"] },
+                    { q: "Què cantaven els trobadors?", true: "Cançons d'amor cortès", false: ["Misses solemnes", "Raps de protesta"] }
+                ],
+                compositors: [
+                    { q: "Qui va inventar les notes?", true: "Guido d'Arezzo", false: ["Mozart", "Beethoven"] },
+                    { q: "Una compositora famosa va ser...", true: "Hildegard von Bingen", false: ["Clara Schumann", "Maria Callas"] }
+                ]
+            },
+            renaixement: {
+                context: [
+                    { q: "Quin moviment cultural domina?", true: "L'Humanisme", false: ["L'Obscurantisme", "El Surrealisme"] },
+                    { q: "Quin invent va revolucionar la música?", true: "La Impremta", false: ["L'Internet", "El Fonògraf"] }
+                ],
+                caracteristiques: [
+                    { q: "Quina textura predomina?", true: "Polifonia (veus independents)", false: ["Monodia simple", "Sorollisme"] },
+                    { q: "Què es busca en l'art?", true: "Proporció i Bellesa", false: ["Exageració i Contrast", "Lletjor i Provocació"] }
+                ],
+                instruments: [
+                    { q: "Instrument de corda polsat popular?", true: "Viola de mà", false: ["Violí elèctric", "Sintetitzador"] },
+                    { q: "Família de vent típica?", true: "Flautes de bec", false: ["Saxòfons", "Tubes"] }
+                ],
+                formes: [
+                    { q: "Forma profana vocal?", true: "Madrigal", false: ["Cant Gregorià", "Concert de Rock"] },
+                    { q: "Forma religiosa principal?", true: "Missa Polifònica", false: ["Òpera bufa", "Sardana"] }
+                ],
+                compositors: [
+                    { q: "El mestre de la polifonia és...", true: "Palestrina", false: ["Bach", "Stravinsky"] },
+                    { q: "Un compositor espanyol famós...", true: "Tomás Luis de Victoria", false: ["Manuel de Falla", "Rosalia"] }
+                ]
+            },
+            barroc: {
+                context: [
+                    { q: "Quin sistema polític impera?", true: "Absolutisme", false: ["Democràcia", "Anarquia"] },
+                    { q: "Com és l'art barroc?", true: "Recarregat i ornamentat", false: ["Senzill i minimalista", "Pla i sense detalls"] }
+                ],
+                caracteristiques: [
+                    { q: "Quina tècnica és fonamental?", true: "Baix Continu", false: ["Dodecafonisme", "Improvisació total"] },
+                    { q: "Què neix en aquesta època?", true: "L'Orquestra i l'Òpera", false: ["El Jazz", "La Música Electrònica"] }
+                ],
+                instruments: [
+                    { q: "El rei del teclat és...", true: "El Clavicèmbal", false: ["El Piano", "L'Acordió"] },
+                    { q: "Els millors violins són...", true: "Stradivarius", false: ["Yamaha", "Fender"] }
+                ],
+                formes: [
+                    { q: "Forma instrumental complexa?", true: "Fuga", false: ["Cançó pop", "Jota"] },
+                    { q: "Obra per a solista i orquestra?", true: "Concert", false: ["Missa", "Coral"] }
+                ],
+                compositors: [
+                    { q: "El geni del contrapunt és...", true: "J.S. Bach", false: ["Mozart", "Elvis"] },
+                    { q: "El 'capellà roig' és...", true: "Vivaldi", false: ["Puccini", "Verdi"] }
+                ]
+            },
+            classicisme: {
+                context: [
+                    { q: "Quin moviment intel·lectual hi ha?", true: "La Il·lustració", false: ["El Romanticisme", "L'Edat Fosca"] },
+                    { q: "Quina classe social puja?", true: "La Burgesia", false: ["Els Esclaus", "Els Cavallers"] }
+                ],
+                caracteristiques: [
+                    { q: "Què es busca en la música?", true: "Equilibri, ordre i claredat", false: ["Caos i sentiment extrem", "Complexitat matemàtica"] },
+                    { q: "Quina frase musical domina?", true: "Quadratura (8 compassos)", false: ["Frase infinita", "Frase irregular"] }
+                ],
+                instruments: [
+                    { q: "Quin instrument substitueix el clave?", true: "El Piano (Pianoforte)", false: ["L'Orgue", "El Sintetitzador"] },
+                    { q: "Quin instrument desapareix?", true: "El Llaüt", false: ["El Violí", "La Flauta"] }
+                ],
+                formes: [
+                    { q: "L'estructura més important és...", true: "Forma Sonata", false: ["Forma Lliure", "Improvisació"] },
+                    { q: "Gran obra per a orquestra?", true: "Simfonia", false: ["Cantata", "Madrigal"] }
+                ],
+                compositors: [
+                    { q: "El nen prodigi de Salzburg...", true: "W.A. Mozart", false: ["Salieri", "Wagner"] },
+                    { q: "El pare de la simfonia...", true: "F.J. Haydn", false: ["Schubert", "Brahms"] }
+                ]
+            },
+            romanticisme: {
+                context: [
+                    { q: "Què és el més important?", true: "L'individu i els sentiments", false: ["La raó i la lògica", "La religió"] },
+                    { q: "L'artista es veu com un...", true: "Geni incomprès", false: ["Artesà al servei del rei", "Obrer de la música"] }
+                ],
+                caracteristiques: [
+                    { q: "Com són les dinàmiques?", true: "Extremes (fff - ppp)", false: ["Planes i sense canvis", "Sempre fluix"] },
+                    { q: "Què és el Rubato?", true: "Flexibilitat en el ritme", false: ["Robar partitures", "Tocar molt ràpid"] }
+                ],
+                instruments: [
+                    { q: "L'instrument romàntic per excel·lència?", true: "El Piano", false: ["La Flauta dolça", "El Clavicèmbal"] },
+                    { q: "L'orquestra...", true: "Creix molt en mida", false: ["Es fa més petita", "Desapareix"] }
+                ],
+                formes: [
+                    { q: "Cançó per a veu i piano?", true: "Lied", false: ["Aria da capo", "Rap"] },
+                    { q: "Música que explica una història?", true: "Poema Simfònic", false: ["Sonata pura", "Fuga"] }
+                ],
+                compositors: [
+                    { q: "El poeta del piano...", true: "Chopin", false: ["Bach", "Stravinsky"] },
+                    { q: "Va revolucionar l'òpera...", true: "Wagner", false: ["Vivaldi", "Palestrina"] }
+                ]
+            },
+            segle20: {
+                context: [
+                    { q: "Què passa amb l'art?", true: "Es trenquen totes les normes", false: ["Es torna al passat", "Es prohibeix la música"] },
+                    { q: "Quins avenços tecnològics hi ha?", true: "Gravació i electrònica", false: ["Impremta", "Màquina de vapor"] }
+                ],
+                caracteristiques: [
+                    { q: "Què passa amb la tonalitat?", true: "Atonalisme i Dodecafonisme", false: ["Sempre Do Major", "Harmonia simple"] },
+                    { q: "Com és el ritme?", true: "Irregular i complex", false: ["Molt ballable i senzill", "Monòton"] }
+                ],
+                instruments: [
+                    { q: "Nous instruments?", true: "Sintetitzadors i ordinadors", false: ["Viola de gamba", "Lira"] },
+                    { q: "Ús de la percussió?", true: "Guanya molt protagonisme", false: ["Desapareix", "Només timbals"] }
+                ],
+                formes: [
+                    { q: "Hi ha formes fixes?", true: "No, llibertat total", false: ["Sí, només Sonata", "Sí, només Fuga"] },
+                    { q: "Estil que barreja atzar?", true: "Música Aleatòria", false: ["Música Barroca", "Música Coral"] }
+                ],
+                compositors: [
+                    { q: "Va compondre 'La Consagració'...", true: "Stravinsky", false: ["Mozart", "Bach"] },
+                    { q: "Creador del Dodecafonisme...", true: "Schönberg", false: ["Debussy", "Ravel"] }
+                ]
+            }
+        };
+
+        // --- GAME STATE ---
+        let gameState = {
+            era: null,
+            faults: 0,
+            examsCompleted: 0,
+            currentQuestions: [], // { id, text, answerText, isCorrect, markedAs: null|false }
+            studentScore: 0 // How many "Correct" answers are actually on the paper
+        };
+
+        // --- AUDIO SYSTEM ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const bgMusic = new Audio('audio/Exam Time Shuffle.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+
+        function updateVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        function startMusic() {
+            bgMusic.play().catch(e => console.log("Click to play music"));
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'scribble') {
+                // Noise buffer for scribble
+                const bufferSize = audioCtx.sampleRate * 0.1; // 0.1 sec
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.5, now);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                noise.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                noise.start();
+                return;
+            } else if (type === 'erase') {
+                // Soft noise for erase
+                const bufferSize = audioCtx.sampleRate * 0.3;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.5;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.3, now);
+                noiseGain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                noise.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                noise.start();
+                return;
+            }
+
+            if (type === 'thump') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+                gainNode.gain.setValueAtTime(1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'paper') {
+                // White noise burst low pass
+                const bufferSize = audioCtx.sampleRate * 0.3;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 400;
+
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.5, now);
+                noiseGain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+
+                noise.connect(filter);
+                filter.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                noise.start();
+            }
+        }
+
+        // --- GAME LOGIC ---
+
+        function startGame(era) {
+            gameState.era = era;
+            gameState.faults = 0;
+            gameState.examsCompleted = 0;
+            updateHud();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('desk-screen').classList.remove('hidden');
+            startMusic();
+            nextExam();
+        }
+
+        function nextExam() {
+            playSound('paper');
+            // Reset UI
+            document.getElementById('final-stamp').className = 'final-stamp';
+            document.getElementById('final-stamp').innerText = '';
+
+            // Generate Student Info (Ensure different from previous)
+            let studentObj;
+            const currentName = document.getElementById('student-name').innerText;
+            do {
+                studentObj = ALUMNES_DB[Math.floor(Math.random() * ALUMNES_DB.length)];
+            } while (studentObj.name === currentName && ALUMNES_DB.length > 1);
+
+            document.getElementById('student-name').innerText = studentObj.name;
+            // Set avatar properly
+            const avatarImg = document.getElementById('student-avatar');
+            avatarImg.src = studentObj.img;
+            // Randomly rotate photo slightly for realism
+            avatarImg.style.transform = `rotate(${Math.random() * 6 - 3}deg)`;
+            const date = new Date();
+            document.getElementById('exam-date').innerText = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+            // Generate Questions
+            const eraData = EXAMEN_DB[gameState.era];
+            const categories = ['context', 'caracteristiques', 'instruments', 'formes', 'compositors'];
+            gameState.currentQuestions = [];
+            gameState.studentScore = 0; // Reset score
+
+            let html = '';
+            let qIndex = 0;
+
+            categories.forEach(cat => {
+                const questions = eraData[cat];
+
+                questions.forEach(q => {
+                    qIndex++;
+                    // Decide if student answers Correctly, Incorrectly, or Funny/Empty
+                    const rand = Math.random();
+                    let isStudentCorrect = false;
+                    let displayedAnswer;
+
+                    if (rand > 0.5) {
+                        // 50% Correct
+                        isStudentCorrect = true;
+                        displayedAnswer = q.true;
+                        gameState.studentScore++;
+                    } else if (rand > 0.2) {
+                        // 30% Incorrect (Distractor)
+                        isStudentCorrect = false;
+                        displayedAnswer = q.false[Math.floor(Math.random() * q.false.length)];
+                    } else {
+                        // 20% Funny/Empty
+                        isStudentCorrect = false;
+                        displayedAnswer = FUNNY_ANSWERS[Math.floor(Math.random() * FUNNY_ANSWERS.length)];
+                    }
+
+                    gameState.currentQuestions.push({
+                        id: qIndex,
+                        text: q.q,
+                        displayedAnswer: displayedAnswer,
+                        isCorrect: isStudentCorrect, // The TRUTH of the answer on paper
+                        markedAs: null // null (Correct) or false (Incorrect/Strikethrough)
+                    });
+
+                    html += `
+                        <div id="row-${qIndex - 1}" class="question-row" onclick="handleMark(${qIndex - 1})">
+                            <div class="strike-line"></div>
+                            <div class="q-num">${qIndex}.</div>
+                            <div class="q-text">
+                                ${q.q}<br>
+                                <span class="q-answer">${displayedAnswer || "..."}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            document.getElementById('questions-container').innerHTML = html;
+        }
+
+        function handleMark(index) {
+            // Prevent marking if already stamped
+            if (document.getElementById('final-stamp').classList.contains('stamped')) return;
+
+            playSound('scribble');
+            const rowEl = document.getElementById(`row-${index}`);
+            const qData = gameState.currentQuestions[index];
+
+            // Toggle Strikethrough
+            if (qData.markedAs === null) {
+                // Mark as Incorrect (Red Line)
+                rowEl.classList.add('marked');
+                qData.markedAs = false; // "This is wrong"
+            } else {
+                // Unmark (Back to Correct)
+                rowEl.classList.remove('marked');
+                qData.markedAs = null; // "This is correct"
+            }
+        }
+
+        function clearMarks() {
+            if (document.getElementById('final-stamp').classList.contains('stamped')) return;
+            playSound('erase');
+            gameState.currentQuestions.forEach((q, i) => {
+                q.markedAs = null;
+                document.getElementById(`row-${i}`).classList.remove('marked');
+            });
+        }
+
+        // Prevent context menu on right click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        function submitExam(verdict) {
+            // verdict: 'pass' or 'fail'
+            if (document.getElementById('final-stamp').classList.contains('stamped')) return;
+
+            playSound('thump');
+
+            const stampEl = document.getElementById('final-stamp');
+            stampEl.innerText = verdict === 'pass' ? 'APROVAT' : 'SUSPÈS';
+            stampEl.classList.add('stamped');
+            stampEl.classList.add(verdict === 'pass' ? 'stamp-result-pass' : 'stamp-result-fail');
+
+            // VALIDATION LOGIC
+            let mistakes = 0;
+
+            // 1. Check individual question marking
+            gameState.currentQuestions.forEach(q => {
+                // Logic:
+                // If Student is Correct (isCorrect=true), Teacher should NOT mark it (markedAs=null).
+                // If Student is Incorrect (isCorrect=false), Teacher SHOULD mark it (markedAs=false).
+
+                if (q.isCorrect === true && q.markedAs === false) {
+                    // Student was right, but Teacher crossed it out.
+                    mistakes++;
+                } else if (q.isCorrect === false && q.markedAs === null) {
+                    // Student was wrong, but Teacher missed it.
+                    mistakes++;
+                }
+            });
+
+            // 2. Check Final Grade
+            // Student Score is number of TRUE answers.
+            // Pass if Score >= 5.
+            const shouldPass = gameState.studentScore >= 5;
+            const teacherPassed = verdict === 'pass';
+
+            if (shouldPass !== teacherPassed) {
+                mistakes += 5; // Big penalty for wrong final grade
+            }
+
+            if (mistakes > 0) {
+                handleError(mistakes);
+            } else {
+                gameState.examsCompleted++;
+                updateHud();
+
+                if (gameState.examsCompleted === 5 && typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'sala_mix',
+                        'Professor Honorífic',
+                        'Has corregit 5 exàmens sense errors!',
+                        '../../img/card_sala.png'
+                    );
+                }
+
+                setTimeout(nextExam, 1500); // Success, next exam
+            }
+        }
+
+        function handleError(mistakesCount) {
+            playSound('error');
+            gameState.faults++;
+            updateHud();
+
+            if (gameState.faults >= 4) {
+                showModal("EXPEDIENT OBERT", "Has comès massa errors greus. El Departament d'Educació t'ha obert un expedient disciplinari. Estàs acomiadat.", true);
+            } else {
+                showModal("ERROR DE CORRECCIÓ!", "T'has equivocat corregint aquest examen. L'alumne ha presentat una queixa formal.", false);
+            }
+        }
+
+        function updateHud() {
+            document.getElementById('faults-display').innerText = gameState.faults;
+            document.getElementById('exams-display').innerText = gameState.examsCompleted;
+        }
+
+        function showModal(title, msg, isGameOver) {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-msg').innerText = msg;
+
+            const btn = document.getElementById('modal-btn');
+            if (isGameOver) {
+                btn.innerText = "Tornar a l'Inici";
+                btn.onclick = () => location.reload();
+            } else {
+                btn.innerText = "Continuar";
+                btn.onclick = closeModal;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            nextExam();
+        }
+
+    </script>
+</body>
+
+</html>

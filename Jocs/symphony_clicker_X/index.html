@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symphony Clicker: El Quiz del Temps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pixel-size: 4px;
+            --bg-dark: #1a1a1a;
+            --panel-bg: #2d2d2d;
+            --text-color: #eee;
+            --accent-gold: #ffd700;
+            --border-light: #444;
+            --border-dark: #000;
+        }
+
+        /* DYNAMIC BACKGROUNDS (CSS Classes) */
+        .bg-pre {
+            background: linear-gradient(135deg, #3e2723 0%, #212121 100%);
+        }
+
+        /* Cave */
+        .bg-ant {
+            background: linear-gradient(135deg, #f9fbe7 0%, #827717 100%);
+        }
+
+        /* Marble */
+        .bg-mit {
+            background: linear-gradient(135deg, #4a148c 0%, #1a237e 100%);
+        }
+
+        /* Gothic */
+        .bg-ren {
+            background: linear-gradient(135deg, #d84315 0%, #3e2723 100%);
+        }
+
+        /* Terracotta */
+        .bg-bar {
+            background: linear-gradient(135deg, #fbc02d 0%, #f57f17 100%);
+        }
+
+        /* Gold */
+        .bg-cla {
+            background: linear-gradient(135deg, #81d4fa 0%, #0288d1 100%);
+        }
+
+        /* Sky */
+        .bg-rom {
+            background: linear-gradient(135deg, #b71c1c 0%, #311b92 100%);
+        }
+
+        /* Drama */
+        .bg-sxx {
+            background: linear-gradient(135deg, #212121 0%, #00e676 100%);
+        }
+
+        /* Neo */
+        .bg-act {
+            background: linear-gradient(135deg, #000000 0%, #2979ff 100%);
+        }
+
+        /* Cyber */
+
+        /* Particle */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particleAnim 1s ease-out forwards;
+        }
+
+        @keyframes particleAnim {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+                left: var(--destX);
+                top: var(--destY);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'VT323', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Press Start 2P', cursive;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        /* --- Layout --- */
+        #game-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 900px) {
+            #game-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+        }
+
+        /* --- Left Side: Stage --- */
+        #stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            border-right: 4px solid var(--border-dark);
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        #total-notes {
+            font-size: 4rem;
+            color: var(--accent-gold);
+            text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+            margin-bottom: 5px;
+        }
+
+        #nps-display {
+            font-size: 1.5rem;
+            opacity: 0.8;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+        }
+
+        #main-clicker {
+            width: 200px;
+            height: 200px;
+            background: var(--panel-bg);
+            border: 8px solid var(--border-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
+            margin-top: 50px;
+        }
+
+        #main-clicker:active {
+            transform: scale(0.95);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Floating Numbers */
+        .floating-note {
+            position: absolute;
+            color: var(--accent-gold);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-150px);
+                opacity: 0;
+            }
+        }
+
+        /* --- Right Side: Shop --- */
+        #shop {
+            background-color: #222;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 4px solid var(--border-light);
+        }
+
+        .shop-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 4px solid var(--border-dark);
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: #444;
+            color: #888;
+            border: 2px solid var(--border-dark);
+            padding: 5px 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-gold);
+            color: black;
+        }
+
+        .upgrade-card {
+            background: #2b2b2b;
+            border: 2px solid #666;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-info h4 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+        }
+
+        .upgrade-info p {
+            margin: 5px 0 0;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .era-card {
+            background: var(--panel-bg);
+            border: 4px solid var(--border-dark);
+            margin-bottom: 15px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 60px 1fr 100px;
+            gap: 15px;
+            align-items: center;
+            position: relative;
+            transition: filter 0.2s;
+        }
+
+        .era-card.locked {
+            filter: grayscale(1) brightness(0.5);
+            pointer-events: none;
+        }
+
+        .era-icon {
+            width: 60px;
+            height: 60px;
+            background: #333;
+            border: 2px solid var(--border-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .era-info h3 {
+            font-size: 0.7rem;
+            margin-bottom: 5px;
+        }
+
+        .era-info p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+
+        .era-stats {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            color: var(--accent-gold);
+        }
+
+        .era-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .btn-buy {
+            background: #4caf50;
+            border: 2px solid var(--border-dark);
+            color: white;
+            padding: 5px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px black;
+        }
+
+        .btn-buy:active {
+            box-shadow: 0px 0px 0px black;
+            transform: translate(2px, 2px);
+        }
+
+        .btn-buy:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .btn-boost {
+            background: #2196f3;
+            border: 2px solid var(--border-dark);
+            color: white;
+            padding: 4px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-boost.active {
+            background: var(--accent-gold);
+            color: black;
+            cursor: default;
+        }
+
+        .btn-boost.cooldown {
+            background: #f44336;
+            cursor: wait;
+        }
+
+        /* --- Modal --- */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        #quiz-modal {
+            background: var(--panel-bg);
+            border: 6px solid var(--border-dark);
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        #quiz-question {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            line-height: 1.2;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #444;
+            border: 3px solid var(--border-dark);
+            color: white;
+            padding: 15px;
+            font-family: 'VT323', monospace;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #555;
+        }
+
+        #quiz-feedback {
+            margin-top: 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            height: 20px;
+        }
+
+        /* --- Formatting Helpers --- */
+        .currency {
+            color: var(--accent-gold);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Stage: The Clicker Area -->
+        <div id="stage">
+            <div id="hud">
+                <div id="total-notes">0</div>
+                <div id="nps-display">0 NOTES / SEGON</div>
+                <button onclick="confirmReset()"
+                    style="margin-top:10px; background:transparent; border:1px solid #666; color:#888; cursor:pointer; font-family:'VT323';">TORNA
+                    AL MENÚ</button>
+            </div>
+
+            <div id="main-clicker" onclick="handleManualClick(event)">🎵</div>
+
+            <p style="margin-top: 30px; opacity: 0.5;">FES CLIC PER GENERAR NOTES</p>
+        </div>
+
+        <!-- Shop: The Era Generators -->
+        <div id="shop">
+            <div class="shop-header">
+                <h2>ARXIU HISTÒRIC</h2>
+            </div>
+            <div id="era-list">
+                <!-- Data-driven injection -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Quiz -->
+    <div id="modal-overlay">
+        <div id="quiz-modal">
+            <h2 id="quiz-era-name" style="color: var(--accent-gold); margin-bottom: 10px; font-size: 0.8rem;">ERA</h2>
+            <div id="quiz-question">PREGUNTA...</div>
+            <div class="quiz-options" id="quiz-options">
+                <!-- Options here -->
+            </div>
+            <div id="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <script>
+        const GAME_DATA = {
+            config: {
+                currency: "Notes",
+                fps: 30,
+                save_key: "symphony_clicker_save_v1"
+            },
+            eras: [
+                {
+                    id: "pre",
+                    name: "Prehistòria",
+                    unit_name: "Colpejador de Pedres",
+                    desc: "Ritme bàsic amb ossos.",
+                    base_cost: 15,
+                    production: 0.5,
+                    color: "#5D4037",
+                    icon: "🦴",
+                    quiz: {
+                        question: "Quin va ser probablement el primer instrument musical?",
+                        options: ["La veu i el cos", "Una flauta d'or", "Un violí de pedra"],
+                        correct: 0,
+                        feedback: "Correcte! Abans de fabricar res, ja fèiem ritme."
+                    }
+                },
+                {
+                    id: "ant",
+                    name: "Història Antiga",
+                    unit_name: "Tocador d'Aulos",
+                    desc: "Melodies pels Déus.",
+                    base_cost: 100,
+                    production: 2,
+                    color: "#F5F5DC",
+                    icon: "🏺",
+                    quiz: {
+                        question: "Quin déu grec s'associa a la música i la lira?",
+                        options: ["Zeus", "Apol·lo", "Ares"],
+                        correct: 1,
+                        feedback: "Exacte! Apol·lo és el déu de la música i la raó."
+                    }
+                },
+                {
+                    id: "mit",
+                    name: "Edat Mitjana",
+                    unit_name: "Cor de Monjos",
+                    desc: "Cant Gregorià als claustres.",
+                    base_cost: 1100,
+                    production: 10,
+                    color: "#8D6E63",
+                    icon: "📜",
+                    quiz: {
+                        question: "Qui va inventar el nom de les notes (Ut, Re, Mi...)?",
+                        options: ["Alfons X", "Guido d'Arezzo", "Els Trobadors"],
+                        correct: 1,
+                        feedback: "Molt bé! Va usar l'himne a Sant Joan Baptista."
+                    }
+                },
+                {
+                    id: "ren",
+                    name: "Renaixement",
+                    unit_name: "Impremta Musical",
+                    desc: "Partitures per a tothom.",
+                    base_cost: 12000,
+                    production: 50,
+                    color: "#D4AF37",
+                    icon: "🖨️",
+                    quiz: {
+                        question: "Què és la Polifonia?",
+                        options: ["Una sola veu", "Diverses veus independents", "Música electrònica"],
+                        correct: 1,
+                        feedback: "Correcte! Veus diferents entrellaçant-se."
+                    }
+                },
+                {
+                    id: "bar",
+                    name: "Barroc",
+                    unit_name: "Mestre de Capella",
+                    desc: "Ornaments i baix continu.",
+                    base_cost: 130000,
+                    production: 250,
+                    color: "#7B1FA2",
+                    icon: "🎹",
+                    quiz: {
+                        question: "Quin és l'instrument rei del Barroc?",
+                        options: ["Piano", "Clavicèmbal", "Acordió"],
+                        correct: 1,
+                        feedback: "Sí! El seu so metàl·lic és inconfusible."
+                    }
+                },
+                {
+                    id: "cla",
+                    name: "Classicisme",
+                    unit_name: "Quartet de Corda",
+                    desc: "Equilibri i elegància.",
+                    base_cost: 1400000,
+                    production: 1000,
+                    color: "#29B6F6",
+                    icon: "🎻",
+                    quiz: {
+                        question: "Quina estructura busca l'equilibri A-B-A?",
+                        options: ["Forma Sonata", "Caos Organitzat", "Poema Simfònic"],
+                        correct: 0,
+                        feedback: "Exacte! Exposició, Desenvolupament i Reexposició."
+                    }
+                },
+                {
+                    id: "rom",
+                    name: "Romanticisme",
+                    unit_name: "Gran Orquestra",
+                    desc: "Passió i tempesta.",
+                    base_cost: 20000000,
+                    production: 5000,
+                    color: "#B71C1C",
+                    icon: "🎼",
+                    quiz: {
+                        question: "Què és el més important per a un romàntic?",
+                        options: ["Diners", "L'expressió dels sentiments", "Normes"],
+                        correct: 1,
+                        feedback: "Correcte! El 'Jo' interior per davant de tot."
+                    }
+                },
+                {
+                    id: "sxx",
+                    name: "Segle XX",
+                    unit_name: "Sintetitzador",
+                    desc: "Ruptura i electricitat.",
+                    base_cost: 330000000,
+                    production: 20000,
+                    color: "#00E676",
+                    icon: "🎛️",
+                    quiz: {
+                        question: "Què va fer John Cage a l'obra 4'33''?",
+                        options: ["Tocar ràpid", "Silenci absolut", "Cridar"],
+                        correct: 1,
+                        feedback: "Sí! Va demostrar que tot so és música."
+                    }
+                },
+                {
+                    id: "act",
+                    name: "Actualitat",
+                    unit_name: "Algoritme Viral",
+                    desc: "Streaming massiu.",
+                    base_cost: 5000000000,
+                    production: 100000,
+                    color: "#212121",
+                    icon: "📱",
+                    quiz: {
+                        question: "Com consumim música avui dia?",
+                        options: ["Cassets", "Streaming/Núvol", "Trobairitz"],
+                        correct: 1,
+                        feedback: "Correcte. Accés instantani global."
+                    }
+                }
+            ],
+            upgrades: [
+                { id: "u_pre", name: "Descobriment del Ritme", desc: "La Prehistòria produeix x2.", cost: 500, trigger_era: 0, effect: { type: "mult_era", era_id: 0, val: 2 } },
+                { id: "u_ant", name: "Acústica d'Amfiteatre", desc: "L'Història Antiga produeix x2.", cost: 2500, trigger_era: 1, effect: { type: "mult_era", era_id: 1, val: 2 } },
+                { id: "u_mit_1", name: "Invenció del Pentagrama", desc: "L'Edat Mitjana produeix x2.", cost: 10000, trigger_era: 2, effect: { type: "mult_era", era_id: 2, val: 2 } },
+                { id: "u_mit_2", name: "Cant Coral", desc: "Totes les eres produeixen +10%.", cost: 50000, trigger_era: 2, effect: { type: "mult_global", val: 1.1 } },
+                { id: "u_ren", name: "Impremta de Petrucci", desc: "El Renaixement produeix x2.", cost: 250000, trigger_era: 3, effect: { type: "mult_era", era_id: 3, val: 2 } },
+                { id: "u_bar", name: "Afinació Temperada", desc: "El Barroc produeix x2.", cost: 1500000, trigger_era: 4, effect: { type: "mult_era", era_id: 4, val: 2 } },
+                { id: "u_cla", name: "Director d'Orquestra", desc: "El Classicisme produeix x2.", cost: 20000000, trigger_era: 5, effect: { type: "mult_era", era_id: 5, val: 2 } },
+                { id: "u_rom", name: "Virtuosisme Extrem", desc: "El Romanticisme produeix x2.", cost: 350000000, trigger_era: 6, effect: { type: "mult_era", era_id: 6, val: 2 } },
+                { id: "u_sxx", name: "Electricitat", desc: "El Segle XX produeix x2.", cost: 5000000000, trigger_era: 7, effect: { type: "mult_era", era_id: 7, val: 2 } }
+            ]
+        };
+
+        // --- STATE ---
+        let state = {
+            notes: 0,
+            generatorsOwned: GAME_DATA.eras.map(() => 0),
+            boostsActive: GAME_DATA.eras.map(() => false),
+            cooldowns: GAME_DATA.eras.map(() => 0),
+            upgradesOwned: [], // IDs of owned upgrades
+            goldenNotesCaught: 0,
+            lastGoldenSpawn: Date.now()
+        };
+
+        let currentTab = 'ERAS'; // ERAS or UPGRADES
+
+        // --- INITIALIZATION ---
+        function init() {
+            loadGame();
+            renderShop();
+            requestAnimationFrame(gameLoop);
+
+            // Auto-save every 10s
+            setInterval(saveGame, 10000);
+        }
+
+        // --- FORMATTING ---
+        function formatNumber(num) {
+            if (num < 1000) return Math.floor(num).toString();
+            const suffixes = ["", "k", "M", "B", "T", "Q"];
+            const suffixNum = Math.floor(("" + Math.floor(num)).length / 3);
+            let shortValue = parseFloat((suffixNum != 0 ? (num / Math.pow(1000, suffixNum)) : num).toPrecision(3));
+            if (shortValue % 1 != 0) {
+                shortValue = shortValue.toFixed(1);
+            }
+            return shortValue + suffixes[suffixNum];
+        }
+
+        // --- CORE LOGIC ---
+        function getEraCost(index) {
+            const era = GAME_DATA.eras[index];
+            const owned = state.generatorsOwned[index];
+            return Math.floor(era.base_cost * Math.pow(1.15, owned));
+        }
+
+        function calculateNPS() {
+            let totalNPS = 0;
+            const globalMult = getGlobalMultiplier();
+
+            GAME_DATA.eras.forEach((era, i) => {
+                const boostMult = state.boostsActive[i] ? 2 : 1;
+                const upgradeMult = getEraMultiplier(i);
+                totalNPS += era.production * state.generatorsOwned[i] * boostMult * upgradeMult * globalMult;
+            });
+            return totalNPS;
+        }
+
+        function getEraMultiplier(eraIndex) {
+            let mult = 1;
+            state.upgradesOwned.forEach(id => {
+                const upg = GAME_DATA.upgrades.find(u => u.id === id);
+                if (upg && upg.effect.type === 'mult_era' && upg.effect.era_id === eraIndex) {
+                    mult *= upg.effect.val;
+                }
+            });
+            return mult;
+        }
+
+        function getGlobalMultiplier() {
+            let mult = 1;
+            state.upgradesOwned.forEach(id => {
+                const upg = GAME_DATA.upgrades.find(u => u.id === id);
+                if (upg && upg.effect.type === 'mult_global') {
+                    mult *= upg.effect.val;
+                }
+            });
+            return mult;
+        }
+
+        function handleManualClick(e) {
+            state.notes += 1; // Base click power
+            createFloatingNote(e.clientX, e.clientY, "+1");
+            updateUI();
+        }
+
+        function createFloatingNote(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'floating-note';
+            el.textContent = text;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+
+            // Particles
+            for (let i = 0; i < 5; i++) {
+                spawnParticle(x, y);
+            }
+        }
+
+        function spawnParticle(x, y) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.textContent = ['♪', '♫', '♩', '♬'][Math.floor(Math.random() * 4)];
+            p.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            p.style.setProperty('--destX', (Math.random() * 200 - 100) + 'px');
+            p.style.setProperty('--destY', (Math.random() * 200 - 100) + 'px');
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 1000);
+        }
+
+        function updateBackground() {
+            // Find highest unlocked era
+            let highestEra = -1;
+            for (let i = state.generatorsOwned.length - 1; i >= 0; i--) {
+                if (state.generatorsOwned[i] > 0) {
+                    highestEra = i;
+                    break;
+                }
+            }
+
+            const stage = document.getElementById('stage');
+            stage.className = ''; // Reset
+            if (highestEra >= 0) {
+                stage.classList.add('bg-' + GAME_DATA.eras[highestEra].id);
+            }
+        }
+
+        function confirmReset() {
+            if (confirm("Vols tornar al menú principal?")) {
+                window.location.href = '../../../index.html'; // Adjust path as needed
+            }
+        }
+
+        function buyGenerator(index) {
+            const cost = getEraCost(index);
+            if (state.notes >= cost) {
+                state.notes -= cost;
+                state.generatorsOwned[index]++;
+                updateUI();
+                renderShop();
+                updateBackground();
+            }
+        }
+
+        function buyUpgrade(upgradeId) {
+            const upg = GAME_DATA.upgrades.find(u => u.id === upgradeId);
+            if (state.notes >= upg.cost && !state.upgradesOwned.includes(upgradeId)) {
+                state.notes -= upg.cost;
+                state.upgradesOwned.push(upgradeId);
+                updateUI();
+                renderShop();
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            renderShop();
+        }
+
+        // --- GOLDEN NOTE ---
+        function spawnGoldenNote() {
+            const el = document.createElement('div');
+            el.className = 'golden-note';
+            el.textContent = '🎵';
+            el.style.top = Math.random() * 80 + 10 + '%'; // Random height
+            el.onclick = () => clickGoldenNote(el);
+            document.body.appendChild(el);
+
+            // Remove after animation (10s)
+            setTimeout(() => {
+                if (el.parentNode) el.remove();
+            }, 10000);
+
+            state.lastGoldenSpawn = Date.now();
+        }
+
+        function clickGoldenNote(el) {
+            el.remove();
+            state.goldenNotesCaught++;
+
+            // Effect: 777 * NPS or 7 min notes
+            const bonus = Math.max(777, calculateNPS() * 60);
+            state.notes += bonus;
+
+            createFloatingNote(parseInt(el.style.left) || window.innerWidth / 2, parseInt(el.style.top) || window.innerHeight / 2, `+${formatNumber(bonus)}!`);
+
+            // Visual feedback
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = 0; flash.style.left = 0;
+            flash.style.width = '100%'; flash.style.height = '100%';
+            flash.style.background = 'rgba(255, 215, 0, 0.3)';
+            flash.style.zIndex = 999;
+            flash.style.pointerEvents = 'none';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 200);
+        }
+
+        // --- QUIZ LOGIC ---
+        let currentQuizIndex = null;
+
+        function openQuiz(index) {
+            if (state.boostsActive[index]) return;
+            if (state.cooldowns[index] > Date.now()) return;
+
+            currentQuizIndex = index;
+            const era = GAME_DATA.eras[index];
+            const quiz = era.quiz;
+
+            document.getElementById('quiz-era-name').textContent = era.name.toUpperCase();
+            document.getElementById('quiz-question').textContent = quiz.question;
+            document.getElementById('quiz-feedback').textContent = "";
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            quiz.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(i);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('modal-overlay').classList.add('visible');
+        }
+
+        function checkAnswer(optionIndex) {
+            const era = GAME_DATA.eras[currentQuizIndex];
+            const feedback = document.getElementById('quiz-feedback');
+
+            if (optionIndex === era.quiz.correct) {
+                state.boostsActive[currentQuizIndex] = true;
+                feedback.textContent = era.quiz.feedback;
+                feedback.style.color = "#4caf50";
+                setTimeout(closeQuiz, 1500);
+            } else {
+                state.cooldowns[currentQuizIndex] = Date.now() + 10000; // 10s cooldown
+                feedback.textContent = "Incorrecte! El sistema s'ha bloquejat 10 segons.";
+                feedback.style.color = "#f44336";
+                setTimeout(closeQuiz, 1500);
+            }
+            renderShop();
+        }
+
+        function closeQuiz() {
+            document.getElementById('modal-overlay').classList.remove('visible');
+            currentQuizIndex = null;
+        }
+
+        // --- UI RENDERING ---
+        function renderShop() {
+            const list = document.getElementById('era-list');
+            const header = document.querySelector('.shop-header');
+
+            // Render Tabs
+            header.innerHTML = `
+                <button class="tab-btn ${currentTab === 'ERAS' ? 'active' : ''}" onclick="switchTab('ERAS')">ARXIU</button>
+                <button class="tab-btn ${currentTab === 'UPGRADES' ? 'active' : ''}" onclick="switchTab('UPGRADES')">RECERCA</button>
+            `;
+
+            list.innerHTML = '';
+
+            if (currentTab === 'ERAS') {
+                GAME_DATA.eras.forEach((era, i) => {
+                    const cost = getEraCost(i);
+                    const owned = state.generatorsOwned[i];
+                    const isAffordable = state.notes >= cost;
+                    const isBoosted = state.boostsActive[i];
+                    const hasCooldown = state.cooldowns[i] > Date.now();
+
+                    const prevOwned = i === 0 || state.generatorsOwned[i - 1] > 0;
+
+                    const card = document.createElement('div');
+                    card.className = `era-card ${!prevOwned && owned === 0 ? 'locked' : ''}`;
+                    card.style.borderLeftColor = era.color;
+
+                    card.innerHTML = `
+                        <div class="era-icon" style="background-color: ${era.color}44">${era.icon}</div>
+                        <div class="era-info">
+                            <h3>${era.name.toUpperCase()}</h3>
+                            <p>${era.unit_name}</p>
+                            <div class="era-stats">Producció: ${formatNumber(era.production * getEraMultiplier(i) * getGlobalMultiplier())}${isBoosted ? ' x2' : ''} / seg</div>
+                            <div class="era-stats">Posseïts: ${owned}</div>
+                        </div>
+                        <div class="era-actions">
+                            <button class="btn-buy" onclick="buyGenerator(${i})" ${!isAffordable ? 'disabled' : ''}>
+                                ${formatNumber(cost)} 🎵
+                            </button>
+                            <button class="btn-boost ${isBoosted ? 'active' : ''} ${hasCooldown ? 'cooldown' : ''}" onclick="openQuiz(${i})">
+                                ${isBoosted ? 'ACTIVAT (x2)' : (hasCooldown ? 'BLOQUEJAT' : 'BOOST x2')}
+                            </button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            } else {
+                // RENDER UPGRADES
+                const upgradesToShow = GAME_DATA.upgrades.filter(u => {
+                    // Show if not owned AND trigger era is reached (owned at least 1 generator of that era)
+                    return !state.upgradesOwned.includes(u.id) && state.generatorsOwned[u.trigger_era] > 0;
+                });
+
+                if (upgradesToShow.length === 0) {
+                    list.innerHTML = '<div style="padding:20px; text-align:center; opacity:0.6">No hi ha noves tecnologies disponibles.</div>';
+                }
+
+                upgradesToShow.forEach(upg => {
+                    const isAffordable = state.notes >= upg.cost;
+                    const card = document.createElement('div');
+                    card.className = 'upgrade-card';
+                    card.innerHTML = `
+                        <div class="upgrade-info">
+                            <h4>${upg.name}</h4>
+                            <p>${upg.desc}</p>
+                        </div>
+                        <button class="btn-buy" style="font-size:0.8rem" onclick="buyUpgrade('${upg.id}')" ${!isAffordable ? 'disabled' : ''}>
+                            ${formatNumber(upg.cost)} 🎵
+                        </button>
+                    `;
+                    list.appendChild(card);
+                });
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('total-notes').textContent = formatNumber(state.notes);
+            const nps = calculateNPS();
+            document.getElementById('nps-display').textContent = `${formatNumber(nps)} NOTES / SEGON`;
+
+            // We also need to update button disabled states without full re-render for performance?
+            // For simplicity in a small project, we check affordability of buttons
+            const buyButtons = document.querySelectorAll('.btn-buy');
+            GAME_DATA.eras.forEach((era, i) => {
+                const cost = getEraCost(i);
+                if (buyButtons[i]) {
+                    buyButtons[i].disabled = state.notes < cost;
+                }
+            });
+        }
+
+        // --- GAME LOOP ---
+        let lastTimestamp = 0;
+        function gameLoop(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const delta = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
+
+            const nps = calculateNPS();
+            state.notes += (nps * delta) / 1000;
+
+            // Random Golden Note (Chance 1/3000 per frame ~ every 1-2 mins)
+            if (Date.now() - state.lastGoldenSpawn > 60000 && Math.random() < 0.001) {
+                spawnGoldenNote();
+            }
+
+            updateUI();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- SAVE/LOAD ---
+        function saveGame() {
+            localStorage.setItem(GAME_DATA.config.save_key, JSON.stringify(state));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem(GAME_DATA.config.save_key);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // Merge to ensure safety if schema changes
+                    state.notes = parsed.notes || 0;
+                    if (parsed.generatorsOwned) state.generatorsOwned = parsed.generatorsOwned;
+                    if (parsed.boostsActive) state.boostsActive = parsed.boostsActive;
+                    if (parsed.upgradesOwned) state.upgradesOwned = parsed.upgradesOwned;
+                    state.lastGoldenSpawn = Date.now();
+                } catch (e) {
+                    console.error("Error carregant partida", e);
+                }
+            }
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+
+</html>

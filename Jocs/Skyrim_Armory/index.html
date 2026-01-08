@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyrim Armory: The Dragonbane Forge</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap');
+
+        :root {
+            --skyrim-bg: #1a1a1a;
+            --skyrim-gold: #c8b68e;
+            --skyrim-text: #f0f0f0;
+            --skyrim-dark: #0f0f0f;
+            --skyrim-highlight: rgba(200, 182, 142, 0.2);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111 url('img/fons.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #ccc;
+            font-family: 'Open Sans', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOP UI: Compass */
+        header {
+            height: 60px;
+            background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.8), transparent);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 2px solid #333;
+        }
+
+        #compass {
+            color: var(--skyrim-gold);
+            font-size: 1.5rem;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 5px;
+        }
+
+        /* LAYOUT */
+        #game-interface {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #quest-panel {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        /* INVENTARI BUTTON */
+        #inventory-btn-container {
+            margin-top: 20px;
+            z-index: 10;
+        }
+
+        #open-inv-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--skyrim-gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            padding: 15px 50px;
+            border: 2px solid var(--skyrim-gold);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #open-inv-btn:hover {
+            background: var(--skyrim-gold);
+            color: #000;
+            box-shadow: 0 0 20px var(--skyrim-gold);
+        }
+
+        /* INVENTORY OVERLAY */
+        #inventory-panel {
+            position: fixed;
+            /* Fixed to viewport to avoid clipping */
+            top: 60px;
+            /* Below header */
+            right: 0;
+            width: 35%;
+            height: calc(100% - 60px);
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid var(--skyrim-gold);
+            z-index: 1000;
+            /* High z-index */
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        #inventory-panel.open {
+            transform: translateX(0);
+        }
+
+        /* CLOSE BTN */
+        #close-inv-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        #close-inv-btn:hover {
+            color: #fff;
+        }
+
+        /* QUEST SIDE */
+        .quest-box {
+            background: rgba(0, 0, 0, 0.6);
+            border-top: 2px solid var(--skyrim-gold);
+            border-bottom: 2px solid var(--skyrim-gold);
+            padding: 20px;
+            position: relative;
+            border-bottom: 2px solid var(--skyrim-gold);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            width: 80%;
+            /* Limit width */
+            text-align: center;
+        }
+
+        .quest-box::before {
+            content: "QUEST UPDATED";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: var(--skyrim-gold);
+            padding: 0 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+        }
+
+        h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--skyrim-gold);
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+
+
+
+        /* RPG SPEECH BUBBLE */
+        .dialogue-bubble {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #777;
+            border-left: 4px solid var(--skyrim-gold);
+            /* Accent */
+            border-radius: 4px;
+            padding: 25px;
+            color: #eee;
+            font-family: 'Georgia', serif;
+            /* More readable font */
+            font-style: italic;
+            font-size: 1.15rem;
+            line-height: 1.6;
+            position: relative;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+        }
+
+        .dialogue-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            /* Position at bottom */
+            right: 50px;
+            /* Aligned towards Hero (right side) */
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: var(--skyrim-gold) transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* FORGE SLOTS */
+        #forge-slots {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            /* Moved up */
+            padding-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .equip-slot {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #666;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+            /* Ensure pointer */
+            z-index: 20;
+            /* Ensure on top */
+        }
+
+        .equip-slot.filled {
+            border: 2px solid var(--skyrim-gold);
+            background: rgba(200, 182, 142, 0.1);
+        }
+
+        .equip-slot.hover {
+            background: var(--skyrim-highlight);
+        }
+
+        .equip-slot .slot-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-top: 5px;
+            color: #aaa;
+        }
+
+        .slot-img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+
+
+        /* TABS */
+        #inv-tabs {
+            display: flex;
+            border-bottom: 1px solid #444;
+        }
+
+        .inv-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-family: 'Cinzel', serif;
+            padding: 15px 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            /* Smaller text for narrower column */
+            transition: color 0.2s;
+        }
+
+        .inv-tab:hover {
+            color: #ddd;
+        }
+
+        .inv-tab.active {
+            color: var(--skyrim-gold);
+            border-bottom: 2px solid var(--skyrim-gold);
+            text-shadow: 0 0 10px var(--skyrim-highlight);
+        }
+
+        #inventory-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .inv-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* 2 Columns for narrower view */
+            gap: 15px;
+        }
+
+        .inv-item {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            aspect-ratio: 1;
+            /* Square */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.2s;
+        }
+
+        .inv-item:hover {
+            border-color: var(--skyrim-gold);
+            background: var(--skyrim-highlight);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .inv-item:active {
+            transform: scale(0.95);
+        }
+
+        .inv-icon {
+            font-size: 4rem;
+            /* Larger icon/image placeholder */
+        }
+
+        /* GLOBAL TOOLTIP */
+        #global-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--skyrim-gold);
+            color: #fff;
+            padding: 15px;
+            width: 250px;
+            font-size: 1rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s;
+            z-index: 9999;
+            /* Always on top */
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 1);
+        }
+
+        #global-tooltip strong {
+            display: block;
+            color: var(--skyrim-gold);
+            margin-bottom: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+
+        #levelup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+            z-index: 10002;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 10, 10, 0.95);
+            border: 3px solid var(--skyrim-gold);
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            min-width: 400px;
+        }
+
+        #levelup h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            color: var(--skyrim-gold);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        #levelup p {
+            font-size: 1.5rem;
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* IMAGE CONTAINERS */
+        .character-frame {
+            border: 2px solid #444;
+            background: rgba(0, 0, 0, 0.3);
+            width: 100%;
+            height: 40vh;
+            min-height: 250px;
+            max-height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .character-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 1s;
+        }
+
+        .character-frame:hover img {
+            transform: scale(1.05);
+        }
+
+        .character-label {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--skyrim-gold);
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 1.1rem;
+            border-top: 1px solid #444;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        #start-btn {
+            background: transparent;
+            color: var(--skyrim-gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            padding: 15px 40px;
+            border: 2px solid var(--skyrim-gold);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #start-btn:hover {
+            background: rgba(200, 182, 142, 0.2);
+            box-shadow: 0 0 20px var(--skyrim-gold);
+        }
+
+        #donate-btn {
+            background: rgba(0, 50, 0, 0.8);
+            /* Greenish for action */
+            color: #fff;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            border: 2px solid #4a4;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #donate-btn:hover {
+            background: #262;
+            box-shadow: 0 0 20px #4f4;
+        }
+
+        /* TOOLTIP Z-INDEX */
+        #global-tooltip {
+            z-index: 2000;
+        }
+
+        /* GENERIC BTN STYLE */
+        .skyrim-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--skyrim-gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            padding: 12px 30px;
+            border: 2px solid var(--skyrim-gold);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-top: 15px;
+        }
+
+        .skyrim-btn:hover {
+            background: var(--skyrim-gold);
+            color: #000;
+            box-shadow: 0 0 20px var(--skyrim-gold);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1 style="font-family: 'Cinzel'; font-size: 4rem; color: var(--skyrim-gold); margin-bottom: 20px;">SKYRIM
+            ARMORY</h1>
+        <h2 style="font-family: 'Cinzel'; color: #aaa; margin-bottom: 40px;">THE DRAGONBANE FORGE</h2>
+        <div
+            style="background: rgba(0,0,0,0.8); padding: 20px; border: 1px solid #444; max-width: 600px; margin: 0 auto 30px auto; text-align: left;">
+            <p style="color: var(--skyrim-gold); font-size: 1.2rem; margin-bottom: 10px;">INSTRUCCIONS:</p>
+            <ul style="line-height: 1.6; color: #ddd;">
+                <li>Ets el ferrer llegendari de Skyrim.</li>
+                <li>Arriben herois de diferents èpoques musicals per caçar dracs.</li>
+                <li>Llegeix el diàleg de la missió per entendre què necessiten.</li>
+                <li>Selecciona l'<strong>ARMA</strong>, <strong>ARMADURA</strong> i <strong>ACCESSORI</strong> correctes
+                    per a cada drac.</li>
+                <li>Fes clic als objectes de l'inventari per equipar-los.</li>
+            </ul>
+        </div><button id="start-btn" onclick="startGame()">START GAME</button>
+    </div>
+    <!-- AUDIO PLAYER --><audio id="bg-music" loop>
+        <source src="audio/Skies of the Dragonborn.m4a" type="audio/mpeg">
+    </audio>
+    <header>
+        <div id="compass">▼ N ▲</div>
+        <div id="volume-control"
+            style="position: absolute; right: 20px; top: 20px; display: flex; align-items: center; gap: 10px;">
+            <label style="font-family: 'Cinzel'; color: #aaa; font-size: 0.8rem;">MUSIC</label><input type="range"
+                id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+    </header>
+    <div id="global-tooltip"></div>
+    <div id="game-interface" style="display: none;">
+        <!-- QUEST SIDE -->
+        <div id="quest-panel">
+            <div class="quest-box">
+                <h2 id="quest-title">Dragon Hunt</h2>
+            </div>
+            <div style="display: flex; gap: 40px; margin-top: 20px; align-items: flex-start;">
+                <!-- LEFT COLUMN: DRAGON+SLOTS -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- DRAGON -->
+                    <div>
+                        <div class="character-frame" id="dragon-frame"><img id="dragon-img" src="" alt="Dragon">
+                            <div class="character-label">OBJECTIU</div>
+                        </div>
+                        <div id="dragon-name"
+                            style="text-align:center; font-family:'Cinzel'; font-size: 1.2rem; color:#fff; text-shadow:0 0 5px black;">
+                            ...</div>
+                    </div>
+                    <!-- SLOTS (Now here !) -->
+                    <div id="forge-slots" style="margin-top: 10px;">
+                        <div class="equip-slot" data-slot="weapon" onclick="openInventoryTab('weapon')"
+                            style="cursor: pointer;">
+                            <div class="slot-icon">⚔️</div><span class="slot-label">Arma</span>
+                        </div>
+                        <div class="equip-slot" data-slot="armor" onclick="openInventoryTab('armor')"
+                            style="cursor: pointer;">
+                            <div class="slot-icon">🛡️</div><span class="slot-label">Armadura</span>
+                        </div>
+                        <div class="equip-slot" data-slot="accessory" onclick="openInventoryTab('accessory')"
+                            style="cursor: pointer;">
+                            <div class="slot-icon">💍</div><span class="slot-label">Accessori</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- RIGHT COLUMN: HERO+DIALOGUE -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- HERO -->
+                    <div>
+                        <div class="character-frame" id="hero-frame"><img id="hero-img" src="" alt="Hero">
+                            <div class="character-label">HEROI</div>
+                        </div>
+                        <div id="hero-name"
+                            style="text-align:center; font-family:'Cinzel'; font-size: 1.2rem; color:#aaa;">
+                            ...</div>
+                    </div>
+                    <!-- RPG DIALOGUE BUBBLE -->
+                    <div class="dialogue-bubble" id="quest-dialogue">"..." </div>
+                    <!-- CHECK BTN (Moved Here) -->
+                    <div style="display:flex; justify-content:center; margin-top:15px;">
+                        <button id="check-btn" onclick="checkWinCondition()" class="skyrim-btn"
+                            style="border-color: #4a4; color: #dfd;">FORJAR EQUIPAMENT
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- OPEN INVENTORY BTN -->
+            <div id="inventory-btn-container" style="margin-top: 40px;"><button id="open-inv-btn"
+                    onclick="toggleInventory()">INVENTARI</button></div>
+        </div>
+        <!-- INVENTORY SIDE -->
+        <div id="inventory-panel"><button id="close-inv-btn" onclick="closeInventory()">×</button>
+            <h2 style="text-align: center; color: var(--skyrim-gold); font-family: 'Cinzel'; margin: 20px 0 0 0;">
+                INVENTORY</h2>
+            <!-- TABS -->
+            <div id="inv-tabs"><button class="inv-tab active" onclick="setTab('weapon')">ARMES</button><button
+                    class="inv-tab" onclick="setTab('armor')">ARMADURES</button><button class="inv-tab"
+                    onclick="setTab('accessory')">ACCESSORIS</button></div>
+            <!-- CONTENT AREA -->
+            <div id="inventory-content">
+                <div class="inv-grid" id="inv-grid-display">
+                    <!-- Items injected here based on tab -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="levelup">
+        <h1>QUEST COMPLETED</h1>
+        <p>Music Skill Increased</p>
+    </div>
+    <!-- CUSTOM MESSAGE MODAL -->
+    <div id="message-modal" style="
+ display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10001;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        ">
+        <div style="
+ background: rgba(20, 20, 20, 0.95);
+        border: 2px solid var(--skyrim-gold);
+        padding: 40px;
+        text-align: center;
+        max-width: 500px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        ">
+            <h2 style="color:var(--skyrim-gold); margin-top:0;">SKYRIM ARMORY</h2>
+            <p id="message-text" style="font-size: 1.2rem; margin: 20px 0; color: #ddd;"></p><button
+                onclick="closeMessage()" style="
+ background: transparent;
+        color: var(--skyrim-gold);
+        border: 1px solid var(--skyrim-gold);
+        padding: 10px 30px;
+        font-family: 'Cinzel';
+        cursor: pointer;
+        text-transform: uppercase;
+
+        ">TANCAR</button>
+        </div>
+    </div>
+    <script>const QUEST_DATA = [{
+
+            id: "mitjana",
+            hero: "El Paladí de la Fe",
+            dragon: "ALDUIN-MONODIA (El Drac d'Una Veu)",
+            heroImg: "img/personatgemitjana.png",
+            dragonImg: "img/dracmitjana.jpg",
+            dialogue: "Aquest drac odia els instruments. Només accepta una única línia melòdica i el silenci del temple. Necessito equip sagrat i simple.",
+            required: {
+                weapon: "Maça Monòdica",
+                armor: "Cota Gregorià",
+                accessory: "Amulet Teocèntric"
+            }
+        }
+
+            ,
+        {
+
+            id: "renaix",
+            hero: "L'Arquera Humanista",
+            dragon: "PAARTHURNAX-POLIFONIA (El Drac de l'Equilibri)",
+            heroImg: "img/personatgerenaixement.png",
+            dragonImg: "img/dracrenaixement.jpg",
+            dialogue: "És una bèstia intel·ligent. Les seves escates tenen proporcions perfectes. Necessito armes que entenguin la bellesa humana i l'harmonia.",
+            required: {
+                weapon: "Arc de Contrapunt",
+                armor: "Peto Proporcionat",
+                accessory: "Ulleres d'Impremta"
+            }
+        }
+
+            ,
+        {
+
+            id: "barroc",
+            hero: "El Rei Daurat",
+            dragon: "SMAUG-ORNAMENTUM (El Drac del Luxe)",
+            heroImg: "img/personatgebarroc.png",
+            dragonImg: "img/dracbarroc.jpg",
+            dialogue: "Viu en una cova plena d'or! M'atacarà amb contrastos de llum i ombra. Necessito una base sòlida per no caure.",
+            required: {
+                weapon: "Espasa de Contrast",
+                armor: "Escut Baix Continu",
+                accessory: "Capa d'Ornament"
+            }
+        }
+
+            ,
+        {
+
+            id: "classic",
+            hero: "El Capità Racional",
+            dragon: "ODAHVIING-SONATA (El Drac de l'Ordre)",
+            heroImg: "img/personatgeclassic.png",
+            dragonImg: "img/dracclassic.jpg",
+            dialogue: "No és salvatge, és calculador. Ataca amb estructures A-B-A perfectes. Necessito simetria per vèncer-lo.",
+            required: {
+                weapon: "Llança Simètrica",
+                armor: "Casc Forma Sonata",
+                accessory: "Rellotge Regular"
+            }
+        }
+
+            ,
+        {
+
+            id: "roman",
+            hero: "La Bàrbara de la Tempesta",
+            dragon: "ALDUIN-RUBATO (El Drac de la Passió)",
+            heroImg: "img/personatgeromantic.png",
+            dragonImg: "img/dracromantic.jpg",
+            dialogue: "Rugeix com una tempesta! No segueix cap tempo, accelera i frena quan vol. Necessito llibertat total!",
+            required: {
+                weapon: "Destral Virtuosa",
+                armor: "Pell de Natura",
+                accessory: "Anell de Rubato"
+            }
+        }
+
+            ,
+        {
+
+            id: "sxx",
+            hero: "El Mag del Glitch",
+            dragon: "MECHA-DRAGON (El Drac del Soroll)",
+            heroImg: "img/personatgesegleXX.png",
+            dragonImg: "img/dracsegleXX.jpg",
+            dialogue: "És fet de metall i electricitat. Trenca totes les lleis de la màgia antiga. Necessito equip experimental.",
+            required: {
+                weapon: "Vareta Dissonant",
+                armor: "Túnica Trenca-da",
+                accessory: "Orbe Electrònic"
+            }
+        }
+
+        ];
+
+        const INVENTORY = [ // WEAPONS
+
+            {
+                name: "Maça Monòdica", type: "weapon", img: "img/armamitjana.png", desc: "Un sol cop contundent. Una sola veu."
+            }
+
+            ,
+            {
+                name: "Arc de Contrapunt", type: "weapon", img: "img/armareniaxement.png", desc: "Projectils que es creuen harmònicament."
+            }
+
+            ,
+            // Typo in filename: reniaxement
+            {
+                name: "Espasa de Contrast", type: "weapon", img: "img/armabarroc.png", desc: "Tall fosc i tall clar. Fort i Fluix."
+            }
+
+            ,
+            {
+                name: "Llança Simètrica", type: "weapon", img: "img/armaclassic.png", desc: "Equilibri perfecte entre punta i mànec."
+            }
+
+            ,
+            {
+                name: "Destral Virtuosa", type: "weapon", img: "img/armaromantic.png", desc: "Difícil de manejar, només per a experts."
+            }
+
+            ,
+            {
+                name: "Vareta Dissonant", type: "weapon", img: "img/armasegleXX.png", desc: "Provoca soroll i caos màgic."
+            }
+
+            ,
+
+            // ARMOR
+            {
+                name: "Cota Gregorià", type: "armor", img: "img/aermaduramitjana.png", desc: "Protecció sagrada dels monjos."
+            }
+
+            ,
+            // Typo: aermadura
+            {
+                name: "Peto Proporcionat", type: "armor", img: "img/armadurarenaixement.png", desc: "Fet a la mida perfecta de l'home."
+            }
+
+            ,
+            {
+                name: "Escut Baix Continu", type: "armor", img: "img/armadurabarroc.png", desc: "Base sòlida que mai s'atura."
+            }
+
+            ,
+            {
+                name: "Casc Forma Sonata", type: "armor", img: "img/armaduraclassic.png", desc: "Estructura A-B-A impenetrable."
+            }
+
+            ,
+            {
+                name: "Pell de Natura", type: "armor", img: "img/armadruaromantic.png", desc: "Pell salvatge plena d'emoció."
+            }
+
+            ,
+            // Typo: armadrua
+            {
+                name: "Túnica Trenca-da", type: "armor", img: "img/armadurasegleXX.png", desc: "Fragments units de forma abstracta."
+            }
+
+            ,
+
+            // ACCESSORIES
+            {
+                name: "Amulet Teocèntric", type: "accessory", img: "img/amuletmitjana.png", desc: "Posa Déu al centre de tot."
+            }
+
+            ,
+            {
+                name: "Ulleres d'Impremta", type: "accessory", img: "img/amuletrenaixement.png", desc: "Per llegir partitures difoses."
+            }
+
+            ,
+            {
+                name: "Capa d'Ornament", type: "accessory", img: "img/amuletbarroc.png", desc: "Luxe innecessari però bonic."
+            }
+
+            ,
+            {
+                name: "Rellotge Regular", type: "accessory", img: "img/amuletclassic.png", desc: "Marca el temps sense sorpreses."
+            }
+
+            ,
+            {
+                name: "Anell de Rubato", type: "accessory", img: "img/amuletromantic.png", desc: "El temps s'estira i s'arronsa."
+            }
+
+            ,
+            {
+                name: "Orbe Electrònic", type: "accessory", img: "img/accesorisegleXX.png", desc: "Tecnologia del futur."
+            }
+
+        ];
+
+        let currentLevel = 0;
+        let activeTab = 'weapon';
+
+        let equipped = {
+            weapon: null, armor: null, accessory: null
+        }
+
+            ;
+        const tooltipEl = document.getElementById('global-tooltip');
+
+        // SLIDER LOGIC
+        const music = document.getElementById('bg-music');
+        const slider = document.getElementById('volume-slider');
+
+        slider.addEventListener('input', (e) => {
+            music.volume = e.target.value;
+        });
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-interface').style.display = 'flex'; // Show the game interface
+
+            music.volume = slider.value;
+            music.play().catch(e => console.log("Audio play blocked", e));
+
+            // RANDOMIZE!
+            shuffleArray(QUEST_DATA);
+            shuffleArray(INVENTORY);
+
+            initGame();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i],
+                array[j]] = [array[j],
+                array[i]];
+            }
+        }
+
+        function toggleInventory() {
+            const panel = document.getElementById('inventory-panel');
+
+            if (panel.classList.contains('open')) {
+                panel.classList.remove('open');
+            }
+
+            else {
+                panel.classList.add('open');
+            }
+        }
+
+        function closeInventory() {
+            document.getElementById('inventory-panel').classList.remove('open');
+        }
+
+        function openInventoryTab(tab) {
+            document.getElementById('inventory-panel').classList.add('open');
+            setTab(tab);
+        }
+
+        function initGame() {
+            loadLevel(0);
+            renderInventory();
+
+            // Global Tooltip follow mouse
+            document.addEventListener('mousemove', (e) => {
+                if (tooltipEl.style.opacity === '1') {
+                    let x = e.clientX + 15;
+                    let y = e.clientY + 15;
+
+                    // Prevent clipping
+                    if (x + 250 > window.innerWidth) x = e.clientX - 260;
+                    if (y + 150 > window.innerHeight) y = e.clientY - 160;
+
+                    tooltipEl.style.left = x + 'px';
+                    tooltipEl.style.top = y + 'px';
+                }
+            });
+        }
+
+        function setTab(type) {
+            activeTab = type;
+
+            // Update active button state
+            document.querySelectorAll('.inv-tab').forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(type === 'weapon' ? 'armes' : type === 'armor' ? 'armadures' : 'accessoris')) {
+                    btn.classList.add('active');
+                }
+
+                else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            renderInventory();
+        }
+
+        function loadLevel(idx) {
+            if (idx >= QUEST_DATA.length) {
+                alert("YOU HAVE SLAIN ALL DRAGONS! GAME OVER.");
+                idx = 0;
+            }
+
+            currentLevel = idx;
+
+            equipped = {
+                weapon: null, armor: null, accessory: null
+            }
+
+                ;
+
+            // Update UI
+            const data = QUEST_DATA[idx];
+
+            document.getElementById('quest-title').innerHTML = `Objectiu: <span style="color:white">${data.dragon
+                }
+
+            </span>`;
+            document.getElementById('quest-dialogue').textContent = `"${data.dialogue}" `;
+            document.getElementById('hero-name').textContent = data.hero.toUpperCase();
+            document.getElementById('dragon-name').textContent = data.dragon.toUpperCase();
+
+            // SET IMAGES
+            document.getElementById('hero-img').src = data.heroImg;
+            document.getElementById('dragon-img').src = data.dragonImg;
+
+            // Clear Slots
+            document.querySelectorAll('.equip-slot').forEach(slot => {
+                slot.classList.remove('filled');
+
+                slot.innerHTML = `<div class="slot-icon" >${getIconForSlot(slot.dataset.slot)
+                    }
+
+                    </div><span class="slot-label" >${slot.dataset.slot
+                    }
+
+                    </span>`;
+            });
+
+            document.getElementById('levelup').style.display = 'none';
+        }
+
+        function getIconForSlot(type) {
+            if (type === 'weapon') return '⚔️';
+            if (type === 'armor') return '🛡️';
+            return '💍';
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inv-grid-display');
+            grid.innerHTML = '';
+
+            // Filter items by activeTab
+            const items = INVENTORY.filter(i => i.type === activeTab);
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inv-item';
+
+                div.innerHTML = `<img src="${item.img}" class="slot-img" >`;
+
+                // MOUSE EVENTS FOR GLOBAL TOOLTIP
+                div.addEventListener('mouseenter', (e) => {
+                    tooltipEl.innerHTML = `<strong>${item.name
+                        }
+
+                            </strong>${item.desc
+                        }
+
+                            `;
+                    tooltipEl.style.left = e.clientX + 15 + 'px';
+                    tooltipEl.style.top = e.clientY + 15 + 'px';
+                    tooltipEl.style.opacity = '1';
+                });
+
+                div.addEventListener('mouseleave', () => {
+                    tooltipEl.style.opacity = '0';
+                });
+
+                // CLICK TO EQUIP
+                div.addEventListener('click', () => {
+                    equipItem(item);
+                });
+
+                grid.appendChild(div);
+            });
+        }
+
+        function equipItem(item) {
+            // Find slot logic
+            const slotType = item.type;
+            const slot = document.querySelector(`.equip-slot[data-slot="${slotType}"]`);
+
+            // Visual Update
+            slot.classList.add('filled');
+
+            slot.innerHTML = ` <img src="${item.img}" class="slot-img" style="width:100%; height:100%; object-fit:cover;"><div class="character-label" style="font-size:0.7rem;">${item.name
+                }
+
+            </div>`;
+
+            // Logic Update
+            equipped[slotType] = item.name;
+        }
+
+        function shake(el) {
+            el.classList.add('shake');
+            setTimeout(() => el.classList.remove('shake'), 400);
+        }
+
+        function checkWinCondition() {
+            const currentQuest = QUEST_DATA[currentLevel];
+
+            // Check if all slots filled
+            if (!equipped.weapon || !equipped.armor || !equipped.accessory) {
+                showMessage("Has d'equipar tots els objectes abans de donar-li l'equipament!");
+                return;
+            }
+
+            const req = currentQuest.required;
+
+            if (equipped.weapon === req.weapon && equipped.armor === req.armor && equipped.accessory === req.accessory) {
+                // WIN
+                document.getElementById('levelup').style.display = 'flex';
+                document.getElementById('levelup').innerHTML = ` <h1 style="color:var(--skyrim-gold); margin-bottom:10px;">QUEST COMPLETED</h1><p style="color:#ddd; margin-bottom:20px;">El drac ha estat derrotat !</p><button onclick="nextLevel()" class="skyrim-btn">SEGÜENT MISSIÓ</button>`;
+            }
+
+            else {
+                // WRONG
+                showMessage("Aquest equipament no és l'adequat per a aquest drac segons el que diu l'heroi...");
+                shake(document.getElementById('forge-slots'));
+            }
+        }
+
+        function showMessage(msg) {
+            document.getElementById('message-text').textContent = msg;
+            document.getElementById('message-modal').style.display = 'flex';
+        }
+
+        function closeMessage() {
+            document.getElementById('message-modal').style.display = 'none';
+        }
+
+
+        function nextLevel() {
+            currentLevel++;
+
+            if (currentLevel >= QUEST_DATA.length) {
+                currentLevel = 0; // Loop or end
+            }
+
+            loadLevel(currentLevel);
+        }
+
+    </script>
+</body>

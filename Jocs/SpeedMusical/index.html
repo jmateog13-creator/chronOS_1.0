@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Speed Musical: Edició Text</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            --card-width: 140px;
+            --card-height: 200px;
+            --primary-color: #ffcc00;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url('img/fons.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* REMOVED gradientBG animation since usage is replaced by image */
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 20;
+            transition: opacity 0.3s;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            color: #ffdb4d;
+            text-shadow: 0 0 20px rgba(255, 219, 77, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: #ecf0f1;
+            font-weight: 300;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4), 0 6px 0 #962d22;
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin: 10px;
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #962d22, inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4), 0 6px 0 #1f618d;
+        }
+
+        .btn-secondary:active {
+            box-shadow: 0 0 0 #1f618d, inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* HUD */
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 5;
+        }
+
+        .score-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 12px;
+            min-width: 80px;
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2px;
+        }
+
+        .score-val {
+            font-size: 1.8rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* CARD AREA */
+        #card-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            perspective: 1000px;
+            position: relative;
+        }
+
+        /* LEGEND */
+        #legend {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #legend h3 {
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 5px;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .legend-icon {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .card-slot {
+            width: var(--card-width);
+            height: var(--card-height);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            width: var(--card-width);
+            height: var(--card-height);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            position: absolute;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backface-visibility: hidden;
+            border: 4px solid #fff;
+        }
+
+        /* Era Colors for Cards */
+        .card.era-MITJANA {
+            border-color: #7f8c8d;
+            background: #fdfefe;
+        }
+
+        .card.era-RENAIXEMENT {
+            border-color: #f1c40f;
+            background: #fffcf0;
+        }
+
+        .card.era-BARROC {
+            border-color: #8e44ad;
+            background: #fbf5ff;
+        }
+
+        .card.era-CLASSICISME {
+            border-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .card.era-ROMANTICISME {
+            border-color: #e91e63;
+            background: #fff0f5;
+        }
+
+        .card.era-SEGLE.XX {
+            border-color: #2ecc71;
+            background: #f0fff4;
+        }
+
+        .card-name {
+            font-family: 'Playfair Display', serif;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            font-weight: 900;
+            text-align: center;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-top: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .vs-label {
+            font-family: 'Playfair Display';
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #ffdb4d;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            margin: 5px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* BUTTON AREA */
+        #action-area {
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        /* 3D BUZZER STYLE */
+        #speed-btn {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff5252, #b71c1c);
+            border: 4px solid #7f0000;
+            box-shadow: 0 10px 0 #5c0000, 0 15px 20px rgba(0, 0, 0, 0.4), inset 0 10px 20px rgba(255, 255, 255, 0.3);
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #speed-btn::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 60%;
+            height: 40%;
+            background: linear-gradient(rgba(255, 255, 255, 0.4), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        #speed-btn:active {
+            transform: translateY(10px);
+            box-shadow: 0 0 0 #5c0000, 0 5px 10px rgba(0, 0, 0, 0.4), inset 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: #5c0000;
+        }
+
+        #speed-btn.correct {
+            background: radial-gradient(circle at 30% 30%, #00e676, #00c853);
+            border-color: #00600f;
+            box-shadow: 0 10px 0 #004d00, 0 15px 20px rgba(0, 0, 0, 0.4), 0 0 50px rgba(0, 230, 118, 0.6);
+        }
+
+        #speed-btn.correct:active {
+            box-shadow: 0 0 0 #004d00;
+            transform: translateY(10px);
+        }
+
+        #speed-btn.wrong {
+            background: radial-gradient(circle at 30% 30%, #ff5252, #b71c1c);
+            animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-2px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(4px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-6px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(6px, 0, 0);
+            }
+        }
+
+        /* FEEDBACK */
+        .feedback {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: 900;
+            pointer-events: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 100;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: rotate(-5deg);
+        }
+
+
+        @keyframes popIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-15deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(-5deg);
+                opacity: 0;
+                top: 40%;
+            }
+        }
+
+        /* VOLUME CONTROL */
+        #volume-control {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            top: auto;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #volume-control label {
+            font-size: 0.9rem;
+            color: #f1c40f;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+
+        #volume-slider {
+            width: 100px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* CARD IMAGES */
+        .card-icon-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-top: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        /* LEVEL GRID */
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .level-btn {
+            background: linear-gradient(to bottom, #bdc3c7, #95a5a6);
+            color: #2c3e50;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #7f8c8d;
+            transition: transform 0.1s, box-shadow 0.1s, filter 0.2s;
+            font-family: 'Playfair Display', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .level-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #7f8c8d;
+        }
+
+        .level-btn.completed {
+            background: linear-gradient(to bottom, #2ecc71, #27ae60);
+            color: white;
+            box-shadow: 0 4px 0 #219150;
+        }
+
+        .level-btn.completed::after {
+            content: '👑';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .level-title {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .level-desc {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="game-container">
+        <!-- VOLUME CONTROL -->
+        <div id="volume-control">
+            <label for="volume-slider">🎵 Volum:</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div class="score-box"><span class="score-label">PLAYER</span><span class="score-val" id="player-score-val"
+                    style="color: #4cd137;">0</span></div>
+            <div style="font-size: 3rem; opacity: 0.5;">⚡</div>
+            <div class="score-box"><span class="score-label">CPU</span><span class="score-val" id="cpu-score-val"
+                    style="color: #e84118;">0</span></div>
+        </div>
+
+        <!-- CARD AREA -->
+        <div id="card-area">
+            <!-- CPU Card (Top) -->
+            <div class="card-slot">
+                <div id="card2-container"></div>
+            </div>
+            <!-- VS Label -->
+            <div class="vs-label">VS</div>
+            <!-- Player Card (Bottom) -->
+            <div class="card-slot">
+                <div id="card1-container"></div>
+            </div>
+        </div>
+
+        <!-- LEGEND (Absolute Positioned) -->
+        <div id="legend" class="hidden">
+            <h3>LLEGENDA</h3>
+            <div class="legend-item"><img src="img/mitjana.png" class="legend-icon">Edat Mitjana</div>
+            <div class="legend-item"><img src="img/renaixement.png" class="legend-icon">Renaixement</div>
+            <div class="legend-item"><img src="img/barroc.png" class="legend-icon">Barroc</div>
+            <div class="legend-item"><img src="img/classicisme.png" class="legend-icon">Classicisme</div>
+            <div class="legend-item"><img src="img/romanticisme.png" class="legend-icon">Romanticisme</div>
+            <div class="legend-item"><img src="img/segleXX.png" class="legend-icon">Segle XX</div>
+        </div>
+
+        <!-- ACTION AREA -->
+        <div id="action-area"><button id="speed-btn">SPEED</button></div>
+
+        <!-- SCREENS -->
+        <div id="start-screen" class="screen">
+            <h1>Speed Musical</h1>
+            <h2>Benvingut al Repte de Velocitat!</h2>
+            <div
+                style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 2rem; max-width: 500px; text-align: left; font-size: 1rem; line-height: 1.6;">
+                <p>⚡ <strong>Objectiu:</strong> Sigues el més ràpid en detectar coincidències!</p>
+                <p>👁️ <strong>Fixa't bé:</strong> Si apareixen dues cartes de la <strong>MATEIXA ÈPOCA</strong>...</p>
+                <p>🔴 <strong>Acció:</strong> Prem el botó <strong>SPEED</strong> abans que la CPU!</p>
+                <p>🏆 <strong>Guanyador:</strong> El primer en arribar a <strong>15 Punts</strong>.</p>
+            </div>
+
+            <div class="level-grid">
+                <button class="level-btn" id="lvl-1" onclick="startGame(1)">
+                    <span class="level-title">Nivell 1</span>
+                    <span class="level-desc">Icones • Principiant</span>
+                </button>
+                <button class="level-btn" id="lvl-2" onclick="startGame(2)">
+                    <span class="level-title">Nivell 2</span>
+                    <span class="level-desc">Icones • Expert</span>
+                </button>
+                <button class="level-btn" id="lvl-3" onclick="startGame(3)">
+                    <span class="level-title">Nivell 3</span>
+                    <span class="level-desc">Text • Principiant</span>
+                </button>
+                <button class="level-btn" id="lvl-4" onclick="startGame(4)">
+                    <span class="level-title">Nivell 4</span>
+                    <span class="level-desc">Text • Expert</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="gameover-screen" class="screen hidden">
+            <h1 id="gameover-title">GAME OVER</h1>
+            <p style="font-size: 1.5rem; margin-bottom: 2rem;">
+                Jugador: <span id="final-player-score">0</span> - CPU: <span id="final-cpu-score">0</span>
+            </p>
+            <button class="btn" style="width: 100%; margin: 0;" onclick="location.reload()">MENU PRINCIPAL</button>
+        </div>
+    </div>
+    <script src="../../../js/rewards.js"></script>
+    <script> // --- DATA ---
+        const COMPOSERS_DB = [ // EDAT MITJANA
+
+            {
+                name: "Hildegard von Bingen", era: "MITJANA", icon: "🏰"
+            }
+
+            ,
+            {
+                name: "Guillaume de Machaut", era: "MITJANA", icon: "🏰"
+            }
+
+            ,
+            {
+                name: "Perotin", era: "MITJANA", icon: "🏰"
+            }
+
+            ,
+            {
+                name: "Alfons X el Savi", era: "MITJANA", icon: "🏰"
+            }
+
+            ,
+            // RENAIXEMENT
+            {
+                name: "Palestrina", era: "RENAIXEMENT", icon: "🎨"
+            }
+
+            ,
+            {
+                name: "Josquin des Prez", era: "RENAIXEMENT", icon: "🎨"
+            }
+
+            ,
+            {
+                name: "Tomás L. de Victoria", era: "RENAIXEMENT", icon: "🎨"
+            }
+
+            ,
+            {
+                name: "Orlando di Lasso", era: "RENAIXEMENT", icon: "🎨"
+            }
+
+            ,
+            // BARROC
+            {
+                name: "J.S. Bach", era: "BARROC", icon: "🎻"
+            }
+
+            ,
+            {
+                name: "Antonio Vivaldi", era: "BARROC", icon: "🎻"
+            }
+
+            ,
+            {
+                name: "G.F. Händel", era: "BARROC", icon: "🎻"
+            }
+
+            ,
+            {
+                name: "Henry Purcell", era: "BARROC", icon: "🎻"
+            }
+
+            ,
+            {
+                name: "Claudio Monteverdi", era: "BARROC", icon: "🎻"
+            }
+
+            ,
+            // CLASSICISME
+            {
+                name: "W.A. Mozart", era: "CLASSICISME", icon: "🏛️"
+            }
+
+            ,
+            {
+                name: "F.J. Haydn", era: "CLASSICISME", icon: "🏛️"
+            }
+
+            ,
+            {
+                name: "C.W. Gluck", era: "CLASSICISME", icon: "🏛️"
+            }
+
+            ,
+            {
+                name: "C.P.E. Bach", era: "CLASSICISME", icon: "🏛️"
+            }
+
+            ,
+            // ROMANTICISME
+            {
+                name: "L.V. Beethoven", era: "ROMANTICISME", icon: "🌪️"
+            }
+
+            ,
+            {
+                name: "Frédéric Chopin", era: "ROMANTICISME", icon: "🌪️"
+            }
+
+            ,
+            {
+                name: "Richard Wagner", era: "ROMANTICISME", icon: "🌪️"
+            }
+
+            ,
+            {
+                name: "Franz Schubert", era: "ROMANTICISME", icon: "🌪️"
+            }
+
+            ,
+            {
+                name: "P.I. Tchaikovsky", era: "ROMANTICISME", icon: "🌪️"
+            }
+
+            ,
+            {
+                name: "Giuseppe Verdi", era: "ROMANTICISME", icon: "🌪️"
+            }
+
+            ,
+            // SEGLE XX
+            {
+                name: "Igor Stravinsky", era: "SEGLE XX", icon: "📻"
+            }
+
+            ,
+            {
+                name: "Claude Debussy", era: "SEGLE XX", icon: "📻"
+            }
+
+            ,
+            {
+                name: "Arnold Schönberg", era: "SEGLE XX", icon: "📻"
+            }
+
+            ,
+            {
+                name: "George Gershwin", era: "SEGLE XX", icon: "📻"
+            }
+
+        ];
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        let bgMusic = new Audio('audio/Arcade Overture.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        // Volume Slider Logic
+        const volumeSlider = document.getElementById('volume-slider');
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function playBgMusic() {
+            bgMusic.play().catch(e => console.log("Audio play failed (interaction needed):", e));
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'ding') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+
+            else if (type === 'miss') {
+                // CPU Point
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(200, now + 0.2);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+
+            else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+
+        // --- STATE ---
+        let state = {
+            playerScore: 0,
+            cpuScore: 0,
+            mode: 'text', // 'icons' or 'text'
+            difficulty: 'beginner', // 'beginner' or 'expert'
+            currentLevel: 1,
+            card1: null,
+            card2: null,
+            roundTimer: null,
+            aiTimer: null,
+            gameSpeed: 2500, // Time between rounds
+            isPlaying: false,
+            roundActive: false,
+            roundWinner: null
+        }
+
+            ;
+
+        // --- DOM ---
+        const card1Container = document.getElementById('card1-container');
+        const card2Container = document.getElementById('card2-container');
+        const speedBtn = document.getElementById('speed-btn');
+        const playerScoreVal = document.getElementById('player-score-val');
+        const cpuScoreVal = document.getElementById('cpu-score-val');
+
+        // --- LOGIC ---
+        // Initialize Start Screen on Load
+        updateStartScreen();
+
+        function updateStartScreen() {
+            for (let i = 1; i <= 4; i++) {
+                const isCompleted = localStorage.getItem('speed_level_' + i) === 'true';
+                const btn = document.getElementById('lvl-' + i);
+
+                if (isCompleted) {
+                    btn.classList.add('completed');
+                }
+            }
+        }
+
+        function startGame(level) {
+            state.currentLevel = level;
+            state.playerScore = 0;
+            state.cpuScore = 0;
+            state.isPlaying = true;
+
+            // Configure Level
+            switch (level) {
+                case 1: state.mode = 'icons';
+                    state.difficulty = 'beginner';
+                    break;
+                case 2: state.mode = 'icons';
+                    state.difficulty = 'expert';
+                    break;
+                case 3: state.mode = 'text';
+                    state.difficulty = 'beginner';
+                    break;
+                case 4: state.mode = 'text';
+                    state.difficulty = 'expert';
+                    break;
+            }
+
+            updateHUD();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('gameover-screen').classList.add('hidden');
+
+            if (state.mode === 'icons') {
+                document.getElementById('legend').classList.remove('hidden');
+            } else {
+                document.getElementById('legend').classList.add('hidden');
+            }
+
+            playBgMusic();
+            startRound();
+        }
+
+        function startRound() {
+            if (!state.isPlaying) return;
+
+            // Reset Round State
+            state.roundActive = true;
+            state.roundWinner = null;
+            clearTimeout(state.aiTimer);
+            clearTimeout(state.roundTimer);
+
+            // Deal 2 Cards
+            state.card1 = COMPOSERS_DB[Math.floor(Math.random() * COMPOSERS_DB.length)];
+
+            // 40% chance of match
+            if (Math.random() < 0.4) {
+                // Force Match (same era, different composer if possible)
+                const sameEra = COMPOSERS_DB.filter(c => c.era === state.card1.era);
+                state.card2 = sameEra[Math.floor(Math.random() * sameEra.length)];
+            }
+
+            else {
+                // Random (likely different)
+                state.card2 = COMPOSERS_DB[Math.floor(Math.random() * COMPOSERS_DB.length)];
+            }
+
+            renderCard(state.card1, card1Container);
+            renderCard(state.card2, card2Container);
+
+            // AI Logic
+            // AI Logic
+            if (state.card1.era === state.card2.era) {
+                // Match! AI will try to click
+                let reactionTime;
+
+                if (state.difficulty === 'beginner') {
+                    // Slower: 1.5s - 2.5s
+                    reactionTime = 1500 + Math.random() * 1000;
+                }
+
+                else {
+                    // Expert: 0.5s - 1.2s (Rapid!)
+                    reactionTime = 500 + Math.random() * 700;
+                }
+
+                state.aiTimer = setTimeout(() => {
+                    if (state.roundActive) {
+                        resolveRound('cpu');
+                    }
+                }
+
+                    , reactionTime);
+            }
+
+            // Schedule Next Round
+            state.roundTimer = setTimeout(startRound, state.gameSpeed);
+        }
+
+        function renderCard(cardData, container) {
+            container.innerHTML = '';
+            if (!cardData) return;
+
+            const card = document.createElement('div');
+
+            card.className = `card era-${cardData.era.replace(' ', '.')
+                }
+
+            `;
+
+            // Initial state for animation
+            card.style.transform = 'translateY(50px) scale(0.8)';
+            card.style.opacity = '0';
+
+            const name = document.createElement('div');
+            name.className = 'card-name';
+            name.textContent = cardData.name;
+            card.appendChild(name);
+
+            if (state.mode === 'icons') {
+                const icon = document.createElement('img');
+                icon.className = 'card-icon-img';
+
+                // Map Era to Image File
+                let imgFile = '';
+                if (cardData.era === 'MITJANA') imgFile = 'mitjana.png';
+                else if (cardData.era === 'RENAIXEMENT') imgFile = 'renaixement.png';
+                else if (cardData.era === 'BARROC') imgFile = 'barroc.png';
+                else if (cardData.era === 'CLASSICISME') imgFile = 'classicisme.png';
+                else if (cardData.era === 'ROMANTICISME') imgFile = 'romanticisme.png';
+                else if (cardData.era === 'SEGLE XX') imgFile = 'segleXX.png';
+
+                icon.src = `img/${imgFile}`;
+                card.appendChild(icon);
+            }
+
+            container.appendChild(card);
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.opacity = '1';
+            });
+        }
+
+        function playerClick() {
+            if (!state.isPlaying || !state.roundActive) return;
+
+            if (state.card1.era === state.card2.era) {
+                // Correct Match
+                resolveRound('player');
+            }
+
+            else {
+                // Wrong Click (Penalty)
+                resolveRound('cpu_error');
+            }
+        }
+
+        function resolveRound(winner) {
+            state.roundActive = false;
+            clearTimeout(state.aiTimer); // Stop AI if player clicked
+
+            if (winner === 'player') {
+                state.playerScore++;
+                playSound('ding');
+                showFeedback("PUNT JUGADOR!", "#3498db");
+                speedBtn.classList.add('correct');
+                setTimeout(() => speedBtn.classList.remove('correct'), 300);
+            }
+
+            else if (winner === 'cpu') {
+                state.cpuScore++;
+                playSound('miss');
+                showFeedback("PUNT CPU!", "#e74c3c");
+            }
+
+            else if (winner === 'cpu_error') {
+                state.cpuScore++;
+                playSound('error');
+                showFeedback("ERROR! PUNT CPU", "#e74c3c");
+                speedBtn.classList.add('wrong');
+                setTimeout(() => speedBtn.classList.remove('wrong'), 300);
+            }
+
+            updateHUD();
+
+            // Win Condition 15 points
+            if (state.playerScore >= 15 || state.cpuScore >= 15) {
+                endGame();
+            }
+        }
+
+        function updateHUD() {
+            playerScoreVal.textContent = state.playerScore;
+            cpuScoreVal.textContent = state.cpuScore;
+        }
+
+        function showFeedback(text, color) {
+            const el = document.createElement('div');
+            el.className = 'feedback';
+            el.textContent = text;
+            el.style.color = color; // This will be overridden by CSS styling but kept for now or removed if CSS handles it nicely
+            // Actually the new CSS sets color, but let's keep it to be safe or remove inline style if CSS is enough.
+            // The recent CSS update for .feedback set position and animation but didn't force a color. 
+            // However, the JS passes specific colors. Let's trust the JS argument.
+
+            el.style.left = '50%';
+            el.style.top = '50%';
+
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function endGame() {
+            state.isPlaying = false;
+            clearTimeout(state.roundTimer);
+            const title = document.getElementById('gameover-title');
+
+            if (state.playerScore > state.cpuScore) {
+                title.textContent = `NIVELL ${state.currentLevel} COMPLETAT!`;
+                title.style.color = "#2ecc71";
+                playSound('ding');
+
+                // Save Progress
+                localStorage.setItem('speed_level_' + state.currentLevel, 'true');
+                updateStartScreen();
+
+                if (typeof Rewards !== 'undefined') {
+
+                    // Unlock card only if Level 4 is beaten
+                    if (state.currentLevel === 4) {
+                        Rewards.unlockCard('speed_master',
+                            'Mestre de la Velocitat',
+                            'Has dominat els 4 nivells de Speed Musical!',
+                            '../../img/card_speed_master.png'
+                        );
+                    }
+                }
+            }
+
+            else {
+                title.textContent = "HA GUANYAT LA CPU";
+                title.style.color = "#e74c3c";
+                playSound('miss');
+            }
+
+            document.getElementById('final-player-score').textContent = state.playerScore;
+            document.getElementById('final-cpu-score').textContent = state.cpuScore;
+            document.getElementById('gameover-screen').classList.remove('hidden');
+        }
+
+        // --- INPUT ---
+        speedBtn.addEventListener('mousedown', playerClick);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                playerClick();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

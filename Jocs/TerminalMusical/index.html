@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Musical: Control d'Equipatges</title>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1e272e;
+            --tarmac: #353b48;
+            --yellow: #f1c40f;
+            --terminal-blue: #0984e3;
+            --gate-bg: #2d3436;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: #dfe6e9;
+            font-family: 'Chakra Petch', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        #game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: url('img/fons.jpg') no-repeat center center;
+            background-size: cover;
+        }
+
+        /* --- HEADER & HUD --- */
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--yellow);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--yellow);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hud-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            align-items: center;
+        }
+
+        .stat span {
+            color: var(--yellow);
+        }
+
+        /* Volume Slider (Small) */
+        .vol-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        input[type=range] {
+            width: 60px;
+            accent-color: var(--yellow);
+            cursor: pointer;
+        }
+
+        /* --- GATES AREA (Top) --- */
+        #gates-container {
+            flex: 0 0 50%;
+            /* Top half */
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding-bottom: 20px;
+            /* background moved to game-container */
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+            position: relative;
+            border-bottom: 5px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .gate {
+            width: 14%;
+            height: 220px;
+            /* Taller for image */
+            /* background: rgba(45, 52, 54, 0.9); Removed default bg */
+            /* border: 2px solid #636e72; */
+            /* border-top: 4px solid var(--terminal-blue); */
+            /* border-radius: 10px 10px 0 0; */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            /* Align bottom */
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .gate img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Show full gate art */
+            position: absolute;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
+        }
+
+        .gate.drag-over {
+            transform: scale(1.1);
+        }
+
+        .gate.drag-over img {
+            filter: drop-shadow(0 0 15px var(--yellow));
+        }
+
+        .gate-number {
+            position: absolute;
+            top: -10px;
+            background: var(--terminal-blue);
+            color: #fff;
+            padding: 2px 10px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .gate-label {
+            position: absolute;
+            bottom: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 2px 5px;
+            color: #fff;
+            text-transform: uppercase;
+            border-radius: 3px;
+            z-index: 2;
+            width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .plane-icon {
+            display: none;
+        }
+
+        /* Replaced by image */
+
+        /* --- BAGGAGE CLAIM (Bottom) --- */
+        #baggage-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.6);
+            /* Transparent dark */
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Removed stripe pattern for cleaner look */
+        }
+
+        /* --- SUITCASES --- */
+        .suitcase {
+            width: 140px;
+            height: 100px;
+            /* Slightly taller for images */
+            position: absolute;
+            /* background: #e17055; Removed background color, using Image */
+            /* border-radius: 10px; */
+            /* border: 2px solid #fab1a0; */
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: transform 0.2s, opacity 0.3s;
+            z-index: 100;
+        }
+
+        .suitcase:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+            z-index: 1000;
+        }
+
+        .suitcase img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* .suitcase-handle {
+            width: 40px;
+            height: 10px;
+            background: #2d3436;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        } */
+
+        .suitcase-tag {
+            background: #fff;
+            color: #000;
+            padding: 8px 12px;
+            font-size: 1.1rem;
+            /* Larger Text */
+            font-weight: bold;
+            transform: rotate(-2deg);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+            min-width: 140px;
+            text-align: center;
+            white-space: normal;
+            /* Allow wrap */
+            line-height: 1.1;
+            border-radius: 4px;
+            border: 2px solid #333;
+            /* Ensure it pops */
+            position: relative;
+            bottom: 10px;
+            z-index: 101;
+        }
+
+        /* --- OVERLAYS --- */
+        #start-screen,
+        #game-over-screen,
+        #victory-screen,
+        #level-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            text-align: center;
+        }
+
+        button {
+            background: var(--yellow);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+        }
+
+        button:hover {
+            background: #fff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animation Classes */
+        .fly-away {
+            animation: flyOps 0.5s forwards;
+        }
+
+        @keyframes flyOps {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0) translateY(-200px);
+                opacity: 0;
+            }
+        }
+
+        /* TOOLTIP */
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--yellow);
+            padding: 10px 15px;
+            border: 2px solid var(--terminal-blue);
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 10000;
+            font-size: 1rem;
+            max-width: 200px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>TERMINAL MUSICAL ✈️</h1>
+        <div class="hud-stats">
+            <div class="stat">MALETES: <span id="score">0</span>/<span id="target">5</span></div>
+            <div class="stat">TEMPS: <span id="time">60</span>s</div>
+            <div class="stat">NIVELL: <span id="level">1</span>/3</div>
+            <div class="vol-control">
+                <span>🔊</span>
+                <input type="range" min="0" max="1" step="0.1" value="0.5"
+                    oninput="document.getElementById('bg-music').volume=this.value">
+            </div>
+        </div>
+    </header>
+
+    <audio id="bg-music" src="audio/Skyboard Concourse.m4a" loop></audio>
+
+    <div id="game-container">
+        <!-- GATES -->
+        <div id="gates-container">
+            <div class="gate" data-era="EDAT_MITJANA">
+                <img src="img/portamitjana.png" onerror="this.style.display='none'">
+                <div class="gate-number">GATE 01</div>
+                <div class="gate-label">EDAT MITJANA</div>
+            </div>
+            <div class="gate" data-era="RENAIXEMENT">
+                <img src="img/portarenaixement.png" onerror="this.style.display='none'">
+                <div class="gate-number">GATE 02</div>
+                <div class="gate-label">RENAIXEMENT</div>
+            </div>
+            <div class="gate" data-era="BARROC">
+                <img src="img/portabarroc.png" onerror="this.style.display='none'">
+                <div class="gate-number">GATE 03</div>
+                <div class="gate-label">BARROC</div>
+            </div>
+            <div class="gate" data-era="CLASSICISME">
+                <img src="img/portaclassicicsme.png" onerror="this.style.display='none'">
+                <div class="gate-number">GATE 04</div>
+                <div class="gate-label">CLASSICISME</div>
+            </div>
+            <div class="gate" data-era="ROMANTICISME">
+                <img src="img/portaromanticisme.png" onerror="this.style.display='none'">
+                <div class="gate-number">GATE 05</div>
+                <div class="gate-label">ROMANTICISME</div>
+            </div>
+            <div class="gate" data-era="SEGLE_XX">
+                <img src="img/portasegleXX.png" onerror="this.style.display='none'">
+                <div class="gate-number">GATE 06</div>
+                <div class="gate-label">SEGLE XX</div>
+            </div>
+        </div>
+
+        <!-- BAGGAGE AREA -->
+        <div id="baggage-area">
+            <!-- Suitcases will spawn here -->
+        </div>
+
+        <!-- SCREENS -->
+        <div id="tooltip"></div>
+
+        <div id="start-screen">
+            <h1 style="font-size: 3rem; margin-bottom: 10px;">CONTROL D'EQUIPATGE</h1>
+            <p style="font-size: 1.2rem; max-width: 600px; color: #ccc;">
+                Benvingut al servei de terra. Els passatgers han facturat conceptes musicals.<br>
+                Arrossega cada <b>maleta</b> al <b>vol (Gate)</b> de la seva època corresponent.
+            </p>
+            <button onclick="startGame()">OBRIR FACTURACIÓ</button>
+        </div>
+
+        <div id="level-screen" class="hidden">
+            <h1 style="color: var(--yellow);">NIVELL COMPLETAT!</h1>
+            <p>Preparat per al següent torn?</p>
+            <button onclick="nextLevel()">SEGÜENT NIVELL</button>
+        </div>
+
+        <div id="game-over-screen" class="hidden">
+            <h1 style="color: #e74c3c;">TERMINAL TANCADA</h1>
+            <p>Massa equipatge perdut.</p>
+            <button onclick="location.reload()">REINICIAR</button>
+        </div>
+
+        <div id="victory-screen" class="hidden">
+            <h1 style="color: #2ecc71;">JORNADA COMPLETADA</h1>
+            <p>Tot l'equipatge ha arribat al seu destí!</p>
+            <button onclick="location.reload()">TORNAR A COMENÇAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            EDAT_MITJANA: [
+                { name: "Cant Gregorià", hint: "Monodia religiosa llatina" },
+                { name: "Monodia", hint: "Una sola línia melòdica" },
+                { name: "Neumes", hint: "Primera notació musical" },
+                { name: "Trobador", hint: "Poeta músic de la cort" },
+                { name: "Ars Antiqua", hint: "Polifonia primitiva (s. XII-XIII)" }
+            ],
+            RENAIXEMENT: [
+                { name: "Polifonia", hint: "Vàries veus independents" },
+                { name: "Madrigal", hint: "Cançó profana italiana" },
+                { name: "Palestrina", hint: "Mestre de la polifonia sacra" },
+                { name: "Llaüt", hint: "Instrument de corda polsat" },
+                { name: "Impremta", hint: "Difusió de partitures" }
+            ],
+            BARROC: [
+                { name: "Baix Continu", hint: "Base harmònica constant" },
+                { name: "Clavicèmbal", hint: "Teclat de corda pinçada" },
+                { name: "Bach", hint: "El mestre del contrapunt" },
+                { name: "Fuga", hint: "Estructura compositiva complexa" },
+                { name: "Opera Naixement", hint: "Teatre musical (1600)" }
+            ],
+            CLASSICISME: [
+                { name: "Simfonia", hint: "Gran obra per orquestra" },
+                { name: "Mozart", hint: "Nen prodigi de Salzburg" },
+                { name: "Sonata", hint: "Estructura de l'Allegro inicial" },
+                { name: "Equilibri", hint: "Proporció i claredat" },
+                { name: "Haydn", hint: "Pare de la Simfonia" }
+            ],
+            ROMANTICISME: [
+                { name: "Lied", hint: "Cançó per veu i piano" },
+                { name: "Chopin", hint: "Poeta del piano" },
+                { name: "Piano Virtuos", hint: "Instrument rei del s. XIX" },
+                { name: "Passió", hint: "Emoció per sobre de la raó" },
+                { name: "Wagner", hint: "Òpera com a obra d'art total" }
+            ],
+            SEGLE_XX: [
+                { name: "Atonalitat", hint: "Absència de to central" },
+                { name: "Stravinsky", hint: "Ritmes trencadors (Sacre)" },
+                { name: "Dodecafonia", hint: "Sèries de 12 tons" },
+                { name: "Jazz", hint: "Improvització i ritme swing" },
+                { name: "Avantguarda", hint: "Experimentació sonora" }
+            ]
+        };
+
+        const SUITCASE_IMAGES = ['maleta1.png', 'maleta2.png', 'maleta3.png', 'maleta4.png'];
+
+        // --- STATE ---
+        let level = 1;
+        let score = 0;
+        let lives = 3; // N/A, using time
+        let target = 5;
+        let time = 60;
+        let timerInterval;
+
+        // --- GAME LOGIC ---
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('victory-screen').classList.add('hidden');
+            document.getElementById('level-screen').classList.add('hidden');
+
+            // Audio
+            const audio = document.getElementById('bg-music');
+            if (audio.paused) {
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log("Interactive autio"));
+            }
+
+            level = 1;
+            setupDropZones();
+            startLevel();
+        }
+
+        function startLevel() {
+            score = 0;
+            target = 5 + (level * 2); // 7, 9, 11
+
+            // Level Time Logic
+            if (level === 1) time = 60;
+            else if (level === 2) time = 45;
+            else if (level === 3) time = 30;
+
+            updateHUD();
+            spawnSuitcases();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                time--;
+                updateHUD();
+                if (time <= 0) endGame(false);
+            }, 1000);
+        }
+
+        function spawnSuitcases() {
+            const area = document.getElementById('baggage-area');
+            area.innerHTML = '';
+
+            // Create target number of suitcases
+            // To ensure solvability, pick random valid eras
+            const eras = Object.keys(DB);
+
+            for (let i = 0; i < target; i++) {
+                createSuitcase(i);
+            }
+        }
+
+        function createSuitcase(index) {
+            const area = document.getElementById('baggage-area');
+            const eras = Object.keys(DB);
+            const randomEra = eras[Math.floor(Math.random() * eras.length)];
+            const concepts = DB[randomEra];
+            const conceptObj = concepts[Math.floor(Math.random() * concepts.length)];
+            const imgFile = SUITCASE_IMAGES[Math.floor(Math.random() * SUITCASE_IMAGES.length)];
+
+            const s = document.createElement('div');
+            s.className = 'suitcase';
+            s.dataset.era = randomEra;
+            s.dataset.hint = conceptObj.hint; // Store hint
+            s.draggable = true;
+
+            // Random Position in Baggage Area
+            // Area is roughly 100% width, height is flex 1 (~50% of screen)
+            // We use simple % positioning with constraints
+            const top = Math.random() * 60 + 10; // 10% to 70%
+            const left = Math.random() * 80 + 5; // 5% to 85%
+
+            s.style.top = top + '%';
+            s.style.left = left + '%';
+            s.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+
+            s.innerHTML = `
+                <img src="img/${imgFile}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2965/2965879.png'">
+                <div class="suitcase-tag">${conceptObj.name}</div>
+            `;
+
+            // Drag Events
+            s.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', randomEra);
+                s.classList.add('dragging');
+                document.getElementById('tooltip').style.display = 'none'; // Hide tooltip on drag
+                setTimeout(() => s.style.opacity = '0.4', 0);
+            });
+
+            s.addEventListener('dragend', () => {
+                s.classList.remove('dragging');
+                s.style.opacity = '1';
+            });
+
+            // Hover Events for Tooltip
+            s.addEventListener('mouseenter', e => {
+                const tt = document.getElementById('tooltip');
+                tt.innerText = s.dataset.hint;
+                tt.style.display = 'block';
+                tt.style.left = (e.pageX + 10) + 'px';
+                tt.style.top = (e.pageY - 40) + 'px';
+            });
+
+            s.addEventListener('mousemove', e => {
+                const tt = document.getElementById('tooltip');
+                tt.style.left = (e.pageX + 10) + 'px';
+                tt.style.top = (e.pageY - 40) + 'px';
+            });
+
+            s.addEventListener('mouseleave', () => {
+                document.getElementById('tooltip').style.display = 'none';
+            });
+
+            area.appendChild(s);
+        }
+
+        function setupDropZones() {
+            const gates = document.querySelectorAll('.gate');
+            gates.forEach(gate => {
+                gate.addEventListener('dragover', e => {
+                    e.preventDefault(); // Allow drop
+                    gate.classList.add('drag-over');
+                });
+
+                gate.addEventListener('dragleave', () => {
+                    gate.classList.remove('drag-over');
+                });
+
+                gate.addEventListener('drop', e => {
+                    e.preventDefault();
+                    gate.classList.remove('drag-over');
+
+                    const suitcaseEra = e.dataTransfer.getData('text/plain');
+                    const gateEra = gate.dataset.era;
+                    const draggingEl = document.querySelector('.dragging');
+
+                    if (suitcaseEra === gateEra) {
+                        // Correct
+                        score++;
+                        if (draggingEl) {
+                            draggingEl.classList.add('fly-away'); // Animation
+                            setTimeout(() => draggingEl.remove(), 500);
+                        }
+
+                        gate.classList.add('success');
+                        setTimeout(() => gate.classList.remove('success'), 500);
+
+                        checkWin();
+                    } else {
+                        // Incorrect
+                        timeLeft = document.getElementById('time').innerText;
+                        time -= 5; // Penalty
+                        document.getElementById('game-container').classList.add('shake'); // visual feedback TODO
+                        // Flash red?
+                        gate.style.borderColor = 'red';
+                        setTimeout(() => gate.style.borderColor = '#636e72', 500);
+                    }
+                    updateHUD();
+                });
+            });
+        }
+
+        function checkWin() {
+            if (score >= target) {
+                // Level Complete
+                clearInterval(timerInterval);
+                if (level < 3) {
+                    // Show Level Screen
+                    document.getElementById('level-screen').classList.remove('hidden');
+                } else {
+                    endGame(true);
+                }
+            }
+        }
+
+        function nextLevel() {
+            document.getElementById('level-screen').classList.add('hidden');
+            level++;
+            startLevel();
+        }
+
+        function updateHUD() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('target').innerText = target;
+            document.getElementById('time').innerText = time;
+            document.getElementById('level').innerText = level;
+        }
+
+        function endGame(win) {
+            clearInterval(timerInterval);
+            if (win) {
+                document.getElementById('victory-screen').classList.remove('hidden');
+            } else {
+                document.getElementById('game-over-screen').classList.remove('hidden');
+            }
+        }
+
+    </script>
+</body>
+
+</html>

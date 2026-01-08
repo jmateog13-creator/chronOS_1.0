@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skate Park Simfònic</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Roboto+Mono:wght@700&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #222;
+            font-family: 'Roboto Mono', monospace;
+            color: white;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 50%, #607D8B 50%, #37474F 100%);
+        }
+
+        /* Background Scrolling - Parallax-ish */
+        .bg-layer {
+            position: absolute;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background-repeat: repeat-x;
+            animation: scroll linear infinite;
+        }
+
+        #bg-buildings {
+            top: 20%;
+            height: 30%;
+            background-image: linear-gradient(90deg, #333 50px, transparent 50px),
+                linear-gradient(90deg, #444 60px, transparent 60px);
+            background-size: 100px 100%;
+            animation-duration: 10s;
+            opacity: 0.5;
+        }
+
+        #bg-wall {
+            top: 50%;
+            height: 50%;
+            background-color: #555;
+            background-image:
+                radial-gradient(circle at 50% 50%, #666 5%, transparent 10%),
+                repeating-linear-gradient(90deg, #555 0, #555 48px, #333 50px);
+            background-size: 50px 50px;
+            animation-duration: 2s;
+            border-top: 5px solid #222;
+        }
+
+        /* Warp Effect */
+        #warp-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 0%, #000 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+            z-index: 100;
+        }
+
+        .warping #warp-overlay {
+            animation: warp-pulse 2s forwards;
+        }
+
+        @keyframes warp-pulse {
+            0% {
+                opacity: 0;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.5);
+                background: white;
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+
+        /* Bg Transition */
+        .bg-layer {
+            transition: opacity 1s;
+        }
+
+        /* Skater */
+        #skater-container {
+            position: absolute;
+            bottom: -15%;
+            left: 50%;
+            width: 900px;
+            height: 900px;
+            transform: translateX(-50%);
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+
+        #skater-char {
+            width: 100%;
+            height: 100%;
+            background-image: url('img/skater.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: drop-shadow(5px 5px 0px rgba(0, 0, 0, 0.5));
+            animation: skate-anim 0.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes skate-anim {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* TRICK ANIMATIONS */
+        .trick-spin {
+            animation: anim-spin 0.8s ease-out;
+        }
+
+        .trick-flip {
+            animation: anim-flip 0.8s ease-out;
+        }
+
+        .trick-shuvit {
+            animation: anim-shuvit 0.8s ease-out;
+        }
+
+        .trick-ollie {
+            animation: anim-ollie 0.8s ease-out;
+        }
+
+        @keyframes anim-spin {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            40% {
+                transform: translateY(-100px) rotate(360deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(360deg);
+            }
+        }
+
+        @keyframes anim-flip {
+            0% {
+                transform: translateY(0) scale(1, 1);
+            }
+
+            40% {
+                transform: translateY(-80px) scale(0.1, 1) rotate(180deg);
+            }
+
+            60% {
+                transform: translateY(-80px) scale(1, 1) rotate(360deg);
+            }
+
+            100% {
+                transform: translateY(0) scale(1, 1) rotate(360deg);
+            }
+        }
+
+        @keyframes anim-shuvit {
+            0% {
+                transform: translateY(0) rotateX(0deg);
+            }
+
+            20% {
+                transform: translateY(-20px);
+            }
+
+            50% {
+                transform: translateY(-50px) rotateX(360deg) rotateZ(10deg);
+            }
+
+            100% {
+                transform: translateY(0) rotateX(360deg) rotateZ(0deg);
+            }
+        }
+
+        @keyframes anim-ollie {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            20% {
+                transform: translateY(10px) rotate(-15deg);
+            }
+
+            /* Crouch */
+            50% {
+                transform: translateY(-120px) rotate(-10deg);
+            }
+
+            /* Jump */
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+
+        /* UI */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 32px;
+            color: #FFD700;
+            text-shadow: 3px 3px 0 #000;
+            z-index: 20;
+        }
+
+        #trick-panel {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            border: 4px solid #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 10px 10px 0 #FF00FF;
+            min-width: 400px;
+        }
+
+        #trick-name {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 40px;
+            color: #00FFFF;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        #trick-desc {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        #era-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 24px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 20;
+        }
+
+        #combo-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .key-prompt {
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            color: #000;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 0 #999;
+            transition: all 0.1s;
+        }
+
+        .key-prompt img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        .key-active {
+            background: #00FF00;
+            color: #000;
+            transform: scale(1.2);
+            box-shadow: 0 0 15px #00FF00;
+        }
+
+        .key-fail {
+            background: #FF0000 !important;
+            color: #fff !important;
+            transform: rotate(10deg);
+        }
+
+        #feedback-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Permanent Marker', cursive;
+            font-size: 80px;
+            color: #FF00FF;
+            text-shadow: 5px 5px 0 #fff;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
+        /* Volume Slider */
+        #volume-container {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #volume-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: grid;
+            grid-template-columns: 60px 60px 60px;
+            gap: 10px;
+            z-index: 50;
+        }
+
+        .m-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .m-btn:active {
+            background: white;
+            color: black;
+        }
+
+        .m-up {
+            grid-column: 2;
+        }
+
+        .m-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .m-down {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .m-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        /* Start Screen Overlay */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            text-align: center;
+        }
+
+        #start-title {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 64px;
+            color: #FF00FF;
+            text-shadow: 4px 4px 0 #00FFFF;
+            margin-bottom: 20px;
+        }
+
+        #start-desc {
+            font-size: 24px;
+            max-width: 600px;
+            line-height: 1.5;
+            margin-bottom: 40px;
+            color: #eee;
+        }
+
+        button {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 32px;
+            padding: 15px 40px;
+            background: #00FFFF;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 5px 5px 0 #FF00FF;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+        <!-- Backgrounds -->
+        <div id="bg-layer-1" class="bg-layer"
+            style="background-image: url('img/fonsmitjana.jpg'); background-size: cover; width: 100%; height: 100%;">
+        </div>
+        <div id="warp-overlay"></div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div>Punts: <span id="score-val">0</span></div>
+            <div>Trick: <span id="trick-counter">1/3</span></div>
+        </div>
+
+        <div id="volume-container">
+            <div id="volume-icon">🔊</div>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <div id="era-indicator">ÈPOCA: <span id="era-name">EDAT MITJANA</span></div>
+
+        <!-- Trick UI -->
+        <div id="trick-panel">
+            <div id="trick-name">Carregant...</div>
+            <div id="trick-desc">Prepara't per al truc!</div>
+            <div id="combo-container"></div>
+        </div>
+
+        <!-- Feedback -->
+        <div id="feedback-text">RADICAL!</div>
+
+        <!-- Character -->
+        <div id="skater-container">
+            <div id="skater-char"></div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <div id="start-title">Skate Park Simfònic</div>
+            <div id="start-desc">
+                Benvingut al viatge musical definitiu!<br><br>
+                Utilitza les fletxes del teclat (o els botons en pantalla) per completar els trucs musicals.<br>
+                Cada època té el seu propi ritme i desafiaments.<br><br>
+                Estàs preparat per fer història?
+            </div>
+            <button id="start-btn" onclick="startGame()">COMENÇAR</button>
+        </div>
+
+        <!-- Mobile Controls (Tap) -->
+        <div id="mobile-controls">
+            <div class="m-btn m-up" onclick="visualPress('ArrowUp')"><img src="img/arriba.png" width="40" height="40">
+            </div>
+            <div class="m-btn m-left" onclick="visualPress('ArrowLeft')"><img src="img/izquierda.png" width="40"
+                    height="40"></div>
+            <div class="m-btn m-down" onclick="visualPress('ArrowDown')"><img src="img/abajo.png" width="40"
+                    height="40"></div>
+            <div class="m-btn m-right" onclick="visualPress('ArrowRight')"><img src="img/derecha.png" width="40"
+                    height="40"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const ERA_DB = [
+            {
+                id: 'mitjana',
+                name: "EDAT MITJANA",
+                bg: "img/fonsmitjana.jpg",
+                music: "audio/Concrete Kickflip Carnival.m4a",
+                tricks: [
+                    { name: "MONODIA", desc: "Una sola veu (Simple)", sequence: ['ArrowUp'] },
+                    { name: "CANT GREGORIÀ", desc: "Resa cantant (Llatí)", sequence: ['ArrowUp', 'ArrowDown'] },
+                    { name: "SALT TEMPORAL", desc: "Canvi d'era!", sequence: ['ArrowUp', 'ArrowDown', 'ArrowUp'] }
+                ]
+            },
+            {
+                id: 'renaixement',
+                name: "RENAIXEMENT",
+                bg: "img/fonsrenaixement.jpg",
+                music: "audio/Concrete Kickflip Carnival.m4a",
+                tricks: [
+                    { name: "HUMANISME", desc: "L'home al centre", sequence: ['ArrowUp', 'ArrowUp'] },
+                    { name: "POLIFONIA", desc: "Més veus!", sequence: ['ArrowLeft', 'ArrowRight'] },
+                    { name: "SALT TEMPORAL", desc: "Un gir elegant", sequence: ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'] }
+                ]
+            },
+            {
+                id: 'barroc',
+                name: "BARROC",
+                bg: "img/fonsbarroc.jpg",
+                music: "audio/Concrete Kickflip Carnival.m4a",
+                tricks: [
+                    { name: "BAIX CONTINU", desc: "La base sòlida", sequence: ['ArrowDown', 'ArrowDown'] },
+                    { name: "ORNAMENTACIÓ", desc: "Decoració extra!", sequence: ['ArrowUp', 'ArrowRight', 'ArrowUp'] },
+                    { name: "SALT TEMPORAL", desc: "Trinos i moviment", sequence: ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowDown', 'ArrowRight'] }
+                ]
+            },
+            {
+                id: 'classicisme',
+                name: "CLASSICISME",
+                bg: "img/fonsclassicisme.jpg",
+                music: "audio/Concrete Kickflip Carnival.m4a",
+                tricks: [
+                    { name: "SIMETRIA", desc: "Tot equilibrat", sequence: ['ArrowLeft', 'ArrowRight'] },
+                    { name: "SONATA", desc: "A - B - A", sequence: ['ArrowLeft', 'ArrowUp', 'ArrowLeft'] },
+                    { name: "SALT TEMPORAL", desc: "Ordre perfecte", sequence: ['ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'] }
+                ]
+            },
+            {
+                id: 'romanticisme',
+                name: "ROMANTICISME",
+                bg: "img/fonsromantic.jpg",
+                music: "audio/Concrete Kickflip Carnival.m4a",
+                tricks: [
+                    { name: "PASSIÓ", desc: "Sentiment pur", sequence: ['ArrowUp', 'ArrowUp', 'ArrowUp'] },
+                    { name: "VIRTUOSISME", desc: "Més ràpid!", sequence: ['ArrowRight', 'ArrowRight', 'ArrowLeft'] },
+                    { name: "SALT TEMPORAL", desc: "Tempesta emocional", sequence: ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowUp'] }
+                ]
+            },
+            {
+                id: 'segleXX',
+                name: "SEGLE XX",
+                bg: "img/fonssegleXX.jpg",
+                music: "audio/Concrete Kickflip Carnival.m4a",
+                tricks: [
+                    { name: "DODECAFONISME", desc: "12 tons iguals", sequence: ['ArrowUp', 'ArrowLeft', 'ArrowRight'] },
+                    { name: "JAZZ", desc: "Improvisa!", sequence: ['ArrowDown', 'ArrowUp', 'ArrowDown'] },
+                    { name: "SALT TEMPORAL", desc: "Caos total", sequence: ['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowRight'] }
+                ]
+            }
+        ];
+
+        const ARROW_MAP = {
+            'ArrowUp': 'img/arriba.png',
+            'ArrowDown': 'img/abajo.png',
+            'ArrowLeft': 'img/izquierda.png',
+            'ArrowRight': 'img/derecha.png'
+        };
+
+        const TRICK_NAMES = {
+            'trick-spin': '360 SPIN!',
+            'trick-flip': 'KICKFLIP!',
+            'trick-shuvit': 'POP SHUVIT!',
+            'trick-ollie': 'OLLIE!'
+        };
+
+        // --- STATE ---
+        let currentEraIdx = 0;
+        let currentTrickIdx = 0; // Index within the era tricks
+        let inputIndex = 0;
+        let score = 0;
+        let isProcessing = false;
+
+        // --- DOM ---
+        const trickNameEl = document.getElementById('trick-name');
+        const trickDescEl = document.getElementById('trick-desc');
+        const comboContainer = document.getElementById('combo-container');
+        const skaterEl = document.getElementById('skater-container');
+        const feedbackEl = document.getElementById('feedback-text');
+        const scoreVal = document.getElementById('score-val');
+        const counterVal = document.getElementById('trick-counter');
+        const eraNameEl = document.getElementById('era-name');
+        const bgLayer = document.getElementById('bg-layer-1');
+        const gameContainer = document.getElementById('game-container');
+
+        // --- INIT ---
+        function initGame() {
+            updateEraUI();
+            document.addEventListener('keydown', handleInput);
+        }
+
+        // --- LOGIC ---
+        function updateEraUI() {
+            const era = ERA_DB[currentEraIdx];
+            const trick = era.tricks[currentTrickIdx];
+
+            // Set Text
+            eraNameEl.textContent = era.name;
+            trickNameEl.textContent = trick.name;
+            trickDescEl.textContent = trick.desc;
+            counterVal.textContent = `${currentTrickIdx + 1}/${era.tricks.length}`;
+
+            // Setup Combo
+            inputIndex = 0;
+            isProcessing = false;
+            comboContainer.innerHTML = '';
+
+            trick.sequence.forEach((key, idx) => {
+                const div = document.createElement('div');
+                div.className = 'key-prompt';
+
+                const img = document.createElement('img');
+                img.src = ARROW_MAP[key];
+                div.appendChild(img);
+
+                div.id = `key-${idx}`;
+                comboContainer.appendChild(div);
+            });
+
+            // Update BG
+            bgLayer.style.backgroundImage = `url('${era.bg}')`;
+        }
+
+        function handleInput(e) {
+            if (isProcessing) return;
+
+            // Filter only arrow keys
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) return;
+
+            validateInput(e.code);
+        }
+
+        // For mobile/mouse clicks
+        window.visualPress = function (code) {
+            handleInput({ code: code });
+        }
+
+        function validateInput(code) {
+            const era = ERA_DB[currentEraIdx];
+            const trick = era.tricks[currentTrickIdx];
+            const expected = trick.sequence[inputIndex];
+            const keyEl = document.getElementById(`key-${inputIndex}`);
+
+            if (code === expected) {
+                // Correct input
+                keyEl.classList.add('key-active');
+                inputIndex++;
+
+                // Do a small hop
+                skaterEl.style.transform = `translateX(-50%) translateY(-${inputIndex * 10}px) rotate(${inputIndex * 5}deg)`;
+
+                if (inputIndex >= trick.sequence.length) {
+                    // Combo Complete!
+                    success();
+                }
+            } else {
+                // Fail
+                fail();
+            }
+        }
+
+        function success() {
+            isProcessing = true;
+            score += 500;
+            updateHUD();
+
+            const era = ERA_DB[currentEraIdx];
+            const isLastTrick = currentTrickIdx >= era.tricks.length - 1;
+
+            if (!isLastTrick) {
+
+                // Random animation
+                const trickAnims = ['trick-spin', 'trick-flip', 'trick-shuvit', 'trick-ollie'];
+                const randomAnim = trickAnims[Math.floor(Math.random() * trickAnims.length)];
+
+                // Specific Feedback
+                showFeedback(TRICK_NAMES[randomAnim], "#00FF00");
+
+                // Clear any inline transform first to let CSS animation take over
+                skaterEl.style.transform = 'translateX(-50%)';
+                skaterEl.style.transition = 'none'; // Disable transition for CSS anim
+
+                // Add class
+                skaterEl.classList.add(randomAnim);
+
+                // Listen for animation end to clean up
+                const cleanup = () => {
+                    skaterEl.classList.remove(randomAnim);
+                    skaterEl.style.transform = 'translateX(-50%) translateY(0) rotate(0deg)'; // Ensure reset
+                    skaterEl.removeEventListener('animationend', cleanup);
+
+                    // Proceed
+                    currentTrickIdx++;
+                    updateEraUI();
+                };
+
+                skaterEl.addEventListener('animationend', cleanup);
+            } else {
+                // Epoch Jump!
+                showFeedback("SALT TEMPORAL!", "#FFD700");
+
+                // Warp Animation
+                skaterEl.style.transition = 'transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                skaterEl.style.transform = 'translateX(-50%) translateY(-300px) rotate(720deg) scale(0)';
+
+                gameContainer.classList.add('warping');
+
+                setTimeout(() => {
+                    // Advance Era
+                    currentEraIdx++;
+                    if (currentEraIdx >= ERA_DB.length) {
+                        currentEraIdx = 0; // Loop or End Game? Loop for now
+                        score += 5000;
+                        showFeedback("CICLE COMPLET!", "#FFD700");
+                    }
+                    currentTrickIdx = 0; // Reset
+
+                    updateEraUI();
+
+                    // Update Music
+                    playMusicForEra();
+
+                    // Reset Skater
+                    skaterEl.style.transition = 'none';
+                    skaterEl.style.transform = 'translateX(-50%) translateY(100px) scale(1)';
+
+                    setTimeout(() => {
+                        gameContainer.classList.remove('warping');
+                        skaterEl.style.transition = 'transform 0.5s';
+                        skaterEl.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+                    }, 100);
+
+                }, 2000);
+            }
+        }
+
+        function fail() {
+            isProcessing = true;
+            score = Math.max(0, score - 100);
+            updateHUD();
+            document.getElementById(`key-${inputIndex}`).classList.add('key-fail');
+
+            showFeedback("ERRADA TEMPORAL!", "#FF0000");
+
+            // Faceplant animation
+            skaterEl.style.transition = 'transform 0.2s';
+            skaterEl.style.transform = 'translateX(-50%) translateY(50px) rotate(90deg)';
+
+            setTimeout(() => {
+                // Reset current combo
+                inputIndex = 0;
+                isProcessing = false;
+
+                // Visual reset of keys
+                document.querySelectorAll('.key-prompt').forEach(k => {
+                    k.classList.remove('key-active', 'key-fail');
+                });
+
+                skaterEl.style.transform = 'translateY(0) rotate(0deg)';
+            }, 1000);
+        }
+
+        function showFeedback(text, color) {
+            feedbackEl.textContent = text;
+            feedbackEl.style.color = color;
+            feedbackEl.style.opacity = 1;
+            feedbackEl.style.transform = 'translate(-50%, -50%) scale(1.5)';
+
+            setTimeout(() => {
+                feedbackEl.style.opacity = 0;
+                feedbackEl.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 800);
+        }
+
+        function updateHUD() {
+            scoreVal.textContent = score;
+        }
+
+        // Start
+        const volumeSlider = document.getElementById('volume-slider');
+        let bgAudio = new Audio();
+        bgAudio.loop = true;
+        bgAudio.volume = 0.5;
+
+        // --- INIT ---
+        function initGame() {
+            // Wait for start
+            // updateEraUI(); // Called on start
+
+            volumeSlider.addEventListener('input', (e) => {
+                bgAudio.volume = e.target.value;
+            });
+        }
+
+        window.startGame = function () {
+            document.getElementById('start-screen').style.display = 'none';
+            updateEraUI();
+
+            // Resume Audio Context if needed (browsers block autoplay)
+            // Play music
+            playMusicForEra();
+            document.addEventListener('keydown', handleInput);
+        }
+
+        function playMusicForEra() {
+            const era = ERA_DB[currentEraIdx];
+            if (era.music) {
+                // Only change if different to avoid restart
+                if (!bgAudio.src.includes(encodeURI(era.music))) {
+                    bgAudio.src = era.music;
+                    bgAudio.play().catch(e => console.log("Audio autoplay block or missing file", e));
+                } else if (bgAudio.paused) {
+                    bgAudio.play().catch(e => console.log("Audio autoplay block or missing file", e));
+                }
+            }
+        }
+
+    </script>
+</body>
+
+</html>

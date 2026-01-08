@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNEAKER LAB: Edició Històrica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-main: #111111;
+            --border: #e5e5e5;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* OVERLAYS */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #start-screen {
+            background: radial-gradient(circle at center, #fff 0%, #f0f0f0 100%);
+        }
+
+        #win-screen {
+            display: none;
+            background: rgba(255, 255, 255, 0.98);
+        }
+
+        /* CUSTOM ALERT POPUP */
+        #custom-alert {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 600;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .alert-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 80%;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .alert-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .alert-msg {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .btn-alert {
+            padding: 10px 30px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .overlay p {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            padding: 20px 60px;
+            background: #000;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 900;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+        }
+
+        /* HEADER */
+        header {
+            padding: 20px 40px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            z-index: 100;
+        }
+
+        h1.logo {
+            margin: 0;
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .status-center {
+            text-align: center;
+        }
+
+        .target-era {
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        .brief {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .score-box {
+            font-weight: 900;
+            font-size: 1.2rem;
+            background: #eee;
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+
+        /* VOLUME CONTROLS */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vol-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            width: 100px;
+            accent-color: #000;
+        }
+
+        /* MAIN CONTENT */
+        #main {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #fff 0%, #f0f0f0 100%);
+            padding: 20px;
+        }
+
+        #stage-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* COLUMNS */
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            max-width: 350px;
+        }
+
+        /* SLOT (Visual) */
+        .slot-container {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: white;
+            border: 2px dashed #ddd;
+            /* Dashed border as placeholder */
+            border-radius: 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: border-color 0.3s;
+            overflow: hidden;
+        }
+
+        .slot-container.filled {
+            border-style: solid;
+            border-color: #000;
+        }
+
+        .slot-label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            color: #ccc;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .slot-img {
+            width: 90%;
+            height: 90%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .slot-img.visible {
+            opacity: 1;
+        }
+
+        /* OPTIONS GRID (2 rows of 3) */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+
+        .opt-card {
+            aspect-ratio: 1/1;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .opt-card:hover {
+            transform: translateY(-2px);
+            border-color: #999;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .opt-card.selected {
+            background: #000;
+            border-color: #000;
+            color: white;
+        }
+
+        .opt-thumb {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .opt-name {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.1;
+            padding: 0 5px;
+        }
+
+        /* Tooltip on grid items */
+        .opt-card:hover::after {
+            content: attr(data-desc);
+            position: absolute;
+            bottom: 105%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* FINAL OVERLAY inside stage */
+        #final-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #action-btn {
+            padding: 15px 40px;
+            background: #000;
+            color: white;
+            border-radius: 50px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        #action-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="overlay">
+        <h1>SNEAKER LAB <span
+                style="font-size:0.4em; border:2px solid #000; padding:5px 10px; border-radius:10px; vertical-align:middle">PRO</span>
+        </h1>
+        <p>
+            Benvingut a l'estudi de disseny temporal.<br><br>
+            1. Analitza el <b>BRIEF</b> (Època Històrica).<br>
+            2. Selecciona els <b>MATERIALS</b> coherents.<br>
+            3. Completa <b>8 DROPS</b> per ser el nou Director Creatiu.
+        </p>
+        <button class="btn-start" onclick="startGameApp()">START SEASON 1</button>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-screen" class="overlay">
+        <h1 style="color:#2ecc71">COLLECTION SOLD OUT!</h1>
+        <p>
+            Has completat els 8 Drops amb èxit.<br>
+            La teva visió històrica ha revolucionat el mercat.
+        </p>
+        <button class="btn-start" onclick="location.reload()">PLAY SEASON 2</button>
+    </div>
+
+    <!-- CUSTOM ALERT -->
+    <div id="custom-alert" onclick="closeAlert()">
+        <div class="alert-box" onclick="event.stopPropagation()">
+            <span class="alert-icon">🧱</span>
+            <div class="alert-msg" id="alert-text">Mensaje de error</div>
+            <button class="btn-alert" onclick="closeAlert()">ENTESOS</button>
+        </div>
+    </div>
+
+    <header>
+        <h1 class="logo">Sneaker Lab</h1>
+        <div class="status-center">
+            <div class="target-era" id="target-era">LOADING...</div>
+            <div class="brief" id="brief">...</div>
+        </div>
+
+        <div class="header-controls">
+            <!-- VOLUME SLIDER -->
+            <div class="volume-control">
+                <span class="vol-label">VOL</span>
+                <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"
+                    oninput="updateVolume(this.value)">
+            </div>
+
+            <div class="score-box" id="score-display">
+                DROPS: 0/8
+            </div>
+        </div>
+    </header>
+
+    <div id="main">
+        <div id="stage-container">
+
+            <!-- COLUMN 1: COS -->
+            <div class="column">
+                <div class="slot-container" id="slot-box-body">
+                    <div class="slot-label">01. COS / UPPER</div>
+                    <div class="slot-img" id="img-body"></div>
+                </div>
+                <!-- Grid inserted by JS -->
+                <div class="options-grid" id="grid-body"></div>
+            </div>
+
+            <!-- COLUMN 2: SOLA -->
+            <div class="column">
+                <div class="slot-container" id="slot-box-sole">
+                    <div class="slot-label">02. SOLA / BASE</div>
+                    <div class="slot-img" id="img-sole"></div>
+                </div>
+                <!-- Grid inserted by JS -->
+                <div class="options-grid" id="grid-sole"></div>
+            </div>
+
+            <!-- COLUMN 3: DETALL -->
+            <div class="column">
+                <div class="slot-container" id="slot-box-detail">
+                    <div class="slot-label">03. DETALL / ICON</div>
+                    <div class="slot-img" id="img-detail"></div>
+                </div>
+                <!-- Grid inserted by JS -->
+                <div class="options-grid" id="grid-detail"></div>
+            </div>
+
+            <!-- FINAL SUCCESS LAYER -->
+            <div id="final-overlay">
+                <h2 style="font-size:2rem; margin:0;" id="final-title">SOLD OUT! 🔥</h2>
+                <img id="final-img" style="height:50vh; width:80%; object-fit:contain; margin:20px 0;">
+                <button id="action-btn" onclick="nextDrop()">SEGÜENT DROP ➔</button>
+            </div>
+        </div>
+
+        <div style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%);">
+            <button id="main-drop-btn" onclick="checkDrop()"
+                style="padding:15px 50px; background:#000; color:#fff; border:none; border-radius:50px; font-weight:900; font-size:1.2rem; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,0.15);">LLANÇAR
+                DROP 🚀</button>
+        </div>
+
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop src="audio/lofi_beats.m4a"></audio>
+
+    <script>
+        const DB = {
+            "EDAT MITJANA": { sole: "Sola Plana", body: "Tela de Sac", detail: "Creu Fusta", brief: "Simplesa i Pobresa.", fileKey: "mitjana", desc: "Rústic i resistent." },
+            "RENAIXEMENT": { sole: "Sola Equilibrada", body: "Teixit Harmònic", detail: "Fil de Plata", brief: "Humanisme i Proporció.", fileKey: "renaixement", desc: "Equilibri clàssic." },
+            "BARROC": { sole: "Sola Mecànica", body: "Vellut Vermell", detail: "Or Recarregat", brief: "Luxe i Contrast.", fileKey: "barroc", desc: "Excessiu i daurat." },
+            "CLASSICISME": { sole: "Sola Simètrica", body: "Cuir Blanc", detail: "Logo Minimal", brief: "Ordre i Claredat.", fileKey: "classic", desc: "Neteja formal." },
+            "ROMANTICISME": { sole: "Sola Gel", body: "Seda Negra", detail: "Diamant", brief: "Passió i Virtuosisme.", fileKey: "romanticisme", desc: "Fosc i emocional." },
+            "SEGLE XX": { sole: "Sola Industrial", body: "Plàstic", detail: "Neó Trencat", brief: "Ruptura i Tecnologia.", fileKey: "segleXX", desc: "Trencador modern." }
+        };
+        const ERAS = Object.keys(DB);
+        let targetEra = "";
+        let selected = { sole: null, body: null, detail: null };
+        let score = 0;
+        const WIN_CONDITION = 8;
+
+        // --- CUSTOM ALERT LOGIC ---
+        function showAlert(msg) {
+            document.getElementById('alert-text').textContent = msg;
+            document.getElementById('custom-alert').style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('custom-alert').style.display = 'none';
+        }
+
+        // --- AUDIO LOGIC ---
+        function updateVolume(val) {
+            const audio = document.getElementById('bg-music');
+            audio.volume = val;
+        }
+
+        function startGameApp() {
+            document.getElementById('start-screen').style.display = 'none';
+            const audio = document.getElementById('bg-music');
+            audio.play().catch(e => console.log("Audio waiting for interaction"));
+            startGame();
+        }
+
+        function startGame() {
+            targetEra = ERAS[Math.floor(Math.random() * ERAS.length)];
+            document.getElementById('target-era').textContent = targetEra;
+            document.getElementById('brief').textContent = DB[targetEra].brief;
+
+            buildGrid('body', 'grid-body');
+            buildGrid('sole', 'grid-sole');
+            buildGrid('detail', 'grid-detail');
+            resetShoe();
+        }
+
+        function resetShoe() {
+            selected = { sole: null, body: null, detail: null };
+            document.querySelectorAll('.opt-card').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.slot-img').forEach(el => {
+                el.style.backgroundImage = 'none';
+                el.classList.remove('visible');
+            });
+            document.querySelectorAll('.slot-container').forEach(el => el.classList.remove('filled'));
+            document.getElementById('final-overlay').style.display = 'none';
+            document.getElementById('main-drop-btn').style.display = 'block';
+        }
+
+        function buildGrid(type, id) {
+            const container = document.getElementById(id);
+            container.innerHTML = '';
+            let options = [];
+            ERAS.forEach(e => options.push({
+                name: DB[e][type],
+                era: e,
+                desc: DB[e].desc,
+                fileKey: DB[e].fileKey
+            }));
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'opt-card';
+                card.setAttribute('data-desc', opt.desc);
+
+                let imgFile = "";
+                if (type === 'sole') {
+                    if (opt.fileKey === 'classic') imgFile = 'solaclassc.jpg';
+                    else imgFile = `sola${opt.fileKey}.jpg`;
+                } else if (type === 'body') imgFile = `cuerpo${opt.fileKey}.jpg`;
+                else if (type === 'detail') imgFile = `detall${opt.fileKey}.jpg`;
+
+                card.innerHTML = `
+                    <img src="img/${imgFile}" class="opt-thumb">
+                    <div class="opt-name">${opt.name}</div>
+                `;
+                card.onclick = () => selectOption(type, opt, card);
+                container.appendChild(card);
+            });
+        }
+
+        function selectOption(type, opt, el) {
+            selected[type] = opt;
+            el.parentElement.querySelectorAll('.opt-card').forEach(d => d.classList.remove('selected'));
+            el.classList.add('selected');
+
+            let imgFile = "";
+            if (type === 'sole') {
+                if (opt.fileKey === 'classic') imgFile = 'solaclassc.jpg';
+                else imgFile = `sola${opt.fileKey}.jpg`;
+            } else if (type === 'body') imgFile = `cuerpo${opt.fileKey}.jpg`;
+            else if (type === 'detail') imgFile = `detall${opt.fileKey}.jpg`;
+
+            const slotImg = document.getElementById(`img-${type}`);
+            slotImg.style.backgroundImage = `url('img/${imgFile}')`;
+            slotImg.classList.add('visible');
+            document.getElementById(`slot-box-${type}`).classList.add('filled');
+        }
+
+        function checkDrop() {
+            if (!selected.sole || !selected.body || !selected.detail) {
+                showAlert("Falta seleccionar algunas partes. Completa el diseño.");
+                return;
+            }
+
+            if (selected.sole.era === targetEra && selected.body.era === targetEra && selected.detail.era === targetEra) {
+                const fileKey = DB[targetEra].fileKey;
+                const overlay = document.getElementById('final-overlay');
+                const imgEl = document.getElementById('final-img');
+                imgEl.src = `img/zapatilla${fileKey}.jpg`;
+                score++;
+                document.getElementById('score-display').textContent = `DROPS: ${score}/${WIN_CONDITION}`;
+                overlay.style.display = 'flex';
+                document.getElementById('main-drop-btn').style.display = 'none';
+            } else {
+                showAlert("BRICK! 🧱 El diseño no es coherente con la época histórica. ¡Revisa el Brief!");
+            }
+        }
+
+        function nextDrop() {
+            if (score >= WIN_CONDITION) {
+                document.getElementById('win-screen').style.display = 'flex';
+            } else {
+                startGame();
+            }
+        }
+    </script>
+</body>
+
+</html>

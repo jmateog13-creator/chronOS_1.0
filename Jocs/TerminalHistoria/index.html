@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Històrica: Panell de Sortides</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: #FFB000;
+            /* Amber LED color */
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            border: 10px solid #333;
+            background: #000;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        /* HEADER */
+        header {
+            background: #222;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #444;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px #FFB000;
+        }
+
+        #clock {
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        /* BOARD */
+        #board {
+            flex-grow: 1;
+            padding: 10px;
+            background: #000;
+            background-image:
+                linear-gradient(rgba(20, 20, 20, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 20, 20, 0.5) 1px, transparent 1px);
+            background-size: 4px 4px;
+            /* Dot matrix effect breakdown */
+            overflow-y: hidden;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 0.8fr 2fr 2fr 1fr 0.8fr 1.5fr;
+            gap: 10px;
+            padding: 12px 10px;
+            border-bottom: 1px dotted #333;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-transform: uppercase;
+        }
+
+        .row:hover {
+            background: #222;
+        }
+
+        .header-row {
+            color: #888;
+            font-size: 1rem;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #555;
+            cursor: default;
+        }
+
+        .header-row:hover {
+            background: transparent;
+        }
+
+        .blink-green {
+            animation: blinkGreen 0.5s infinite alternate;
+            color: #0f0 !important;
+            background: rgba(0, 50, 0, 0.5);
+        }
+
+        .blink-red {
+            animation: blinkRed 0.5s infinite alternate;
+            color: #f00 !important;
+            background: rgba(50, 0, 0, 0.5);
+        }
+
+        @keyframes blinkGreen {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes blinkRed {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0.5;
+            }
+        }
+
+        /* PASSENGER PANEL */
+        #passenger-area {
+            height: 250px;
+            background: #1a1a1a;
+            border-top: 5px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            /* Left align */
+            flex-direction: row;
+            /* Horizontal */
+            padding: 20px 40px;
+            gap: 30px;
+            text-align: left;
+        }
+
+        .passenger-info-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        #passenger-msg {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        #passenger-name {
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 10px #fff;
+            margin: 0;
+            background: #333;
+            padding: 5px 20px;
+            border-radius: 5px;
+            border: 2px solid #555;
+            width: auto;
+            text-align: left;
+            display: inline-block;
+        }
+
+        #passenger-img {
+            width: 200px;
+            /* Bigger */
+            height: 200px;
+            border-radius: 10px;
+            /* Less round to show more art */
+            border: 3px solid #FFB000;
+            object-fit: cover;
+            background: #000;
+            box-shadow: 0 0 20px rgba(255, 176, 0, 0.4);
+            flex-shrink: 0;
+        }
+
+        #passenger-quote {
+            background: #fff;
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.4rem;
+            margin-top: 15px;
+            width: 100%;
+            position: relative;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        #passenger-quote::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 30px;
+            /* Quote arrow on left */
+            border-width: 0 10px 10px;
+            border-style: solid;
+            border-color: #fff transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* OVERLAYS */
+        #start-screen,
+        #game-over-screen,
+        #victory-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        button {
+            background: transparent;
+            color: #FFB000;
+            border: 2px solid #FFB000;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 30px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px #FFB000;
+        }
+
+        button:hover {
+            background: #FFB000;
+            color: #000;
+        }
+
+        /* HUD */
+        #status-bar {
+            position: absolute;
+            bottom: 200px;
+            right: 20px;
+            text-align: right;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border: 1px solid #444;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 800px) {
+            .row {
+                font-size: 1rem;
+                grid-template-columns: 0.8fr 2fr 0.8fr 1.5fr;
+                /* Hide Era/Gate on small? No Era is key */
+                /* Mobile Layout: Time | Dest | Era | Gate */
+                /* Hide Flight and Remarks on mobile if needed */
+            }
+
+            .col-flight,
+            .col-remarks {
+                display: none;
+            }
+
+            #game-container {
+                height: 100%;
+                margin: 0;
+                width: 100%;
+                border: none;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            #passenger-name {
+                font-size: 2rem;
+            }
+
+            .row {
+                grid-template-columns: 0.8fr 1.5fr 1.5fr 0.5fr;
+            }
+
+            header {
+                padding: 5px 10px;
+            }
+        }
+
+        /* Volume Slider */
+        .vol-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #FFB000;
+        }
+
+        input[type=range] {
+            width: 80px;
+            accent-color: #FFB000;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <header>
+            <h1>SORTIDES / DEPARTURES</h1>
+            <div class="vol-control">
+                <span>🎵</span>
+                <input type="range" min="0" max="1" step="0.1" value="0.5"
+                    oninput="document.getElementById('bg-music').volume=this.value">
+            </div>
+            <div id="clock">12:00</div>
+        </header>
+
+        <audio id="bg-music" src="audio/Concourse Drift.m4a" loop></audio>
+
+        <div id="board">
+            <div class="row header-row">
+                <div>TIME</div>
+                <div>DESTINATION</div>
+                <div>ERA</div>
+                <div class="col-flight">FLIGHT</div>
+                <div>GATE</div>
+                <div class="col-remarks">REMARKS</div>
+            </div>
+            <div id="flight-rows">
+                <!-- Rows injected here -->
+            </div>
+        </div>
+
+        <div id="status-bar">
+            <div class="hud-item" style="color: #0f0">PROCESSATS: <span id="score-val">0</span>/10</div>
+            <div class="hud-item" style="color: #f00">VIDES: <span id="lives-val">3</span></div>
+        </div>
+
+        <div id="passenger-area">
+            <img id="passenger-img" src="" style="display:none;" onerror="this.style.display='none'">
+            <div class="passenger-info-col">
+                <div id="passenger-msg">NOU PASSATGER A TAQUILLA:</div>
+                <h2 id="passenger-name">---</h2>
+                <div id="passenger-quote" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- SCREENS -->
+        <div id="start-screen">
+            <h1>TERMINAL HISTÒRICA</h1>
+            <p style="color: #aaa; text-align: center; max-width: 600px; font-size: 1.2rem;">
+                Benvingut al taulell de sortides.<br><br>
+                Els compositors han perdut els seus bitllets.<br>
+                Emparella cada compositor amb el vol de la seva <b>ÈPOCA</b>.<br>
+                Fes clic a la línia correcta del panell.
+            </p>
+            <button onclick="startGame()">OBRIR TAULELL</button>
+        </div>
+
+        <div id="game-over-screen" style="display: none;">
+            <h1 style="color: #f00">HAS SIGUT ACOMIADAT</h1>
+            <p>Massa errors de destinació.</p>
+            <button onclick="startGame()">NOU TORN</button>
+        </div>
+
+        <div id="victory-screen" style="display: none;">
+            <h1 style="color: #0f0">TORN FINALITZAT</h1>
+            <p>Tots els passatgers han embarcat correctament.</p>
+            <button onclick="startGame()">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            "EDAT_MITJANA": {
+                name: "EDAT MITJANA",
+                cities: ["ROMA", "PARIS", "AVIGNON", "MONTSERRAT"],
+                composers: [
+                    { name: "Hildegard von Bingen", img: "hildegard.png", quote: "Tinc visions divines per escriure." },
+                    { name: "Pérotin", img: "perotin.png", quote: "A Notre-Dame fem 4 veus." },
+                    { name: "Guido d'Arezzo", img: "guido.png", quote: "La meva mà ensenya les notes." },
+                    { name: "Alfons X", img: "alfonsX.png", quote: "Porto les Cantigas a la Verge." }
+                ]
+            },
+            "RENAIXEMENT": {
+                name: "RENAIXEMENT",
+                cities: ["FLORENCE", "ROMA", "VENICE", "ANTWERP"],
+                composers: [
+                    { name: "Palestrina", img: "plestrina.png", quote: "La meva Missa salvarà la música." },
+                    { name: "Josquin des Prez", img: "jsoquin.png", quote: "Soc el mestre de capella." },
+                    { name: "Monteverdi", img: "monteverdi.png", quote: "L'Orfeo inicia l'òpera!" }
+                ]
+            },
+            "BARROC": {
+                name: "BARROC",
+                cities: ["LEIPZIG", "VENICE", "LONDON", "HALLE"],
+                composers: [
+                    { name: "J.S. Bach", img: "bach.png", quote: "La Passió sonarà a l'església." },
+                    { name: "Vivaldi", img: "vivaldi.png", quote: "La Primavera ja arriba." },
+                    { name: "Händel", img: "handel.png", quote: "Cantarem l'Al·leluia!" }
+                ]
+            },
+            "CLASSICISME": {
+                name: "CLASSICISME",
+                cities: ["VIENNA", "SALZBURG", "MANNHEIM", "LONDON"],
+                composers: [
+                    { name: "Mozart", img: "mozart.png", quote: "La Flauta Màgica és llesta." },
+                    { name: "Haydn", img: "haydn.png", quote: "Despertaré tothom amb la Sorpresa." }
+                ]
+            },
+            "ROMANTICISME": {
+                name: "ROMANTICISME",
+                cities: ["PARIS", "BAYREUTH", "WARSAW", "LEIPZIG"],
+                composers: [
+                    { name: "Beethoven", img: "beethoven.png", quote: "Ta-ta-ta-taaaa! 5a Simfonia!" },
+                    { name: "Chopin", img: "chopin.png", quote: "El piano és la meva ànima." },
+                    { name: "Wagner", img: "wagner.png", quote: "Les Valquíries volen!" },
+                    { name: "Tchaikovsky", img: "tchaikosky.png", quote: "Els cignes ballen al llac." }
+                ]
+            },
+            "SEGLE_XX": {
+                name: "SEGLE XX",
+                cities: ["NEW YORK", "BERLIN", "PARIS", "MOSCOW"],
+                composers: [
+                    { name: "Stravinsky", img: "stravinsky.png", quote: "La Consagració és un caos!" },
+                    { name: "John Cage", img: "cage.png", quote: "Vull silenci... 4'33\"." },
+                    { name: "Gershwin", img: "gershwin.png", quote: "Rhapsody in Blue per sempre." }
+                ]
+            }
+        };
+
+        const ERAS_KEYS = Object.keys(DB);
+        const FLIGHT_PREFIXES = ["LH", "BA", "AF", "IB", "AZ", "DL", "UA", "KL"];
+        const REMARKS = ["ON TIME", "ON TIME", "ON TIME", "BOARDING", "DELAYED", "LAST CALL"];
+
+        // --- STATE ---
+        let score = 0;
+        let lives = 3;
+        let currentComposer = null;
+        let currentEraKey = null;
+        let isProcessing = false;
+
+        // --- DOM ---
+        const rowsContainer = document.getElementById('flight-rows');
+        const clockEl = document.getElementById('clock');
+        const psgNameEl = document.getElementById('passenger-name');
+        const scoreVal = document.getElementById('score-val');
+        const livesVal = document.getElementById('lives-val');
+
+        // --- CLOCK ---
+        setInterval(() => {
+            const now = new Date();
+            clockEl.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        }, 1000);
+
+        // --- GAME LOGIC ---
+
+        function startGame() {
+            score = 0;
+            lives = 3;
+            updateHUD();
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('victory-screen').style.display = 'none';
+
+            // Start Music if not already playing
+            const audio = document.getElementById('bg-music');
+            if (audio.paused) {
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log("Click allowed audio"));
+            }
+
+            nextRound();
+        }
+
+        function updateHUD() {
+            scoreVal.textContent = score;
+            livesVal.textContent = lives;
+        }
+
+        function nextRound() {
+            if (score >= 10) {
+                document.getElementById('victory-screen').style.display = 'flex';
+                playSuccessSound(true);
+                return;
+            }
+            if (lives <= 0) {
+                document.getElementById('game-over-screen').style.display = 'flex';
+                playErrorSound();
+                return;
+            }
+
+            isProcessing = false;
+
+            // 1. Pick Era and Composer
+            currentEraKey = ERAS_KEYS[Math.floor(Math.random() * ERAS_KEYS.length)];
+            const eraData = DB[currentEraKey];
+            currentComposer = eraData.composers[Math.floor(Math.random() * eraData.composers.length)];
+
+            psgNameEl.textContent = currentComposer.name;
+            psgNameEl.style.color = "#fff";
+
+            // Show Image and Quote
+            const imgEl = document.getElementById('passenger-img');
+            const quoteEl = document.getElementById('passenger-quote');
+
+            if (currentComposer.img) {
+                imgEl.src = "img/" + currentComposer.img;
+                imgEl.style.display = "block";
+            } else {
+                imgEl.style.display = "none";
+            }
+
+            if (currentComposer.quote) {
+                quoteEl.innerText = `"${currentComposer.quote}"`;
+                quoteEl.style.display = "block";
+            } else {
+                quoteEl.style.display = "none";
+            }
+
+            // 2. Generate Board
+            generateBoard(currentEraKey);
+        }
+
+        function generateBoard(targetEraKey) {
+            rowsContainer.innerHTML = '';
+
+            // We want 8 rows usually
+            const rowCount = 8;
+
+            // Ensure one row is the correct Era
+            let correctRowIndex = Math.floor(Math.random() * rowCount);
+
+            for (let i = 0; i < rowCount; i++) {
+                let eraKey;
+                if (i === correctRowIndex) {
+                    eraKey = targetEraKey;
+                } else {
+                    // Random other era, preferably not the target (though duplicates are allowed logically, gameplay wise better if unique winner? 
+                    // Prompt says "buscar la línia". Let's allow duplicates but make sure AT LEAST one is correct.
+                    // If there are multiple correct lines, any should be valid.
+                    eraKey = ERAS_KEYS[Math.floor(Math.random() * ERAS_KEYS.length)];
+                }
+
+                const rowEl = createRow(eraKey);
+                // Attach click event
+                rowEl.onclick = () => handleRowClick(rowEl, eraKey);
+                rowsContainer.appendChild(rowEl);
+            }
+        }
+
+        function createRow(eraKey) {
+            // Generate Random Flight Data
+            const eraData = DB[eraKey];
+            const city = eraData.cities[Math.floor(Math.random() * eraData.cities.length)];
+
+            // Random Time (near current time?)
+            const h = Math.floor(Math.random() * 24).toString().padStart(2, 0);
+            const m = Math.floor(Math.random() * 60).toString().padStart(2, 0);
+            const time = `${h}:${m}`;
+
+            const flight = FLIGHT_PREFIXES[Math.floor(Math.random() * FLIGHT_PREFIXES.length)] + " " + Math.floor(Math.random() * 900 + 100);
+            const gate = "G" + Math.floor(Math.random() * 50 + 1).toString().padStart(2, 0);
+            const remark = REMARKS[Math.floor(Math.random() * REMARKS.length)];
+
+            const div = document.createElement('div');
+            div.className = 'row';
+
+            div.innerHTML = `
+                <div>${time}</div>
+                <div>${city}</div>
+                <div style="color: #FFD700">${eraData.name}</div>
+                <div class="col-flight">${flight}</div>
+                <div>${gate}</div>
+                <div class="col-remarks" style="${remark === 'DELAYED' ? 'color:red' : (remark === 'BOARDING' ? 'color:#0f0' : '')}">${remark}</div>
+            `;
+
+            return div;
+        }
+
+        function handleRowClick(rowEl, rowEraKey) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            if (rowEraKey === currentEraKey) {
+                // Correct
+                rowEl.classList.add('blink-green');
+                playSuccessSound();
+                score++;
+                updateHUD();
+                psgNameEl.style.color = "#0f0";
+                psgNameEl.textContent = "EMBARCAT!";
+
+                setTimeout(() => {
+                    nextRound();
+                }, 1000);
+            } else {
+                // Incorrect
+                rowEl.classList.add('blink-red');
+                playErrorSound();
+                lives--;
+                updateHUD();
+                psgNameEl.style.color = "#f00";
+                psgNameEl.textContent = "DESTÍ INCORRECTE!";
+
+                setTimeout(() => {
+                    if (lives > 0) {
+                        isProcessing = false;
+                        rowEl.classList.remove('blink-red');
+                        psgNameEl.textContent = currentComposer.name; // Reset name
+                        psgNameEl.style.color = "#fff";
+                    } else {
+                        nextRound(); // Trigger Game Over
+                    }
+                }, 1000);
+            }
+        }
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSuccessSound(isWin = false) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.type = 'sine';
+            if (isWin) {
+                // Fanfare
+                osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.2);
+                osc.frequency.setValueAtTime(783, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.0);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.0);
+            } else {
+                // Ding
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        function playErrorSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+    </script>
+</body>
+
+</html>

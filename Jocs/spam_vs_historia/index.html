@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam vs. Història - Inbox</title>
+    <style>
+        :root {
+            --bg-color: #f6f8fc;
+            --header-bg: #ffffff;
+            --text-color: #202124;
+            --selected-bg: #c2dbff;
+            --hover-bg: #f1f3f4;
+            --unread-fw: 700;
+            --read-fw: 400;
+            --spam-color: #d93025;
+            --star-color: #f4b400;
+            --checkbox-color: #5f6368;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto', 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header / Toolbar */
+        .toolbar {
+            background: var(--header-bg);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ea4335;
+            /* Google Red-ish */
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #5f6368;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--hover-bg);
+            color: #202124;
+        }
+
+        .spam-btn {
+            color: var(--spam-color);
+            border-color: transparent;
+        }
+
+        .spam-btn:hover {
+            background: #fce8e6;
+        }
+
+        .search-bar {
+            flex: 1;
+            background: #f1f3f4;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #5f6368;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 10px 25px;
+            cursor: pointer;
+            border-radius: 0 20px 20px 0;
+            font-weight: 500;
+            color: #202124;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-item.active {
+            background: #e8f0fe;
+            color: #1967d2;
+            font-weight: bold;
+        }
+
+        .nav-item:hover:not(.active) {
+            background: var(--hover-bg);
+        }
+
+        .badge {
+            margin-left: auto;
+            font-size: 12px;
+        }
+
+        /* Inbox List */
+        .inbox-list {
+            flex: 1;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            margin-right: 20px;
+            box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .email-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f3f4;
+            cursor: pointer;
+            transition: box-shadow 0.1s;
+        }
+
+        .email-row:hover {
+            box-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+            z-index: 1;
+        }
+
+        .email-row.selected {
+            background: var(--selected-bg);
+        }
+
+        .email-row.unread {
+            font-weight: var(--unread-fw);
+            background: #fff;
+        }
+
+        .email-row.unread.selected {
+            background: var(--selected-bg);
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #5f6368;
+            border-radius: 2px;
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .checkbox.checked {
+            background: #5f6368;
+        }
+
+        .checkbox.checked::after {
+            content: '✔';
+            color: white;
+            font-size: 14px;
+        }
+
+        .star {
+            color: #dadce0;
+            font-size: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .star.active {
+            color: var(--star-color);
+        }
+
+        .sender {
+            width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .content {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #5f6368;
+        }
+
+        .email-row.unread .content {
+            color: #202124;
+        }
+
+        .subject {
+            color: #202124;
+        }
+
+        .date {
+            width: 100px;
+            text-align: right;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        /* Feedback Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #323232;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 6px 10px 0 rgba(0, 0, 0, .14), 0 1px 18px 0 rgba(0, 0, 0, .12);
+            transform: translateY(100px);
+            transition: transform 0.3s;
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #d93025;
+        }
+
+        .toast.success {
+            background: #188038;
+        }
+
+        /* Score Panel */
+        .score-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .score-val {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1967d2;
+        }
+
+        .lives {
+            font-size: 20px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: #202124;
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background: #1557b0;
+        }
+
+        /* Volume Slider */
+        #volume-container {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #volume-icon {
+            font-size: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        #volume-slider {
+            width: 80px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-modal" class="modal-overlay">
+        <div class="modal">
+            <h1>📧 Spam vs. Història</h1>
+            <p>
+                Benvingut al filtre anti-bulos de la història.<br><br>
+                Tens la safata plena de correus barrejats.<br>
+                <strong>Correus Reals:</strong> Fets històrics certs. (No facis res o posa estrella).<br>
+                <strong>SPAM:</strong> Anacronismes o mentides. (Selecciona i marca com a SPAM).<br><br>
+                ⚠️ Compte! Si esborres un correu real, perds una vida.
+            </p>
+            <button class="btn-primary" onclick="game.start()">Entesos, filtrar!</button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="logo">📧 H-Mail</div>
+        <div class="search-bar">🔍 Cerca al correu</div>
+        <button class="action-btn spam-btn" onclick="game.reportSpam()">
+            🛑 MARCAR COM A SPAM
+        </button>
+        <button class="action-btn" onclick="game.deleteSelected()">
+            🗑️ ELIMINAR
+        </button>
+    </div>
+
+    <div id="volume-container">
+        <span id="volume-icon" onclick="game.toggleMute()">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+            oninput="game.setVolume(this.value)">
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="nav-item active">
+                📥 Safata d'entrada <span class="badge" id="inbox-count">20</span>
+            </div>
+            <div class="nav-item">⭐ Destacats</div>
+            <div class="nav-item">📤 Enviats</div>
+            <div class="nav-item">🛑 Spam <span class="badge" id="spam-count">0</span></div>
+            <div class="nav-item">🗑️ Paperera</div>
+        </div>
+
+        <div class="inbox-list" id="inbox-list">
+            <!-- Emails injected here -->
+        </div>
+    </div>
+
+    <div class="score-panel">
+        <div>Puntuació: <span id="score" class="score-val">0</span></div>
+        <div>Vides: <span id="lives" class="lives">❤️❤️❤️</span></div>
+        <div>Spam Detectat: <span id="spam-progress">0/6</span></div>
+    </div>
+
+    <div id="toast" class="toast">Missatge</div>
+
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="modal-title">Joc Acabat</h2>
+            <p id="modal-msg"></p>
+            <button class="btn-primary" onclick="location.reload()">Tornar a Jugar</button>
+        </div>
+    </div>
+
+    <script>
+        const INBOX_DB = [
+            // Edat Mitjana
+            { id: 1, sender: "Guido d'Arezzo", subject: "Notes Musicals", body: "He posat nom a les notes! Ut, Re, Mi...", date: "1025", type: "real" },
+            { id: 2, sender: "Abadessa Hildegard", subject: "Cant Gregorià", body: "Els monjos han de cantar a l'uníson (Gregorià).", date: "1150", type: "real" },
+            { id: 3, sender: "Viatges Temps", subject: "FESTIVAL ROCK", body: "Vine a la Catedral aquest dissabte! Guitarres elèctriques!", date: "1200", type: "spam" },
+
+            // Renaixement
+            { id: 4, sender: "G.P. da Palestrina", subject: "Missa Papa Marcel", body: "Hem salvat la polifonia gràcies a la Missa del Papa Marcel.", date: "1562", type: "real" },
+            { id: 5, sender: "Ottaviano Petrucci", subject: "Partitures Barates", body: "Partitures més barates gràcies al meu nou mètode.", date: "1501", type: "real" },
+            { id: 6, sender: "Spotify Premium", subject: "PLAYLIST VIRAL", body: "Escolta la playlist 'Top Madrigals' al teu mòbil ara mateix.", date: "1550", type: "spam" },
+
+            // Barroc
+            { id: 7, sender: "Jean-Baptiste Lully", subject: "Rei Ferit", body: "El Rei s'ha fet mal ballant el Ballet de la Nuit.", date: "1653", type: "real" },
+            { id: 8, sender: "Antonio Vivaldi", subject: "Busco Talents", body: "Busco nenes òrfenes amb talent per a l'orquestra.", date: "1703", type: "real" },
+            { id: 9, sender: "Botiga de Pianos", subject: "PIANO NOU", body: "Veneu el vostre vell Clavecí i compreu un Piano de Cua modern!", date: "1720", type: "spam" },
+
+            // Classicisme
+            { id: 10, sender: "Joseph Haydn", subject: "Viatge Londres", body: "Me'n vaig a Londres, aquí a Viena m'avorreixo una mica.", date: "1791", type: "real" },
+            { id: 11, sender: "W.A. Mozart", subject: "Rèquiem", body: "M'han pagat per avançat, he d'acabar-lo ja.", date: "1791", type: "real" },
+            { id: 12, sender: "Ludwig van Beethoven", subject: "PASTILLES MIRACLE", body: "He recuperat l'oïda gràcies a aquestes pastilles miracle!", date: "1820", type: "spam" },
+
+            // Romanticisme
+            { id: 13, sender: "Richard Wagner", subject: "Diners Teatre", body: "Necessito més diners per construir el meu teatre ideal.", date: "1872", type: "real" },
+            { id: 14, sender: "Franz Schubert", subject: "Festa Schubert", body: "Reunió íntima a casa meva. Porteu vi.", date: "1825", type: "real" },
+            { id: 15, sender: "Auto-Tune Pro", subject: "AUTO-TUNE GRATIS", body: "Canta òpera perfecta sense esforç amb el nostre software.", date: "1850", type: "spam" },
+
+            // Segle XX
+            { id: 16, sender: "Igor Stravinsky", subject: "Baralla Estrena", body: "La gent s'està barallant a l'estrena de la Consagració!", date: "1913", type: "real" },
+            { id: 17, sender: "John Cage", subject: "Obra Silenci", body: "La meva nova obra són 4 minuts i 33 segons de silenci.", date: "1952", type: "real" },
+            { id: 18, sender: "W.A. Mozart", subject: "DUET BAD BUNNY", body: "M'he reencarnat i vull fer un duet amb Bad Bunny.", date: "2024", type: "spam" }
+        ];
+
+        class Game {
+            constructor() {
+                this.emails = [...INBOX_DB].sort(() => Math.random() - 0.5);
+                this.selectedIds = new Set();
+                this.score = 0;
+                this.lives = 3;
+                this.spamCount = 0;
+                this.totalSpam = this.emails.filter(e => e.type === "spam").length;
+
+                this.renderInbox();
+                this.updateUI();
+
+                // Audio
+                this.bgMusic = new Audio('audio/Quiet Cups of Sunlight.m4a');
+                this.bgMusic.loop = true;
+                this.bgMusic.volume = 0.5;
+            }
+
+            start() {
+                document.getElementById('start-modal').classList.add('hidden');
+                this.bgMusic.play().catch(e => console.log("Audio autoplay prevented:", e));
+            }
+
+            setVolume(val) {
+                this.bgMusic.volume = val;
+                document.getElementById('volume-icon').textContent = val == 0 ? '🔇' : '🔊';
+            }
+
+            toggleMute() {
+                const slider = document.getElementById('volume-slider');
+                if (this.bgMusic.volume > 0) {
+                    this.lastVol = this.bgMusic.volume;
+                    this.setVolume(0);
+                    slider.value = 0;
+                } else {
+                    const newVol = this.lastVol || 0.5;
+                    this.setVolume(newVol);
+                    slider.value = newVol;
+                }
+            }
+
+            renderInbox() {
+                const list = document.getElementById('inbox-list');
+                list.innerHTML = '';
+
+                this.emails.forEach(email => {
+                    const row = document.createElement('div');
+                    row.className = 'email-row unread';
+                    if (this.selectedIds.has(email.id)) row.classList.add('selected');
+
+                    row.onclick = (e) => {
+                        if (e.target.classList.contains('checkbox') || e.target.classList.contains('star')) return;
+                        this.toggleSelection(email.id);
+                    };
+
+                    row.innerHTML = `
+                        <div class="checkbox ${this.selectedIds.has(email.id) ? 'checked' : ''}" onclick="game.toggleSelection(${email.id}, event)"></div>
+                        <div class="star" onclick="this.classList.toggle('active')">☆</div>
+                        <div class="sender">${email.sender}</div>
+                        <div class="content"><span class="subject">${email.subject}</span> - ${email.body}</div>
+                        <div class="date">${email.date}</div>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+
+            toggleSelection(id, event) {
+                if (event) event.stopPropagation();
+                if (this.selectedIds.has(id)) {
+                    this.selectedIds.delete(id);
+                } else {
+                    this.selectedIds.add(id);
+                }
+                this.renderInbox();
+            }
+
+            reportSpam() {
+                if (this.selectedIds.size === 0) {
+                    this.showToast("Selecciona algun correu primer.", "error");
+                    return;
+                }
+
+                let correctSpam = 0;
+                let errors = 0;
+                let idsToRemove = [];
+
+                this.selectedIds.forEach(id => {
+                    const email = this.emails.find(e => e.id === id);
+                    if (email.type === "spam") {
+                        correctSpam++;
+                        idsToRemove.push(id);
+                    } else {
+                        errors++;
+                    }
+                });
+
+                if (errors > 0) {
+                    this.lives--;
+                    this.showToast(`Error! Has marcat com a Spam un correu històric real!`, "error");
+                    this.updateUI();
+                    if (this.lives <= 0) this.gameOver(false);
+                } else {
+                    this.score += (correctSpam * 100);
+                    this.spamCount += correctSpam;
+                    this.emails = this.emails.filter(e => !idsToRemove.includes(e.id));
+                    this.selectedIds.clear();
+                    this.showToast(`${correctSpam} missatges marcats com a Spam.`, "success");
+                    this.renderInbox();
+                    this.updateUI();
+                    this.checkWin();
+                }
+            }
+
+            deleteSelected() {
+                // In this game, deleting is basically the same as ignoring, but if you delete a REAL email it might be bad?
+                // The prompt says: "Correus Reals -> Acció: No fer res o marcar estrella".
+                // "Correus SPAM -> Acció: Seleccionar i prémer 'MARCAR COM A SPAM'".
+                // "-Vida si esborres un correu històric important".
+
+                if (this.selectedIds.size === 0) return;
+
+                let realDeleted = 0;
+                let spamDeleted = 0; // Deleting spam without reporting it? Maybe neutral or small penalty?
+                // Prompt says: "-Vida si esborres un correu històric important o deixes passar un Spam."
+                // So deleting a real email is bad.
+
+                let idsToRemove = [];
+                let penalty = false;
+
+                this.selectedIds.forEach(id => {
+                    const email = this.emails.find(e => e.id === id);
+                    if (email.type === "real") {
+                        realDeleted++;
+                        penalty = true;
+                    } else {
+                        spamDeleted++;
+                        // Deleting spam is okay, but less points than Reporting? Or maybe just okay.
+                        // Let's say it's okay but 0 points.
+                        idsToRemove.push(id);
+                    }
+                });
+
+                if (penalty) {
+                    this.lives--;
+                    this.showToast("No esborris la història! Era un correu real.", "error");
+                    this.updateUI();
+                    if (this.lives <= 0) this.gameOver(false);
+                } else {
+                    this.emails = this.emails.filter(e => !idsToRemove.includes(e.id));
+                    this.selectedIds.clear();
+                    this.showToast("Correus eliminats.", "success");
+                    this.renderInbox();
+                    this.checkWin();
+                }
+            }
+
+            checkWin() {
+                // Win if no spam left in inbox
+                const spamLeft = this.emails.some(e => e.type === "spam");
+                if (!spamLeft && this.emails.length > 0) {
+                    // All spam handled, only real emails left
+                    setTimeout(() => this.gameOver(true), 1000);
+                }
+            }
+
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('lives').textContent = "❤️".repeat(this.lives);
+                document.getElementById('inbox-count').textContent = this.emails.length;
+                document.getElementById('spam-count').textContent = this.spamCount;
+
+                const spamProgress = document.getElementById('spam-progress');
+                if (spamProgress) spamProgress.textContent = `${this.spamCount} / ${this.totalSpam}`;
+            }
+
+            showToast(msg, type) {
+                const toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.className = `toast show ${type}`;
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            gameOver(win) {
+                const modal = document.getElementById('game-over-modal');
+                const title = document.getElementById('modal-title');
+                const msg = document.getElementById('modal-msg');
+
+                modal.classList.remove('hidden');
+                if (win) {
+                    title.textContent = "Safata Neta!";
+                    title.style.color = "#188038";
+                    msg.textContent = `Felicitats! Has eliminat tot l'spam històric.\nPuntuació: ${this.score}`;
+                } else {
+                    title.textContent = "Game Over";
+                    title.style.color = "#d93025";
+                    msg.textContent = "Has perdut informació històrica vital o t'han hackejat.";
+                }
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>
