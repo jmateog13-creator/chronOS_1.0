@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antonio Vivaldi - El Mestre del Concert Barroc</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.7;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5016 30%, #8b4513 60%, #cd853f 100%);
+            color: #faf5f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .seasons-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(144, 238, 144, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 30%, rgba(255, 182, 193, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 30% 80%, rgba(255, 165, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(173, 216, 230, 0.1) 0%, transparent 50%);
+            animation: seasonRotate 20s ease-in-out infinite;
+        }
+
+        @keyframes seasonRotate {
+            0%, 100% { opacity: 1; }
+            25% { opacity: 0.8; }
+            50% { opacity: 0.6; }
+            75% { opacity: 0.9; }
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .leaf, .snowflake, .flower, .raindrop {
+            position: absolute;
+            animation: fall 15s infinite linear;
+        }
+
+        .leaf {
+            color: #8FBC8F;
+            font-size: 1.5rem;
+            animation-delay: 0s;
+        }
+
+        .snowflake {
+            color: #E0F6FF;
+            font-size: 1.2rem;
+            animation-delay: 4s;
+        }
+
+        .flower {
+            color: #FFB6C1;
+            font-size: 1.3rem;
+            animation-delay: 8s;
+        }
+
+        .raindrop {
+            color: #87CEEB;
+            font-size: 1rem;
+            animation-delay: 12s;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 30px;
+            margin-bottom: 50px;
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(255, 215, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(from 0deg, 
+                rgba(144, 238, 144, 0.1), 
+                rgba(255, 182, 193, 0.1), 
+                rgba(255, 165, 0, 0.1), 
+                rgba(173, 216, 230, 0.1), 
+                rgba(144, 238, 144, 0.1));
+            animation: rotate 30s linear infinite;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .portrait {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd700);
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6rem;
+            color: #2d1810;
+            box-shadow: 0 25px 70px rgba(255, 107, 53, 0.4);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .portrait::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b35, transparent, #ffd700, transparent, #ff6b35);
+            z-index: -1;
+            animation: pulse-vivaldi 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-vivaldi {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 1; }
+        }
+
+        .portrait:hover {
+            transform: scale(1.15) rotate(-5deg);
+            box-shadow: 0 30px 90px rgba(255, 107, 53, 0.6);
+        }
+
+        h1 {
+            font-size: 3.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #ff6b35, #ffd700, #ff6b35);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #ff6b35;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .years {
+            font-size: 1.2rem;
+            color: #d4d4aa;
+            font-weight: 300;
+        }
+
+        .journey {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+
+        .journey-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .journey-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .journey-section:hover::before {
+            left: 100%;
+        }
+
+        .journey-section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 107, 53, 0.6);
+        }
+
+        .journey-section:nth-child(even) .section-content {
+            order: 2;
+        }
+
+        .journey-section:nth-child(even) .section-visual {
+            order: 1;
+        }
+
+        .section-content h2 {
+            color: #ff6b35;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .section-content p {
+            margin-bottom: 15px;
+            text-align: justify;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .section-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 250px;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 107, 53, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-visual::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.3), transparent);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: visual-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes visual-glow {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+            50% { transform: translate(-50%, -50%) scale(1.8); opacity: 0.8; }
+        }
+
+        .visual-icon {
+            font-size: 5rem;
+            color: #ff6b35;
+            z-index: 2;
+            position: relative;
+            animation: icon-bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes icon-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .four-seasons {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 60px;
+            border-radius: 30px;
+            border: 3px solid rgba(255, 107, 53, 0.4);
+            margin-bottom: 60px;
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .four-seasons::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(144, 238, 144, 0.05) 0%, 
+                rgba(255, 182, 193, 0.05) 25%, 
+                rgba(255, 165, 0, 0.05) 50%, 
+                rgba(173, 216, 230, 0.05) 75%, 
+                rgba(144, 238, 144, 0.05) 100%);
+            animation: seasons-gradient 12s ease-in-out infinite;
+        }
+
+        @keyframes seasons-gradient {
+            0%, 100% { opacity: 0.3; }
+            25% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+            75% { opacity: 0.6; }
+        }
+
+        .seasons-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .four-seasons h2 {
+            text-align: center;
+            color: #ff6b35;
+            font-size: 3rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .seasons-description {
+            text-align: center;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            color: #f0f0f0;
+        }
+
+        .seasons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .season-card {
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .season-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .spring::before {
+            background: linear-gradient(135deg, rgba(144, 238, 144, 0.2), rgba(255, 182, 193, 0.1));
+            border: 2px solid rgba(144, 238, 144, 0.4);
+        }
+
+        .summer::before {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.2), rgba(255, 215, 0, 0.1));
+            border: 2px solid rgba(255, 165, 0, 0.4);
+        }
+
+        .autumn::before {
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(139, 69, 19, 0.1));
+            border: 2px solid rgba(255, 140, 0, 0.4);
+        }
+
+        .winter::before {
+            background: linear-gradient(135deg, rgba(173, 216, 230, 0.2), rgba(240, 248, 255, 0.1));
+            border: 2px solid rgba(173, 216, 230, 0.4);
+        }
+
+        .season-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .season-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .season-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b35;
+        }
+
+        .season-description {
+            font-size: 1rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .legacy {
+            text-align: center;
+            padding: 60px;
+            background: radial-gradient(ellipse at center, rgba(255, 107, 53, 0.15), transparent);
+            border-radius: 30px;
+            border: 3px solid rgba(255, 107, 53, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .legacy::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.08), transparent 60%);
+            animation: rotate 40s linear infinite;
+        }
+
+        .legacy-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .legacy h2 {
+            color: #ff6b35;
+            font-size: 3rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .legacy p {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto 25px;
+            color: #f5f5f5;
+        }
+
+        @media (max-width: 768px) {
+            .journey-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .journey-section:nth-child(even) .section-content,
+            .journey-section:nth-child(even) .section-visual {
+                order: initial;
+            }
+            
+            h1 {
+                font-size: 2.8rem;
+            }
+            
+            .seasons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="seasons-bg"></div>
+    
+    <div class="floating-elements">
+        <div class="leaf" style="left: 10%; animation-delay: 0s;">🍃</div>
+        <div class="flower" style="left: 30%; animation-delay: 2s;">🌸</div>
+        <div class="leaf" style="left: 50%; animation-delay: 4s;">🍂</div>
+        <div class="snowflake" style="left: 70%; animation-delay: 6s;">❄️</div>
+        <div class="raindrop" style="left: 90%; animation-delay: 8s;">💧</div>
+        <div class="flower" style="left: 20%; animation-delay: 10s;">🌺</div>
+        <div class="leaf" style="left: 40%; animation-delay: 12s;">🍁</div>
+        <div class="snowflake" style="left: 60%; animation-delay: 14s;">⭐</div>
+        <div class="leaf" style="left: 80%; animation-delay: 1s;">🌿</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="portrait">🎻</div>
+                <h1>Antonio Vivaldi</h1>
+                <div class="subtitle">El Mestre del Concert Barroc</div>
+                <div class="years">1678 - 1741 • Venècia</div>
+            </div>
+        </header>
+
+        <div class="journey">
+            <div class="journey-section">
+                <div class="section-content">
+                    <h2>Orígens Venecians</h2>
+                    <p>Vivaldi va néixer a Venècia l'any 1678, en una família musical. El seu pare també era violinista, la qual cosa va marcar el destí musical del jove Antonio.</p>
+                    <p>Des de ben petit va destacar pel seu talent amb el violí, instrument que l'acompanyaria tota la vida i que seria la clau del seu èxit com a compositor i intèrpret.</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">🏛️</div>
+                </div>
+            </div>
+
+            <div class="journey-section">
+                <div class="section-content">
+                    <h2>L'Ospedale della Pietà</h2>
+                    <p>Tot i ser ordenat sacerdot, Vivaldi va dedicar gairebé tota la seva carrera a la música. Durant molts anys va treballar en un orfenat de noies a Venècia, anomenat l'Ospedale della Pietà.</p>
+                    <p>Allà, les alumnes rebien educació musical de primer nivell. Vivaldi componia obres especialment per a elles, i els seus concerts es van fer famosos entre els viatgers que visitaven Venècia.</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">🏫</div>
+                </div>
+            </div>
+
+            <div class="journey-section">
+                <div class="section-content">
+                    <h2>Revolució del Concert</h2>
+                    <p>Una de les grans aportacions de Vivaldi va ser el desenvolupament del <strong>concert</strong>, una forma musical que combina un sol instrument amb una orquestra.</p>
+                    <p>A través d'aquest format, ell jugava amb el contrast entre el so del solista i el del grup, creant tensions i diàlegs musicals molt vius. Va escriure més de 500 concerts!</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">🎼</div>
+                </div>
+            </div>
+
+            <div class="journey-section">
+                <div class="section-content">
+                    <h2>Redescoberta al Segle XX</h2>
+                    <p>Després de la seva mort el 1741, la música de Vivaldi va passar força desapercebuda durant gairebé dos segles.</p>
+                    <p>No va ser fins al segle XX que es van redescobrir moltes de les seves partitures, i es va començar a valorar realment el seu talent i la seva influència en la música occidental.</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">🔍</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="four-seasons">
+            <div class="seasons-content">
+                <h2>Les Quatre Estacions</h2>
+                <div class="seasons-description">
+                    La seva obra més famosa és un conjunt de quatre concerts per a violí que representen les diferents èpoques de l'any. Cada moviment està ple de detalls que evoquen la natura: trons, cants d'ocells, fred hivernal... És com si la música pintés un paisatge sense paraules.
+                </div>
+                <div class="seasons-grid">
+                    <div class="season-card spring">
+                        <div class="season-icon">🌸</div>
+                        <div class="season-title">Primavera</div>
+                        <div class="season-description">Els ocells canten, les brogues flueixen i la natura desperta amb melodies dolces i alegres que capturen l'essència del renaixement estacional.</div>
+                    </div>
+                    <div class="season-card summer">
+                        <div class="season-icon">☀️</div>
+                        <div class="season-title">Estiu</div>
+                        <div class="season-description">La calor intensa, les tempestes sobtades i l'energia desbordant de l'estiu es reflecteixen en passatges virtuosístics i contrastos dramàtics.</div>
+                    </div>
+                    <div class="season-card autumn">
+                        <div class="season-icon">🍂</div>
+                        <div class="season-title">Tardor</div>
+                        <div class="season-description">La collita, les danses pageses i la preparació per l'hivern es tradueixen en ritmes festius que evoquen la celebració de l'abundància.</div>
+                    </div>
+                    <div class="season-card winter">
+                        <div class="season-icon">❄️</div>
+                        <div class="season-title">Hivern</div>
+                        <div class="season-description">El fred penetrant, els vents gelats i la quietud de la neu s'expressen through passatges contemplatius i moments de brillantor cristal·lina.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legacy">
+            <div class="legacy-content">
+                <h2>Llegat Musical</h2>
+                <p>Avui dia, Vivaldi és considerat un dels grans noms del Barroc. La seva música continua sent molt popular perquè és viva, plena d'energia i fàcil de gaudir.</p>
+                <p>Gràcies al seu treball, el concert com a forma musical va guanyar una nova dimensió i va influir en molts compositors que van venir després, establint les bases de la tradició concertística occidental.</p>
+                <p>La seva capacitat per descriure la natura a través de la música va obrir nous camins expressius que encara avui inspiren compositors de tot el món.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

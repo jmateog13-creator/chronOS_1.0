@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El context sociocultural del Renaixement</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            color: #2c2c2c;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="renaissance" patternUnits="userSpaceOnUse" width="20" height="20"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23renaissance)"/></svg>');
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 Q60,30 50,50 Q40,30 50,10" fill="rgba(255,255,255,0.03)" transform="rotate(45 50 50)"/></svg>') repeat;
+            animation: rotate 60s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            text-align: center;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .intro-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: justify;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin: 40px 0;
+            border-left: 6px solid #007bff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .intro-text::before {
+            content: '✨';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .intro-text strong {
+            color: #007bff;
+            font-weight: 600;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #007bff, #6f42c1);
+            border-radius: 2px;
+        }
+
+        .content-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #495057;
+        }
+
+        .content-text strong {
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .highlight-card {
+            background: linear-gradient(135deg, #6f42c1 0%, #007bff 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(111, 66, 193, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: sparkle 8s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .highlight-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .highlight-text {
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .featured-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .featured-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .featured-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            padding: 30px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0,0 Q50,50 100,0 L100,100 Q50,50 0,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+        }
+
+        .card-header.event {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .card-header.artist {
+            background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+        }
+
+        .card-header.invention {
+            background: linear-gradient(135deg, #5f27cd 0%, #341f97 100%);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        .card-body h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .card-text {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #495057;
+            text-align: justify;
+        }
+
+        .conclusion-section {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin-top: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conclusion-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+        }
+
+        .conclusion-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .conclusion-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .featured-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 15px;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .hero-section {
+                padding: 40px 20px;
+            }
+
+            .featured-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-section">
+            <h1>El context sociocultural del Renaixement</h1>
+            <div class="hero-subtitle">La transició cap a l'Edat Moderna</div>
+        </div>
+
+        <div class="intro-text">
+            El Renaixement és un període històric molt important que va començar a finals del segle XV i es va estendre fins al segle XVI. Es considera la transició entre l'Edat Mitjana i l'Edat Moderna i va significar una gran transformació cultural, científica i social a Europa. Aquest moviment es va caracteritzar per recuperar l'interès per l'art, la literatura i la filosofia de l'antiguitat clàssica, especialment la cultura grega i romana. A més, el Renaixement va suposar un canvi de mentalitat on la raó i l'experimentació van començar a ser més importants que la tradició i la religió.
+        </div>
+
+        <div class="main-content">
+            <div class="content-section">
+                <div class="section-title">Canvis socials i culturals</div>
+                <div class="content-text">
+                    Durant el Renaixement, la societat europea va experimentar grans canvis. La vida deixava de girar exclusivament al voltant de l'Església i començaven a aparèixer nous valors. L'ésser humà es va convertir en el centre de l'univers i es va començar a estudiar el món amb un esperit crític i científic. Aquesta nova manera de pensar s'anomena <strong>humanisme</strong> i va posar en valor la capacitat de l'home per conèixer, crear i transformar la realitat.
+                    <br><br>
+                    A més, les ciutats van créixer, i la burgesia va començar a tenir més poder econòmic i social. Això va fer que hi hagués més demanda d'art, cultura i coneixement, que abans estaven reservats només a l'Església i a l'aristocràcia. Els mecenes, persones riques que donaven suport als artistes, van jugar un paper clau en la difusió del Renaixement.
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="highlight-card">
+                    <div class="highlight-number">XV-XVI</div>
+                    <div class="highlight-text">Segles del Renaixement</div>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-number">1453</div>
+                    <div class="highlight-text">Caiguda de Constantinoble</div>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-number">1450</div>
+                    <div class="highlight-text">Invenció de la impremta</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="featured-sections">
+            <div class="featured-card">
+                <div class="card-header event">
+                    <div class="card-icon">🏛️</div>
+                    <div class="card-title">Esdeveniment històric</div>
+                </div>
+                <div class="card-body">
+                    <h4>La caiguda de Constantinoble (1453)</h4>
+                    <div class="card-text">
+                        Un dels fets més importants que va marcar el començament del Renaixement va ser la caiguda de Constantinoble el 1453. Quan els otomans van conquerir la ciutat, molts savis, artistes i estudiosos van fugir cap a Europa Occidental, especialment a Itàlia. Aquest exili va portar amb si un gran nombre de manuscrits i textos clàssics que van inspirar els intel·lectuals i artistes europeus a recuperar el coneixement de l'antiguitat i a crear noves obres.
+                    </div>
+                </div>
+            </div>
+
+            <div class="featured-card">
+                <div class="card-header artist">
+                    <div class="card-icon">🎨</div>
+                    <div class="card-title">Artista famós</div>
+                </div>
+                <div class="card-body">
+                    <h4>Leonardo da Vinci (1452-1519)</h4>
+                    <div class="card-text">
+                        Leonardo va ser un pintor excepcional, autor d'obres com la <strong>Mona Lisa</strong> o <strong>L'Última Cena</strong>. Però no només va destacar en la pintura, sinó també en l'escultura, la ciència, la mecànica i la invenció. Leonardo representava l'esperit del Renaixement: la curiositat per entendre com funcionava el món i la capacitat per aplicar aquest coneixement en diferents camps.
+                    </div>
+                </div>
+            </div>
+
+            <div class="featured-card">
+                <div class="card-header invention">
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">Invent rellevant</div>
+                </div>
+                <div class="card-body">
+                    <h4>La impremta de tipus mòbil</h4>
+                    <div class="card-text">
+                        Desenvolupada per <strong>Johannes Gutenberg</strong> al voltant de l'any 1450, aquesta invenció va revolucionar la manera com es difonia el coneixement. Amb la impremta, es van poder produir molts llibres de manera ràpida i assequible, cosa que va permetre que més persones poguessin accedir a l'educació i als coneixements científics i artístics.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <div class="section-title">L'art i la ciència durant el Renaixement</div>
+            <div class="content-text">
+                El Renaixement no només va ser important per la pintura, sinó també per altres formes d'art i descobriments científics. L'arquitectura es va inspirar en els models clàssics i va crear edificis amb formes proporcionades i equilibrades. L'escultura va guanyar realisme i expressivitat, i la literatura va recuperar textos antics i escriure noves obres sobre l'home i la natura.
+                <br><br>
+                Pel que fa a la ciència, van sorgir estudis en astronomia, anatomia, física i matemàtiques que van posar en dubte moltes idees antigues i van avançar cap a la ciència moderna.
+            </div>
+        </div>
+
+        <div class="conclusion-section">
+            <div class="conclusion-title">Resum</div>
+            <div class="conclusion-text">
+                El Renaixement va ser una època de grans canvis i descobriments. Amb la caiguda de Constantinoble, l'arribada d'artistes i savis, i invents com la impremta, Europa va entrar en una nova era de cultura i coneixement. Figures com Leonardo da Vinci van representar l'esperit d'aquesta època, plena de curiositat i creativitat. El Renaixement va sentar les bases del món modern i va canviar la manera com veiem l'art, la ciència i la societat.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

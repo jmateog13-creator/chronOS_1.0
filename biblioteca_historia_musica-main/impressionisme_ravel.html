@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maurice Ravel - Mestre de l'Elegància Musical</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #ecf0f1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            color: #fff;
+            padding: 80px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 255, 0.03) 2px,
+                rgba(255, 255, 255, 0.03) 4px
+            );
+            animation: shimmer 20s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-100%, -100%); }
+            100% { transform: translate(100%, 100%); }
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 10px;
+        }
+
+        .header-dates {
+            font-size: 1rem;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 60px 50px;
+        }
+
+        .intro {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 50px;
+            border-left: 5px solid #8e44ad;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 45px;
+        }
+
+        .section h2 {
+            font-size: 1.9rem;
+            color: #8e44ad;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: '♪';
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: #3498db;
+        }
+
+        .section p {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #e8f5e8, #c8e6c9);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        .works-showcase {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 50px 0;
+            border: 2px solid #dee2e6;
+        }
+
+        .works-title {
+            text-align: center;
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .work-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.4s ease;
+            border-top: 4px solid #8e44ad;
+        }
+
+        .work-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(142, 68, 173, 0.2);
+        }
+
+        .work-title {
+            font-size: 1.4rem;
+            color: #8e44ad;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        .work-description {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .characteristics {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            padding: 50px 40px;
+            border-radius: 15px;
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .characteristics h3 {
+            font-size: 2.2rem;
+            margin-bottom: 35px;
+            font-weight: 300;
+        }
+
+        .characteristics-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .characteristic {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .characteristic:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .characteristic-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .characteristic-text {
+            font-size: 1rem;
+            line-height: 1.4;
+            font-weight: 300;
+        }
+
+        .influences {
+            background: #fff3cd;
+            padding: 35px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            margin: 40px 0;
+        }
+
+        .influences h3 {
+            color: #856404;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        .influences-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .influence-tag {
+            background: #fff;
+            color: #856404;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid #ffc107;
+            transition: all 0.3s ease;
+        }
+
+        .influence-tag:hover {
+            background: #ffc107;
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .legacy {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 60px 40px;
+            text-align: center;
+            margin-top: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .legacy::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M30,10 Q35,20 30,30 Q25,20 30,10' fill='none' stroke='rgba(255,255,255,0.05)' stroke-width='1'/%3e%3c/svg%3e");
+            opacity: 0.3;
+        }
+
+        .legacy h3 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .legacy p {
+            font-size: 1.2rem;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline {
+            margin: 50px 0;
+        }
+
+        .timeline h3 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .timeline-items {
+            display: grid;
+            gap: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: #e9ecef;
+            transform: translateX(10px);
+        }
+
+        .timeline-year {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #8e44ad;
+            min-width: 80px;
+            margin-right: 25px;
+        }
+
+        .timeline-event {
+            font-size: 1rem;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content {
+                padding: 40px 25px;
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .characteristics-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .timeline-year {
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Maurice Ravel</h1>
+            <div class="header-subtitle">Mestre de l'Elegància Musical</div>
+            <div class="header-dates">França, 1875 - 1937</div>
+        </header>
+
+        <div class="content">
+            <div class="intro fade-in">
+                Maurice Ravel va ser un dels compositors més destacats de la música francesa de finals del segle XIX i començaments del segle XX. Tot i que sovint es relaciona amb l'Impressionisme musical, Ravel tenia una personalitat artística molt pròpia, i la seva música mostra una gran precisió, elegància i refinament.
+            </div>
+
+            <section class="section fade-in">
+                <h2>Precisió i Creativitat</h2>
+                <p>
+                    Si Debussy volia evocar atmosferes etèries i canviants, Ravel tendia a ser més estructurat, però igualment creatiu i innovador. <span class="highlight">Ravel tenia un domini tècnic extraordinari</span> i cuidava cada detall de la seva música amb una precisió quasi artesanal. El seu estil es caracteritza per una orquestració molt treballada, en què cada instrument sembla tenir una funció específica per aportar color, textura o moviment.
+                </p>
+                <p>
+                    En les seves mans, l'orquestra esdevé una autèntica <span class="highlight">màquina de pintura sonora</span>, plena de llums, matisos i contrastos. Aquesta atenció al detall i la perfecció tècnica el distingeixen clarament dins del moviment impressionista.
+                </p>
+            </section>
+
+            <div class="influences fade-in">
+                <h3>Influències Culturals</h3>
+                <p>Nascut a la regió del País Basc, Ravel va créixer envoltat de diferents influències culturals i musicals:</p>
+                <div class="influences-list">
+                    <span class="influence-tag">🇪🇸 Espanya</span>
+                    <span class="influence-tag">🇭🇺 Hongria</span>
+                    <span class="influence-tag">🌏 Orient</span>
+                    <span class="influence-tag">🎷 Jazz Americà</span>
+                    <span class="influence-tag">🏔️ País Basc</span>
+                </div>
+            </div>
+
+            <section class="works-showcase fade-in">
+                <h2 class="works-title">Obres Emblemàtiques</h2>
+                <div class="works-grid">
+                    <div class="work-card">
+                        <div class="work-title">Boléro</div>
+                        <div class="work-description">
+                            Una peça construïda sobre una única melodia repetida de manera obsessiva, però que creix en intensitat i color gràcies als canvis d'instrumentació. Un símbol de com la repetició i la subtil variació poden captivar l'oient.
+                        </div>
+                    </div>
+                    <div class="work-card">
+                        <div class="work-title">Miroirs</div>
+                        <div class="work-description">
+                            Obra per a piano que mostra tant la seva capacitat expressiva com la seva exigència tècnica, reflectint la seva elegància i virtuosisme.
+                        </div>
+                    </div>
+                    <div class="work-card">
+                        <div class="work-title">Gaspard de la nuit</div>
+                        <div class="work-description">
+                            Una de les obres pianístiques més exigents mai escrites, que combina virtuosisme tècnic amb una imaginació poètica extraordinària.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="characteristics fade-in">
+                <h3>Característiques del seu Estil</h3>
+                <div class="characteristics-list">
+                    <div class="characteristic">
+                        <span class="characteristic-icon">⚙️</span>
+                        <div class="characteristic-text">Precisió tècnica extraordinària</div>
+                    </div>
+                    <div class="characteristic">
+                        <span class="characteristic-icon">🎨</span>
+                        <div class="characteristic-text">Orquestració com a pintura sonora</div>
+                    </div>
+                    <div class="characteristic">
+                        <span class="characteristic-icon">🌍</span>
+                        <div class="characteristic-text">Influències culturals diverses</div>
+                    </div>
+                    <div class="characteristic">
+                        <span class="characteristic-icon">⚖️</span>
+                        <div class="characteristic-text">Equilibri entre emoció i rigor</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section fade-in">
+                <h2>Varietat i Versatilitat</h2>
+                <p>
+                    També va compondre obres per a piano d'una gran bellesa, com <em>Miroirs</em> o <em>Gaspard de la nuit</em>, que mostren tant la seva capacitat expressiva com la seva exigència tècnica. A més, va escriure <span class="highlight">ballets, música de cambra i cançons</span>, sempre amb aquest equilibri entre emoció i rigor que el caracteritzava.
+                </p>
+            </section>
+
+            <div class="timeline fade-in">
+                <h3>Cronologia</h3>
+                <div class="timeline-items">
+                    <div class="timeline-item">
+                        <div class="timeline-year">1875</div>
+                        <div class="timeline-event">Naixement al País Basc</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1901</div>
+                        <div class="timeline-event">Compon "Jeux d'eau"</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1905</div>
+                        <div class="timeline-event">Estrena de "Miroirs"</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1928</div>
+                        <div class="timeline-event">Estrena del famós "Boléro"</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1937</div>
+                        <div class="timeline-event">Mort a París</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="legacy fade-in">
+            <h3>Llegat Immortal</h3>
+            <p>
+                Ravel va viure en una època de canvis profunds, marcada per guerres, avanços tecnològics i transformacions socials. Va saber recollir l'esperit del seu temps i transformar-lo en música, una música que encara avui ens sembla sorprenentment moderna i viva. Amb ell, l'Impressionisme musical va arribar al seu <strong>màxim nivell d'ofici i elegància</strong>, i es va obrir el camí a les noves avantguardes del segle XX.
+            </p>
+        </section>
+    </div>
+
+    <script>
+        // Animacions d'aparició en scroll
+        function initScrollAnimations() {
+            const elements = document.querySelectorAll('.fade-in');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.2,
+                rootMargin: '0px 0px -30px 0px'
+            });
+
+            elements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        // Efectes hover per targetes d'obres
+        function initWorkCardEffects() {
+            const cards = document.querySelectorAll('.work-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-12px) scale(1.02)';
+                    this.style.boxShadow = '0 20px 50px rgba(142, 68, 173, 0.25)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
+                });
+            });
+        }
+
+        // Efectes per les etiquetes d'influències
+        function initInfluenceEffects() {
+            const tags = document.querySelectorAll('.influence-tag');
+            
+            tags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    this.style.animation = 'none';
+                    setTimeout(() => {
+                        this.style.animation = 'pulse 0.6s ease';
+                    }, 10);
+                });
+            });
+        }
+
+        // Efecte de typing per al títol
+        function typewriterEffect() {
+            const title = document.querySelector('.header h1');
+            const text = 'Maurice Ravel';
+            title.textContent = '';
+            
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    title.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 150);
+                }
+            }
+            
+            setTimeout(type, 1000);
+        }
+
+        // Efecte parallax suau
+        function initParallax() {
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const header = document.querySelector('.header');
+                
+                if (header) {
+                    header.style.transform = `translateY(${scrolled * 0.4}px)`;
+                }
+            });
+        }
+
+        // Destacar highlights dinàmicament
+        function initHighlights() {
+            const highlights = document.querySelectorAll('.highlight');
+            
+            highlights.forEach(highlight => {
+                highlight.addEventListener('mouseenter', function() {
+                    this.style.background = 'linear-gradient(120deg, #c8e6c9, #a5d6a7)';
+                    this.style.transform = 'scale(1.05)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                
+                highlight.addEventListener('mouseleave', function() {
+                    this.style.background = 'linear-gradient(120deg, #e8f5e8, #c8e6c9)';
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        }
+
+        // Inicialització
+        document.addEventListener('DOMContentLoaded', function() {
+            initScrollAnimations();
+            initWorkCardEffects();
+            initInfluenceEffects();
+            initParallax();
+            initHighlights();
+        });
+
+        // Efecte typing quan es carrega la pàgina
+        window.addEventListener('load', typewriterEffect);
+
+        // Animació CSS personalitzada
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

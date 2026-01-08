@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La música a l'edat mitjana - Evolució</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lora:wght@400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            line-height: 1.8;
+            color: #2c1810;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(160, 82, 45, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #f4f1e8 0%, #e8dcc0 100%);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .parchment {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: 
+                linear-gradient(45deg, transparent 49%, rgba(139, 69, 19, 0.1) 50%, transparent 51%),
+                linear-gradient(-45deg, transparent 49%, rgba(160, 82, 45, 0.05) 50%, transparent 51%),
+                #f9f6f0;
+            background-size: 60px 60px, 60px 60px, auto;
+            border: 3px solid #8b4513;
+            border-radius: 0;
+            box-shadow: 
+                0 0 0 8px #d2b48c,
+                0 0 0 12px #8b4513,
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 100px rgba(139, 69, 19, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .parchment::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 29px,
+                    rgba(139, 69, 19, 0.1) 30px,
+                    rgba(139, 69, 19, 0.1) 31px
+                );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .manuscript-header {
+            background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+            color: #f9f6f0;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            border-bottom: 5px solid #654321;
+        }
+
+        .manuscript-header::before {
+            content: '✠';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            opacity: 0.3;
+            animation: glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(249, 246, 240, 0.5); }
+            to { text-shadow: 0 0 20px rgba(249, 246, 240, 0.8); }
+        }
+
+        .manuscript-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .manuscript-subtitle {
+            font-size: 1.4em;
+            font-style: italic;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .manuscript-content {
+            padding: 60px 50px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .illuminated-letter {
+            float: left;
+            font-family: 'Playfair Display', serif;
+            font-size: 5em;
+            line-height: 0.8;
+            margin: 0 15px 10px 0;
+            color: #8b4513;
+            background: linear-gradient(135deg, #daa520 0%, #b8860b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+            padding: 10px;
+            border: 3px solid #8b4513;
+            border-radius: 10px;
+            background-color: #f9f6f0;
+            margin-bottom: 0;
+        }
+
+        .chapter {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.4);
+            border-left: 8px solid #8b4513;
+            border-radius: 0 15px 15px 0;
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .chapter:hover {
+            transform: translateX(10px);
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .chapter::before {
+            content: '❦';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            color: #8b4513;
+            opacity: 0.3;
+        }
+
+        .chapter-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8em;
+            color: #654321;
+            margin-bottom: 20px;
+            font-weight: 700;
+            border-bottom: 2px solid #d2b48c;
+            padding-bottom: 10px;
+        }
+
+        .highlighted {
+            background: linear-gradient(120deg, rgba(218, 165, 32, 0.3) 0%, rgba(184, 134, 11, 0.3) 100%);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            color: #5d4037;
+            border: 1px solid rgba(139, 69, 19, 0.2);
+        }
+
+        .timeline {
+            background: linear-gradient(135deg, #654321 0%, #8b4513 100%);
+            color: #f9f6f0;
+            padding: 40px;
+            margin: 40px 0;
+            border-radius: 20px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline::before {
+            content: '⚜';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 3em;
+            opacity: 0.2;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .timeline-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .timeline-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 15px 0 15px 40px;
+            border-left: 3px solid #daa520;
+            margin-bottom: 15px;
+        }
+
+        .timeline-item::before {
+            content: '●';
+            position: absolute;
+            left: -8px;
+            top: 20px;
+            color: #daa520;
+            font-size: 1.2em;
+            background: #654321;
+            padding: 5px;
+            border-radius: 50%;
+        }
+
+        .timeline-item:last-child {
+            border-left-color: transparent;
+        }
+
+        .conclusion {
+            background: 
+                linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(160, 82, 45, 0.1) 100%),
+                #f4f1e8;
+            border: 2px solid #8b4513;
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                inset 0 0 50px rgba(139, 69, 19, 0.05);
+            position: relative;
+        }
+
+        .conclusion::before {
+            content: '☩';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f4f1e8;
+            padding: 0 20px;
+            font-size: 2em;
+            color: #8b4513;
+        }
+
+        .scroll-ornament {
+            text-align: center;
+            font-size: 2em;
+            color: #8b4513;
+            margin: 30px 0;
+            opacity: 0.6;
+        }
+
+        p {
+            margin-bottom: 20px;
+            text-align: justify;
+            text-indent: 30px;
+            font-size: 1.1em;
+        }
+
+        .first-paragraph::first-line {
+            font-variant: small-caps;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .parchment {
+                margin: 15px;
+                border-width: 2px;
+            }
+            
+            .manuscript-content {
+                padding: 30px 25px;
+            }
+            
+            .manuscript-title {
+                font-size: 2.2em;
+            }
+            
+            .illuminated-letter {
+                font-size: 3.5em;
+                margin-right: 10px;
+            }
+            
+            .chapter {
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .timeline {
+                padding: 25px;
+            }
+        }
+
+        .medieval-border {
+            border: 3px solid #8b4513;
+            border-image: repeating-linear-gradient(
+                45deg,
+                #8b4513,
+                #8b4513 10px,
+                #daa520 10px,
+                #daa520 20px
+            ) 3;
+            padding: 20px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="parchment">
+        <div class="manuscript-header">
+            <h1 class="manuscript-title">Com era la música a l'edat mitjana?</h1>
+            <div class="manuscript-subtitle">Una evolució de més de mil anys</div>
+        </div>
+        
+        <div class="manuscript-content">
+            <div class="chapter">
+                <div class="illuminated-letter">P</div>
+                <p class="first-paragraph">arlar de la música a l'edat mitjana és parlar d'un període molt llarg de temps. Aquesta etapa històrica dura des del segle V fins al segle XV, és a dir, <span class="highlighted">més de mil anys d'història</span>. Com pots imaginar, la música no va ser sempre igual. Al contrari, va evolucionar molt, passant de formes molt simples a formes més complexes. Aquest text vol explicar-te com eren les <span class="highlighted">principals característiques musicals</span> d'aquesta època i com van anar canviant amb el temps.</p>
+            </div>
+
+            <div class="scroll-ornament">❦ ❦ ❦</div>
+
+            <div class="chapter">
+                <h2 class="chapter-title">Els primers segles: la música religiosa</h2>
+                <p>Durant els primers segles de l'edat mitjana, la música estava molt relacionada amb la religió. Les persones més cultes eren els monjos i els clergues, i per això molta de la música que es conreava i es conservava era <span class="highlighted">música religiosa</span>. Aquesta música es feia sobretot per a <span class="highlighted">acompanyar la litúrgia</span>, és a dir, les cerimònies de l'Església.</p>
+                
+                <p>Era <span class="highlighted">vocal</span>, sense instruments, i es cantava en <span class="highlighted">llatí</span>. A més, era <span class="highlighted">monòdica</span>, és a dir, només hi havia una melodia cantada per tots a l'hora. Aquesta manera de cantar es coneix com a <span class="highlighted">cant gregorià</span>, tot i que no era l'únic estil d'aquella època.</p>
+            </div>
+
+            <div class="chapter">
+                <h2 class="chapter-title">L'evolució cap a la polifonia</h2>
+                <p>A mesura que passaven els segles, la música es va anar <span class="highlighted">complicant i enriquint</span>. A partir del segle IX, van començar a aparèixer les primeres formes de <span class="highlighted">polifonia</span>, és a dir, músiques amb més d'una veu que canten melodies diferents alhora. Aquesta va ser una autèntica revolució, ja que va permetre crear músiques més interessants i variades.</p>
+                
+                <p>És en aquest context que apareixen els primers <span class="highlighted">compositors coneguts</span>, com Léonin i Pérotin, tot i que no aprofundirem ara en ells.</p>
+            </div>
+
+            <div class="chapter">
+                <h2 class="chapter-title">La música profana</h2>
+                <p>A part de la música religiosa, també existia la <span class="highlighted">música profana</span>, és a dir, la que no estava relacionada amb la religió. Aquesta música s'interpretava a les corts, als castells o a les places, i podia tractar temes com l'amor, la guerra o la vida quotidiana. Era una música més propera a la gent del poble.</p>
+                
+                <p>Solia ser <span class="highlighted">cantada i també acompanyada d'instruments</span>, però ja en parlarem més endavant.</p>
+            </div>
+
+            <div class="chapter">
+                <h2 class="chapter-title">De l'oralitat a l'escriptura</h2>
+                <p>Un altre aspecte important és que <span class="highlighted">no hi havia partitures com les d'ara</span>. Al principi, la música es transmetia de <span class="highlighted">forma oral</span>, és a dir, de memòria. Però a poc a poc es va començar a escriure, primer amb <span class="highlighted">neumes</span> (uns símbols que indicaven com pujava o baixava la melodia) i més endavant amb sistemes que s'assemblen més als actuals.</p>
+                
+                <p>Aquesta evolució de l'escriptura musical va ser clau per conservar les obres i permetre que altres músics les poguessin interpretar.</p>
+            </div>
+
+            <div class="chapter">
+                <h2 class="chapter-title">Funcions socials de la música</h2>
+                <p>La música medieval també <span class="highlighted">complia funcions socials</span> molt importants. No només servia per pregar, sinó també per <span class="highlighted">entretindre</span>, per <span class="highlighted">ensenyar històries</span>, per <span class="highlighted">celebrar festes</span> o fins i tot per <span class="highlighted">cridar a la batalla</span>. Per això diem que la música no només era art, sinó també una eina de comunicació i de transmissió cultural.</p>
+            </div>
+
+            <div class="timeline">
+                <h2 class="timeline-title">Evolució de les característiques musicals</h2>
+                <ul class="timeline-list">
+                    <li class="timeline-item">Al principi, <strong>monodia vocal religiosa</strong>.</li>
+                    <li class="timeline-item">Amb el temps, <strong>polifonia i composició més elaborada</strong>.</li>
+                    <li class="timeline-item">Convivència de <strong>música religiosa i música profana</strong>.</li>
+                    <li class="timeline-item">Canvi d'una tradició <strong>oral a una tradició escrita</strong>.</li>
+                    <li class="timeline-item">Música amb <strong>funció social, educativa i lúdica</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="conclusion">
+                <p>Com pots veure, la música medieval era molt més rica i variada del que pot semblar a primera vista. En els pròxims textos coneixerem millor els <span class="highlighted">instruments</span>, les <span class="highlighted">formes musicals</span> i els <span class="highlighted">compositors</span> que van marcar aquesta etapa tan llarga i fascinant.</p>
+            </div>
+
+            <div class="scroll-ornament">✠ ❦ ✠</div>
+        </div>
+    </div>
+</body>
+</html>

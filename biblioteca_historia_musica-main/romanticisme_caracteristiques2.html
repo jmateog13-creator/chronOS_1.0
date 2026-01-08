@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Música del Romanticisme - Transformació i Expressió</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', 'Georgia', serif;
+            line-height: 1.8;
+            background: linear-gradient(170deg, #0a0a23 0%, #1a1a3a 20%, #2d1b4e 40%, #4a1942 60%, #2d1b4e 80%, #0a0a23 100%);
+            color: #f0f4f8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .orchestral-ambience {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse at 30% 20%, rgba(139, 69, 19, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(72, 61, 139, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 70%, rgba(128, 0, 128, 0.06) 0%, transparent 50%);
+            opacity: 0.8;
+        }
+
+        .subtle-notes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-note {
+            position: absolute;
+            color: rgba(176, 196, 222, 0.15);
+            font-size: 1.8rem;
+            animation: gentle-float 40s infinite linear;
+        }
+
+        @keyframes gentle-float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.6;
+            }
+            95% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 25px;
+        }
+
+        header {
+            text-align: center;
+            padding: 80px 40px;
+            background: rgba(16, 20, 44, 0.85);
+            border-radius: 20px;
+            margin-bottom: 60px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(176, 196, 222, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .period-symbol {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b4513 0%, #daa520 50%, #b8860b 100%);
+            margin: 0 auto 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6rem;
+            color: #2f1b14;
+            box-shadow: 0 15px 40px rgba(218, 165, 32, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .period-symbol:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            font-size: 3.8rem;
+            margin-bottom: 20px;
+            color: #daa520;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: #b0c4de;
+            font-style: italic;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .intro-paragraph {
+            font-size: 1.2rem;
+            color: #e6e6fa;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.9;
+            text-align: justify;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 50px;
+        }
+
+        .content-section {
+            background: rgba(20, 25, 50, 0.6);
+            padding: 45px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(176, 196, 222, 0.15);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .content-section:hover {
+            transform: translateY(-5px);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(218, 165, 32, 0.3);
+        }
+
+        .section-icon {
+            font-size: 2.5rem;
+            margin-right: 20px;
+            color: #daa520;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            color: #daa520;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .section-content {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #f0f4f8;
+            text-align: justify;
+        }
+
+        .section-content p {
+            margin-bottom: 18px;
+        }
+
+        .highlight {
+            color: #daa520;
+            font-weight: 500;
+            background: rgba(218, 165, 32, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .composers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .composer-card {
+            background: rgba(72, 61, 139, 0.2);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(72, 61, 139, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .composer-card:hover {
+            background: rgba(72, 61, 139, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(72, 61, 139, 0.2);
+        }
+
+        .composer-name {
+            font-size: 1.3rem;
+            color: #b0c4de;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .composer-role {
+            font-size: 0.95rem;
+            color: #9370db;
+            font-style: italic;
+        }
+
+        .characteristics-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 25px;
+        }
+
+        .characteristic-item {
+            background: rgba(139, 69, 19, 0.15);
+            padding: 30px;
+            border-radius: 12px;
+            border-left: 4px solid #daa520;
+            transition: all 0.3s ease;
+        }
+
+        .characteristic-item:hover {
+            background: rgba(139, 69, 19, 0.25);
+            border-left-width: 6px;
+            transform: translateX(5px);
+        }
+
+        .characteristic-title {
+            font-size: 1.4rem;
+            color: #daa520;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .characteristic-description {
+            font-size: 1.05rem;
+            color: #e6e6fa;
+            line-height: 1.7;
+        }
+
+        .comparison-section {
+            background: linear-gradient(135deg, rgba(25, 25, 112, 0.2), rgba(72, 61, 139, 0.2));
+            padding: 50px;
+            border-radius: 15px;
+            border: 1px solid rgba(176, 196, 222, 0.2);
+            margin: 50px 0;
+        }
+
+        .comparison-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #b0c4de;
+            margin-bottom: 35px;
+            font-weight: 300;
+        }
+
+        .vs-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .period-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 35px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .period-name {
+            font-size: 1.8rem;
+            color: #daa520;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .period-features {
+            list-style: none;
+            font-size: 1.05rem;
+            color: #e6e6fa;
+        }
+
+        .period-features li {
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .period-features li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #daa520;
+        }
+
+        .vs-divider {
+            font-size: 3rem;
+            color: #9370db;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .conclusion-section {
+            background: radial-gradient(ellipse at center, rgba(72, 61, 139, 0.15), transparent);
+            padding: 60px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(176, 196, 222, 0.2);
+            margin-top: 50px;
+        }
+
+        .conclusion-title {
+            font-size: 2.8rem;
+            color: #daa520;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .conclusion-text {
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: #f0f4f8;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .vs-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .vs-divider {
+                order: 2;
+            }
+            
+            h1 {
+                font-size: 2.8rem;
+            }
+            
+            .characteristics-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .composers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orchestral-ambience"></div>
+    
+    <div class="subtle-notes">
+        <div class="floating-note" style="left: 8%; animation-delay: 0s;">♪</div>
+        <div class="floating-note" style="left: 18%; animation-delay: 8s;">♫</div>
+        <div class="floating-note" style="left: 28%; animation-delay: 16s;">♪</div>
+        <div class="floating-note" style="left: 38%; animation-delay: 24s;">♬</div>
+        <div class="floating-note" style="left: 48%; animation-delay: 32s;">♪</div>
+        <div class="floating-note" style="left: 58%; animation-delay: 4s;">♫</div>
+        <div class="floating-note" style="left: 68%; animation-delay: 12s;">♪</div>
+        <div class="floating-note" style="left: 78%; animation-delay: 20s;">♬</div>
+        <div class="floating-note" style="left: 88%; animation-delay: 28s;">♪</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="period-symbol">🎼</div>
+            <h1>La Música del Romanticisme</h1>
+            <div class="subtitle">Transformació i Expressió Personal</div>
+            <div class="intro-paragraph">
+                Durant el Romanticisme, la música va viure una transformació profunda que va posar l'èmfasi en l'expressió personal i la intensitat emocional. La música es va convertir en un llenguatge capaç de transmetre sentiments profunds i diverses atmosferes.
+            </div>
+        </header>
+
+        <div class="comparison-section">
+            <div class="comparison-title">Classicisme vs Romanticisme</div>
+            <div class="vs-container">
+                <div class="period-card">
+                    <div class="period-name">Classicisme</div>
+                    <ul class="period-features">
+                        <li>Forma i equilibri prioritaris</li>
+                        <li>Estructura rígida</li>
+                        <li>Ordre i simetria</li>
+                        <li>Bellesa formal</li>
+                    </ul>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="period-card">
+                    <div class="period-name">Romanticisme</div>
+                    <ul class="period-features">
+                        <li>Expressió personal</li>
+                        <li>Intensitat emocional</li>
+                        <li>Llibertat creativa</li>
+                        <li>Comunicació de sensacions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-icon">⚡</div>
+                    <div class="section-title">Contrastos Dramàtics</div>
+                </div>
+                <div class="section-content">
+                    <p>Les obres musicals romàntiques solen presentar <span class="highlight">contrastos molt marcats</span>: moments molt tranquils que de cop poden passar a ser dramàtics o apassionats. Aquesta varietat ajuda a mantenir l'atenció de l'oient i a reflectir la complexitat de les emocions humanes.</p>
+                    <p>També es fan servir harmonies més complexes i colors sonors nous, aprofitant les millores en els instruments que permetien una major llibertat i riquesa sonora.</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-icon">📏</div>
+                    <div class="section-title">Expansió i Orquestració</div>
+                </div>
+                <div class="section-content">
+                    <p>Les peces acostumen a ser <span class="highlight">més llargues que en èpoques anteriors</span>, amb una orquestra ampliada que ofereix més possibilitats per crear textures sonores diverses.</p>
+                    <p>La música pot ser narrativa, com en els <span class="highlight">poemes simfònics</span>, on s'explica una història o es descriu un paisatge, o també més íntima, amb peces per a piano que reflecteixen els sentiments més personals del compositor.</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-icon">🌍</div>
+                    <div class="section-title">Nacionalisme Musical</div>
+                </div>
+                <div class="section-content">
+                    <p>Un altre aspecte important és l'interès pel <span class="highlight">nacionalisme</span>, que es manifesta en la incorporació de melodies populars i ritmes tradicionals a les composicions.</p>
+                    <p>Això ajuda a reforçar la identitat cultural dels diferents països i a donar a la música un sentit de pertinença i orgull nacional.</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-icon">🕊️</div>
+                    <div class="section-title">Llibertat Creativa</div>
+                </div>
+                <div class="section-content">
+                    <p>Els músics del Romanticisme sovint es van allunyar de les normes rígides del passat, creant <span class="highlight">obres originals i úniques</span> que reflectien la seva visió personal.</p>
+                    
+                    <div class="composers-grid">
+                        <div class="composer-card">
+                            <div class="composer-name">Beethoven</div>
+                            <div class="composer-role">Pont entre Classicisme i Romanticisme</div>
+                        </div>
+                        <div class="composer-card">
+                            <div class="composer-name">Brahms</div>
+                            <div class="composer-role">Mestre de la forma romàntica</div>
+                        </div>
+                        <div class="composer-card">
+                            <div class="composer-name">Txaikovski</div>
+                            <div class="composer-role">Expressió emocional intensa</div>
+                        </div>
+                        <div class="composer-card">
+                            <div class="composer-name">Verdi</div>
+                            <div class="composer-role">Revolució operística</div>
+                        </div>
+                        <div class="composer-card">
+                            <div class="composer-name">Wagner</div>
+                            <div class="composer-role">Innovació harmònica</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-icon">🎹</div>
+                    <div class="section-title">Característiques Principals</div>
+                </div>
+                <div class="section-content">
+                    <div class="characteristics-list">
+                        <div class="characteristic-item">
+                            <div class="characteristic-title">Expressió Personal</div>
+                            <div class="characteristic-description">La música esdevé un vehicle per comunicar sentiments profunds i experiències íntimes del compositor.</div>
+                        </div>
+                        <div class="characteristic-item">
+                            <div class="characteristic-title">Varietat Sonora</div>
+                            <div class="characteristic-description">Utilització d'una paleta sonora més àmplia gràcies a les millores tècniques dels instruments.</div>
+                        </div>
+                        <div class="characteristic-item">
+                            <div class="characteristic-title">Narrativitat</div>
+                            <div class="characteristic-description">La música pot explicar històries, descriure paisatges o evocar situacions específiques.</div>
+                        </div>
+                        <div class="characteristic-item">
+                            <div class="characteristic-title">Originalitat</div>
+                            <div class="characteristic-description">Cada compositor desenvolupa un estil personal distintiu, allunyant-se de les convencions.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="conclusion-section">
+            <div class="conclusion-title">Una Nova Era Musical</div>
+            <div class="conclusion-text">
+                El Romanticisme va marcar un punt d'inflexió en la història de la música, establint l'expressió personal i la llibertat creativa com a pilars fonamentals. Aquesta transformació va obrir camins nous que encara avui influeixen en la creació musical contemporània.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

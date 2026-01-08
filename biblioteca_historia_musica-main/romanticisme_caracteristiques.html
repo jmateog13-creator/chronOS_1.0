@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Música del Romanticisme - Parlar amb el Cor a la Mà</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.7;
+            background: linear-gradient(135deg, #2d1b69 0%, #8b0000 20%, #4a0e4e 40%, #1a237e 60%, #b71c1c 80%, #4a148c 100%);
+            background-size: 600% 600%;
+            animation: emotional-flow 25s ease infinite;
+            color: #fff8dc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes emotional-flow {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .musical-atmosphere {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 30%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 30% 80%, rgba(220, 20, 60, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(25, 25, 112, 0.1) 0%, transparent 50%);
+            animation: emotional-waves 30s ease-in-out infinite;
+        }
+
+        @keyframes emotional-waves {
+            0%, 100% { opacity: 0.6; }
+            25% { opacity: 0.9; }
+            50% { opacity: 0.4; }
+            75% { opacity: 0.8; }
+        }
+
+        .floating-emotions {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .emotion-symbol {
+            position: absolute;
+            animation: emotional-drift 28s infinite linear;
+            font-size: 2.5rem;
+        }
+
+        .love { color: rgba(255, 105, 180, 0.4); }
+        .passion { color: rgba(220, 20, 60, 0.4); }
+        .melancholy { color: rgba(75, 0, 130, 0.4); }
+        .freedom { color: rgba(255, 215, 0, 0.4); }
+        .nature { color: rgba(34, 139, 34, 0.4); }
+
+        @keyframes emotional-drift {
+            0% {
+                transform: translateY(100vh) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 100px 0;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 30px;
+            margin-bottom: 70px;
+            backdrop-filter: blur(30px);
+            border: 4px solid rgba(220, 20, 60, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, 
+                rgba(220, 20, 60, 0.2), 
+                rgba(138, 43, 226, 0.2), 
+                rgba(255, 69, 0, 0.2), 
+                rgba(25, 25, 112, 0.2), 
+                rgba(220, 20, 60, 0.2));
+            animation: heart-rotation 35s linear infinite;
+        }
+
+        @keyframes heart-rotation {
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .heart-icon {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10rem;
+            color: #ff1493;
+            animation: heartbeat 3s ease-in-out infinite;
+            text-shadow: 0 0 30px #ff1493;
+            position: relative;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { 
+                transform: scale(1); 
+                text-shadow: 0 0 30px #ff1493; 
+            }
+            25% { 
+                transform: scale(1.1); 
+                text-shadow: 0 0 50px #ff1493; 
+            }
+            50% { 
+                transform: scale(1.2); 
+                text-shadow: 0 0 70px #ff1493; 
+            }
+            75% { 
+                transform: scale(1.05); 
+                text-shadow: 0 0 40px #ff1493; 
+            }
+        }
+
+        .heart-icon::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: -40px;
+            right: -40px;
+            bottom: -40px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 20, 147, 0.3), transparent 70%);
+            animation: heart-aura 4s ease-in-out infinite;
+        }
+
+        @keyframes heart-aura {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 0.9; }
+        }
+
+        h1 {
+            font-size: 5.5rem;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, #ff1493, #ffd700, #ff6347, #da70d6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 4px 4px 15px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 2.2rem;
+            color: #ff1493;
+            font-style: italic;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .intro-text {
+            font-size: 1.5rem;
+            color: #f0f8ff;
+            max-width: 1000px;
+            margin: 0 auto;
+            line-height: 2;
+            text-align: justify;
+            font-style: italic;
+        }
+
+        .characteristics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 50px;
+            margin-bottom: 70px;
+        }
+
+        .characteristic-card {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 50px;
+            border-radius: 25px;
+            backdrop-filter: blur(20px);
+            border: 3px solid transparent;
+            background-clip: padding-box;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .characteristic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 25px;
+            padding: 3px;
+            background: linear-gradient(45deg, #ff1493, #da70d6, #ff6347, #ffd700);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: subtract;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: subtract;
+        }
+
+        .characteristic-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 20, 147, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .characteristic-card:hover::after {
+            left: 100%;
+        }
+
+        .characteristic-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 30px 80px rgba(255, 20, 147, 0.4);
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .card-title {
+            color: #ff1493;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .card-description {
+            font-size: 1.2rem;
+            line-height: 1.9;
+            color: #f5f5dc;
+            text-align: justify;
+        }
+
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .nationalism-section {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 80px;
+            border-radius: 30px;
+            border: 4px solid rgba(34, 139, 34, 0.6);
+            margin-bottom: 70px;
+            backdrop-filter: blur(25px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nationalism-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(34, 139, 34, 0.1) 0%, 
+                rgba(255, 215, 0, 0.1) 25%, 
+                rgba(220, 20, 60, 0.1) 50%, 
+                rgba(25, 25, 112, 0.1) 75%, 
+                rgba(34, 139, 34, 0.1) 100%);
+            animation: national-spirit 20s ease-in-out infinite;
+        }
+
+        @keyframes national-spirit {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
+        .nationalism-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .nationalism-section h2 {
+            text-align: center;
+            color: #32cd32;
+            font-size: 3.8rem;
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .nationalism-description {
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: #f0f8ff;
+            text-align: justify;
+            margin-bottom: 40px;
+        }
+
+        .countries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .country-card {
+            background: rgba(34, 139, 34, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 2px solid rgba(34, 139, 34, 0.4);
+        }
+
+        .country-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(34, 139, 34, 0.3);
+            border-color: rgba(34, 139, 34, 0.8);
+        }
+
+        .country-flag {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .country-name {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .expansion-section {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 80px;
+            border-radius: 30px;
+            border: 4px solid rgba(138, 43, 226, 0.6);
+            margin-bottom: 70px;
+            backdrop-filter: blur(25px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .expansion-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.1), transparent 60%);
+            animation: expansion-energy 45s linear infinite;
+        }
+
+        @keyframes expansion-energy {
+            100% { transform: rotate(360deg); }
+        }
+
+        .expansion-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .expansion-section h2 {
+            color: #da70d6;
+            font-size: 3.8rem;
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .expansion-description {
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: #f0f8ff;
+            max-width: 1000px;
+            margin: 0 auto 40px;
+        }
+
+        .forms-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .form-badge {
+            background: linear-gradient(45deg, rgba(138, 43, 226, 0.3), rgba(75, 0, 130, 0.3));
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid rgba(138, 43, 226, 0.5);
+            transition: all 0.4s ease;
+        }
+
+        .form-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 50px rgba(138, 43, 226, 0.4);
+        }
+
+        .form-name {
+            color: #da70d6;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .form-description {
+            color: #e6e6fa;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .conclusion-section {
+            text-align: center;
+            padding: 90px;
+            background: radial-gradient(ellipse at center, rgba(255, 20, 147, 0.3), transparent);
+            border-radius: 30px;
+            border: 4px solid rgba(255, 20, 147, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conclusion-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 20, 147, 0.15), transparent 50%);
+            animation: heart-rotation 50s linear infinite;
+        }
+
+        .conclusion-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .conclusion-section h2 {
+            color: #ff1493;
+            font-size: 4.5rem;
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .conclusion-section p {
+            font-size: 1.5rem;
+            line-height: 2.1;
+            max-width: 1100px;
+            margin: 0 auto;
+            color: #fff8dc;
+        }
+
+        .journey-visual {
+            margin: 40px 0;
+            font-size: 6rem;
+            animation: journey-glow 6s ease-in-out infinite;
+        }
+
+        @keyframes journey-glow {
+            0%, 100% { 
+                transform: scale(1); 
+                filter: drop-shadow(0 0 20px #ff1493);
+            }
+            50% { 
+                transform: scale(1.15); 
+                filter: drop-shadow(0 0 40px #ff1493);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .characteristics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 3.8rem;
+            }
+            
+            .characteristic-card {
+                padding: 35px;
+            }
+            
+            .heart-icon {
+                width: 250px;
+                height: 250px;
+                font-size: 8rem;
+            }
+            
+            .countries-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="musical-atmosphere"></div>
+    
+    <div class="floating-emotions">
+        <div class="emotion-symbol love" style="left: 5%; animation-delay: 0s;">💕</div>
+        <div class="emotion-symbol passion" style="left: 15%; animation-delay: 4s;">🔥</div>
+        <div class="emotion-symbol melancholy" style="left: 25%; animation-delay: 8s;">🌙</div>
+        <div class="emotion-symbol freedom" style="left: 35%; animation-delay: 12s;">🕊️</div>
+        <div class="emotion-symbol nature" style="left: 45%; animation-delay: 16s;">🌲</div>
+        <div class="emotion-symbol love" style="left: 55%; animation-delay: 2s;">💝</div>
+        <div class="emotion-symbol passion" style="left: 65%; animation-delay: 6s;">⚡</div>
+        <div class="emotion-symbol melancholy" style="left: 75%; animation-delay: 10s;">🍂</div>
+        <div class="emotion-symbol freedom" style="left: 85%; animation-delay: 14s;">✨</div>
+        <div class="emotion-symbol nature" style="left: 95%; animation-delay: 18s;">🌺</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="heart-icon">💖</div>
+                <h1>La Música del Romanticisme</h1>
+                <div class="subtitle">Parlar amb el Cor a la Mà</div>
+                <div class="intro-text">
+                    A diferència d'èpoques anteriors, com el Classicisme, on tot era més equilibrat i racional, ara els músics volien transmetre emocions intenses: amor, tristesa, passió, por, nostàlgia, llibertat… Tot això a través del so, amb melodies més expressives i dinàmiques que podien passar del murmuri més suau al crit més poderós.
+                </div>
+            </div>
+        </header>
+
+        <div class="characteristics-grid">
+            <div class="characteristic-card">
+                <div class="card-content">
+                    <div class="card-icon">🎭</div>
+                    <div class="card-title">Expressivitat Emocional</div>
+                    <div class="card-description">
+                        La música deixa de ser només bellesa formal i es converteix en una manera de connectar amb les emocions humanes. Les obres musicals sovint expliquen històries o evoquen imatges, paisatges i sentiments. Aquesta música busca <span class="highlight">moure l'oient, fer-lo sentir, pensar o somiar</span>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="characteristic-card">
+                <div class="card-content">
+                    <div class="card-icon">🕊️</div>
+                    <div class="card-title">Llibertat Creativa</div>
+                    <div class="card-description">
+                        Si abans molts músics treballaven per a l'Església o la noblesa, ara molts compositors comencen a viure de les seves obres, publicant partitures i fent concerts. Aquesta llibertat es nota en la forma de compondre: <span class="highlight">ja no cal seguir sempre les estructures tradicionals</span>, donant lloc a obres més personals i originals.
+                    </div>
+                </div>
+            </div>
+
+            <div class="characteristic-card">
+                <div class="card-content">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Ús del Contrast</div>
+                    <div class="card-description">
+                        Els compositors juguen molt amb els canvis de tempo, dinàmica i instrumentació. És habitual que dins d'una mateixa peça hi hagi passatges molt diferents: <span class="highlight">seccions lentes i melancòliques que de cop es tornen enèrgiques i apassionades</span>. Aquesta varietat dona una gran riquesa a la música romàntica.
+                    </div>
+                </div>
+            </div>
+
+            <div class="characteristic-card">
+                <div class="card-content">
+                    <div class="card-icon">🎹</div>
+                    <div class="card-title">Música Íntima</div>
+                    <div class="card-description">
+                        També es dona molta importància a la música per a piano, amb peces més íntimes i personals. Compositors com <span class="highlight">Schubert, Chopin o Schumann</span> creen obres que exploren els sentiments més profunds de l'ànima humana a través del teclat.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nationalism-section">
+            <div class="nationalism-content">
+                <h2>🌍 Nacionalisme Musical</h2>
+                <div class="nationalism-description">
+                    Hi ha un gran interès per la natura i els sentiments nacionals. Molts compositors s'inspiren en paisatges naturals, llegendes populars o temes relacionats amb la seva cultura i país. Això dona lloc al naixement del <span class="highlight">nacionalisme musical</span>, on la música es converteix en una manera d'expressar la identitat d'un poble.
+                </div>
+                <div class="countries-grid">
+                    <div class="country-card">
+                        <div class="country-flag">🇷🇺</div>
+                        <div class="country-name">Rússia</div>
+                    </div>
+                    <div class="country-card">
+                        <div class="country-flag">🇨🇿</div>
+                        <div class="country-name">Txèquia</div>
+                    </div>
+                    <div class="country-card">
+                        <div class="country-flag">🇳🇴</div>
+                        <div class="country-name">Noruega</div>
+                    </div>
+                    <div class="country-card">
+                        <div class="country-flag">🇪🇸</div>
+                        <div class="country-name">Espanya</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="expansion-section">
+            <div class="expansion-content">
+                <h2>📈 Expansió Musical</h2>
+                <div class="expansion-description">
+                    Durant el Romanticisme, la música també s'expandeix en mida i durada. Les obres es fan més llargues, amb orquestres més grans, i es comencen a explorar noves formes expressives que intenten explicar històries o pintar paisatges amb sons.
+                </div>
+                <div class="forms-showcase">
+                    <div class="form-badge">
+                        <div class="form-name">Poema Simfònic</div>
+                        <div class="form-description">Obres orquestrals que narren històries o descriuen escenes literàries</div>
+                    </div>
+                    <div class="form-badge">
+                        <div class="form-name">Música Programàtica</div>
+                        <div class="form-description">Música que intenta explicar una història específica o pintar un paisatge</div>
+                    </div>
+                    <div class="form-badge">
+                        <div class="form-name">Simfonies Extenses</div>
+                        <div class="form-description">Simfonies més llargues i complexes amb orquestres ampliades</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="conclusion-section">
+            <div class="conclusion-content">
+                <h2>Un Viatge pels Sentiments</h2>
+                <div class="journey-visual">🎼 💫 🌟</div>
+                <p>En resum, la música del Romanticisme és com un viatge a través dels sentiments humans. És una època on l'artista es converteix en un ésser lliure, capaç d'expressar tot el que sent i pensa a través de les seves obres. Una música intensa, profunda i molt humana, que encara avui ens emociona com el primer dia.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

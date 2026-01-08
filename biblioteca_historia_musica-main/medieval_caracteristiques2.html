@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La música a l'edat mitjana - Banda sonora quotidiana</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'EB Garamond', serif;
+            font-size: 18px;
+            line-height: 1.7;
+            color: #1a1a1a;
+            background: #fafafa;
+            padding: 0;
+        }
+
+        .document {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 60px 50px;
+            text-align: center;
+            border-bottom: 4px solid #34495e;
+        }
+
+        .title {
+            font-family: 'Crimson Text', serif;
+            font-size: 2.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            font-style: italic;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 60px 50px;
+        }
+
+        .abstract {
+            background: #f8f9fa;
+            border-left: 5px solid #3498db;
+            padding: 30px;
+            margin-bottom: 40px;
+            font-style: italic;
+            color: #2c3e50;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: #3498db;
+        }
+
+        .paragraph {
+            margin-bottom: 25px;
+            text-align: justify;
+            text-indent: 2em;
+            hyphens: auto;
+        }
+
+        .first-paragraph {
+            text-indent: 0;
+        }
+
+        .first-paragraph::first-letter {
+            float: left;
+            font-family: 'Crimson Text', serif;
+            font-size: 4.5rem;
+            line-height: 0.8;
+            margin: 0.1em 0.1em 0 0;
+            color: #2c3e50;
+            font-weight: 600;
+            padding: 0.05em;
+        }
+
+        .highlight {
+            font-weight: 500;
+            color: #2c3e50;
+            background: linear-gradient(180deg, transparent 65%, #3498db20 65%);
+            padding: 0 2px;
+        }
+
+        .term {
+            font-weight: 500;
+            color: #e74c3c;
+            font-style: italic;
+        }
+
+        .characteristics-box {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .characteristics-title {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .characteristics-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .characteristics-item {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .characteristics-item::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .conclusion {
+            background: #2c3e50;
+            color: white;
+            padding: 40px;
+            margin-top: 50px;
+            border-radius: 5px;
+            font-style: italic;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .quote {
+            background: #f8f9fa;
+            border-left: 4px solid #95a5a6;
+            padding: 20px 30px;
+            margin: 30px 0;
+            font-style: italic;
+            color: #34495e;
+            position: relative;
+        }
+
+        .quote::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            color: #bdc3c7;
+            font-family: 'Crimson Text', serif;
+        }
+
+        .emphasis {
+            font-weight: 500;
+            background: linear-gradient(180deg, transparent 70%, #f39c1220 70%);
+            padding: 0 2px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 50px 0;
+            color: #bdc3c7;
+            font-size: 1.5rem;
+            letter-spacing: 1rem;
+        }
+
+        .footnote {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 20px;
+            margin-top: 50px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .document {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .header {
+                padding: 40px 30px;
+            }
+            
+            .title {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .content {
+                padding: 40px 30px;
+            }
+            
+            .first-paragraph::first-letter {
+                font-size: 3.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+            
+            body {
+                font-size: 16px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .document {
+                box-shadow: none;
+            }
+            
+            .header {
+                background: white;
+                color: black;
+                border-bottom: 2px solid black;
+            }
+            
+            .conclusion {
+                background: white;
+                color: black;
+                border: 2px solid black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <div class="header">
+            <h1 class="title">La música a l'edat mitjana</h1>
+            <div class="subtitle">una banda sonora per a la vida quotidiana</div>
+        </div>
+        
+        <div class="content">
+            <div class="abstract">
+                La música medieval constitueix un fenomen cultural complex que transcendeix la mera expressió artística per convertir-se en un element fonamental de la vida quotidiana, religiosa i social de l'època.
+            </div>
+
+            <div class="section">
+                <p class="paragraph first-paragraph">Quan pensem en l'edat mitjana, sovint ens venen al cap castells, cavallers, reis, monjos i grans catedrals. Però, t'has parat mai a pensar com <span class="highlight">sonava</span> aquella època? La música era una part molt present de la vida, tot i que no era com la coneixem ara. No hi havia altaveus, ni auriculars, ni cançons enregistrades. La música s'havia de <span class="highlight">viure en directe</span>, i es feia servir en molts moments diferents del dia a dia.</p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">La dimensió religiosa de la música</h2>
+                <p class="paragraph">Una de les funcions principals de la música era <span class="highlight">religiosa</span>. Les esglésies i monestirs eren espais on la música formava part de la pregària. Cada dia es cantaven diferents parts de la missa o altres oracions, amb melodies senzilles i molt tranquil·les. Aquest tipus de música rep el nom de <span class="term">cant gregorià</span>, que és una música <span class="highlight">vocal, sense instruments</span> i <span class="highlight">monòdica</span>, és a dir, tothom canta la mateixa melodia alhora.</p>
+                
+                <p class="paragraph">Les cançons seguien el text en llatí i estaven pensades per ajudar a connectar amb el que es deia.</p>
+            </div>
+
+            <div class="divider">* * *</div>
+
+            <div class="section">
+                <h2 class="section-title">La música profana i la seva funció social</h2>
+                <p class="paragraph">Però no tota la música era religiosa. A la resta de la societat, també hi havia música, i aquesta era molt diferent. Per exemple, a les <span class="highlight">corts</span> o als <span class="highlight">pobles</span>, la gent gaudia de <span class="highlight">cançons d'amor, històries de cavallers o peces de dansa</span>. Aquestes cançons podien anar acompanyades d'instruments com el <span class="term">llaüt</span> o la <span class="term">viola</span>, però ja els estudiarem més endavant.</p>
+                
+                <p class="paragraph">Aquest tipus de música es coneix com a <span class="term">música profana</span>, i era molt popular entre les classes altes i també entre la gent del carrer, especialment durant les festes.</p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">L'evolució de la transmissió musical</h2>
+                <p class="paragraph">Una altra cosa molt interessant és que, durant l'edat mitjana, la major part de la música es <span class="highlight">transmetia de memòria</span>. La gent aprenia les cançons escoltant-les i repetint-les. Però a poc a poc, va començar a aparèixer un sistema per escriure la música.</p>
+                
+                <p class="paragraph">Al principi, s'utilitzaven uns símbols anomenats <span class="term">neumes</span>, que només indicaven si la melodia pujava o baixava. Amb el temps, aquests símbols es van col·locar sobre línies per indicar millor el to, i això va permetre que més gent pogués <span class="highlight">llegir música</span>.</p>
+            </div>
+
+            <div class="quote">
+                A més, a partir del segle IX, van començar a aparèixer les primeres formes de polifonia, és a dir, peces on sonaven diverses veus diferents alhora. Aquesta nova manera de fer música era més rica i complicada, i va donar lloc a composicions molt més elaborades.
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Funcions culturals i socials</h2>
+                <p class="paragraph">La música, per tant, era molt més que un entreteniment: <span class="emphasis">formava part de la cultura, de la religió, de la festa i de la vida</span>. També servia per <span class="highlight">transmetre coneixement</span>, ja que moltes cançons explicaven històries, fets importants o llegendes. Fins i tot hi havia joglars que anaven de poble en poble cantant i explicant novetats.</p>
+            </div>
+
+            <div class="characteristics-box">
+                <h3 class="characteristics-title">Característiques fonamentals de la música medieval</h3>
+                <ul class="characteristics-list">
+                    <li class="characteristics-item"><span class="term">Monodia</span> (una sola melodia) al principi, i <span class="term">polifonia</span> (diverses veus) més endavant.</li>
+                    <li class="characteristics-item">Música <span class="highlight">vocal i religiosa</span>, sobretot a monestirs i esglésies.</li>
+                    <li class="characteristics-item">També <span class="highlight">música profana</span>, molt popular en festes i a les corts.</li>
+                    <li class="characteristics-item">L'evolució de l'<span class="highlight">escriptura musical</span>, del cant oral a les primeres partitures.</li>
+                    <li class="characteristics-item">Una música que <span class="highlight">acompanyava tota mena d'esdeveniments</span> socials, religiosos i culturals.</li>
+                </ul>
+            </div>
+
+            <div class="conclusion">
+                Encara que la música de l'edat mitjana sigui molt diferent de la d'avui, va posar les bases del que coneixem com a música occidental, i va tenir un paper fonamental en la vida de les persones de l'època.
+            </div>
+
+            <div class="footnote">
+                Alguns dels primers compositors coneguts de música polifònica van treballar a la catedral de Notre-Dame de París, tot i que els veurem en un altre text.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

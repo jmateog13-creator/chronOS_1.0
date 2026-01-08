@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instruments del Romanticisme - Revolució Sonora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            background: #0d1117;
+            color: #f0f6fc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .tech-grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-image: 
+                linear-gradient(rgba(58, 123, 213, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(58, 123, 213, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes grid-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        .floating-tech {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .tech-symbol {
+            position: absolute;
+            color: rgba(58, 123, 213, 0.4);
+            font-size: 1.5rem;
+            animation: tech-drift 35s infinite linear;
+        }
+
+        @keyframes tech-drift {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-50px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 30px;
+            background: linear-gradient(135deg, #1c2128 0%, #21262d 100%);
+            border-radius: 16px;
+            margin-bottom: 40px;
+            border: 1px solid #30363d;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .innovation-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+            border-radius: 16px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #0d1117;
+            box-shadow: 0 8px 24px rgba(58, 123, 213, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .innovation-icon:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #7d8590;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .period-info {
+            font-size: 1rem;
+            color: #8b949e;
+            background: #21262d;
+            padding: 12px 24px;
+            border-radius: 8px;
+            display: inline-block;
+            border: 1px solid #30363d;
+        }
+
+        .evolution-timeline {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .timeline-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .timeline-title {
+            font-size: 2rem;
+            color: #f0f6fc;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .timeline-description {
+            color: #8b949e;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .instruments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .instrument-card {
+            background: #161b22;
+            border: 1px solid #21262d;
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .instrument-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(58, 123, 213, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .instrument-card:hover::before {
+            left: 100%;
+        }
+
+        .instrument-card:hover {
+            border-color: #3a7bd5;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(58, 123, 213, 0.2);
+        }
+
+        .instrument-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .instrument-emoji {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            filter: grayscale(20%);
+        }
+
+        .instrument-info h3 {
+            font-size: 1.4rem;
+            color: #f0f6fc;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .instrument-category {
+            font-size: 0.9rem;
+            color: #3a7bd5;
+            background: rgba(58, 123, 213, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .instrument-description {
+            color: #8b949e;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .innovation-badge {
+            background: linear-gradient(135deg, #238636, #2ea043);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .orchestra-expansion {
+            background: linear-gradient(135deg, #1c2128, #21262d);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .expansion-title {
+            font-size: 2.2rem;
+            color: #f0f6fc;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .expansion-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            background: #0d1117;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #21262d;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3a7bd5;
+            display: block;
+        }
+
+        .stat-label {
+            color: #8b949e;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .piano-spotlight {
+            background: linear-gradient(135deg, #21262d, #1c2128);
+            border: 2px solid #3a7bd5;
+            border-radius: 16px;
+            padding: 50px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .piano-spotlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3a7bd5, #00d2ff, #3a7bd5);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .spotlight-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .piano-icon {
+            font-size: 4rem;
+            margin-right: 20px;
+            filter: grayscale(0%);
+        }
+
+        .spotlight-title {
+            font-size: 2.5rem;
+            color: #f0f6fc;
+            font-weight: 700;
+        }
+
+        .spotlight-description {
+            font-size: 1.2rem;
+            color: #c9d1d9;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .feature-tag {
+            background: rgba(58, 123, 213, 0.2);
+            color: #58a6ff;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(58, 123, 213, 0.3);
+        }
+
+        .conclusion-section {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .conclusion-title {
+            font-size: 2.2rem;
+            color: #f0f6fc;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .conclusion-text {
+            font-size: 1.1rem;
+            color: #8b949e;
+            line-height: 1.7;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tech-highlight {
+            color: #58a6ff;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .instruments-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .expansion-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .spotlight-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .piano-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tech-grid-bg"></div>
+    
+    <div class="floating-tech">
+        <div class="tech-symbol" style="left: 10%; animation-delay: 0s;">⚙️</div>
+        <div class="tech-symbol" style="left: 20%; animation-delay: 7s;">🔧</div>
+        <div class="tech-symbol" style="left: 30%; animation-delay: 14s;">⚡</div>
+        <div class="tech-symbol" style="left: 40%; animation-delay: 21s;">🎛️</div>
+        <div class="tech-symbol" style="left: 50%; animation-delay: 28s;">🔩</div>
+        <div class="tech-symbol" style="left: 60%; animation-delay: 3s;">⚙️</div>
+        <div class="tech-symbol" style="left: 70%; animation-delay: 10s;">🔧</div>
+        <div class="tech-symbol" style="left: 80%; animation-delay: 17s;">⚡</div>
+        <div class="tech-symbol" style="left: 90%; animation-delay: 24s;">🎛️</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="innovation-icon">🔬</div>
+            <h1>Instruments del Romanticisme</h1>
+            <div class="subtitle">Revolució Tecnològica i Sonora</div>
+            <div class="period-info">Finals del segle XVIII - Finals del segle XIX</div>
+        </header>
+
+        <div class="evolution-timeline">
+            <div class="timeline-header">
+                <div class="timeline-title">Transformació Instrumental</div>
+                <div class="timeline-description">
+                    Els instruments van experimentar millores importants que van permetre als compositors explorar noves sonoritats i textures més riques, transformant completament el panorama musical.
+                </div>
+            </div>
+        </div>
+
+        <div class="orchestra-expansion">
+            <div class="expansion-title">Expansió Orquestral</div>
+            <p style="color: #8b949e; font-size: 1.1rem; margin-bottom: 20px;">
+                La grandària i la força de l'orquestra van créixer molt durant aquest període
+            </p>
+            <div class="expansion-stats">
+                <div class="stat-item">
+                    <span class="stat-number">4x</span>
+                    <div class="stat-label">Increment de la secció de vent</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100+</span>
+                    <div class="stat-label">Músics en grans orquestres</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">25+</span>
+                    <div class="stat-label">Nous instruments incorporats</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instruments-grid">
+            <div class="instrument-card">
+                <div class="instrument-header">
+                    <div class="instrument-emoji">🎻</div>
+                    <div class="instrument-info">
+                        <h3>Secció de Corda</h3>
+                        <div class="instrument-category">Columna vertebral</div>
+                    </div>
+                </div>
+                <div class="instrument-description">
+                    Els instruments de corda van continuar sent la columna vertebral del conjunt: violí, viola, violoncel i contrabaix. Van guanyar en potència i capacitat expressiva gràcies a innovacions en la construcció.
+                </div>
+                <div class="innovation-badge">Millores en construcció</div>
+            </div>
+
+            <div class="instrument-card">
+                <div class="instrument-header">
+                    <div class="instrument-emoji">🎺</div>
+                    <div class="instrument-info">
+                        <h3>Vent-metall</h3>
+                        <div class="instrument-category">Evolució tècnica</div>
+                    </div>
+                </div>
+                <div class="instrument-description">
+                    La trompa i la trompeta van evolucionar incorporant <span class="tech-highlight">pistons</span> que els donaven major flexibilitat per tocar melodies complexes. Es van incorporar nous instruments com la tuba.
+                </div>
+                <div class="innovation-badge">Sistema de pistons</div>
+            </div>
+
+            <div class="instrument-card">
+                <div class="instrument-header">
+                    <div class="instrument-emoji">🎷</div>
+                    <div class="instrument-info">
+                        <h3>Vent-fusta</h3>
+                        <div class="instrument-category">Consolidació</div>
+                    </div>
+                </div>
+                <div class="instrument-description">
+                    La flauta travessera, l'oboè, el clarinet i el fagot es van consolidar dins de l'orquestra, ampliant significativament el seu paper expressiu i tècnic.
+                </div>
+                <div class="innovation-badge">Rol ampliat</div>
+            </div>
+
+            <div class="instrument-card">
+                <div class="instrument-header">
+                    <div class="instrument-emoji">🪕</div>
+                    <div class="instrument-info">
+                        <h3>Harpa</h3>
+                        <div class="instrument-category">Toc especial</div>
+                    </div>
+                </div>
+                <div class="instrument-description">
+                    La harpa aportava un toc especial i delicat a moltes composicions, esdevenint un element essencial per crear <span class="tech-highlight">atmosferes sonores</span> úniques.
+                </div>
+                <div class="innovation-badge">Efectes sonors</div>
+            </div>
+
+            <div class="instrument-card">
+                <div class="instrument-header">
+                    <div class="instrument-emoji">🥁</div>
+                    <div class="instrument-info">
+                        <h3>Percussió</h3>
+                        <div class="instrument-category">Efectes dramàtics</div>
+                    </div>
+                </div>
+                <div class="instrument-description">
+                    La percussió va guanyar presència significativa per afegir ritme i efectes dramàtics a les obres, ampliant les possibilitats expressives de l'orquestra.
+                </div>
+                <div class="innovation-badge">Presència ampliada</div>
+            </div>
+
+            <div class="instrument-card">
+                <div class="instrument-header">
+                    <div class="instrument-emoji">🎼</div>
+                    <div class="instrument-info">
+                        <h3>Nous Instruments</h3>
+                        <div class="instrument-category">Innovació</div>
+                    </div>
+                </div>
+                <div class="instrument-description">
+                    Instruments com el trombó i altres innovacions tècniques van ampliar encara més la <span class="tech-highlight">paleta sonora</span> disponible per als compositors.
+                </div>
+                <div class="innovation-badge">Paleta sonora ampliada</div>
+            </div>
+        </div>
+
+        <div class="piano-spotlight">
+            <div class="spotlight-header">
+                <div class="piano-icon">🎹</div>
+                <div class="spotlight-title">El Piano: Protagonista del Romanticisme</div>
+            </div>
+            <div class="spotlight-description">
+                El piano es va convertir en un instrument clau del Romanticisme. Amb un so més potent i una resposta més sensible, va esdevenir popular tant per a compositors com per a intèrprets, permetent interpretar des de peces íntimes fins a obres d'una gran complexitat tècnica.
+            </div>
+            <div class="feature-tags">
+                <div class="feature-tag">So més potent</div>
+                <div class="feature-tag">Resposta sensible</div>
+                <div class="feature-tag">Versatilitat expressiva</div>
+                <div class="feature-tag">Centre musical domèstic</div>
+                <div class="feature-tag">Instrument concertístic</div>
+            </div>
+        </div>
+
+        <div class="conclusion-section">
+            <div class="conclusion-title">Revolució Sonora Completa</div>
+            <div class="conclusion-text">
+                En conjunt, els instruments del Romanticisme van guanyar en <span class="tech-highlight">varietat i qualitat</span>, fet que va permetre als músics i compositors donar vida a una música més rica i amb més matisos. Aquesta evolució instrumental va anar estretament lligada a la voluntat dels compositors de comunicar emocions profundes i de crear paisatges sonors que captivessin l'oient.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

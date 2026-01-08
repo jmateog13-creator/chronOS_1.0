@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giovanni Pierluigi da Palestrina: figura clau de la música renaixentista</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Source+Serif+Pro:wght@300;400;600&family=Inter:wght@300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Serif Pro', serif;
+            line-height: 1.7;
+            color: #2c2c2c;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="renaissance-bg" patternUnits="userSpaceOnUse" width="25" height="25"><path d="M5,12 Q12,8 20,12" stroke="rgba(255,255,255,0.015)" stroke-width="0.5" fill="none"/><circle cx="15" cy="15" r="0.5" fill="rgba(255,255,255,0.01)"/></pattern></defs><rect width="100" height="100" fill="url(%23renaissance-bg)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .document-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 50%, #06b6d4 100%);
+            color: white;
+            padding: 60px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10,50 Q25,30 40,50 T70,50 T90,50" stroke="rgba(255,255,255,0.08)" stroke-width="1" fill="none"/><circle cx="20" cy="30" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="80" cy="70" r="1.5" fill="rgba(255,255,255,0.04)"/></svg>') repeat;
+            animation: orchestral 40s linear infinite;
+        }
+
+        @keyframes orchestral {
+            0% { transform: rotate(0deg) translateX(0); }
+            100% { transform: rotate(360deg) translateX(20px); }
+        }
+
+        .composer-medallion {
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4);
+            position: relative;
+            z-index: 1;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 300;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-area {
+            padding: 60px 50px;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 50px;
+            border-left: 6px solid #7c3aed;
+            font-size: 1.2rem;
+            line-height: 1.9;
+            text-align: justify;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.1);
+            position: relative;
+        }
+
+        .intro-card::before {
+            content: '🎼';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2.5rem;
+            opacity: 0.2;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        .content-section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .section-header {
+            padding: 30px 35px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-header.style {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .section-header.influence {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .section-header.biography {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="1.5" fill="rgba(255,255,255,0.08)"/><path d="M40,10 Q50,30 60,10" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/></svg>');
+            animation: section-shimmer 15s ease-in-out infinite;
+        }
+
+        @keyframes section-shimmer {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        .section-icon {
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-body {
+            padding: 35px;
+        }
+
+        .section-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #4b5563;
+            margin-bottom: 20px;
+        }
+
+        .section-text strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .masterpiece-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .masterpiece-highlight::before {
+            content: '⭐';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.4;
+        }
+
+        .masterpiece-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .achievement-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .achievement-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #7c3aed;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .achievement-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.15);
+        }
+
+        .achievement-icon {
+            font-size: 1.5rem;
+            color: #7c3aed;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .achievement-content {
+            flex-grow: 1;
+        }
+
+        .achievement-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .achievement-description {
+            font-size: 1rem;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .conclusion-section {
+            background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 16px;
+            margin-top: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conclusion-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+            animation: conclusion-pulse 12s ease-in-out infinite;
+        }
+
+        @keyframes conclusion-pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+            50% { transform: scale(1.2) rotate(5deg); opacity: 0.6; }
+        }
+
+        .conclusion-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .conclusion-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .decorative-divider {
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #7c3aed, #3b82f6, #06b6d4, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .document-container {
+                margin: 20px;
+            }
+
+            .content-area {
+                padding: 40px 30px;
+            }
+
+            .hero-section {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .achievement-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .achievement-icon {
+                margin-top: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-container">
+        <header class="hero-section">
+            <div class="composer-medallion">🎼</div>
+            <h1>Giovanni Pierluigi da Palestrina</h1>
+            <div class="hero-subtitle">Figura clau de la música renaixentista</div>
+        </header>
+
+        <div class="content-area">
+            <div class="intro-card">
+                Giovanni Pierluigi da Palestrina (1525-1594) va ser un dels compositors més destacats del Renaixement, especialment conegut per la seva música dedicada a l'Església catòlica. Va néixer a la ciutat italiana de Palestrina, d'on prové el seu sobrenom, i la seva obra va influir profundament en la música sacra europea.
+            </div>
+
+            <div class="decorative-divider"></div>
+
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-header style">
+                        <div class="section-icon">🎵</div>
+                        <div class="section-title">L'estil musical de Palestrina</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-text">
+                            Palestrina va excel·lir en la composició de música polifònica, on diferents línies melòdiques s'entrellacen creant un conjunt harmònic i equilibrat. Les seves composicions es caracteritzen per la seva claredat i bellesa, així com per la manera com integra perfectament el text dins la música, facilitant la comprensió del missatge.
+                        </div>
+
+                        <div class="masterpiece-highlight">
+                            <div class="masterpiece-title">Missa Papae Marcelli</div>
+                            Una de les seves peces més importants és la <strong>Missa Papae Marcelli</strong>, considerada un model de contrapunt renaixentista. Aquesta obra va tenir un paper fonamental per preservar l'ús de la música polifònica en les cerimònies religioses durant l'època de la Reforma.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header influence">
+                        <div class="section-icon">⭐</div>
+                        <div class="section-title">Influència i llegat</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-text">
+                            La música de Palestrina va marcar un abans i un després en la música religiosa europea. El seu estil va ser considerat un referent a seguir durant molts anys, ja que aconseguia combinar una gran senzillesa amb una harmonia perfecta, fent que les seves obres fossin tant artísticament belles com espiritualment accessibles.
+                        </div>
+                        <div class="section-text">
+                            Gràcies a ell, la música litúrgica va trobar un equilibri entre expressivitat artística i claredat en el missatge.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header biography">
+                        <div class="section-icon">🏛️</div>
+                        <div class="section-title">Vida i trajectòria</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-text">
+                            Durant la seva vida, Palestrina va treballar en diferents esglésies i institucions religioses importants d'Itàlia, destacant la seva etapa a la Basílica de Sant Pere de Roma.
+                        </div>
+
+                        <ul class="achievement-list">
+                            <li class="achievement-item">
+                                <div class="achievement-icon">📜</div>
+                                <div class="achievement-content">
+                                    <div class="achievement-title">Obra prolífica</div>
+                                    <div class="achievement-description">
+                                        Va compondre centenars d'obres, principalment misses, motets i himnes, que es van convertir en referències per als compositors que el van seguir.
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="achievement-item">
+                                <div class="achievement-icon">🎭</div>
+                                <div class="achievement-content">
+                                    <div class="achievement-title">Música profana</div>
+                                    <div class="achievement-description">
+                                        Tot i que la majoria de la seva obra és religiosa, també va escriure algunes composicions profanes, menys conegudes però igualment importants.
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="conclusion-section">
+                <div class="conclusion-title">Resum</div>
+                <div class="conclusion-text">
+                    Giovanni Pierluigi da Palestrina és una figura essencial de la música renaixentista. La seva música polifònica equilibrada, clara i expressiva ha deixat una empremta duradora en la música sacra. Les seves composicions, especialment la <strong>Missa Papae Marcelli</strong>, són un exemple de com la música pot combinar bellesa artística i missatge espiritual de manera perfecta.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

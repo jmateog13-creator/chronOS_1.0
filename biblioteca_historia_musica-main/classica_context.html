@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context sociocultural del Classicisme</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&family=Libre+Baskerville:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            line-height: 1.8;
+            color: #1e293b;
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 50%, #581c87 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="enlightenment" patternUnits="userSpaceOnUse" width="25" height="25"><circle cx="12.5" cy="12.5" r="0.8" fill="rgba(255,255,255,0.02)"/><path d="M8,12.5 L17,12.5" stroke="rgba(255,255,255,0.015)" stroke-width="0.3"/><path d="M12.5,8 L12.5,17" stroke="rgba(255,255,255,0.015)" stroke-width="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23enlightenment)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .enlightenment-codex {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .codex-header {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+            color: white;
+            padding: 60px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .codex-header::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="15" stroke="rgba(255,255,255,0.05)" stroke-width="0.5" fill="none"/><circle cx="75" cy="75" r="10" stroke="rgba(255,255,255,0.03)" stroke-width="0.5" fill="none"/><path d="M50,20 L50,80 M20,50 L80,50" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/></svg>') repeat;
+            animation: enlightenment-grid 45s linear infinite;
+        }
+
+        @keyframes enlightenment-grid {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(-50px) translateY(-30px) rotate(1deg); }
+        }
+
+        .period-seal {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            box-shadow: 0 15px 40px rgba(245, 158, 11, 0.4);
+            position: relative;
+            z-index: 1;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 1px;
+        }
+
+        .codex-subtitle {
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .scholarly-content {
+            padding: 60px 50px;
+        }
+
+        .preamble {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 50px;
+            border-left: 5px solid #1e40af;
+            font-size: 1.2rem;
+            line-height: 1.9;
+            text-align: justify;
+            box-shadow: 0 10px 30px rgba(30, 64, 175, 0.1);
+            position: relative;
+        }
+
+        .preamble::before {
+            content: '⚖️';
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 2.5rem;
+            opacity: 0.2;
+        }
+
+        .preamble strong {
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .enlightenment-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .showcase-element {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        .showcase-element:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .element-header {
+            padding: 30px 35px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .element-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="30" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="70" r="1.5" fill="rgba(255,255,255,0.08)"/><path d="M30,20 Q40,30 50,20" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/></svg>');
+            animation: element-glow 15s ease-in-out infinite;
+        }
+
+        @keyframes element-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.7; transform: scale(1.05) rotate(180deg); }
+        }
+
+        .element-header.revolution {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        .element-header.artist {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .element-header.science {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
+
+        .element-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .element-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .element-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-style: italic;
+            position: relative;
+            z-index: 1;
+            margin-top: 5px;
+        }
+
+        .element-body {
+            padding: 35px;
+        }
+
+        .element-description {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #475569;
+        }
+
+        .element-description strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .historical-note {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 1rem;
+            color: #92400e;
+            position: relative;
+        }
+
+        .historical-note::before {
+            content: '📜';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            opacity: 0.6;
+        }
+
+        .impact-highlight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left: 3px solid #3b82f6;
+            padding: 18px;
+            margin: 18px 0;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #1e40af;
+        }
+
+        .enlightenment-principles {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #f8fafc;
+            padding: 50px;
+            border-radius: 15px;
+            margin: 60px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enlightenment-principles::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(30, 64, 175, 0.15) 0%, transparent 70%);
+            animation: principles-radiance 20s ease-in-out infinite;
+        }
+
+        @keyframes principles-radiance {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            50% { transform: scale(1.3) rotate(10deg); opacity: 0.8; }
+        }
+
+        .principles-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .principles-text {
+            font-size: 1.2rem;
+            line-height: 1.9;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .classical-divider {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #1e40af, #f59e0b, #1e40af, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 350px;
+        }
+
+        @media (max-width: 768px) {
+            .enlightenment-codex {
+                margin: 20px;
+            }
+
+            .scholarly-content {
+                padding: 40px 30px;
+            }
+
+            .codex-header {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .enlightenment-showcase {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .element-body {
+                padding: 25px 20px;
+            }
+
+            .enlightenment-principles {
+                padding: 35px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="enlightenment-codex">
+        <header class="codex-header">
+            <div class="period-seal">⚡</div>
+            <h1>Context sociocultural del Classicisme</h1>
+            <div class="codex-subtitle">L'edat de la Raó i la Il·lustració</div>
+        </header>
+
+        <div class="scholarly-content">
+            <div class="preamble">
+                El Classicisme va ser un període que es va desenvolupar durant el segle XVIII i principis del XIX, una època marcada per grans canvis en la societat, la cultura i la ciència. Aquest moment es caracteritza per la importància que es va donar a la raó, la intel·ligència i l'ordre, ideals que també van influir en la música i en altres arts.
+                <br><br>
+                Durant el Classicisme, va aparèixer el moviment filosòfic anomenat <strong>Il·lustració</strong>, que defensava que la humanitat podia avançar mitjançant la ciència, l'educació i el pensament crític. Aquestes idees van portar a un major interès per la cultura i la recerca del coneixement, i van ajudar a canviar les formes de govern i la manera de viure a Europa.
+            </div>
+
+            <div class="classical-divider"></div>
+
+            <div class="enlightenment-showcase">
+                <div class="showcase-element">
+                    <div class="element-header revolution">
+                        <div class="element-icon">🏛️</div>
+                        <div class="element-title">Esdeveniment històric</div>
+                        <div class="element-subtitle">Revolució Francesa</div>
+                    </div>
+                    <div class="element-body">
+                        <div class="element-description">
+                            Un dels esdeveniments més destacats d'aquest període va ser la <strong>Revolució Francesa</strong> (1789-1799). Aquesta revolució va suposar un gran canvi polític i social a França i va influir en molts altres països. Amb ella, es van posar fi a molts privilegis de l'Antic Règim, es van proclamar drets com la llibertat, la igualtat i la fraternitat, i es va establir la idea que el poble podia participar en el govern.
+                        </div>
+                        <div class="historical-note">
+                            La Revolució Francesa va marcar el camí cap a la societat moderna i va inspirar moviments democràtics arreu d'Europa.
+                        </div>
+                        <div class="impact-highlight">
+                            <strong>Impacte:</strong> Transformació radical de les estructures socials i polítiques europees.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-element">
+                    <div class="element-header artist">
+                        <div class="element-icon">🎨</div>
+                        <div class="element-title">Artista destacat</div>
+                        <div class="element-subtitle">Jacques-Louis David</div>
+                    </div>
+                    <div class="element-body">
+                        <div class="element-description">
+                            En l'àmbit artístic, un dels noms més importants del Classicisme és <strong>Jacques-Louis David</strong>, un pintor francès que va capturar amb gran detall i expressivitat els ideals i els esdeveniments de la seva època. Les seves obres representen la grandesa, la disciplina i els valors de la Il·lustració i de la Revolució.
+                        </div>
+                        <div class="historical-note">
+                            David va influir en l'art neoclàssic, que buscava inspirar-se en l'antiga Grècia i Roma, amb formes clares i equilibrades.
+                        </div>
+                        <div class="impact-highlight">
+                            <strong>Contribució:</strong> Establiment dels cànons estètics neoclàssics basats en l'harmonia i l'equilibri.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-element">
+                    <div class="element-header science">
+                        <div class="element-icon">🔬</div>
+                        <div class="element-title">Descobriment científic</div>
+                        <div class="element-subtitle">Teoria de la gravetat</div>
+                    </div>
+                    <div class="element-body">
+                        <div class="element-description">
+                            En el camp de la ciència, un descobriment molt important va ser la <strong>teoria de la gravetat</strong> de <strong>Isaac Newton</strong>, que va explicar com els cossos s'atrauen entre si i va sentar les bases de la física moderna. A més, durant aquest període es van fer avenços en molts altres camps, com la química, la medicina i la tecnologia.
+                        </div>
+                        <div class="historical-note">
+                            Els avenços científics van contribuir a transformar la vida de les persones i a impulsar la revolució industrial.
+                        </div>
+                        <div class="impact-highlight">
+                            <strong>Conseqüència:</strong> Establiment del mètode científic com a base del coneixement humà.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="classical-divider"></div>
+
+            <div class="enlightenment-principles">
+                <div class="principles-title">L'esperit de la Il·lustració</div>
+                <div class="principles-text">
+                    Aquest context sociocultural de transformació, racionalitat i cerca de l'ordre va crear l'ambient perfecte per al desenvolupament del Classicisme musical, que va reflectir en la seva música els mateixos ideals d'equilibri, claredat i accessibilitat que caracteritzaven l'època de les Llums.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

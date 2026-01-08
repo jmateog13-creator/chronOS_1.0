@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Impressionisme Musical - Transformació Sonora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #74b9ff 0%, #e17055 50%, #fdcb6e 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            font-weight: normal;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .period {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 50px 40px;
+        }
+
+        .intro-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 50px;
+            border-left: 5px solid #74b9ff;
+        }
+
+        .intro-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #2c3e50;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            color: #2d3436;
+            margin: 60px 0 40px 0;
+            position: relative;
+        }
+
+        .section-title::before,
+        .section-title::after {
+            content: '♪';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #74b9ff;
+            font-size: 1.5rem;
+        }
+
+        .section-title::before {
+            left: -50px;
+        }
+
+        .section-title::after {
+            right: -50px;
+        }
+
+        .characteristics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .characteristic-card {
+            background: white;
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .characteristic-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(116, 185, 255, 0.2);
+            border-color: #74b9ff;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #74b9ff;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            color: #2d3436;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .card-content {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            text-align: justify;
+            color: #636e72;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(116, 185, 255, 0.2), rgba(116, 185, 255, 0.1));
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .composers-section {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .composers-title {
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            font-weight: normal;
+        }
+
+        .composers-content {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .instruments-section {
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .instruments-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .instrument-item {
+            background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 30px rgba(116, 185, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .instrument-item:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 20px 40px rgba(116, 185, 255, 0.4);
+        }
+
+        .instrument-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .instrument-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .conclusion-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+            padding: 50px 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 60px;
+            border: 2px solid #74b9ff;
+        }
+
+        .conclusion-text {
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: #2c3e50;
+            font-style: italic;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .conclusion-emphasis {
+            font-weight: bold;
+            color: #2d3436;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .characteristics-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .characteristic-card {
+                padding: 25px 20px;
+            }
+            
+            .section-title::before,
+            .section-title::after {
+                display: none;
+            }
+            
+            .instruments-grid {
+                gap: 20px;
+            }
+            
+            .instrument-item {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>L'Impressionisme Musical</h1>
+            <div class="subtitle">Transformació Sonora</div>
+            <div class="period">Finals del segle XIX - Començaments del XX</div>
+        </div>
+
+        <div class="content">
+            <div class="intro-section">
+                <div class="intro-text">
+                    A finals del segle XIX i començaments del XX, la música va viure una transformació important que va portar a l'aparició de l'anomenat impressionisme musical. Aquest estil es va distanciar dels sentiments dramàtics i estructures rígides pròpies del Romanticisme, per centrar-se en la creació d'<strong>ambients sonors i sensacions subtils</strong> que evoquen imatges, colors i atmosferes.
+                </div>
+            </div>
+
+            <h2 class="section-title">Elements Revolucionaris</h2>
+            
+            <div class="characteristics-grid">
+                <div class="characteristic-card">
+                    <div class="card-icon">🎼</div>
+                    <h3 class="card-title">Harmonia Transformada</h3>
+                    <div class="card-content">
+                        Una de les novetats principals va ser la <span class="highlight">modificació de les regles harmòniques tradicionals</span>. Els compositors van començar a fer servir acords menys convencionals, que no seguien el camí clàssic de tensió i resolució. Això va donar lloc a sonoritats més flotants i misterioses, amb escales especials com la <span class="highlight">pentatònica</span> i la <span class="highlight">de tons sencers</span>, que aporten un aire d'exotisme i llibertat.
+                    </div>
+                </div>
+
+                <div class="characteristic-card">
+                    <div class="card-icon">🎵</div>
+                    <h3 class="card-title">Melodia Lliure</h3>
+                    <div class="card-content">
+                        Pel que fa a la <span class="highlight">melodia</span>, aquesta va perdre la seva funció central i va adoptar un caràcter més lliure i fragmentat. Les línies melòdiques són sovint curtes, sinuoses i a vegades semblen més suggeriments que veritables temes desenvolupats. Això fa que la música s'allunyi de les formes clàssiques per esdevenir més lliure i oberta.
+                    </div>
+                </div>
+
+                <div class="characteristic-card">
+                    <div class="card-icon">⏱️</div>
+                    <h3 class="card-title">Ritme Fluït</h3>
+                    <div class="card-content">
+                        El <span class="highlight">ritme</span> també es va veure afectat per aquesta nova sensibilitat: la música impressionista evita les mètriques estrictes i els patrons rítmics regulars. S'utilitzen <span class="highlight">tempos variables</span> i <span class="highlight">frases asimètriques</span> que donen una sensació de moviment fluït i natural, com si la música respirés i evolucionés de manera espontània.
+                    </div>
+                </div>
+
+                <div class="characteristic-card">
+                    <div class="card-icon">🏗️</div>
+                    <h3 class="card-title">Estructura Oberta</h3>
+                    <div class="card-content">
+                        En quant a la <span class="highlight">estructura</span>, les composicions impressionistes no solen seguir formes fixes ni clàssiques. En lloc d'això, s'orienten cap a <span class="highlight">formes obertes i flexibles</span>, que prioritzen la creació d'un ambient o la captació d'una imatge musical abans que una narració tradicional. Això fa que les peces siguin més lliures i que convidin a una escolta més meditativa i evocadora.
+                    </div>
+                </div>
+
+                <div class="characteristic-card">
+                    <div class="card-icon">🎨</div>
+                    <h3 class="card-title">Color i Timbre</h3>
+                    <div class="card-content">
+                        Un altre aspecte molt important és la <span class="highlight">importància del color i el timbre</span> en la música. L'orquestració es converteix en una eina fonamental per aconseguir diferents textures sonores i matisos que ajudin a crear les atmosferes desitjades. Els compositors es fixen en la combinació d'instruments i en la manera de tocar-los per explorar noves possibilitats tímbrics.
+                    </div>
+                </div>
+
+                <div class="characteristic-card">
+                    <div class="card-icon">🌊</div>
+                    <h3 class="card-title">Experiència Sensorial</h3>
+                    <div class="card-content">
+                        L'impressionisme musical representa un canvi de mirada: es tracta d'una música que no busca impressionar amb grans passions o conflictes, sinó que vol transmetre <span class="highlight">sensacions subtils, imatges i emocions a través del so</span>, convidant a l'oient a gaudir d'una experiència més lliure i íntima.
+                    </div>
+                </div>
+            </div>
+
+            <div class="composers-section">
+                <h2 class="composers-title">Pioners del Moviment</h2>
+                <div class="composers-content">
+                    Encara que no es parlarà detalladament dels instruments ni dels compositors aquí, cal destacar que figures com <strong>Debussy i Ravel</strong> van ser claus en aquesta evolució, i que instruments com el piano i l'arpa, juntament amb la flauta i altres instruments de vent, van ajudar a donar vida a aquests nous paisatges musicals.
+                </div>
+            </div>
+
+            <div class="instruments-section">
+                <h2 class="section-title">Instruments Característics</h2>
+                <div class="instruments-grid">
+                    <div class="instrument-item">
+                        <div class="instrument-emoji">🎹</div>
+                        <div class="instrument-name">Piano</div>
+                    </div>
+                    <div class="instrument-item">
+                        <div class="instrument-emoji">🎺</div>
+                        <div class="instrument-name">Arpa</div>
+                    </div>
+                    <div class="instrument-item">
+                        <div class="instrument-emoji">🪈</div>
+                        <div class="instrument-name">Flauta</div>
+                    </div>
+                    <div class="instrument-item">
+                        <div class="instrument-emoji">🎻</div>
+                        <div class="instrument-name">Cordes</div>
+                    </div>
+                    <div class="instrument-item">
+                        <div class="instrument-emoji">🎷</div>
+                        <div class="instrument-name">Vents</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="conclusion-section">
+                <div class="conclusion-text">
+                    En definitiva, l'impressionisme musical representa un canvi de mirada: es tracta d'una música que no busca impressionar amb grans passions o conflictes, sinó que vol transmetre <span class="conclusion-emphasis">sensacions subtils, imatges i emocions a través del so</span>, convidant a l'oient a gaudir d'una experiència més lliure i íntima.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Efectes hover per les targetes
+        document.querySelectorAll('.characteristic-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Efectes per els instruments
+        document.querySelectorAll('.instrument-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1) translateY(-5px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) translateY(0)';
+            });
+        });
+
+        // Animació suau d'aparició
+        window.addEventListener('load', function() {
+            const elements = document.querySelectorAll('.characteristic-card, .instrument-item');
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    element.style.transition = 'all 0.6s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Debussy - Compositor Innovador</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f4f4f4;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: #fff;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: normal;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dates {
+            font-size: 1rem;
+            margin-top: 15px;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 50px 40px;
+        }
+
+        .intro {
+            background: #ecf0f1;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            border-left: 5px solid #3498db;
+        }
+
+        .intro p {
+            font-size: 1.1rem;
+            font-style: italic;
+            margin: 0;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .section p {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .works {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .works h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .works-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .work-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .work-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .work-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .work-description {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .characteristics {
+            background: #e8f5e8;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+            border-left: 5px solid #27ae60;
+        }
+
+        .characteristics h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .characteristics ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .characteristics li {
+            padding: 10px 0;
+            border-bottom: 1px solid #d5e8d5;
+        }
+
+        .characteristics li:last-child {
+            border-bottom: none;
+        }
+
+        .characteristics li::before {
+            content: "♪ ";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .legacy {
+            background: #2c3e50;
+            color: #fff;
+            padding: 40px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .legacy h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            font-weight: normal;
+        }
+
+        .legacy p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .timeline {
+            margin: 40px 0;
+        }
+
+        .timeline h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+
+        .timeline-year {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3498db;
+            min-width: 80px;
+            margin-right: 20px;
+        }
+
+        .timeline-event {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .works-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+            }
+            
+            .timeline-year {
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Claude Debussy</h1>
+            <div class="subtitle">Compositor Innovador</div>
+            <div class="dates">França, 1862 - 1918</div>
+        </div>
+
+        <div class="content">
+            <div class="intro">
+                <p>
+                    Claude Debussy va ser un dels compositors més importants i innovadors de finals del segle XIX i principis del segle XX. Va transformar la manera de fer música i va obrir el camí cap a noves formes d'expressió que es van conèixer com a impressionisme musical.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2>Innovació Musical</h2>
+                <p>
+                    Debussy va ser un músic que va buscar sempre trencar amb les tradicions del Romanticisme. En lloc de crear obres plenes d'emocions intenses i formes rígides, va voler transmetre <span class="highlight">impressions, atmosferes i sensacions més subtils i delicades</span>. La seva música es caracteritza per l'ús d'harmonies noves, que sovint eviten les progressions clàssiques, creant així un efecte de colors sonors que es poden comparar amb la pintura impressionista.
+                </p>
+            </div>
+
+            <div class="characteristics">
+                <h3>Característiques del seu Estil</h3>
+                <ul>
+                    <li>Harmonies noves que eviten progressions clàssiques</li>
+                    <li>Creació de colors sonors únics</li>
+                    <li>Orquestració creativa i innovadora</li>
+                    <li>Sons suaus, vaporosos i misteriosos</li>
+                    <li>Exploració del potencial del piano</li>
+                    <li>Influències de la música japonesa</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Mestria en l'Orquestració</h2>
+                <p>
+                    Un dels aspectes més destacats de Debussy és la seva gran habilitat per a <span class="highlight">l'orquestració i la creació de timbres únics</span>. Va saber combinar els instruments de manera molt creativa per aconseguir sons suaus, vaporosos i, a vegades, misteriosos, que envolten l'oient i li permeten imaginar paisatges o estats d'ànim. També va escriure moltes peces per a piano sol, on va explorar tot el potencial d'aquest instrument per crear ambients variats i textures diferents.
+                </p>
+            </div>
+
+            <div class="works">
+                <h3>Obres Més Conegudes</h3>
+                <div class="works-list">
+                    <div class="work-item">
+                        <div class="work-title">"Clair de Lune"</div>
+                        <div class="work-description">
+                            Peça per a piano que transmet una sensació de calma i poesia
+                        </div>
+                    </div>
+                    <div class="work-item">
+                        <div class="work-title">"Prélude à l'après-midi d'un faune"</div>
+                        <div class="work-description">
+                            Composició orquestral que evoca la natura i la mitologia amb gran llibertat
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline">
+                <h3>Moments Clau</h3>
+                <div class="timeline-item">
+                    <div class="timeline-year">1862</div>
+                    <div class="timeline-event">Naixement a França</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1889</div>
+                    <div class="timeline-event">Descobreix la música japonesa a l'Exposició Universal de París</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1894</div>
+                    <div class="timeline-event">Estrena del "Prélude à l'après-midi d'un faune"</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1905</div>
+                    <div class="timeline-event">Publica "Clair de Lune"</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1918</div>
+                    <div class="timeline-event">Mort a París</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Influències Culturals</h2>
+                <p>
+                    Debussy també es va interessar per la música d'altres cultures, com la <span class="highlight">música japonesa</span>, que va conèixer durant l'Exposició Universal de París de 1889. Aquesta influència es nota en l'ús d'escales diferents i sons exòtics que apareixen en moltes de les seves obres. Aquesta obertura a altres tradicions musicals va enriquir enormement el seu llenguatge compositiu.
+                </p>
+            </div>
+        </div>
+
+        <div class="legacy">
+            <h3>Llegat Musical</h3>
+            <p>
+                El llegat de Debussy és molt gran, ja que va influir en molts compositors posteriors i va marcar un abans i un després en la música occidental. La seva obra representa una <strong>revolució silenciosa</strong> que va canviar la manera d'entendre la música i la va preparar per als grans canvis del segle XX.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Animació suau d'aparició dels elements
+        function animateElements() {
+            const elements = document.querySelectorAll('.section, .works, .characteristics, .timeline');
+            
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(30px)';
+                element.style.transition = 'all 0.6s ease';
+                
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        }
+
+        // Efectes hover per les obres
+        function setupWorkHovers() {
+            const workItems = document.querySelectorAll('.work-item');
+            
+            workItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.05)';
+                    this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+                });
+            });
+        }
+
+        // Destacar paraules clau quan es passi el cursor
+        function setupHighlights() {
+            const highlights = document.querySelectorAll('.highlight');
+            
+            highlights.forEach(highlight => {
+                highlight.addEventListener('mouseenter', function() {
+                    this.style.background = '#ffd700';
+                    this.style.transform = 'scale(1.05)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                
+                highlight.addEventListener('mouseleave', function() {
+                    this.style.background = '#fff3cd';
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        }
+
+        // Efecte de scroll suau per la timeline
+        function setupTimelineAnimation() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateX(0)';
+                        }, index * 100);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            timelineItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = index % 2 === 0 ? 'translateX(-50px)' : 'translateX(50px)';
+                item.style.transition = 'all 0.6s ease';
+                observer.observe(item);
+            });
+        }
+
+        // Inicialització quan es carrega la pàgina
+        document.addEventListener('DOMContentLoaded', function() {
+            // Petit retard per permetre que es carregui tot
+            setTimeout(() => {
+                animateElements();
+                setupWorkHovers();
+                setupHighlights();
+                setupTimelineAnimation();
+            }, 300);
+        });
+
+        // Efecte de typing per al títol
+        function typewriterTitle() {
+            const title = document.querySelector('.header h1');
+            const text = 'Claude Debussy';
+            title.textContent = '';
+            
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    title.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 100);
+                }
+            }
+            
+            setTimeout(type, 500);
+        }
+
+        // Iniciar efecte de typing
+        window.addEventListener('load', typewriterTitle);
+    </script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joseph Haydn: el pare de la simfonia</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            line-height: 1.8;
+            color: #1e293b;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="symphony-pattern" patternUnits="userSpaceOnUse" width="30" height="30"><line x1="5" y1="15" x2="25" y2="15" stroke="rgba(14,165,233,0.03)" stroke-width="1"/><line x1="5" y1="18" x2="25" y2="18" stroke="rgba(14,165,233,0.025)" stroke-width="0.8"/><line x1="5" y1="21" x2="25" y2="21" stroke="rgba(14,165,233,0.02)" stroke-width="0.6"/><circle cx="10" cy="18" r="1.5" fill="rgba(14,165,233,0.03)"/><circle cx="20" cy="15" r="1" fill="rgba(14,165,233,0.025)"/></pattern></defs><rect width="100" height="100" fill="url(%23symphony-pattern)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .haydn-symphony {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            box-shadow: 0 25px 70px rgba(14, 165, 233, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .symphony-hall {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            padding: 60px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .symphony-hall::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="18" stroke="rgba(255,255,255,0.08)" stroke-width="0.5" fill="none"/><circle cx="75" cy="75" r="12" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" fill="none"/><path d="M20,50 Q40,30 60,50 T80,50" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/></svg>') repeat;
+            animation: symphonic-flow 50s linear infinite;
+        }
+
+        @keyframes symphonic-flow {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(-60px) translateY(-40px) rotate(2deg); }
+        }
+
+        .maestro-podium {
+            width: 130px;
+            height: 130px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 20px 50px rgba(245, 158, 11, 0.4);
+            position: relative;
+            z-index: 1;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 3.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .composer-years {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 8px;
+        }
+
+        .symphony-subtitle {
+            font-size: 1.2rem;
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .musical-narrative {
+            padding: 60px 50px;
+        }
+
+        .movement-section {
+            margin: 45px 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 12px 35px rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.1);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .movement-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(14, 165, 233, 0.12);
+        }
+
+        .movement-header {
+            padding: 30px 35px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movement-header.early-life {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .movement-header.esterhazy {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .movement-header.musical-style {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        .movement-header.travels {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        }
+
+        .movement-header.legacy {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        }
+
+        .movement-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="30" r="2.5" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="70" r="2" fill="rgba(255,255,255,0.08)"/><path d="M40,25 Q50,15 60,25" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/></svg>');
+            animation: movement-glow 12s ease-in-out infinite;
+        }
+
+        @keyframes movement-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.7; transform: scale(1.05) rotate(180deg); }
+        }
+
+        .movement-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .movement-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .movement-body {
+            padding: 35px;
+        }
+
+        .movement-content {
+            font-size: 1.1rem;
+            line-height: 1.9;
+            text-align: justify;
+            color: #475569;
+        }
+
+        .movement-content strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .aristocratic-highlight {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 1px solid #6ee7b7;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .aristocratic-highlight::before {
+            content: '👑';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .aristocratic-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #047857;
+            margin-bottom: 10px;
+        }
+
+        .aristocratic-description {
+            font-size: 1.05rem;
+            color: #065f46;
+            line-height: 1.7;
+        }
+
+        .symphony-achievement {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .symphony-achievement::before {
+            content: '🎼';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .achievement-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .achievement-description {
+            font-size: 1.05rem;
+            color: #a16207;
+            line-height: 1.7;
+        }
+
+        .style-showcase {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            border-left: 3px solid #f87171;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #dc2626;
+        }
+
+        .style-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #b91c1c;
+            margin-bottom: 8px;
+        }
+
+        .influence-network {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            border: 1px solid #c4b5fd;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .influence-network::before {
+            content: '🤝';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .influence-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #6d28d9;
+            margin-bottom: 10px;
+        }
+
+        .influence-description {
+            font-size: 1.05rem;
+            color: #7c3aed;
+            line-height: 1.7;
+        }
+
+        .eternal-foundation {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 16px;
+            margin-top: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .eternal-foundation::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
+            animation: foundation-radiance 25s ease-in-out infinite;
+        }
+
+        @keyframes foundation-radiance {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            50% { transform: scale(1.4) rotate(12deg); opacity: 0.8; }
+        }
+
+        .foundation-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .foundation-text {
+            font-size: 1.2rem;
+            line-height: 1.9;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .foundation-text strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .classical-ornament {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #0ea5e9, #f59e0b, #0ea5e9, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 350px;
+        }
+
+        @media (max-width: 768px) {
+            .haydn-symphony {
+                margin: 20px;
+            }
+
+            .musical-narrative {
+                padding: 40px 30px;
+            }
+
+            .symphony-hall {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 2.6rem;
+            }
+
+            .movement-body {
+                padding: 25px 20px;
+            }
+
+            .eternal-foundation {
+                padding: 35px 25px;
+            }
+
+            .maestro-podium {
+                width: 110px;
+                height: 110px;
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="haydn-symphony">
+        <header class="symphony-hall">
+            <div class="maestro-podium">🎭</div>
+            <h1>Joseph Haydn</h1>
+            <div class="composer-years">1732 - 1809</div>
+            <div class="symphony-subtitle">El pare de la simfonia</div>
+        </header>
+
+        <div class="musical-narrative">
+            <div class="movement-section">
+                <div class="movement-header early-life">
+                    <div class="movement-icon">🌱</div>
+                    <div class="movement-title">Primers compassos</div>
+                </div>
+                <div class="movement-body">
+                    <div class="movement-content">
+                        Joseph Haydn va ser un dels compositors més importants del període clàssic i sovint se'l coneix com el <strong>"pare de la simfonia"</strong> per la seva gran contribució a aquesta forma musical. Va néixer l'any 1732 a Àustria i des de molt jove va mostrar un gran interès i talent per la música.
+                    </div>
+                </div>
+            </div>
+
+            <div class="movement-section">
+                <div class="movement-header esterhazy">
+                    <div class="movement-icon">🏰</div>
+                    <div class="movement-title">L'època Esterházy</div>
+                </div>
+                <div class="movement-body">
+                    <div class="movement-content">
+                        Durant la seva vida, va tenir la sort de treballar gairebé trenta anys per a la família Esterházy, una de les més poderoses i riques d'Europa. Aquesta feina li va oferir estabilitat i recursos per desenvolupar la seva creativitat, ja que li van posar a disposició una orquestra pròpia on podia provar i dirigir les seves composicions.
+                    </div>
+                    
+                    <div class="aristocratic-highlight">
+                        <div class="aristocratic-title">Patronatge aristocràtic</div>
+                        <div class="aristocratic-description">
+                            La relació amb els Esterházy va ser fonamental per al desenvolupament artístic de Haydn, proporcionant-li la libertad creativa i els recursos necessaris per experimentar i perfeccionar el seu art.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="movement-section">
+                <div class="movement-header musical-style">
+                    <div class="movement-icon">🎼</div>
+                    <div class="movement-title">Estil i producció musical</div>
+                </div>
+                <div class="movement-body">
+                    <div class="movement-content">
+                        Haydn va compondre més de cent simfonies, que són peces musicals per a orquestra que es divideixen en diferents moviments amb caràcters variats. Amb aquestes obres, va ajudar a establir i consolidar l'estructura de la simfonia tal com la coneixem avui. A més, va escriure música de cambra, com els famosos quartets i quintets de corda, així com concerts i música religiosa.
+                    </div>
+                    
+                    <div class="symphony-achievement">
+                        <div class="achievement-title">Més de 100 simfonies</div>
+                        <div class="achievement-description">
+                            La seva producció simfònica va establir les bases estructurals i estilístiques d'aquesta forma musical, influenciant totes les generacions posteriors de compositors.
+                        </div>
+                    </div>
+                    
+                    <div class="style-showcase">
+                        <div class="style-title">Característiques del seu estil:</div>
+                        La seva música es caracteritza per una gran claredat, equilibri i un toc d'humor subtil, que sovint sorprèn l'oient amb moments inesperats o melodies molt creatives.
+                    </div>
+                    
+                    <div class="movement-content">
+                        Una de les claus del seu estil és la manera com utilitzava melodies senzilles però molt ben treballades, que anava desenvolupant amb imaginació. Això feia que la seva música fos molt accessible i agradable, tant per als músics com per als oients. A més, Haydn va saber combinar perfectament la tradició musical amb la innovació, creant peces que respectaven les regles del Classicisme però alhora aportaven frescor i originalitat.
+                    </div>
+                </div>
+            </div>
+
+            <div class="movement-section">
+                <div class="movement-header travels">
+                    <div class="movement-icon">🌍</div>
+                    <div class="movement-title">Viatges i reconeixement</div>
+                </div>
+                <div class="movement-body">
+                    <div class="movement-content">
+                        Després de la seva etapa amb els Esterházy, Haydn va viatjar a Anglaterra, on va ser rebut amb molta admiració. Aquestes visites van ser importants per la seva carrera, ja que li van permetre conèixer nous públics i ampliar la seva influència.
+                    </div>
+                    
+                    <div class="influence-network">
+                        <div class="influence-title">Xarxa d'influències</div>
+                        <div class="influence-description">
+                            Va exercir un paper clau en la música europea i va tenir una gran influència en altres grans compositors, com Wolfgang Amadeus Mozart, amb qui tenia una amistat i respecte mutu, i Ludwig van Beethoven, que el va considerar un mestre.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="movement-section">
+                <div class="movement-header legacy">
+                    <div class="movement-icon">🏛️</div>
+                    <div class="movement-title">Llegat immortal</div>
+                </div>
+                <div class="movement-body">
+                    <div class="movement-content">
+                        Haydn va morir l'any 1809, però la seva obra ha perdurat al llarg dels segles com una de les bases fonamentals de la música clàssica occidental. La seva aportació a la forma de la simfonia, la música de cambra i altres gèneres ha deixat un llegat que encara avui serveix d'inspiració per a músics i compositors de tot el món.
+                    </div>
+                </div>
+            </div>
+
+            <div class="classical-ornament"></div>
+
+            <div class="eternal-foundation">
+                <div class="foundation-title">Fundador de tradicions</div>
+                <div class="foundation-text">
+                    Joseph Haydn va crear les <strong>bases arquitectòniques</strong> de la simfonia moderna, establint estructures i principis compositius que han perdurat durant segles. La seva capacitat per combinar <strong>rigor formal</strong> amb <strong>imaginació creativa</strong> el converteix en una figura fonamental de la música occidental, mereixent plenament el títol de <strong>"pare de la simfonia"</strong>.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

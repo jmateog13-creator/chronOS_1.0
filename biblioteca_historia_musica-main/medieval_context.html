@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El context sociocultural de l'Edat Mitjana</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0 60px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            margin: -20px -20px 40px -20px;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="castle" patternUnits="userSpaceOnUse" width="50" height="50"><rect width="50" height="50" fill="none"/><path d="M10,40 L15,35 L20,40 L25,35 L30,40 L35,35 L40,40" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23castle)"/></svg>') repeat;
+            opacity: 0.1;
+            border-radius: 20px 20px 0 0;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .intro-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            border-left: 5px solid #6c5ce7;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .intro-text {
+            font-size: 1.15rem;
+            text-align: justify;
+            color: #495057;
+            line-height: 1.8;
+        }
+
+        .intro-text strong {
+            color: #6c5ce7;
+            font-weight: 600;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(108, 92, 231, 0.2);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .card-content {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #636e72;
+        }
+
+        .card-content strong {
+            color: #2d3436;
+            font-weight: 600;
+        }
+
+        .hierarchy-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .hierarchy-list li {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            margin: 10px 0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 4px solid #6c5ce7;
+            transition: all 0.3s ease;
+        }
+
+        .hierarchy-list li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .events-timeline {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 15px;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .events-timeline::before {
+            content: '⚔️';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .events-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .events-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .events-list li {
+            background: rgba(255, 255, 255, 0.15);
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .events-list li strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #ffeaa7;
+        }
+
+        .art-science-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .art-card, .science-card {
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .art-card {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+        }
+
+        .science-card {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+        }
+
+        .conclusion-section {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 40px;
+            position: relative;
+        }
+
+        .conclusion-section::before {
+            content: '🏰';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+
+        .conclusion-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-element {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .art-science-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-element" style="left: 10%; animation-delay: 0s;">⚔️</div>
+        <div class="floating-element" style="left: 20%; animation-delay: 3s;">🏰</div>
+        <div class="floating-element" style="left: 30%; animation-delay: 6s;">⛪</div>
+        <div class="floating-element" style="left: 40%; animation-delay: 9s;">📜</div>
+        <div class="floating-element" style="left: 50%; animation-delay: 12s;">👑</div>
+        <div class="floating-element" style="left: 60%; animation-delay: 15s;">🎭</div>
+        <div class="floating-element" style="left: 70%; animation-delay: 18s;">⚔️</div>
+        <div class="floating-element" style="left: 80%; animation-delay: 21s;">🏰</div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <h1>El context sociocultural de l'Edat Mitjana</h1>
+            <div class="subtitle">Un viatge per la societat medieval europea</div>
+        </header>
+
+        <div class="intro-section">
+            <div class="intro-text">
+                L'Edat Mitjana és un període històric que va durar aproximadament des de l'any <strong>476</strong> —quan va caure l'Imperi Romà d'Occident— fins a finals del segle <strong>XV</strong>, quan va començar el Renaixement. Durant aquests gairebé mil anys, Europa va viure grans canvis socials, polítics, religiosos i culturals.
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="content-card">
+                <div class="card-icon">👑</div>
+                <div class="card-title">La societat medieval</div>
+                <div class="card-content">
+                    La societat medieval estava organitzada de manera <strong>jeràrquica</strong> i <strong>feudal</strong>. Això vol dir que hi havia diferents nivells de poder i responsabilitat:
+                    
+                    <ul class="hierarchy-list">
+                        <li><strong>Els reis i nobles:</strong> Tenien la terra i el poder polític. Vivien en castells i controlaven la població.</li>
+                        <li><strong>Els cavallers:</strong> Guerrers que protegien la terra i ajudaven els nobles.</li>
+                        <li><strong>Els camperols i artesans:</strong> La majoria de la població treballava la terra o feia oficis per guanyar-se la vida.</li>
+                        <li><strong>El clergat:</strong> Els religiosos, com els monjos i sacerdots, tenien un paper molt important perquè la religió dominava la vida i la cultura.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-icon">⛪</div>
+                <div class="card-title">La religió</div>
+                <div class="card-content">
+                    L'Església catòlica era l'entitat més poderosa i influent. Controlava no només la vida espiritual, sinó també molts aspectes de la vida quotidiana, la política i la cultura. Les esglésies i catedrals eren el centre de la vida social i artística. Els monestirs eren llocs de coneixement, on es copiaven manuscrits, es composava música i es conservava la cultura.
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-icon">🎭</div>
+                <div class="card-title">La cultura i la música</div>
+                <div class="card-content">
+                    La cultura medieval estava molt marcada per la religió, però també per la vida a la cort i als pobles. La música era present tant a l'església (amb el cant gregorià) com en les places i festes (amb els trobadors i joglars). Era una manera de comunicar, educar i celebrar.
+                </div>
+            </div>
+        </div>
+
+        <div class="events-timeline">
+            <div class="events-title">Esdeveniments importants</div>
+            <p>Durant l'Edat Mitjana van passar fets històrics rellevants com:</p>
+            <ul class="events-list">
+                <li>
+                    <strong>Les Croades (segles XI-XIII):</strong>
+                    Campanyes militars per recuperar Terra Santa. Aquestes guerres van posar Europa en contacte amb altres cultures com la musulmana i la bizantina.
+                </li>
+                <li>
+                    <strong>La construcció de les grans catedrals gòtiques:</strong>
+                    Com Notre-Dame de París o la catedral de Chartres, que són exemples d'art i arquitectura d'aquesta època.
+                </li>
+                <li>
+                    <strong>La Pesta Negra (segle XIV):</strong>
+                    Una epidèmia que va afectar gran part de la població europea i va canviar la societat.
+                </li>
+            </ul>
+        </div>
+
+        <div class="art-science-section">
+            <div class="art-card">
+                <div class="card-icon">🎨</div>
+                <div class="card-title">L'art</div>
+                <div class="card-content">
+                    Tot i que sovint pensem que l'Edat Mitjana va ser una època fosca, va ser també un període de gran activitat artística. En l'art, va destacar l'estil <strong>romànic</strong> i després el <strong>gòtic</strong>, amb pintures, escultures i arquitectura que reflectien la religió i la vida quotidiana.
+                </div>
+            </div>
+
+            <div class="science-card">
+                <div class="card-icon">⚙️</div>
+                <div class="card-title">La ciència</div>
+                <div class="card-content">
+                    En la ciència, es van inventar o perfeccionar eines importants com el <strong>molí de vent</strong>, el <strong>compàs</strong> i la <strong>impressió amb tipus mòbils</strong> (cap al final del període), que van transformar la societat.
+                </div>
+            </div>
+        </div>
+
+        <div class="conclusion-section">
+            <div class="conclusion-title">Resum</div>
+            <p>L'Edat Mitjana va ser un període llarg i complex, amb una societat organitzada en classes, una forta influència religiosa, grans fets històrics i un desenvolupament cultural important. Tot això va formar el marc en què es va crear i va evolucionar la música medieval.</p>
+        </div>
+    </div>
+</body>
+</html>

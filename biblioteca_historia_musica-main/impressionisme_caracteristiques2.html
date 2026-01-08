@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Música Impressionista - Característiques</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: #2c3e50;
+            color: #fff;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .intro {
+            background: #ecf0f1;
+            padding: 25px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+        .intro p {
+            font-size: 1.05rem;
+            font-style: italic;
+        }
+
+        .characteristics {
+            margin-bottom: 30px;
+        }
+
+        .characteristic {
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .characteristic:last-child {
+            border-bottom: none;
+        }
+
+        .characteristic h2 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+            display: inline-block;
+        }
+
+        .characteristic p {
+            font-size: 1rem;
+            text-align: justify;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .examples {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .examples h4 {
+            color: #495057;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .examples ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .examples li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .examples li::before {
+            content: "♪";
+            position: absolute;
+            left: 0;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .composers {
+            background: #e8f5e8;
+            padding: 25px;
+            border-radius: 5px;
+            margin: 30px 0;
+            border-left: 4px solid #27ae60;
+        }
+
+        .composers h3 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .composers-list {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .composer {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .summary {
+            background: #2c3e50;
+            color: #fff;
+            padding: 30px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .summary h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .summary p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 25px 20px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .composers-list {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>La Música Impressionista</h1>
+            <p>Un gir cap a la subtilesa i l'atmosfera</p>
+        </header>
+
+        <div class="content">
+            <div class="intro">
+                <p>
+                    La música de l'etapa impressionista representa un gir important respecte a les estètiques anteriors. Els compositors ja no buscaven transmetre grans emocions com en el Romanticisme, sinó suggerir sensacions, atmosferes i imatges, com si pintessin amb sons.
+                </p>
+            </div>
+
+            <div class="composers">
+                <h3>Compositors Principals</h3>
+                <div class="composers-list">
+                    <div class="composer">Claude Debussy</div>
+                    <div class="composer">Maurice Ravel</div>
+                </div>
+            </div>
+
+            <div class="characteristics">
+                <div class="characteristic">
+                    <h2>Harmonies Noves</h2>
+                    <p>
+                        Una de les característiques principals és l'exploració de noves harmonies. Els compositors impressionistes van fer servir <span class="highlight">escales poc habituals</span>, com l'escala pentatònica o l'escala de tons sencers, que donaven una sensació flotant i misteriosa.
+                    </p>
+                    <p>
+                        També sovint evitaven les tensions fortes de l'harmonia tonal tradicional, optant per <span class="highlight">acords més oberts</span> i amb menys direcció funcional.
+                    </p>
+                    <div class="examples">
+                        <h4>Tècniques harmòniques:</h4>
+                        <ul>
+                            <li>Escala pentatònica</li>
+                            <li>Escala de tons sencers</li>
+                            <li>Acords oberts sense tensió</li>
+                            <li>Evitar progressions funcionals</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="characteristic">
+                    <h2>Ritme Lliure</h2>
+                    <p>
+                        El ritme es tornava més lliure. Moltes peces no seguien un compàs clar o jugaven amb <span class="highlight">canvis de pulsació</span>, donant lloc a una música fluida, flexible, que s'adaptava a la respiració natural de la melodia.
+                    </p>
+                    <p>
+                        Això també ajudava a crear aquella sensació d'espai i temps diluïts que tant identifica aquesta música.
+                    </p>
+                </div>
+
+                <div class="characteristic">
+                    <h2>Melodia Subtil</h2>
+                    <p>
+                        Pel que fa a la melodia, no sempre és fàcil de seguir ni té una estructura definida. Pot aparèixer de forma breu, insinuada, o <span class="highlight">diluir-se dins del conjunt orquestral</span>.
+                    </p>
+                    <p>
+                        No busca ser memorable com una cançó, sinó formar part del teixit general del so.
+                    </p>
+                </div>
+
+                <div class="characteristic">
+                    <h2>Dinàmica i Matisos</h2>
+                    <p>
+                        La dinàmica i els matisos tenen un paper fonamental: <span class="highlight">canvis molt suaus, crescendos delicats, i contrastos molt refinats</span>. Aquesta atenció als detalls crea una riquesa expressiva extraordinària.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>Instruments Destacats</h3>
+                    <p>
+                        Els instruments com la flauta, l'arpa, l'oboè o el piano van tenir un paper destacat, però més que brillar individualment, treballaven en combinació per crear textures i colors únics.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>Forma Musical</h3>
+                    <p>
+                        La forma musical deixava de ser tan rígida i previsible. Moltes peces es construïen de manera més lliure, gairebé com un quadre o un poema musical.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>Orquestració</h3>
+                    <p>
+                        El tractament de l'orquestra era molt ric i detallat, amb un enfocament especial en la creació de textures sonores úniques i colors tímbrics.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>Enfocament Artístic</h3>
+                    <p>
+                        Es tractava d'una música més subtil, menys narrativa i molt més centrada en el color i el timbre que en l'estructura tradicional.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h3>Resum</h3>
+            <p>
+                En resum, la música impressionista es caracteritza per ser evocadora, atmosfèrica i rica en colors sonors. S'allunya de les estructures dramàtiques del Romanticisme i obre la porta a una nova manera de concebre l'art sonor, més suggeridora i oberta a la imaginació.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

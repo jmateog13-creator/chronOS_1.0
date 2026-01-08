@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wolfgang Amadeus Mozart: geni del Classicisme</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700;800&family=Crimson+Text:wght@400;600&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            line-height: 1.8;
+            color: #1e293b;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="mozart-notes" patternUnits="userSpaceOnUse" width="25" height="25"><circle cx="8" cy="12" r="1.5" fill="rgba(255,255,255,0.03)"/><ellipse cx="18" cy="15" rx="1.5" ry="1" fill="rgba(255,255,255,0.025)"/><path d="M5,18 Q12,14 20,18" stroke="rgba(255,255,255,0.02)" stroke-width="0.5" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23mozart-notes)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .mozart-memorial {
+            max-width: 1100px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(124, 58, 237, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .memorial-header {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+            padding: 60px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memorial-header::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="20" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" fill="none"/><circle cx="75" cy="75" r="15" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" fill="none"/><path d="M10,50 Q30,30 50,50 T90,50" stroke="rgba(255,255,255,0.05)" stroke-width="0.8" fill="none"/></svg>') repeat;
+            animation: genius-flow 60s linear infinite;
+        }
+
+        @keyframes genius-flow {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(-100px) translateY(-60px) rotate(3deg); }
+        }
+
+        .composer-medallion {
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            box-shadow: 0 20px 50px rgba(251, 191, 36, 0.5);
+            position: relative;
+            z-index: 1;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            animation: medallion-glow 8s ease-in-out infinite;
+        }
+
+        @keyframes medallion-glow {
+            0%, 100% { box-shadow: 0 20px 50px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 25px 60px rgba(251, 191, 36, 0.8); }
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .composer-years {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 300;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 5px;
+        }
+
+        .genius-subtitle {
+            font-size: 1.2rem;
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .biographical-content {
+            padding: 60px 50px;
+        }
+
+        .overture-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 50px;
+            border-left: 6px solid #7c3aed;
+            font-size: 1.2rem;
+            line-height: 1.9;
+            text-align: justify;
+            box-shadow: 0 12px 35px rgba(124, 58, 237, 0.1);
+            position: relative;
+        }
+
+        .overture-section::before {
+            content: '🎼';
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 3rem;
+            opacity: 0.2;
+        }
+
+        .musical-legacy {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .legacy-movement {
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        .legacy-movement:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 65px rgba(124, 58, 237, 0.15);
+        }
+
+        .movement-header {
+            padding: 35px 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movement-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="30" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="70" r="2" fill="rgba(255,255,255,0.08)"/><path d="M30,20 Q50,10 70,20" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/></svg>');
+            animation: movement-sparkle 15s ease-in-out infinite;
+        }
+
+        @keyframes movement-sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: scale(1.1) rotate(360deg); }
+        }
+
+        .movement-header.music {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        .movement-header.life {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .movement-icon {
+            font-size: 3.5rem;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .movement-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .movement-body {
+            padding: 40px;
+        }
+
+        .movement-description {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            text-align: justify;
+            color: #475569;
+            margin-bottom: 25px;
+        }
+
+        .movement-description strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .masterpiece-highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .masterpiece-highlight::before {
+            content: '⭐';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .masterpiece-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .masterpiece-description {
+            font-size: 1.05rem;
+            color: #a16207;
+            line-height: 1.7;
+        }
+
+        .influence-showcase {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border: 1px solid #a5b4fc;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .influence-showcase::before {
+            content: '🌟';
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            font-size: 1.8rem;
+            opacity: 0.6;
+        }
+
+        .influence-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #3730a3;
+            margin-bottom: 10px;
+        }
+
+        .influence-text {
+            font-size: 1.05rem;
+            color: #4338ca;
+            line-height: 1.7;
+        }
+
+        .eternal-symphony {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 18px;
+            margin-top: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .eternal-symphony::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+            animation: eternal-radiance 25s ease-in-out infinite;
+        }
+
+        @keyframes eternal-radiance {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            50% { transform: scale(1.4) rotate(15deg); opacity: 0.8; }
+        }
+
+        .symphony-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .symphony-text {
+            font-size: 1.3rem;
+            line-height: 1.9;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .symphony-text strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .mozart-ornament {
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #7c3aed, #fbbf24, #7c3aed, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .mozart-memorial {
+                margin: 20px;
+            }
+
+            .biographical-content {
+                padding: 40px 30px;
+            }
+
+            .memorial-header {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .movement-body {
+                padding: 30px 25px;
+            }
+
+            .eternal-symphony {
+                padding: 40px 25px;
+            }
+
+            .composer-medallion {
+                width: 120px;
+                height: 120px;
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mozart-memorial">
+        <header class="memorial-header">
+            <div class="composer-medallion">🎭</div>
+            <h1>Wolfgang Amadeus Mozart</h1>
+            <div class="composer-years">1756 - 1791</div>
+            <div class="genius-subtitle">Geni del Classicisme</div>
+        </header>
+
+        <div class="biographical-content">
+            <div class="overture-section">
+                Wolfgang Amadeus Mozart (1756-1791) és un dels compositors més famosos i importants de la història de la música. Va néixer a Salzburg, a Àustria, i des de ben petit va mostrar un talent extraordinari per la música. Va començar a tocar instruments i a compondre quan encara era un nen.
+            </div>
+
+            <div class="mozart-ornament"></div>
+
+            <div class="musical-legacy">
+                <div class="legacy-movement">
+                    <div class="movement-header music">
+                        <div class="movement-icon">🎵</div>
+                        <div class="movement-title">La seva música</div>
+                    </div>
+                    <div class="movement-body">
+                        <div class="movement-description">
+                            Mozart va escriure música en molts gèneres diferents: <strong>simfonies</strong>, <strong>concerts</strong>, <strong>sonates</strong>, <strong>música de cambra</strong> i <strong>òperes</strong>. La seva música és coneguda per la bellesa de les melodies, l'equilibri i la claredat que caracteritzen el Classicisme. Les seves composicions són plenes d'emoció i alhora molt ben estructurades.
+                        </div>
+
+                        <div class="masterpiece-highlight">
+                            <div class="masterpiece-title">Les noces de Fígaro</div>
+                            <div class="masterpiece-description">
+                                Una de les seves obres més conegudes és l'òpera <strong>Les noces de Fígaro</strong>, que combina moments divertits amb altres més dramàtics, mostrant la seva capacitat per expressar sentiments a través de la música.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="legacy-movement">
+                    <div class="movement-header life">
+                        <div class="movement-icon">🌍</div>
+                        <div class="movement-title">La seva vida i llegat</div>
+                    </div>
+                    <div class="movement-body">
+                        <div class="movement-description">
+                            Durant la seva curta vida, Mozart va viatjar per moltes ciutats d'Europa, tocant i componint per a diferents corts i mecenes. Tot i que en vida no va aconseguir gran reconeixement ni estabilitat econòmica, avui és considerat un dels grans mestres de la música clàssica.
+                        </div>
+
+                        <div class="influence-showcase">
+                            <div class="influence-title">Influència universal</div>
+                            <div class="influence-text">
+                                La seva influència és enorme, i moltes generacions de compositors s'han inspirat en les seves obres. Mozart va saber combinar la tècnica amb la passió, creant música que encara avui emociona a persones de tot el món.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mozart-ornament"></div>
+
+            <div class="eternal-symphony">
+                <div class="symphony-title">Llegat Etern</div>
+                <div class="symphony-text">
+                    Mozart representa la síntesi perfecta del <strong>geni</strong> i la <strong>tècnica</strong>, de la <strong>simplicitat</strong> i la <strong>profunditat</strong>. La seva música transcendeix el temps i continua sent una font d'inspiració i gaudi per a músics i melòmans de tot el món, demostrant que la veritable genialitat artística és immortal.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

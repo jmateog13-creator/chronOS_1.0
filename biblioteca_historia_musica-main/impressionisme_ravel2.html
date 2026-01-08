@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maurice Ravel - Artesà de la Música</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .terminal {
+            max-width: 100%;
+            min-height: 100vh;
+            background: #0d1117;
+            position: relative;
+        }
+
+        .terminal::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 0, 0.03) 2px,
+                    rgba(0, 255, 0, 0.03) 4px
+                ),
+                radial-gradient(circle at center, rgba(0, 255, 0, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            border: 2px solid #30d158;
+            background: rgba(13, 17, 23, 0.8);
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(48, 209, 88, 0.1), transparent);
+            animation: scan 3s infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .prompt {
+            color: #30d158;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #58a6ff;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(88, 166, 255, 0.5); }
+            to { text-shadow: 0 0 20px rgba(88, 166, 255, 0.8), 0 0 30px rgba(88, 166, 255, 0.4); }
+        }
+
+        .subtitle {
+            color: #f85149;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .dates {
+            color: #79c0ff;
+            font-size: 1rem;
+        }
+
+        .section {
+            border: 1px solid #21262d;
+            background: rgba(13, 17, 23, 0.6);
+            margin-bottom: 20px;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .section-header {
+            background: #21262d;
+            padding: 15px 20px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .section-header:hover {
+            background: #30363d;
+        }
+
+        .section-icon {
+            color: #f85149;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            color: #58a6ff;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .section-content {
+            padding: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+
+        .section.expanded .section-content {
+            max-height: 1000px;
+        }
+
+        .text-block {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background: rgba(240, 81, 73, 0.2);
+            color: #ffa198;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .code-block {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+        }
+
+        .code-header {
+            color: #7d8590;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 5px;
+        }
+
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .work-item {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 5px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .work-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(48, 209, 88, 0.1), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .work-item:hover::before {
+            left: 100%;
+        }
+
+        .work-item:hover {
+            border-color: #58a6ff;
+            transform: translateY(-2px);
+        }
+
+        .work-title {
+            color: #79c0ff;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .work-description {
+            color: #8b949e;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .influences {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .influence-tag {
+            background: #0969da;
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .influence-tag:hover {
+            background: #1f6feb;
+            transform: scale(1.1);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            color: #30d158;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            color: #8b949e;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .footer {
+            border: 1px solid #30363d;
+            background: rgba(13, 17, 23, 0.8);
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .footer-text {
+            color: #7d8590;
+            font-size: 0.9rem;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #30d158;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 3px solid #30d158;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #30d158; }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="container">
+            <div class="header">
+                <div class="prompt">user@musica:~$ cat maurice_ravel.md</div>
+                <h1 class="title typing">MAURICE RAVEL</h1>
+                <div class="subtitle"># Artesà de la Música</div>
+                <div class="dates">## França, 1875 - 1937</div>
+            </div>
+
+            <div class="section expanded">
+                <div class="section-header">
+                    <span class="section-icon">></span>
+                    <span class="section-title">INTRODUCCIÓ</span>
+                </div>
+                <div class="section-content">
+                    <div class="text-block">
+                        Maurice Ravel és una de les figures més fascinants i singulars de la música de finals del segle XIX i començaments del XX. Tot i que sovint se l'associa amb l'Impressionisme, <span class="highlight">ell mateix mai no es va considerar part d'aquest corrent</span>. Ravel era meticulós, perfeccionista, i la seva música reflecteix una gran claredat formal i una gran sofisticació harmònica.
+                    </div>
+                    <div class="text-block">
+                        El seu estil és <span class="highlight">refinat, precís i alhora molt expressiu</span>, amb una paleta sonora rica i variada.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="section-icon">></span>
+                    <span class="section-title">FORMACIÓ_I_PERSONALITAT</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-block">
+                        <div class="code-header">biografia.config</div>
+                        <div class="text-block">
+                            Va néixer l'any <span class="highlight">1875</span> i des de jove va mostrar una gran habilitat per al piano i la composició. Va estudiar al Conservatori de París, on es va formar en un ambient marcat per la tradició però també obert a les noves idees.
+                        </div>
+                        <div class="text-block">
+                            A diferència d'altres compositors més intuïtius, <span class="highlight">Ravel treballava les seves obres com un artesà</span>, revisant, polint i perfeccionant fins a l'últim detall.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="section-icon">></span>
+                    <span class="section-title">MESTRIA_ORQUESTRAL</span>
+                </div>
+                <div class="section-content">
+                    <div class="text-block">
+                        Una de les seves qualitats més destacades és el seu <span class="highlight">domini magistral de l'orquestració</span>. Sabia com utilitzar els instruments per crear ambients i textures que mai abans s'havien escoltat.
+                    </div>
+                    <div class="text-block">
+                        L'ús de timbres insòlits, combinacions sorprenents i efectes delicats el van convertir en un model d'elegància i inventiva. Gràcies a això, moltes de les seves obres tenen una <span class="highlight">força evocadora molt especial</span>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="section-icon">></span>
+                    <span class="section-title">INFLUÈNCIES_GLOBALS</span>
+                </div>
+                <div class="section-content">
+                    <div class="text-block">
+                        Ravel també sentia una gran atracció per les músiques del món. Va incorporar ritmes i sons inspirats en cultures diverses:
+                    </div>
+                    <div class="influences">
+                        <span class="influence-tag">🇪🇸 Espanyola</span>
+                        <span class="influence-tag">🕌 Àrab</span>
+                        <span class="influence-tag">🏮 Oriental</span>
+                        <span class="influence-tag">🎷 Jazz</span>
+                    </div>
+                    <div class="text-block">
+                        Fins i tot va experimentar amb influències del jazz, que començava a arribar a Europa. Aquesta obertura el va fer connectar amb els corrents més innovadors del seu temps.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="section-icon">></span>
+                    <span class="section-title">OBRES_PRINCIPALS</span>
+                </div>
+                <div class="section-content">
+                    <div class="works-grid">
+                        <div class="work-item">
+                            <div class="work-title">Daphnis et Chloé</div>
+                            <div class="work-description">Ballet que mostra la seva capacitat per crear mons sonors rics i captivadors</div>
+                        </div>
+                        <div class="work-item">
+                            <div class="work-title">Rapsodie espagnole</div>
+                            <div class="work-description">Incorpora ritmes i sonoritats de la cultura espanyola</div>
+                        </div>
+                        <div class="work-item">
+                            <div class="work-title">Gaspard de la nuit</div>
+                            <div class="work-description">Una de les obres pianístiques més exigents mai escrites</div>
+                        </div>
+                        <div class="work-item">
+                            <div class="work-title">Boléro</div>
+                            <div class="work-description">La seva composició més coneguda, basada en la repetició i l'orquestració progressiva</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="section-icon">></span>
+                    <span class="section-title">ESTADÍSTIQUES</span>
+                </div>
+                <div class="section-content">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-number">62</span>
+                            <div class="stat-label">Anys de vida</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">1928</span>
+                            <div class="stat-label">Any del Boléro</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">∞</span>
+                            <div class="stat-label">Influència musical</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="section-icon">></span>
+                    <span class="section-title">LLEGAT</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-block">
+                        <div class="code-header">legacy.output</div>
+                        <div class="text-block">
+                            La música de Ravel representa un pont entre el Romanticisme i la modernitat, entre l'emoció i el control, entre la tradició i la innovació. Va morir l'any 1937, però la seva obra continua sent un referent per als músics i oients d'arreu del món.
+                        </div>
+                        <div class="text-block">
+                            <span class="highlight">Escoltar Ravel és deixar-se portar per un univers ple de llum, precisió i imaginació sonora.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-text">
+                    user@musica:~$ exit<span class="cursor"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const section = header.parentElement;
+            const icon = header.querySelector('.section-icon');
+            
+            section.classList.toggle('expanded');
+            
+            if (section.classList.contains('expanded')) {
+                icon.textContent = 'v';
+                icon.style.transform = 'rotate(90deg)';
+            } else {
+                icon.textContent = '>';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Expandir automàticament seccions amb retard
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            
+            sections.forEach((section, index) => {
+                setTimeout(() => {
+                    if (!section.classList.contains('expanded')) {
+                        const header = section.querySelector('.section-header');
+                        toggleSection(header);
+                    }
+                }, (index + 1) * 1000);
+            });
+        });
+
+        // Efecte de typing per al títol
+        function initTypingEffect() {
+            const title = document.querySelector('.title');
+            title.classList.add('typing');
+            
+            setTimeout(() => {
+                title.classList.remove('typing');
+                title.style.borderRight = 'none';
+            }, 3000);
+        }
+
+        // Efectes hover per les obres
+        document.querySelectorAll('.work-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Efectes per les etiquetes d'influència
+        document.querySelectorAll('.influence-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                this.style.animation = 'none';
+                setTimeout(() => {
+                    this.style.animation = 'pulse 0.6s ease';
+                }, 10);
+            });
+        });
+
+        // Inicialització
+        window.addEventListener('load', function() {
+            initTypingEffect();
+        });
+
+        // Estil CSS dinàmic per animacions
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Scroll suau per a les seccions
+        document.querySelectorAll('.section-header').forEach(header => {
+            header.addEventListener('click', function() {
+                setTimeout(() => {
+                    this.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest' 
+                    });
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>

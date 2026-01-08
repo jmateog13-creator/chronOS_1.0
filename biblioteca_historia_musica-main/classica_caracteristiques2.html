@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Classicisme: etapa musical</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600&family=Inter:wght@300;400;500;600&family=Fraunces:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            line-height: 1.7;
+            color: #1e293b;
+            background: linear-gradient(135deg, #fef9e7 0%, #f6f3e7 50%, #ede8dc 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="classical-bg" patternUnits="userSpaceOnUse" width="40" height="40"><circle cx="20" cy="20" r="0.8" fill="rgba(139,116,88,0.03)"/><path d="M10,20 Q20,15 30,20" stroke="rgba(139,116,88,0.02)" stroke-width="0.5" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23classical-bg)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .classical-manuscript {
+            max-width: 1100px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(139, 116, 88, 0.15);
+            border: 1px solid rgba(139, 116, 88, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .manuscript-header {
+            background: linear-gradient(135deg, #8b7458 0%, #a0956b 100%);
+            color: #fef9e7;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .manuscript-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,40 Q30,20 40,40 T60,40 T80,40" stroke="rgba(254,249,231,0.1)" stroke-width="1.5" fill="none"/><circle cx="25" cy="25" r="1.5" fill="rgba(254,249,231,0.08)"/><circle cx="75" cy="75" r="1" fill="rgba(254,249,231,0.06)"/></svg>') repeat;
+            animation: manuscript-flow 35s linear infinite;
+        }
+
+        @keyframes manuscript-flow {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(-40px) translateY(-25px) rotate(3deg); }
+        }
+
+        .classical-emblem {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #d69e2e 0%, #b7791f 100%);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 12px 35px rgba(214, 158, 46, 0.3);
+            position: relative;
+            z-index: 1;
+            border: 3px solid rgba(254, 249, 231, 0.3);
+        }
+
+        h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .manuscript-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 300;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .manuscript-content {
+            padding: 50px 50px;
+        }
+
+        .opening-statement {
+            background: linear-gradient(135deg, #fefcf3 0%, #faf8f3 100%);
+            padding: 35px;
+            border-radius: 8px;
+            margin-bottom: 45px;
+            border-left: 4px solid #d69e2e;
+            font-size: 1.15rem;
+            line-height: 1.9;
+            text-align: justify;
+            box-shadow: 0 8px 25px rgba(214, 158, 46, 0.08);
+            position: relative;
+        }
+
+        .opening-statement::before {
+            content: '🎼';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.2;
+        }
+
+        .features-array {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 35px;
+            margin: 40px 0;
+        }
+
+        .feature-entry {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(139, 116, 88, 0.08);
+            border: 1px solid rgba(139, 116, 88, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .feature-entry:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(139, 116, 88, 0.12);
+        }
+
+        .entry-header {
+            padding: 25px 30px;
+            color: #fef9e7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .entry-header.melody {
+            background: linear-gradient(135deg, #7c2d12 0%, #92400e 100%);
+        }
+
+        .entry-header.structure {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        }
+
+        .entry-header.harmony {
+            background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+        }
+
+        .entry-header.dynamics {
+            background: linear-gradient(135deg, #7c2d12 0%, #a16207 100%);
+        }
+
+        .entry-header.orchestra {
+            background: linear-gradient(135deg, #6b21a8 0%, #7c3aed 100%);
+        }
+
+        .entry-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="2" fill="rgba(254,249,231,0.1)"/><circle cx="75" cy="75" r="1.5" fill="rgba(254,249,231,0.08)"/></svg>');
+            animation: entry-glow 10s ease-in-out infinite;
+        }
+
+        @keyframes entry-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.02); }
+        }
+
+        .entry-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .entry-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.6rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .entry-body {
+            padding: 30px;
+        }
+
+        .entry-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #475569;
+        }
+
+        .entry-text strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .insight-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0ea5e9;
+            border-radius: 6px;
+            padding: 18px;
+            margin: 18px 0;
+            font-size: 0.95rem;
+            color: #0c4a6e;
+            position: relative;
+        }
+
+        .insight-box::before {
+            content: '💡';
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            font-size: 1.3rem;
+            opacity: 0.6;
+        }
+
+        .emphasis-note {
+            background: linear-gradient(135deg, #fef7cd 0%, #fde047 100%);
+            border-left: 3px solid #ca8a04;
+            padding: 18px;
+            margin: 18px 0;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #a16207;
+            font-style: italic;
+        }
+
+        .composers-mention {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 1px solid #a855f7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .composers-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #6b21a8;
+            margin-bottom: 8px;
+        }
+
+        .composers-text {
+            font-size: 1rem;
+            color: #7c3aed;
+            line-height: 1.6;
+        }
+
+        .conclusion-panel {
+            background: linear-gradient(135deg, #8b7458 0%, #a0956b 100%);
+            color: #fef9e7;
+            padding: 40px;
+            border-radius: 10px;
+            margin-top: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conclusion-panel::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -40%;
+            width: 180%;
+            height: 180%;
+            background: radial-gradient(circle, rgba(214, 158, 46, 0.15) 0%, transparent 70%);
+            animation: conclusion-radiance 16s ease-in-out infinite;
+        }
+
+        @keyframes conclusion-radiance {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            50% { transform: scale(1.2) rotate(8deg); opacity: 0.8; }
+        }
+
+        .conclusion-title {
+            font-family: 'Fraunces', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .conclusion-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .refined-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8b7458, #d69e2e, #8b7458, transparent);
+            margin: 45px auto;
+            border-radius: 1px;
+            width: 250px;
+        }
+
+        @media (max-width: 768px) {
+            .classical-manuscript {
+                margin: 20px;
+            }
+
+            .manuscript-content {
+                padding: 35px 25px;
+            }
+
+            .manuscript-header {
+                padding: 35px 25px;
+            }
+
+            h1 {
+                font-size: 2.4rem;
+            }
+
+            .entry-body {
+                padding: 25px 20px;
+            }
+
+            .conclusion-panel {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="classical-manuscript">
+        <header class="manuscript-header">
+            <div class="classical-emblem">🎭</div>
+            <h1>El Classicisme</h1>
+            <div class="manuscript-subtitle">Etapa musical • Segles XVIII-XIX</div>
+        </header>
+
+        <div class="manuscript-content">
+            <div class="opening-statement">
+                El Classicisme va ser una etapa musical situada entre el segle XVIII i principis del XIX, en què la música va buscar la simplicitat i la claredat després dels períodes més complexos que l'havien precedit. Els compositors d'aquest moment volien crear melodies netes, fàcils de recordar i amb un equilibri perfecte entre les diferents parts de la peça.
+            </div>
+
+            <div class="features-array">
+                <div class="feature-entry">
+                    <div class="entry-header melody">
+                        <div class="entry-icon">🎵</div>
+                        <div class="entry-title">Melodia protagonista</div>
+                    </div>
+                    <div class="entry-body">
+                        <div class="entry-text">
+                            En aquesta època, la <strong>melodia és la protagonista clara</strong> de les composicions, mentre que l'acompanyament es manté discret però essencial per donar suport i enriquir el conjunt. Les frases musicals es dissenyen amb simetria i regularitat, amb parts que sovint es repeteixen o es complementen per crear un sentiment d'harmonia i ordre.
+                        </div>
+                        <div class="insight-box">
+                            La melodia clàssica és directa, memorable i construïda amb frases simètriques que faciliten la comprensió musical.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-entry">
+                    <div class="entry-header structure">
+                        <div class="entry-icon">🏛️</div>
+                        <div class="entry-title">Formes estructurades</div>
+                    </div>
+                    <div class="entry-body">
+                        <div class="entry-text">
+                            Les formes musicals es van estructurar millor durant el Classicisme. Es van popularitzar gèneres com la <strong>sonata</strong>, la <strong>simfonia</strong> o el <strong>concert</strong>, que permetien organitzar les idees musicals amb claredat i fent que fossin més accessibles per al públic. Aquestes estructures ajudaven a mantenir l'atenció i a donar coherència a la música.
+                        </div>
+                        <div class="emphasis-note">
+                            L'organització formal va esdevenir un dels pilars fonamentals de la música clàssica.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-entry">
+                    <div class="entry-header harmony">
+                        <div class="entry-icon">🎶</div>
+                        <div class="entry-title">Harmonia tonal clara</div>
+                    </div>
+                    <div class="entry-body">
+                        <div class="entry-text">
+                            Pel que fa a l'harmonia, es treballava dins de la <strong>tonalitat</strong>, amb progressions clares i ordenades de cors. Les dissonàncies s'utilitzaven de manera puntual per crear moments de tensió que després es resolien, aportant expressivitat a les peces.
+                        </div>
+                        <div class="insight-box">
+                            L'harmonia tonal proporciona estabilitat i previsibilitat, característiques fonamentals del gust clàssic.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-entry">
+                    <div class="entry-header dynamics">
+                        <div class="entry-icon">📊</div>
+                        <div class="entry-title">Dinàmiques expressives</div>
+                    </div>
+                    <div class="entry-body">
+                        <div class="entry-text">
+                            Un altre element important va ser la incorporació d'<strong>indicacions dinàmiques més precises</strong> a les partitures, que permetien als intèrprets saber quan calia tocar més fort o més fluix, aportant així una major varietat i expressivitat a la música.
+                        </div>
+                        <div class="emphasis-note">
+                            Les dinàmiques van esdevenir una eina expressiva fonamental per als compositors clàssics.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-entry">
+                    <div class="entry-header orchestra">
+                        <div class="entry-icon">🎻</div>
+                        <div class="entry-title">Orquestra definida</div>
+                    </div>
+                    <div class="entry-body">
+                        <div class="entry-text">
+                            Els instruments que formaven part de l'<strong>orquestra clàssica</strong> ja estaven ben definits, amb presència destacada del <strong>violí</strong>, el <strong>piano</strong> i la <strong>flauta</strong>, entre d'altres.
+                        </div>
+                        
+                        <div class="composers-mention">
+                            <div class="composers-title">Grans mestres</div>
+                            <div class="composers-text">
+                                En aquesta època van aparèixer compositors cabdals com <strong>Mozart</strong>, <strong>Haydn</strong> i <strong>Beethoven</strong>, que encara avui són referents en la música clàssica.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="refined-divider"></div>
+
+            <div class="conclusion-panel">
+                <div class="conclusion-title">Essència del Classicisme</div>
+                <div class="conclusion-text">
+                    En definitiva, la música del Classicisme és senzilla, equilibrada i molt ben estructurada, amb melodies fàcils d'escoltar i formes que faciliten la comprensió i el gaudi de l'oient. Aquest període va establir un ideal de bellesa musical basat en la proporció, l'ordre i l'accessibilitat que ha perviscut fins als nostres dies.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

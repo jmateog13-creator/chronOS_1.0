@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hildegarda de Bingen: una veu única a l'edat mitjana</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Serif Pro', serif;
+            font-size: 17px;
+            line-height: 1.8;
+            color: #2c2c2c;
+            background: #fafbfc;
+            padding: 0;
+        }
+
+        .academic-paper {
+            max-width: 850px;
+            margin: 40px auto;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e1e5e9;
+        }
+
+        .header-section {
+            background: #1e2d3d;
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            border-bottom: 4px solid #34495e;
+        }
+
+        .main-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            font-style: italic;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .content-body {
+            padding: 50px 50px 40px;
+        }
+
+        .abstract {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-left: 4px solid #007bff;
+            padding: 25px;
+            margin-bottom: 35px;
+            font-style: italic;
+            color: #495057;
+            font-size: 1.05rem;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-heading {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1e2d3d;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .paragraph {
+            margin-bottom: 20px;
+            text-align: justify;
+            text-indent: 1.5em;
+        }
+
+        .first-paragraph {
+            text-indent: 0;
+        }
+
+        .first-paragraph::first-letter {
+            float: left;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 3.8rem;
+            line-height: 0.9;
+            margin: 0.05em 0.1em 0 0;
+            color: #1e2d3d;
+            font-weight: 700;
+        }
+
+        .emphasis {
+            font-weight: 600;
+            color: #1e2d3d;
+        }
+
+        .term {
+            font-style: italic;
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .date-reference {
+            font-weight: 600;
+            color: #dc3545;
+        }
+
+        .work-title {
+            font-style: italic;
+            font-weight: 500;
+            color: #17a2b8;
+        }
+
+        .biographical-info {
+            background: #f1f3f4;
+            border: 1px solid #d6d8db;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+
+        .biographical-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e2d3d;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .musical-characteristics {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-left: 4px solid #ffc107;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .characteristics-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .significance-section {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-left: 4px solid #17a2b8;
+            padding: 30px;
+            margin: 35px 0;
+        }
+
+        .significance-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0c5460;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .importance-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .importance-item {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .importance-item::before {
+            content: '▪';
+            position: absolute;
+            left: 0;
+            color: #17a2b8;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .conclusion {
+            background: #1e2d3d;
+            color: white;
+            padding: 35px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .conclusion-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .conclusion-text {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            font-style: italic;
+        }
+
+        .quote-block {
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 20px 25px;
+            margin: 25px 0;
+            font-style: italic;
+            color: #495057;
+            position: relative;
+        }
+
+        .quote-block::before {
+            content: '"';
+            font-size: 3rem;
+            position: absolute;
+            top: -5px;
+            left: 8px;
+            color: #adb5bd;
+            font-family: 'Libre Baskerville', serif;
+        }
+
+        .contextual-note {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            margin: 25px 0;
+            font-size: 0.95rem;
+            color: #6c757d;
+            border-radius: 4px;
+        }
+
+        .contextual-note-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .academic-paper {
+                margin: 20px 10px;
+                box-shadow: none;
+                border: none;
+            }
+            
+            .header-section {
+                padding: 35px 25px;
+            }
+            
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .content-body {
+                padding: 35px 25px 30px;
+            }
+            
+            .first-paragraph::first-letter {
+                font-size: 3rem;
+            }
+            
+            body {
+                font-size: 16px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                font-size: 12pt;
+            }
+            
+            .academic-paper {
+                box-shadow: none;
+                border: none;
+            }
+            
+            .header-section {
+                background: white;
+                color: black;
+                border-bottom: 2px solid black;
+            }
+            
+            .conclusion {
+                background: white;
+                color: black;
+                border: 1px solid black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="academic-paper">
+        <div class="header-section">
+            <h1 class="main-title">Hildegarda de Bingen: una veu única a l'edat mitjana</h1>
+            <div class="subtitle">Estudi sobre la figura excepcional d'una compositora medieval</div>
+        </div>
+        
+        <div class="content-body">
+            <div class="abstract">
+                En el context de la música medieval, dominada majoritàriament per figures masculines, Hildegarda de Bingen representa una excepció notablement significativa que mereix un anàlisi detallat de les seves contribucions artístiques, espirituals i intel·lectuals.
+            </div>
+
+            <div class="section">
+                <p class="paragraph first-paragraph">A l'edat mitjana, la major part dels compositors que coneixem són homes, perquè la societat de l'época no permetia a les dones accedir fàcilment a l'educació o al món de la creació artística. Però hi ha una dona que destaca amb llum pròpia: <span class="emphasis">Hildegarda de Bingen</span>. Va ser <span class="emphasis">compositora, escriptora, científica i religiosa</span>, i és considerada una de les figures més importants de la cultura medieval.</p>
+            </div>
+
+            <div class="biographical-info">
+                <h2 class="biographical-title">Context biogràfic i desenvolupament intel·lectual</h2>
+                <p class="paragraph">Hildegarda va néixer l'any <span class="date-reference">1098</span> a Alemanya, i des de molt petita va viure en un convent. Quan es va fer gran, es va convertir en <span class="term">abadessa</span>, és a dir, la responsable del convent. A més de dirigir la vida espiritual, també escrivia llibres, parlava amb reis i papes, i va deixar una obra musical molt valuosa.</p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-heading">Característiques de la seva producció musical</h2>
+                <p class="paragraph">Una de les coses que fan especial la música de Hildegarda és que <span class="emphasis">estava molt connectada amb la seva espiritualitat i les seves visions</span>. Ella deia que Déu li enviava missatges a través de la llum, i aquestes visions li inspiraven cants, poemes i textos. Això fa que la seva música sigui molt diferent de la d'altres compositors del seu temps: és <span class="emphasis">més expressiva, més lliure i amb melodies molt originals</span>.</p>
+                
+                <p class="paragraph">Va escriure un recull de cançons religioses anomenat <span class="work-title">Symphonia armoniae celestium revelationum</span> ("Simfonia de les harmonies de les revelacions celestials"), que conté <span class="emphasis">77 peces vocals</span>, la majoria destinades a ser cantades per veus femenines. Aquestes obres s'interpretaven en el convent i servien per celebrar festes religioses o moments especials de l'any litúrgic.</p>
+            </div>
+
+            <div class="musical-characteristics">
+                <h3 class="characteristics-title">Anàlisi estilística</h3>
+                <p class="paragraph">La seva música és <span class="term">monòdica</span>, com el cant gregorià, però amb diferències importants. Les melodies de Hildegarda tenen <span class="emphasis">grans salts</span> entre notes i són <span class="emphasis">molt ornamentades</span>, com si intentessin elevar-se cap al cel. Això dona a les seves composicions un caràcter molt especial, ple de <span class="emphasis">llum, emoció i intensitat</span>.</p>
+            </div>
+
+            <div class="contextual-note">
+                <div class="contextual-note-title">Context social i reconeixement contemporani</div>
+                Tot i que en aquella època les dones tenien poc reconeixement públic, Hildegarda va ser escoltada i respectada per molts homes importants del seu temps. Això demostra que la seva intel·ligència i el seu talent musical eren realment excepcionals.
+            </div>
+
+            <div class="quote-block">
+                Avui dia, la seva figura ha estat recuperada i valorada. És considerada no només una gran compositora, sinó també una precursora del pensament científic i feminista. La seva música es continua interpretant, gravant i estudiant a tot el món.
+            </div>
+
+            <div class="significance-section">
+                <h2 class="significance-title">Significació històrica i cultural</h2>
+                <ul class="importance-list">
+                    <li class="importance-item">Va ser una <span class="emphasis">dona creadora en un món dominat per homes</span>.</li>
+                    <li class="importance-item">Va unir música, religió i espiritualitat d'una manera molt personal.</li>
+                    <li class="importance-item">Les seves melodies tenen un <span class="emphasis">estil únic</span>, diferent del cant gregorià tradicional.</li>
+                    <li class="importance-item">Va demostrar que, amb talent i convicció, es pot <span class="emphasis">trencar barreres socials i culturals</span>.</li>
+                </ul>
+            </div>
+
+            <div class="conclusion">
+                <h2 class="conclusion-title">Valoració final</h2>
+                <p class="conclusion-text">
+                    Hildegarda de Bingen representa un cas excepcional dins el panorama cultural medieval, constituint un precedent històric de primera magnitud en la lluita per la visibilització de la creativitat femenina i la seva contribució al patrimoni musical occidental.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

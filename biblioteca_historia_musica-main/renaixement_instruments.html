@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instruments musicals del Renaixement</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Open+Sans:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            line-height: 1.7;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="instruments" patternUnits="userSpaceOnUse" width="50" height="50"><path d="M10,25 Q15,15 20,25 T30,25" stroke="rgba(255,255,255,0.03)" stroke-width="1" fill="none"/><circle cx="40" cy="20" r="2" fill="rgba(255,255,255,0.02)"/></pattern></defs><rect width="100" height="100" fill="url(%23instruments)"/></svg>');
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,20 L25,15 L30,20 L35,15 L40,20" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none"/><ellipse cx="60" cy="30" rx="8" ry="4" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/></svg>') repeat;
+            animation: float 25s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(0deg) translateY(0); }
+            33% { transform: rotate(2deg) translateY(-5px); }
+            66% { transform: rotate(-2deg) translateY(5px); }
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .intro-section {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 35px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            border-left: 5px solid #667eea;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            text-align: justify;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .instrument-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 35px;
+            margin: 40px 0;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .category-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .category-header {
+            padding: 30px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.15)"/><circle cx="80" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="70" r="1" fill="rgba(255,255,255,0.12)"/></svg>');
+            animation: sparkle 12s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: scale(1.1) rotate(180deg); }
+        }
+
+        .category-header.corda {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .category-header.vent {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .category-header.tecla {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .category-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .category-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-body {
+            padding: 35px;
+        }
+
+        .instrument-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instrument-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .instrument-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .instrument-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .instrument-item:hover::before {
+            width: 8px;
+        }
+
+        .corda .instrument-item {
+            border-left-color: #667eea;
+        }
+
+        .corda .instrument-item::before {
+            background: #667eea;
+        }
+
+        .vent .instrument-item {
+            border-left-color: #f093fb;
+        }
+
+        .vent .instrument-item::before {
+            background: #f093fb;
+        }
+
+        .tecla .instrument-item {
+            border-left-color: #4facfe;
+        }
+
+        .tecla .instrument-item::before {
+            background: #4facfe;
+        }
+
+        .instrument-name {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instrument-name::before {
+            content: '♪';
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .instrument-description {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #4a5568;
+            text-align: justify;
+        }
+
+        .formations-section {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-top: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .formations-section::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -30%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+            50% { transform: scale(1.2) rotate(5deg); opacity: 0.6; }
+        }
+
+        .formations-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .formations-content {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: justify;
+            position: relative;
+            z-index: 1;
+            opacity: 0.95;
+        }
+
+        .decorative-separator {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #667eea, #f093fb, #4facfe, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 15px;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .instrument-categories {
+                grid-template-columns: 1fr;
+            }
+
+            .category-card {
+                margin-bottom: 25px;
+            }
+
+            .instrument-item {
+                padding: 20px;
+            }
+
+            .formations-section {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Instruments musicals del Renaixement</h1>
+            <div class="subtitle">La diversitat sonora dels segles XV-XVI</div>
+        </header>
+
+        <div class="intro-section">
+            Durant el Renaixement, la música instrumental va tenir un paper important tant en les corts com en les festes populars. Es van desenvolupar molts instruments nous i es va ampliar la varietat d'aquells que ja existien. Els instruments es podien dividir en tres grans grups: de corda, de vent i de tecla.
+        </div>
+
+        <div class="decorative-separator"></div>
+
+        <div class="instrument-categories">
+            <div class="category-card corda">
+                <div class="category-header corda">
+                    <div class="category-icon">🎻</div>
+                    <div class="category-title">Instruments de corda</div>
+                </div>
+                <div class="category-body">
+                    <p style="margin-bottom: 25px; font-size: 1.1rem; color: #4a5568; text-align: justify;">
+                        Els instruments de corda eren molt utilitzats tant per acompanyar la veu com per tocar música instrumental independent. Alguns dels més coneguts d'aquesta època són:
+                    </p>
+                    <ul class="instrument-list">
+                        <li class="instrument-item">
+                            <div class="instrument-name">Laüt</div>
+                            <div class="instrument-description">
+                                Instrument de corda puntejada, molt popular a les corts europees. Tenia un so suau i agradable, ideal per a la música d'acompanyament.
+                            </div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Viola da gamba</div>
+                            <div class="instrument-description">
+                                Un instrument de corda fregada semblant al violoncel, però amb sis o set cordes i un so més dolç.
+                            </div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Arpa</div>
+                            <div class="instrument-description">
+                                Instrument antic que seguia sent molt utilitzat, amb un gran nombre de cordes que es tocaven amb els dits.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-card vent">
+                <div class="category-header vent">
+                    <div class="category-icon">🎺</div>
+                    <div class="category-title">Instruments de vent</div>
+                </div>
+                <div class="category-body">
+                    <p style="margin-bottom: 25px; font-size: 1.1rem; color: #4a5568; text-align: justify;">
+                        Els instruments de vent també van jugar un paper important a la música renaixentista. Alguns dels més freqüents eren:
+                    </p>
+                    <ul class="instrument-list">
+                        <li class="instrument-item">
+                            <div class="instrument-name">Flauta dolça</div>
+                            <div class="instrument-description">
+                                Instrument de vent fusta molt utilitzat per la seva sonoritat suau i càlida.
+                            </div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Cornamusa</div>
+                            <div class="instrument-description">
+                                Instrument de vent de doble llengüeta que produïa un so fort i persistent, molt adequat per a música de carrer i danses.
+                            </div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Xirimia</div>
+                            <div class="instrument-description">
+                                Similar a la cornamusa, però amb un so més estrident i utilitzat en diverses regions d'Europa.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="category-card tecla">
+                <div class="category-header tecla">
+                    <div class="category-icon">🎹</div>
+                    <div class="category-title">Instruments de tecla</div>
+                </div>
+                <div class="category-body">
+                    <p style="margin-bottom: 25px; font-size: 1.1rem; color: #4a5568; text-align: justify;">
+                        Els instruments de tecla van començar a desenvolupar-se durant el Renaixement, i encara que no tenien la importància que tindrien en èpoques posteriors, ja es feien servir per acompanyar i interpretar música:
+                    </p>
+                    <ul class="instrument-list">
+                        <li class="instrument-item">
+                            <div class="instrument-name">Clavicèmbal</div>
+                            <div class="instrument-description">
+                                Instrument de tecla en què les cordes es pinçaven amb unes petites pletes, produint un so brillant i característic.
+                            </div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Órgan</div>
+                            <div class="instrument-description">
+                                Instrument tradicional de l'església que seguia sent molt utilitzat per a la música religiosa.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="formations-section">
+            <div class="formations-title">La música instrumental i les formacions</div>
+            <div class="formations-content">
+                La música instrumental es tocava sovint en petits grups formats per diferents instruments, creant un conjunt equilibrat. Aquestes formacions podien incloure tant instruments de corda com de vent, i s'utilitzaven en ballades, festes i també en acompanyaments de música vocal.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

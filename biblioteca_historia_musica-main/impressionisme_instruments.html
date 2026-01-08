@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Orquestra Impressionista - Estil Minimalist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.8;
+            color: #1a1a1a;
+            background: #fafafa;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            background: #fff;
+        }
+
+        .hero {
+            height: 70vh;
+            background: linear-gradient(45deg, #000, #333);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='60' height='60' fill='%23000'/%3e%3ccircle cx='30' cy='30' r='1' fill='%23333'/%3e%3c/svg%3e");
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 1;
+            position: relative;
+            max-width: 600px;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            color: #fff;
+            font-weight: 100;
+            letter-spacing: 8px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #ccc;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 100px 0;
+        }
+
+        .section:nth-child(even) {
+            background: #f8f8f8;
+        }
+
+        .section-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 50px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .section-number {
+            font-size: 8rem;
+            font-weight: 100;
+            color: #e0e0e0;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .section-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: #333;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            color: #1a1a1a;
+            letter-spacing: 1px;
+        }
+
+        .highlight {
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            font-weight: 500;
+        }
+
+        .instruments-overview {
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 50px;
+        }
+
+        .overview-content {
+            max-width: 800px;
+        }
+
+        .overview-title {
+            font-size: 3rem;
+            font-weight: 100;
+            margin-bottom: 50px;
+            letter-spacing: 3px;
+        }
+
+        .overview-text {
+            font-size: 1.3rem;
+            line-height: 2;
+            color: #ccc;
+            font-weight: 300;
+        }
+
+        .instruments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 50px;
+        }
+
+        .instrument-card {
+            padding: 60px 40px;
+            text-align: center;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .instrument-card:hover {
+            background: #000;
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        .instrument-icon {
+            font-size: 4rem;
+            margin-bottom: 30px;
+            display: block;
+        }
+
+        .instrument-name {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .instrument-description {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .techniques {
+            background: #f0f0f0;
+            padding: 100px 50px;
+            text-align: center;
+        }
+
+        .techniques-title {
+            font-size: 2.5rem;
+            font-weight: 100;
+            margin-bottom: 80px;
+            color: #1a1a1a;
+            letter-spacing: 2px;
+        }
+
+        .techniques-list {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .technique {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .technique:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .technique-name {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #000;
+        }
+
+        .technique-desc {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .conclusion {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 150px 50px;
+            text-align: center;
+        }
+
+        .conclusion-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .conclusion-title {
+            font-size: 3rem;
+            font-weight: 100;
+            margin-bottom: 50px;
+            letter-spacing: 3px;
+        }
+
+        .conclusion-text {
+            font-size: 1.2rem;
+            line-height: 2;
+            color: #ccc;
+            font-weight: 300;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #000;
+            color: #fff;
+            padding: 20px 5px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3rem;
+                letter-spacing: 4px;
+            }
+            
+            .section-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 0 30px;
+            }
+            
+            .section-number {
+                font-size: 4rem;
+            }
+            
+            .instruments-grid {
+                grid-template-columns: 1fr;
+                padding: 60px 30px;
+            }
+            
+            .techniques-list {
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+            
+            .scroll-indicator {
+                display: none;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-left {
+            opacity: 0;
+            transform: translateX(-100px);
+            transition: all 1s ease;
+        }
+
+        .slide-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-right {
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 1s ease;
+        }
+
+        .slide-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-indicator">SCROLL</div>
+    
+    <div class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>ORQUESTRA</h1>
+                <div class="hero-subtitle">IMPRESSIONISTA</div>
+            </div>
+        </section>
+
+        <div class="content">
+            <section class="section">
+                <div class="section-content">
+                    <div class="section-number slide-left">01</div>
+                    <div class="section-text slide-right">
+                        <h2 class="section-title">Nova Sonoritat</h2>
+                        <p>Durant l'època de l'Impressionisme musical, l'orquestra i els instruments van jugar un paper fonamental per aconseguir les noves sonoritats i atmosferes que els compositors volien transmetre. Aquesta etapa va suposar un canvi important en la manera d'utilitzar els instruments, ja que no només es buscava la potència o la grandiositat, sinó també la <span class="highlight">subtilesa, la delicadesa i la varietat de colors musicals</span>.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-content">
+                    <div class="section-number slide-left">02</div>
+                    <div class="section-text slide-right">
+                        <h2 class="section-title">Instruments de Vent</h2>
+                        <p>L'orquestra impressionista va ampliar considerablement l'ús dels <span class="highlight">instruments de vent</span>, que fins aleshores sovint tenien un paper secundari. Instruments com la flauta, l'oboè, el clarinet i el fagot es van convertir en protagonistes perquè podien oferir sons suaus, càlids i, en moltes ocasions, exòtics. Per exemple, <span class="highlight">la flauta sovint s'utilitzava per imitar el cant dels ocells</span> o per crear atmosferes transparentment suaus.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-content">
+                    <div class="section-number slide-left">03</div>
+                    <div class="section-text slide-right">
+                        <h2 class="section-title">L'Arpa Protagonista</h2>
+                        <p>Un instrument molt destacat en aquesta època va ser <span class="highlight">l'arpa</span>, que, amb el seu so cristal·lí, brillant i eteri, aportava un toc de màgia i misteri a les composicions. Les seves cordes permetien crear <span class="highlight">efectes d'arpegiats suaus</span>, que semblaven com petits rius de sons que s'escampaven pel conjunt orquestral. Aquest instrument era capaç d'afegir una textura delicada que ajudava a construir ambients més poètics i evocadors.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-content">
+                    <div class="section-number slide-left">04</div>
+                    <div class="section-text slide-right">
+                        <h2 class="section-title">Piano Essential</h2>
+                        <p>El piano va continuar sent un instrument essencial durant el període impressionista. Molts dels compositors més coneguts d'aquesta etapa, com <span class="highlight">Claude Debussy i Maurice Ravel</span>, van escriure moltes obres per a piano sol, però també per a piano amb orquestra. El piano permetia explorar una gran varietat de sons i dinàmiques, des de passatges molt suaus fins a moments més intensos.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-content">
+                    <div class="section-number slide-left">05</div>
+                    <div class="section-text slide-right">
+                        <h2 class="section-title">Cordes Evolucionades</h2>
+                        <p>Pel que fa a la corda, instruments com els violins, les violes, els violoncels i els contrabaixos seguien sent la base de l'orquestra, però la seva manera d'interpretar va evolucionar. A l'Impressionisme, les cordes s'utilitzaven sovint per crear un fons sonor més suau, utilitzant tècniques especials com el <span class="highlight">pizzicato</span> (pellizcar les cordes) o el <span class="highlight">glissando</span> (lliscar el dit per les cordes).</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-content">
+                    <div class="section-number slide-left">06</div>
+                    <div class="section-text slide-right">
+                        <h2 class="section-title">Percussió Refinada</h2>
+                        <p>La percussió, que en èpoques anteriors s'havia usat principalment per marcar el ritme, va passar a tenir un paper més divers i sofisticat. Instruments com el timbal, el xilòfon o la caixa es feien servir de manera puntual per crear moments especials, efectes de contrast o per subratllar determinades emocions. En l'Impressionisme, <span class="highlight">la percussió no domina ni marca un tempo fort</span>, sinó que s'utilitza per donar color.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="instruments-overview">
+            <div class="overview-content">
+                <h2 class="overview-title fade-in">INSTRUMENTS CLAU</h2>
+                <div class="overview-text fade-in">
+                    Cada instrument aportava una personalitat única que, combinada amb els altres, ajudava a crear un paisatge sonor ric en textures, colors i sensacions.
+                </div>
+            </div>
+        </section>
+
+        <section class="instruments-grid">
+            <div class="instrument-card fade-in">
+                <div class="instrument-icon">🪈</div>
+                <div class="instrument-name">FLAUTA</div>
+                <div class="instrument-description">Imita el cant dels ocells i crea atmosferes etèries</div>
+            </div>
+            <div class="instrument-card fade-in">
+                <div class="instrument-icon">🎺</div>
+                <div class="instrument-name">ARPA</div>
+                <div class="instrument-description">So cristal·lí que aporta màgia i misteri</div>
+            </div>
+            <div class="instrument-card fade-in">
+                <div class="instrument-icon">🎹</div>
+                <div class="instrument-name">PIANO</div>
+                <div class="instrument-description">Gran varietat de sons i dinàmiques</div>
+            </div>
+            <div class="instrument-card fade-in">
+                <div class="instrument-icon">🎻</div>
+                <div class="instrument-name">CORDES</div>
+                <div class="instrument-description">Base orquestral amb tècniques innovadores</div>
+            </div>
+            <div class="instrument-card fade-in">
+                <div class="instrument-icon">🎼</div>
+                <div class="instrument-name">VENTS</div>
+                <div class="instrument-description">Sons suaus, càlids i exòtics</div>
+            </div>
+            <div class="instrument-card fade-in">
+                <div class="instrument-icon">🥁</div>
+                <div class="instrument-name">PERCUSSIÓ</div>
+                <div class="instrument-description">Color i contrast, no dominància rítmica</div>
+            </div>
+        </section>
+
+        <section class="techniques">
+            <h2 class="techniques-title fade-in">TÈCNIQUES IMPRESSIONISTES</h2>
+            <div class="techniques-list">
+                <div class="technique fade-in">
+                    <div class="technique-name">PIZZICATO</div>
+                    <div class="technique-desc">Pellizcar les cordes per crear textures delicades</div>
+                </div>
+                <div class="technique fade-in">
+                    <div class="technique-name">GLISSANDO</div>
+                    <div class="technique-desc">Lliscar el dit per les cordes creant fluidesa</div>
+                </div>
+                <div class="technique fade-in">
+                    <div class="technique-name">ARPEGIATS</div>
+                    <div class="technique-desc">Rius de sons que s'escampen per l'orquestra</div>
+                </div>
+                <div class="technique fade-in">
+                    <div class="technique-name">VIBRAT SUAU</div>
+                    <div class="technique-desc">Efectes gairebé imperceptibles d'atmosfera</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="conclusion">
+            <div class="conclusion-content">
+                <h2 class="conclusion-title fade-in">PAISATGE SONOR</h2>
+                <div class="conclusion-text fade-in">
+                    En resum, l'orquestra impressionista és un conjunt viu, ple de matisos i possibilitats que els compositors aprofitaven per <strong>pintar amb música</strong>. Per això, la música d'aquest període és molt rica en timbres i convida l'oient a submergir-se en un món de sensacions, colors i emocions que van més enllà de la melodia o la forma tradicional.
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Sistema d'animacions d'scroll
+        function initScrollAnimations() {
+            const elements = document.querySelectorAll('.fade-in, .slide-left, .slide-right');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.2,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            elements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        // Efectes hover per les targetes d'instruments
+        function initCardEffects() {
+            const cards = document.querySelectorAll('.instrument-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.background = '#000';
+                    this.style.color = '#fff';
+                    this.style.transform = 'scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.background = '#fff';
+                    this.style.color = '#1a1a1a';
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        }
+
+        // Scroll suau per seccions
+        function initSmoothScrolling() {
+            const sections = document.querySelectorAll('.section');
+            let currentSection = 0;
+            
+            document.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                
+                if (e.deltaY > 0 && currentSection < sections.length - 1) {
+                    currentSection++;
+                } else if (e.deltaY < 0 && currentSection > 0) {
+                    currentSection--;
+                }
+                
+                sections[currentSection].scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }, { passive: false });
+        }
+
+        // Indicador de scroll dinàmic
+        function updateScrollIndicator() {
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            
+            scrollIndicator.style.background = `linear-gradient(to bottom, #000 ${scrollPercent}%, #ccc ${scrollPercent}%)`;
+        }
+
+        // Parallax suau per al hero
+        function initParallax() {
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const hero = document.querySelector('.hero');
+                
+                hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+                
+                // Actualitzar indicador
+                updateScrollIndicator();
+            });
+        }
+
+        // Efecte de typing per al títol del hero
+        function typewriterEffect() {
+            const title = document.querySelector('.hero h1');
+            const text = 'ORQUESTRA';
+            title.textContent = '';
+            
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    title.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 150);
+                }
+            }
+            
+            setTimeout(type, 1000);
+        }
+
+        // Inicialització
+        document.addEventListener('DOMContentLoaded', function() {
+            initScrollAnimations();
+            initCardEffects();
+            initParallax();
+            typewriterEffect();
+        });
+
+        // Navegació amb teclat
+        document.addEventListener('keydown', (e) => {
+            const sections = document.querySelectorAll('.section');
+            let currentVisible = 0;
+            
+            // Trobar secció visible actual
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+                    currentVisible = index;
+                }
+            });
+            
+            if (e.key === 'ArrowDown' || e.key === ' ') {
+                e.preventDefault();
+                if (currentVisible < sections.length - 1) {
+                    sections[currentVisible + 1].scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentVisible > 0) {
+                    sections[currentVisible - 1].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

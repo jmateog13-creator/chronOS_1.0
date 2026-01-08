@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca de la Història de la Música</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .periods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .period-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid;
+        }
+
+        .period-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .period-card.medieval {
+            border-color: #8b4513;
+        }
+
+        .period-card.renaissance {
+            border-color: #d4af37;
+        }
+
+        .period-card.baroque {
+            border-color: #dc143c;
+        }
+
+        .period-card.classical {
+            border-color: #4169e1;
+        }
+
+        .period-card.romantic {
+            border-color: #ff69b4;
+        }
+
+        .period-card.impressionist {
+            border-color: #20b2aa;
+        }
+
+        .period-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .period-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .medieval .period-icon { color: #8b4513; }
+        .renaissance .period-icon { color: #d4af37; }
+        .baroque .period-icon { color: #dc143c; }
+        .classical .period-icon { color: #4169e1; }
+        .romantic .period-icon { color: #ff69b4; }
+        .impressionist .period-icon { color: #20b2aa; }
+
+        .period-dates {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .html-button {
+            background: #34495e;
+            color: #fff;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .html-button:hover {
+            background: #2c3e50;
+            transform: scale(1.05);
+        }
+
+        .html-button::before {
+            content: "📄";
+            margin-right: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer p {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .periods-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .buttons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(52, 73, 94, 0.1);
+            border-radius: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Biblioteca de la Història de la Música</h1>
+            <p>Un viatge a través dels períodes musicals més importants</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Períodes</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Anys d'història</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="periods-grid">
+            <!-- EDAT MITJANA -->
+            <div class="period-card medieval">
+                <h2 class="period-title">
+                    <span class="period-icon">🏰</span>
+                    Edat Mitjana
+                </h2>
+                <div class="period-dates">Segle V - XV</div>
+                <div class="buttons-grid">
+                    <a href="medieval_context.html" class="html-button">Context</a>
+                    <a href="medieval_formes.html" class="html-button">Formes</a>
+                    <a href="medieval_formes2.html" class="html-button">Formes 2</a>
+                    <a href="medieval_leonin.html" class="html-button">Leonin</a>
+                    <a href="medieval_hildegarda.html" class="html-button">Hildegarda</a>
+                    <a href="medieval_hildegarda2.html" class="html-button">Hildegarda 2</a>
+                    <a href="medieval_instruments.html" class="html-button">Instruments</a>
+                    <a href="medieval_caracteristiques.html" class="html-button">Característiques</a>
+                    <a href="medieval_caracteristiques2.html" class="html-button">Característiques 2</a>
+                </div>
+            </div>
+
+            <!-- RENAIXEMENT -->
+            <div class="period-card renaissance">
+                <h2 class="period-title">
+                    <span class="period-icon">🎭</span>
+                    Renaixement
+                </h2>
+                <div class="period-dates">Segle XV - XVII</div>
+                <div class="buttons-grid">
+                    <a href="renaixement_context.html" class="html-button">Context</a>
+                    <a href="renaixement_formes.html" class="html-button">Formes</a>
+                    <a href="renaixement_palestrina.html" class="html-button">Palestrina</a>
+                    <a href="renaixement_palestrina2.html" class="html-button">Palestrina 2</a>
+                    <a href="renaixement_instruments.html" class="html-button">Instruments</a>
+                    <a href="renaixement_instruments2.html" class="html-button">Instruments 2</a>
+                    <a href="renaixement_caracteristiques.html" class="html-button">Característiques</a>
+                    <a href="renaixement_caracteristiques2.html" class="html-button">Característiques 2</a>
+                </div>
+            </div>
+
+            <!-- BARROC -->
+            <div class="period-card baroque">
+                <h2 class="period-title">
+                    <span class="period-icon">👑</span>
+                    Barroc
+                </h2>
+                <div class="period-dates">Segle XVII - XVIII</div>
+                <div class="buttons-grid">
+                    <a href="barroc_context.html" class="html-button">Context</a>
+                    <a href="barroc_formes.html" class="html-button">Formes</a>
+                    <a href="barroc_bach.html" class="html-button">Bach</a>
+                    <a href="barroc_bach2.html" class="html-button">Bach 2</a>
+                    <a href="barroc_vivaldi.html" class="html-button">Vivaldi</a>
+                    <a href="barroc_vivaldi2.html" class="html-button">Vivaldi 2</a>
+                    <a href="barroc_instruments.html" class="html-button">Instruments</a>
+                    <a href="barroc_caracteristiques.html" class="html-button">Característiques</a>
+                    <a href="barroc_caracteristiques2.html" class="html-button">Característiques 2</a>
+                </div>
+            </div>
+
+            <!-- CLASSICISME -->
+            <div class="period-card classical">
+                <h2 class="period-title">
+                    <span class="period-icon">🎼</span>
+                    Classicisme
+                </h2>
+                <div class="period-dates">Segle XVIII - XIX</div>
+                <div class="buttons-grid">
+                    <a href="classica_context.html" class="html-button">Context</a>
+                    <a href="classica_formes.html" class="html-button">Formes</a>
+                    <a href="classica_haydn.html" class="html-button">Haydn</a>
+                    <a href="classica_haydn2.html" class="html-button">Haydn 2</a>
+                    <a href="classica_mozart.html" class="html-button">Mozart</a>
+                    <a href="classica_mozart2.html" class="html-button">Mozart 2</a>
+                    <a href="classica_instruments.html" class="html-button">Instruments</a>
+                    <a href="classica_instruments2.html" class="html-button">Instruments 2</a>
+                    <a href="classica_caracteristiques.html" class="html-button">Característiques</a>
+                    <a href="classica_caracteristiques2.html" class="html-button">Característiques 2</a>
+                </div>
+            </div>
+
+            <!-- ROMANTICISME -->
+            <div class="period-card romantic">
+                <h2 class="period-title">
+                    <span class="period-icon">💝</span>
+                    Romanticisme
+                </h2>
+                <div class="period-dates">Segle XIX</div>
+                <div class="buttons-grid">
+                    <a href="romanticisme_context.html" class="html-button">Context</a>
+                    <a href="romanticisme_formes.html" class="html-button">Formes</a>
+                    <a href="romanticisme_formes2.html" class="html-button">Formes 2</a>
+                    <a href="romanticisme_chopin.html" class="html-button">Chopin</a>
+                    <a href="romanticisme_chopin2.html" class="html-button">Chopin 2</a>
+                    <a href="romanticisme_beethoven.html" class="html-button">Beethoven</a>
+                    <a href="romanticisme_beethoven2.html" class="html-button">Beethoven 2</a>
+                    <a href="romanticisme_instruments.html" class="html-button">Instruments</a>
+                    <a href="romanticisme_instruments2.html" class="html-button">Instruments 2</a>
+                    <a href="romanticisme_caracteristiques.html" class="html-button">Característiques</a>
+                    <a href="romanticisme_caracteristiques2.html" class="html-button">Característiques 2</a>
+                </div>
+            </div>
+
+            <!-- IMPRESSIONISME -->
+            <div class="period-card impressionist">
+                <h2 class="period-title">
+                    <span class="period-icon">🌊</span>
+                    Impressionisme
+                </h2>
+                <div class="period-dates">Finals segle XIX - Inicis XX</div>
+                <div class="buttons-grid">
+                    <a href="impressionisme_context.html" class="html-button">Context</a>
+                    <a href="impressionisme_formes.html" class="html-button">Formes</a>
+                    <a href="impressionisme_debussy.html" class="html-button">Debussy</a>
+                    <a href="impressionisme_debussy2.html" class="html-button">Debussy 2</a>
+                    <a href="impressionisme_ravel.html" class="html-button">Ravel</a>
+                    <a href="impressionisme_ravel2.html" class="html-button">Ravel 2</a>
+                    <a href="impressionisme_instruments.html" class="html-button">Instruments</a>
+                    <a href="impressionisme_caracteristiques.html" class="html-button">Característiques</a>
+                    <a href="impressionisme_caracteristiques2.html" class="html-button">Característiques 2</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Explora la rica història de la música occidental a través de diferents períodes i descobreix com ha evolucionat l'art sonor al llarg dels segles.</p>
+        </div>
+    </div>
+
+    <script>
+        // Efectes hover per les targetes
+        document.querySelectorAll('.period-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Efectes per els botons
+        document.querySelectorAll('.html-button').forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+
+        // Comprovar si els fitxers existeixen (opcional)
+        document.querySelectorAll('.html-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                // Aquí pots afegir lògica per comprovar si el fitxer existeix
+                console.log(`Navegant a: ${href}`);
+            });
+        });
+    </script>
+</body>
+</html>

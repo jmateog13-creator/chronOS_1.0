@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formes Musicals del Romanticisme - Catàleg Interactiu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #2c3e50;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .interactive-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 198, 198, 0.3) 0%, transparent 50%);
+            animation: bg-shift 10s ease-in-out infinite;
+        }
+
+        @keyframes bg-shift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            color: #34495e;
+            line-height: 1.7;
+        }
+
+        .forms-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .form-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .form-card:hover .form-header::before {
+            left: 100%;
+        }
+
+        .form-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .form-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .form-content {
+            padding: 25px;
+        }
+
+        .form-description {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .composer-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .composer-tag {
+            background: #ecf0f1;
+            color: #2c3e50;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .example-work {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            margin-top: 15px;
+        }
+
+        .work-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .work-description {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .expansion-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .form-card:hover .expansion-indicator {
+            transform: rotate(180deg);
+        }
+
+        .special-forms {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .special-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 3px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+        }
+
+        .special-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            padding: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: subtract;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: subtract;
+        }
+
+        .special-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .special-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .statistics-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            padding: 20px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .conclusion-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .conclusion-title {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .conclusion-text {
+            font-size: 1.2rem;
+            color: #555;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .forms-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .special-forms {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="interactive-bg"></div>
+
+    <div class="container">
+        <header>
+            <div class="hero-icon">🎼</div>
+            <h1>Formes Musicals del Romanticisme</h1>
+            <div class="subtitle">Catàleg Interactiu d'Estructures Expressives</div>
+        </header>
+
+        <div class="intro-card">
+            <div class="intro-text">
+                Durant el Romanticisme, la música va evolucionar i es van desenvolupar noves formes musicals que permetien als compositors expressar emocions i idees amb més llibertat i profunditat. A diferència d'èpoques anteriors, on les estructures eren més rígides i formals, aquí les formes es van tornar més flexibles, ajudant a fer la música més expressiva i personal.
+            </div>
+        </div>
+
+        <div class="forms-container">
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="expansion-indicator">▼</div>
+                    <div class="form-icon">📖</div>
+                    <div class="form-title">Poema Simfònic</div>
+                    <div class="form-subtitle">Narrativa Musical Instrumental</div>
+                </div>
+                <div class="form-content">
+                    <div class="form-description">
+                        Una obra instrumental, normalment per a orquestra, que explica una història, un poema o un paisatge mitjançant la música. És com si la música fos un relat sense paraules.
+                    </div>
+                    <div class="composer-tags">
+                        <div class="composer-tag">Franz Liszt</div>
+                        <div class="composer-tag">Richard Strauss</div>
+                    </div>
+                    <div class="example-work">
+                        <div class="work-title">Les Preludis - Liszt</div>
+                        <div class="work-description">Un dels poemes simfònics més coneguts que explora temes filosòfics sobre la vida</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="expansion-indicator">▼</div>
+                    <div class="form-icon">🎵</div>
+                    <div class="form-title">Simfonia Romàntica</div>
+                    <div class="form-subtitle">Forma Orquestral Expandida</div>
+                </div>
+                <div class="form-content">
+                    <div class="form-description">
+                        Es va fer més llarga i complexa que en èpoques anteriors. Les simfonies romàntiques solen tenir més moviments i una orquestra més gran, explorant nous límits expressius.
+                    </div>
+                    <div class="composer-tags">
+                        <div class="composer-tag">Beethoven</div>
+                        <div class="composer-tag">Brahms</div>
+                        <div class="composer-tag">Txaikovski</div>
+                        <div class="composer-tag">Mahler</div>
+                    </div>
+                    <div class="example-work">
+                        <div class="work-title">Simfonia núm. 9 - Beethoven</div>
+                        <div class="work-description">Marcà el camí cap a la simfonia romàntica amb la seva extensió i profunditat</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="expansion-indicator">▼</div>
+                    <div class="form-icon">🎹</div>
+                    <div class="form-title">Concert Solista</div>
+                    <div class="form-subtitle">Diàleg Virtuosístic</div>
+                </div>
+                <div class="form-content">
+                    <div class="form-description">
+                        Especialment el concert per a piano i orquestra, que es va convertir en un aparador per als grans virtuosos. Un solista brilla mentre dialoga amb l'orquestra.
+                    </div>
+                    <div class="composer-tags">
+                        <div class="composer-tag">Chopin</div>
+                        <div class="composer-tag">Mendelssohn</div>
+                        <div class="composer-tag">Liszt</div>
+                    </div>
+                    <div class="example-work">
+                        <div class="work-title">Concert per a piano núm. 1 - Chopin</div>
+                        <div class="work-description">Expressiu i ple de sentiments, mostra el virtuosisme romàntic</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="expansion-indicator">▼</div>
+                    <div class="form-icon">🎼</div>
+                    <div class="form-title">Sonata Romàntica</div>
+                    <div class="form-subtitle">Intimitat Musical</div>
+                </div>
+                <div class="form-content">
+                    <div class="form-description">
+                        Va evolucionar amb moviments més lliures i expressius. Es van composar moltes obres per a piano sol que es van convertir en veritables moments d'intimitat musical.
+                    </div>
+                    <div class="composer-tags">
+                        <div class="composer-tag">Chopin</div>
+                        <div class="composer-tag">Schumann</div>
+                        <div class="composer-tag">Brahms</div>
+                    </div>
+                    <div class="example-work">
+                        <div class="work-title">Sonata núm. 2 "Marxa fúnebre" - Chopin</div>
+                        <div class="work-description">Una de les sonates per a piano més emotives del repertori</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="expansion-indicator">▼</div>
+                    <div class="form-icon">🎤</div>
+                    <div class="form-title">Lied</div>
+                    <div class="form-subtitle">Cançó Romàntica Alemanya</div>
+                </div>
+                <div class="form-content">
+                    <div class="form-description">
+                        Cançons sovint per a veu i piano que expressaven sentiments íntims i poètics. Una de les formes més emblemàtiques del Romanticisme alemany.
+                    </div>
+                    <div class="composer-tags">
+                        <div class="composer-tag">Schubert</div>
+                        <div class="composer-tag">Schumann</div>
+                        <div class="composer-tag">Brahms</div>
+                    </div>
+                    <div class="example-work">
+                        <div class="work-title">Cicle "La bella molnera" - Schubert</div>
+                        <div class="work-description">Una col·lecció de lieder que narra una història d'amor</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="expansion-indicator">▼</div>
+                    <div class="form-icon">🎭</div>
+                    <div class="form-title">Òpera Romàntica</div>
+                    <div class="form-subtitle">Drama Musical Total</div>
+                </div>
+                <div class="form-content">
+                    <div class="form-description">
+                        Va viure un gran esplendor, fent-se més dramàtica i complexa, amb històries apassionades i orquestres més grans. Una forma que va revolucionar el teatre musical.
+                    </div>
+                    <div class="composer-tags">
+                        <div class="composer-tag">Verdi</div>
+                        <div class="composer-tag">Wagner</div>
+                        <div class="composer-tag">Puccini</div>
+                    </div>
+                    <div class="example-work">
+                        <div class="work-title">La traviata - Verdi</div>
+                        <div class="work-description">Una òpera que combina drama personal amb crítica social</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="special-forms">
+            <div class="special-form">
+                <div class="special-title">
+                    <div class="special-icon">🎵</div>
+                    Música Vocal
+                </div>
+                <p>La música vocal va tenir un gran protagonisme amb formes com la <span class="highlight">cantata</span> i el <span class="highlight">romanç</span>, que permetien explorar la connexió entre text i música de manera més profunda i emotiva.</p>
+            </div>
+            <div class="special-form">
+                <div class="special-title">
+                    <div class="special-icon">🆔</div>
+                    Llibertat Expressiva
+                </div>
+                <p>Totes les formes romàntiques tenen en comú la <span class="highlight">llibertat expressiva</span> i el desig de comunicar emocions profundes, convertint la música en una eina poderosa per connectar amb l'ànima humana.</p>
+            </div>
+        </div>
+
+        <div class="statistics-section">
+            <h2>Evolució Quantitativa</h2>
+            <p>Les formes musicals del Romanticisme en xifres</p>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">4-6</span>
+                    <div class="stat-label">Moviments mitjans en simfonies</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">600+</span>
+                    <div class="stat-label">Lieder de Schubert</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">13</span>
+                    <div class="stat-label">Poemes simfònics de Liszt</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">90+</span>
+                    <div class="stat-label">Minuts durada simfonies Mahler</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="conclusion-card">
+            <div class="conclusion-title">Síntesi: Una Nova Era Expressiva</div>
+            <div class="conclusion-text">
+                Les formes musicals del Romanticisme són diverses i variades, però totes tenen en comú la llibertat expressiva i el desig de comunicar emocions profundes. Aquestes formes van permetre que la música es convertís en una eina molt poderosa per connectar amb l'ànima humana i amb el món que ens envolta, establint les bases de l'expressió musical moderna.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

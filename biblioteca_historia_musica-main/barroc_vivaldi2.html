@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antonio Vivaldi - El Prevere Roig</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.7;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 25%, #FF6347 50%, #FFD700 75%, #8B0000 100%);
+            background-size: 400% 400%;
+            animation: redHairGradient 15s ease infinite;
+            color: #FFF8DC;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes redHairGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .venice-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(135, 206, 235, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 0, 0, 0.1) 0%, transparent 60%);
+            opacity: 0.7;
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .musical-note, .mask, .canal-wave {
+            position: absolute;
+            animation: float-venice 20s infinite linear;
+        }
+
+        .musical-note {
+            color: rgba(255, 215, 0, 0.3);
+            font-size: 2rem;
+        }
+
+        .mask {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 1.5rem;
+        }
+
+        .canal-wave {
+            color: rgba(135, 206, 235, 0.3);
+            font-size: 1.8rem;
+        }
+
+        @keyframes float-venice {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 70px 0;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 30px;
+            margin-bottom: 50px;
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(220, 20, 60, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, 
+                rgba(220, 20, 60, 0.1), 
+                rgba(255, 99, 71, 0.1), 
+                rgba(255, 215, 0, 0.1), 
+                rgba(220, 20, 60, 0.1));
+            animation: rotate 25s linear infinite;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .portrait {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #8B0000, #DC143C, #FF6347, #FFD700);
+            background-size: 300% 300%;
+            animation: redHairPortrait 8s ease infinite;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7rem;
+            color: #2F1B14;
+            box-shadow: 0 30px 80px rgba(220, 20, 60, 0.5);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes redHairPortrait {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .portrait::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #DC143C, transparent, #FFD700, transparent, #DC143C);
+            z-index: -1;
+            animation: pulse-priest 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-priest {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+            50% { transform: scale(1.15) rotate(180deg); opacity: 1; }
+        }
+
+        .portrait:hover {
+            transform: scale(1.2) rotate(-8deg);
+            box-shadow: 0 35px 100px rgba(220, 20, 60, 0.7);
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #DC143C, #FFD700, #DC143C);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 1.6rem;
+            color: #DC143C;
+            font-style: italic;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .nickname {
+            font-size: 1.3rem;
+            color: #FFD700;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .years {
+            font-size: 1.2rem;
+            color: #F5DEB3;
+            font-weight: 300;
+        }
+
+        .story-timeline {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 60px;
+            margin-bottom: 60px;
+        }
+
+        .story-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 45px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(220, 20, 60, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .story-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(220, 20, 60, 0.15), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .story-section:hover::before {
+            left: 100%;
+        }
+
+        .story-section:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            border-color: rgba(220, 20, 60, 0.7);
+        }
+
+        .story-section:nth-child(even) .section-content {
+            order: 2;
+        }
+
+        .story-section:nth-child(even) .section-visual {
+            order: 1;
+        }
+
+        .section-content h2 {
+            color: #DC143C;
+            font-size: 2.4rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .section-content p {
+            margin-bottom: 18px;
+            text-align: justify;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #FFF8DC;
+        }
+
+        .section-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 280px;
+            background: rgba(220, 20, 60, 0.15);
+            border-radius: 25px;
+            border: 3px solid rgba(220, 20, 60, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-visual::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, rgba(220, 20, 60, 0.4), transparent);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: visual-glow 5s ease-in-out infinite;
+        }
+
+        @keyframes visual-glow {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(2); opacity: 0.8; }
+        }
+
+        .visual-icon {
+            font-size: 6rem;
+            color: #DC143C;
+            z-index: 2;
+            position: relative;
+            animation: icon-pulse 3s ease-in-out infinite;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes icon-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .programmatic-music {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 60px;
+            border-radius: 30px;
+            border: 3px solid rgba(220, 20, 60, 0.5);
+            margin-bottom: 60px;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .programmatic-music::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(144, 238, 144, 0.08) 0%, 
+                rgba(255, 182, 193, 0.08) 25%, 
+                rgba(255, 165, 0, 0.08) 50%, 
+                rgba(173, 216, 230, 0.08) 75%, 
+                rgba(144, 238, 144, 0.08) 100%);
+            animation: seasons-flow 16s ease-in-out infinite;
+        }
+
+        @keyframes seasons-flow {
+            0%, 100% { opacity: 0.4; }
+            25% { opacity: 0.7; }
+            50% { opacity: 1; }
+            75% { opacity: 0.7; }
+        }
+
+        .programmatic-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .programmatic-music h2 {
+            text-align: center;
+            color: #DC143C;
+            font-size: 3.2rem;
+            margin-bottom: 35px;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        .seasons-intro {
+            text-align: center;
+            font-size: 1.4rem;
+            line-height: 1.9;
+            margin-bottom: 45px;
+            color: #FFF8DC;
+            font-style: italic;
+        }
+
+        .seasons-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 35px;
+            margin-bottom: 35px;
+        }
+
+        .season-example {
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .season-example::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .spring-example::before {
+            background: linear-gradient(135deg, rgba(144, 238, 144, 0.3), rgba(255, 182, 193, 0.2));
+            border: 2px solid rgba(144, 238, 144, 0.5);
+        }
+
+        .summer-example::before {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.3), rgba(255, 215, 0, 0.2));
+            border: 2px solid rgba(255, 165, 0, 0.5);
+        }
+
+        .season-example:hover {
+            transform: translateY(-12px) scale(1.05);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .season-example h3 {
+            font-size: 1.8rem;
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .season-example p {
+            font-size: 1.1rem;
+            color: #FFF8DC;
+            line-height: 1.7;
+        }
+
+        .concept-highlight {
+            text-align: center;
+            padding: 30px;
+            background: rgba(220, 20, 60, 0.2);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.4);
+        }
+
+        .concept-highlight h3 {
+            color: #FFD700;
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .concept-highlight p {
+            font-size: 1.2rem;
+            color: #FFF8DC;
+            line-height: 1.7;
+            font-style: italic;
+        }
+
+        .legacy-final {
+            text-align: center;
+            padding: 70px;
+            background: radial-gradient(ellipse at center, rgba(220, 20, 60, 0.2), transparent);
+            border-radius: 30px;
+            border: 4px solid rgba(220, 20, 60, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .legacy-final::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(220, 20, 60, 0.1), transparent 50%);
+            animation: rotate 45s linear infinite;
+        }
+
+        .legacy-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .legacy-final h2 {
+            color: #DC143C;
+            font-size: 3.5rem;
+            margin-bottom: 35px;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        .legacy-final p {
+            font-size: 1.4rem;
+            line-height: 1.9;
+            max-width: 950px;
+            margin: 0 auto 30px;
+            color: #FFF8DC;
+        }
+
+        @media (max-width: 768px) {
+            .story-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .story-section:nth-child(even) .section-content,
+            .story-section:nth-child(even) .section-visual {
+                order: initial;
+            }
+            
+            h1 {
+                font-size: 3rem;
+            }
+            
+            .seasons-examples {
+                grid-template-columns: 1fr;
+            }
+            
+            .portrait {
+                width: 180px;
+                height: 180px;
+                font-size: 5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="venice-overlay"></div>
+    
+    <div class="floating-elements">
+        <div class="musical-note" style="left: 5%; animation-delay: 0s;">♪</div>
+        <div class="mask" style="left: 15%; animation-delay: 3s;">🎭</div>
+        <div class="canal-wave" style="left: 25%; animation-delay: 6s;">〰️</div>
+        <div class="musical-note" style="left: 35%; animation-delay: 9s;">♫</div>
+        <div class="mask" style="left: 45%; animation-delay: 12s;">🎪</div>
+        <div class="canal-wave" style="left: 55%; animation-delay: 15s;">🌊</div>
+        <div class="musical-note" style="left: 65%; animation-delay: 2s;">♬</div>
+        <div class="mask" style="left: 75%; animation-delay: 5s;">🎨</div>
+        <div class="canal-wave" style="left: 85%; animation-delay: 8s;">〰️</div>
+        <div class="musical-note" style="left: 95%; animation-delay: 11s;">♪</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="portrait">🎻</div>
+                <h1>Antonio Vivaldi</h1>
+                <div class="subtitle">El Prevere Roig</div>
+                <div class="nickname">"Il Prete Rosso"</div>
+                <div class="years">1678 - 1741 • Venècia del segle XVIII</div>
+            </div>
+        </header>
+
+        <div class="story-timeline">
+            <div class="story-section">
+                <div class="section-content">
+                    <h2>Venècia del Segle XVIII</h2>
+                    <p>En ple segle XVIII, mentre Venècia brillava com una ciutat plena de canals, màscares i música, hi vivia un home de cabells vermells i ment inquieta: Antonio Vivaldi.</p>
+                    <p>Conegut com "el prevere roig" per la seva condició de sacerdot i pel color de la seva cabellera, Vivaldi no va destacar per la seva feina religiosa, sinó per una altra passió: la música.</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">🏛️</div>
+                </div>
+            </div>
+
+            <div class="story-section">
+                <div class="section-content">
+                    <h2>De Capellà a Músic</h2>
+                    <p>Tot i ser ordenat capellà, molt aviat va deixar de dir missa per problemes de salut i es va centrar completament a compondre i ensenyar.</p>
+                    <p>El seu lloc de treball principal va ser l'Ospedale della Pietà, una institució on joves orfes aprenien música i actuaven en concerts. Allà va escriure moltes de les seves obres més famoses.</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">⛪</div>
+                </div>
+            </div>
+
+            <div class="story-section">
+                <div class="section-content">
+                    <h2>Mestre del Violí</h2>
+                    <p>Si una cosa defineix Vivaldi és la seva capacitat per fer música amb energia, claredat i una gran vivacitat. Va escriure una enorme quantitat de concerts, especialment per a <strong>violí</strong>.</p>
+                    <p>El seu estil es reconeix fàcilment: utilitza ritmes marcats, contrastes entre el solista i l'orquestra i melodies que semblen parlar directament a l'ànima.</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">🎼</div>
+                </div>
+            </div>
+
+            <div class="story-section">
+                <div class="section-content">
+                    <h2>Redescoberta Tardana</h2>
+                    <p>A més de concerts, Vivaldi també va compondre <strong>òperes</strong> i música religiosa, però durant molts anys part d'aquesta obra va quedar amagada o oblidada.</p>
+                    <p>No va ser fins al segle XX que molts músics i investigadors van recuperar la seva música i van redescobrir la seva importància dins del Barroc.</p>
+                </div>
+                <div class="section-visual">
+                    <div class="visual-icon">🔍</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="programmatic-music">
+            <div class="programmatic-content">
+                <h2>Les Quatre Estacions</h2>
+                <div class="seasons-intro">
+                    L'obra més cèlebre de Vivaldi és una sèrie de concerts que descriuen paisatges i escenes pròpies de cada època de l'any. Aquest tipus de música, que pretén explicar alguna cosa concreta, s'anomena <strong>música programàtica</strong>.
+                </div>
+                
+                <div class="seasons-examples">
+                    <div class="season-example spring-example">
+                        <h3>🌸 Primavera</h3>
+                        <p>Els ocells canten i la natura desperta amb melodies que evoquen el renaixement de la vida i la frescor de la nova estació.</p>
+                    </div>
+                    <div class="season-example summer-example">
+                        <h3>⛈️ Estiu</h3>
+                        <p>Es poden sentir trons i llamps que es tradueixen en passatges dramàtics i contrastos que capturen la intensitat de les tempestes estiuenques.</p>
+                    </div>
+                </div>
+
+                <div class="concept-highlight">
+                    <h3>Música Programàtica</h3>
+                    <p>Vivaldi va ser pioner en crear música que no només sona bé, sinó que també conta històries i descriu escenes de la natura sense necessitat de paraules.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="legacy-final">
+            <div class="legacy-content">
+                <h2>Llegat Immortal</h2>
+                <p>Tot i morir en la pobresa a Viena, Vivaldi és avui un dels compositors més interpretats del món. La seva música transmet emoció, moviment i una gran sensibilitat, i continua inspirant a músics i oients de totes les edats.</p>
+                <p>La seva manera de fer música va influir en compositors posteriors, i va ajudar a establir el model del concert solista tal com el coneixem ara. El "Prevere Roig" va deixar un llegat que transcendeix segles.</p>
+                <p>Des dels canals de Venècia fins als concerts moderns d'arreu del món, l'esperit viu i apassionat de Vivaldi continua fent vibrar cors i ànimes.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

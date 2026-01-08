@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les formes musicals del Renaixement</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Open+Sans:wght@300;400;600&family=Cinzel:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            line-height: 1.7;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><pattern id="musical-staff" patternUnits="userSpaceOnUse" width="30" height="30"><line x1="0" y1="10" x2="30" y2="10" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/><line x1="0" y1="15" x2="30" y2="15" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/><line x1="0" y1="20" x2="30" y2="20" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/><circle cx="8" cy="15" r="1" fill="rgba(255,255,255,0.015)"/><circle cx="22" cy="12" r="0.8" fill="rgba(255,255,255,0.015)"/></pattern></defs><rect width="150" height="150" fill="url(%23musical-staff)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .treatise-container {
+            max-width: 1300px;
+            margin: 30px auto;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .treatise-header {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .treatise-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,40 Q30,20 40,40 T60,40 T80,40" stroke="rgba(255,255,255,0.08)" stroke-width="1" fill="none"/><path d="M15,50 Q25,30 35,50 T55,50 T75,50" stroke="rgba(255,255,255,0.06)" stroke-width="0.8" fill="none"/></svg>') repeat;
+            animation: harmonic-wave 25s linear infinite;
+        }
+
+        @keyframes harmonic-wave {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(-50px) translateY(-20px) rotate(5deg); }
+        }
+
+        .musical-emblem {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            box-shadow: 0 15px 40px rgba(246, 173, 85, 0.4);
+            position: relative;
+            z-index: 1;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 1px;
+        }
+
+        .treatise-subtitle {
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .content-manuscript {
+            padding: 50px 60px;
+        }
+
+        .prologue {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 35px;
+            border-radius: 12px;
+            margin-bottom: 50px;
+            border-left: 5px solid #667eea;
+            font-family: 'Merriweather', serif;
+            font-size: 1.15rem;
+            line-height: 1.9;
+            text-align: justify;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+            position: relative;
+        }
+
+        .prologue::before {
+            content: '📜';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2.5rem;
+            opacity: 0.2;
+        }
+
+        .forms-collection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 35px;
+            margin: 40px 0;
+        }
+
+        .form-manuscript {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .form-manuscript:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-header {
+            padding: 30px 35px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1.5" fill="rgba(255,255,255,0.08)"/><path d="M10,50 Q20,40 30,50" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/></svg>');
+            animation: form-sparkle 12s ease-in-out infinite;
+        }
+
+        @keyframes form-sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: scale(1.1) rotate(180deg); }
+        }
+
+        .form-header.religious {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .form-header.secular {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        }
+
+        .form-header.instrumental {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .form-icon {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .form-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-content {
+            padding: 35px;
+        }
+
+        .form-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .form-description strong {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .form-examples {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 3px solid #667eea;
+        }
+
+        .examples-title {
+            font-family: 'Merriweather', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .examples-list {
+            font-size: 1rem;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .subcategory {
+            background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .subcategory-title {
+            font-family: 'Merriweather', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .subcategory-text {
+            font-size: 1rem;
+            color: #7c2d12;
+            line-height: 1.7;
+        }
+
+        .synthesis-section {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 45px;
+            border-radius: 15px;
+            margin-top: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .synthesis-section::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -40%;
+            width: 180%;
+            height: 180%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: synthesis-flow 20s ease-in-out infinite;
+        }
+
+        @keyframes synthesis-flow {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            50% { transform: scale(1.3) rotate(10deg); opacity: 0.8; }
+        }
+
+        .synthesis-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.3rem;
+            font-weight: 500;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .synthesis-text {
+            font-family: 'Merriweather', serif;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .ornamental-separator {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #667eea, #764ba2, #f093fb, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 350px;
+        }
+
+        @media (max-width: 768px) {
+            .treatise-container {
+                margin: 15px;
+            }
+
+            .content-manuscript {
+                padding: 30px 25px;
+            }
+
+            .treatise-header {
+                padding: 35px 25px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .forms-collection {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .form-content {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="treatise-container">
+        <header class="treatise-header">
+            <div class="musical-emblem">🎼</div>
+            <h1>Les formes musicals del Renaixement</h1>
+            <div class="treatise-subtitle">Estructures i organització de la música renaixentista</div>
+        </header>
+
+        <div class="content-manuscript">
+            <div class="prologue">
+                Durant el Renaixement, la música es va desenvolupar i organitzar en diferents formes o estructures que ajudaven els compositors a crear obres més complexes i ordenades. Aquestes formes es podien trobar tant en la música vocal com en la instrumental, i cada una tenia característiques pròpies.
+            </div>
+
+            <div class="ornamental-separator"></div>
+
+            <div class="forms-collection">
+                <div class="form-manuscript">
+                    <div class="form-header religious">
+                        <div class="form-icon">⛪</div>
+                        <div class="form-title">Formes Religioses</div>
+                    </div>
+                    <div class="form-content">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Missa</div>
+                            <div class="subcategory-text">
+                                La <strong>missa</strong> és una forma musical religiosa molt important durant el Renaixement. Consisteix en una sèrie de peces musicals que acompanyen la celebració de l'Eucaristia a l'església catòlica. La missa està formada per diferents parts, com el Kyrie, el Gloria, el Credo, el Sanctus i l'Agnus Dei.
+                            </div>
+                        </div>
+
+                        <div class="form-description">
+                            Durant el Renaixement, les misses eren generalment polifòniques, amb diverses veus que cantaven melodies independents però harmonioses. Els compositors buscaven que la música fos solemne i alhora clara perquè els fidels poguessin entendre el missatge religiós.
+                        </div>
+
+                        <div class="subcategory">
+                            <div class="subcategory-title">Motet</div>
+                            <div class="subcategory-text">
+                                El <strong>motet</strong> és una altra forma musical religiosa molt popular al Renaixement. Es tracta d'una peça curta, polifònica i sovint escrita en llatí, que s'utilitzava per a diferents moments del culte o per a celebracions especials. Els motets podien tenir un caràcter més solemne o més emotiu, depenent del text i de la intenció del compositor.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-manuscript">
+                    <div class="form-header secular">
+                        <div class="form-icon">🎭</div>
+                        <div class="form-title">Formes Profanes</div>
+                    </div>
+                    <div class="form-content">
+                        <div class="subcategory">
+                            <div class="subcategory-title">Cançó</div>
+                            <div class="subcategory-text">
+                                A més de la música religiosa, el Renaixement va tenir moltes formes musicals profanes, que s'interpretaven fora de l'església. La <strong>cançó</strong> era una de les més habituals i estava escrita en la llengua pròpia de cada país. Les cançons solien tenir una estructura clara i un ritme més viu, i sovint parlaven de temes d'amor, la natura o la vida quotidiana.
+                            </div>
+                        </div>
+
+                        <div class="form-examples">
+                            <div class="examples-title">Característiques principals:</div>
+                            <div class="examples-list">
+                                • Estructures clares i melodies accessibles<br>
+                                • Temes d'amor, natura i vida quotidiana<br>
+                                • Escrites en llengües vernacles<br>
+                                • Ritmes més vius i dansables
+                            </div>
+                        </div>
+
+                        <div class="subcategory">
+                            <div class="subcategory-title">Danses</div>
+                            <div class="subcategory-text">
+                                Altres formes profanes importants eren les <strong>danses</strong>, que podien ser composicions instrumentals o amb cant, i que es tocaven en festes i celebracions.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-manuscript">
+                    <div class="form-header instrumental">
+                        <div class="form-icon">🎻</div>
+                        <div class="form-title">Formes Instrumentals</div>
+                    </div>
+                    <div class="form-content">
+                        <div class="form-description">
+                            Durant el Renaixement, també van començar a aparèixer formes musicals específiques per a la música instrumental. Els compositors utilitzaven les <strong>variacions</strong>, que consistien a prendre una melodia i modificar-la diverses vegades, canviant el ritme, la harmonia o la textura.
+                        </div>
+
+                        <div class="subcategory">
+                            <div class="subcategory-title">Variacions</div>
+                            <div class="subcategory-text">
+                                Tècnica compositiva que consistia a prendre una melodia base i desenvolupar-la mitjançant modificacions rítmiques, harmòniques o textuals.
+                            </div>
+                        </div>
+
+                        <div class="subcategory">
+                            <div class="subcategory-title">Fantasies i Pavanes</div>
+                            <div class="subcategory-text">
+                                A més, es van popularitzar les <strong>fantasies</strong> i les <strong>pavanes</strong>, que eren peces instrumentals amb estructures fixes, sovint interpretades en concerts o en àmbits més privats.
+                            </div>
+                        </div>
+
+                        <div class="form-examples">
+                            <div class="examples-title">Innovacions instrumentals:</div>
+                            <div class="examples-list">
+                                • Desenvolupament de formes pures instrumentals<br>
+                                • Experimentació amb textures i timbres<br>
+                                • Creació d'estructures específiques per a instruments<br>
+                                • Música per a àmbits privats i cortesans
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="synthesis-section">
+                <div class="synthesis-title">Síntesi</div>
+                <div class="synthesis-text">
+                    Les formes musicals del Renaixement van establir les bases estructurals de la música occidental, creant un equilibri perfecte entre tradició religiosa i innovació secular, mentre obrien nous camins per a l'expressió instrumental que definirien els segles posteriors.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

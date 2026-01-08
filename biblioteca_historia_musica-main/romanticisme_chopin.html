@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frédéric Chopin - Biografia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 255, 0.03) 2px,
+                rgba(255, 255, 255, 0.03) 4px
+            );
+            animation: shimmer 20s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .piano-keys {
+            height: 8px;
+            background: repeating-linear-gradient(
+                to right,
+                #ffffff 0px,
+                #ffffff 20px,
+                #000000 20px,
+                #000000 22px,
+                #ffffff 22px,
+                #ffffff 42px,
+                #000000 42px,
+                #000000 44px,
+                #ffffff 44px,
+                #ffffff 64px,
+                #000000 64px,
+                #000000 66px,
+                #ffffff 66px,
+                #ffffff 86px
+            );
+        }
+
+        .content {
+            padding: 50px;
+        }
+
+        .content p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            text-align: justify;
+            line-height: 1.8;
+            transition: transform 0.3s ease;
+        }
+
+        .content p:hover {
+            transform: translateX(5px);
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .musical-note {
+            display: inline-block;
+            color: #667eea;
+            font-size: 1.2em;
+            margin: 0 5px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-5px);
+            }
+            60% {
+                transform: translateY(-3px);
+            }
+        }
+
+        .quote {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.3);
+        }
+
+        .quote::before {
+            content: '"';
+            font-size: 4em;
+            position: absolute;
+            left: 20px;
+            top: -10px;
+            opacity: 0.3;
+        }
+
+        .footer {
+            background: #34495e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .decorative-divider {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 2em;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .content {
+                padding: 30px 25px;
+            }
+            
+            .content p {
+                font-size: 1em;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Frédéric Chopin</h1>
+            <div class="subtitle">El poeta del piano</div>
+        </div>
+        
+        <div class="piano-keys"></div>
+        
+        <div class="content">
+            <p class="fade-in">
+                <span class="highlight">Frédéric Chopin</span> va ser un dels compositors més importants del Romanticisme i, sobretot, una figura clau en la història de la música per a piano. Va néixer el <span class="highlight">1810 a Polònia</span>, en una època de grans canvis socials i polítics. Des de ben petit va mostrar un talent excepcional pel piano i, amb només set anys, ja havia compost algunes peces. Tot i això, la seva vida no va ser gens fàcil: les guerres que afectaven el seu país i els problemes de salut van marcar profundament la seva existència.
+            </p>
+
+            <div class="decorative-divider">
+                <span class="musical-note">♪</span>
+                <span class="musical-note">♫</span>
+                <span class="musical-note">♪</span>
+            </div>
+
+            <p class="fade-in">
+                Chopin va viure molts anys fora de Polònia, especialment a <span class="highlight">París</span>, una ciutat que en aquell moment era el centre de la vida cultural europea. Allà es va envoltar d'artistes, escriptors i músics, i es va convertir en un compositor molt reconegut. Però tot i l'èxit, sempre va sentir una gran nostàlgia pel seu país. Aquesta emoció es pot notar en moltes de les seves obres, que sovint tenen un to melancòlic i profundament expressiu.
+            </p>
+
+            <p class="fade-in">
+                El seu instrument per excel·lència era el <span class="highlight">piano</span>. A diferència d'altres compositors que escrivien per a grans orquestres, Chopin va dedicar gairebé tota la seva obra al piano sol. Això li va permetre explorar totes les possibilitats expressives de l'instrument, amb un estil molt personal i ple de sensibilitat. Les seves melodies són elegants, delicades i alhora intenses, amb una tècnica molt refinada que demana gran habilitat per part dels intèrprets.
+            </p>
+
+            <div class="quote">
+                Escoltar una peça de Chopin és com escoltar una veu interior que ens parla de manera íntima, directa i emocionant.
+            </div>
+
+            <p class="fade-in">
+                Algunes de les formes musicals que més va utilitzar van ser els <span class="highlight">nocturns</span>, les <span class="highlight">mazurques</span>, els <span class="highlight">valsos</span> i els <span class="highlight">preludis</span>. Els nocturns, per exemple, són peces lentes i líriques que transmeten una sensació de calma o de tristesa. Les mazurques i els polonesos, en canvi, estan inspirats en danses tradicionals del seu país i tenen un ritme més viu, tot i que sempre amb el toc poètic que el caracteritza.
+            </p>
+
+            <p class="fade-in">
+                Chopin també va ser famós com a intèrpret. Tot i ser una persona molt tímida i reservada, donava concerts en espais petits i privats, on podia controlar millor el so i l'ambient. No li agradaven gaire els grans escenaris, i preferia tocar per a grups reduïts. Això no li va impedir guanyar una gran reputació com a pianista, gràcies al seu estil ple de matisos i subtileses.
+            </p>
+
+            <p class="fade-in">
+                La seva salut sempre va ser fràgil. Va patir problemes respiratoris durant molts anys i va morir molt jove, amb només <span class="highlight">39 anys</span>. Tot i això, va deixar una obra musical molt valuosa, que encara avui emociona a milions de persones. Molts músics consideren que Chopin va elevar el piano a una nova dimensió, convertint-lo en una eina per expressar emocions molt profundes.
+            </p>
+
+            <div class="decorative-divider">
+                <span class="musical-note">♫</span>
+                <span class="musical-note">♪</span>
+                <span class="musical-note">♫</span>
+            </div>
+
+            <p class="fade-in">
+                Estudiar Chopin és una manera d'entendre millor el <span class="highlight">Romanticisme musical</span>: la importància dels sentiments, la connexió amb la pròpia terra, el desig de llibertat i l'amor per la bellesa. La seva música no només és tècnicament difícil, sinó també molt humana i sincera. Escoltar una peça de Chopin és com escoltar una voz interior que ens parla de manera íntima, directa i emocionant.
+            </p>
+        </div>
+
+        <div class="footer">
+            Una biografia del gran mestre del piano romàntic
+        </div>
+    </div>
+
+    <script>
+        // Animació progressiva dels paràgrafs
+        const paragraphs = document.querySelectorAll('.fade-in');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.animationDelay = `${index * 0.2}s`;
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }, index * 100);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        paragraphs.forEach((p) => {
+            p.style.opacity = '0';
+            p.style.transform = 'translateY(20px)';
+            p.style.transition = 'all 0.8s ease-out';
+            observer.observe(p);
+        });
+
+        // Efecte hover per les notes musicals
+        const notes = document.querySelectorAll('.musical-note');
+        notes.forEach(note => {
+            note.addEventListener('mouseenter', () => {
+                note.style.transform = 'scale(1.3) rotate(15deg)';
+                note.style.color = '#f093fb';
+            });
+            
+            note.addEventListener('mouseleave', () => {
+                note.style.transform = 'scale(1) rotate(0deg)';
+                note.style.color = '#667eea';
+            });
+        });
+    </script>
+</body>
+</html>

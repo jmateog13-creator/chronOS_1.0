@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Barroc: període musical</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700;800&family=EB+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'EB Garamond', serif;
+            line-height: 1.8;
+            color: #1a202c;
+            background: linear-gradient(135deg, #2d1b69 0%, #422006 25%, #7c2d12 50%, #92400e 75%, #b45309 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="baroque-notes" patternUnits="userSpaceOnUse" width="20" height="20"><circle cx="6" cy="10" r="1" fill="rgba(254,252,232,0.04)"/><ellipse cx="14" cy="12" rx="1.5" ry="0.8" fill="rgba(254,252,232,0.03)"/><path d="M3,15 Q10,12 17,15" stroke="rgba(254,252,232,0.025)" stroke-width="0.5" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23baroque-notes)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .baroque-salon {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: rgba(254, 252, 232, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(45, 27, 105, 0.4);
+            border: 2px solid rgba(124, 45, 18, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .baroque-salon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><pattern id="salon-pattern" patternUnits="userSpaceOnUse" width="30" height="30"><path d="M15,5 Q25,15 15,25 Q5,15 15,5" stroke="rgba(45,27,105,0.05)" stroke-width="0.8" fill="none"/><circle cx="8" cy="22" r="1.5" fill="rgba(45,27,105,0.03)"/></pattern></defs><rect width="150" height="150" fill="url(%23salon-pattern)"/></svg>') repeat;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .salon-stage {
+            background: linear-gradient(135deg, #2d1b69 0%, #422006 100%);
+            color: #fefce8;
+            padding: 60px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .salon-stage::before {
+            content: '';
+            position: absolute;
+            top: -80%;
+            left: -80%;
+            width: 260%;
+            height: 260%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M25,25 Q50,15 75,25 Q85,50 75,75 Q50,85 25,75 Q15,50 25,25" stroke="rgba(254,252,232,0.1)" stroke-width="1" fill="none"/><circle cx="50" cy="20" r="3" stroke="rgba(254,252,232,0.08)" stroke-width="0.5" fill="none"/></svg>') repeat;
+            animation: baroque-elegance 55s linear infinite;
+        }
+
+        @keyframes baroque-elegance {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(-120px) translateY(-80px) rotate(4deg); }
+        }
+
+        .period-emblem {
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4.5rem;
+            box-shadow: 0 25px 60px rgba(251, 191, 36, 0.5);
+            position: relative;
+            z-index: 1;
+            border: 4px solid rgba(254, 252, 232, 0.3);
+            animation: emblem-pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes emblem-pulse {
+            0%, 100% { 
+                box-shadow: 0 25px 60px rgba(251, 191, 36, 0.5); 
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 30px 80px rgba(251, 191, 36, 0.8), 0 0 50px rgba(245, 158, 11, 0.6); 
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.8rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 1px;
+        }
+
+        .period-years {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 10px;
+        }
+
+        .salon-subtitle {
+            font-size: 1.3rem;
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .musical-discourse {
+            padding: 60px 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .discourse-opening {
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 50px;
+            border: 2px solid #d97706;
+            font-size: 1.2rem;
+            line-height: 1.9;
+            text-align: justify;
+            box-shadow: 0 15px 40px rgba(45, 27, 105, 0.15);
+            position: relative;
+            color: #7c2d12;
+        }
+
+        .discourse-opening::before {
+            content: '🎭';
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        .musical-themes {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .theme-exposition {
+            background: rgba(254, 252, 232, 0.95);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(45, 27, 105, 0.2);
+            border: 2px solid rgba(124, 45, 18, 0.2);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .theme-exposition::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,20 Q30,15 40,20 Q50,25 40,30 Q30,25 20,20" stroke="rgba(45,27,105,0.04)" stroke-width="0.8" fill="none"/></svg>') repeat;
+            pointer-events: none;
+        }
+
+        .theme-exposition:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 30px 70px rgba(45, 27, 105, 0.3);
+        }
+
+        .theme-header {
+            padding: 35px 40px;
+            color: #fefce8;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="4" fill="rgba(254,252,232,0.15)"/><circle cx="75" cy="75" r="3" fill="rgba(254,252,232,0.1)"/><path d="M50,15 Q65,25 50,35" stroke="rgba(254,252,232,0.08)" stroke-width="1.2" fill="none"/></svg>');
+            animation: theme-ornament 18s ease-in-out infinite;
+        }
+
+        @keyframes theme-ornament {
+            0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: scale(1.1) rotate(180deg); }
+        }
+
+        .theme-header.innovation {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        .theme-header.polyphony {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .theme-header.contrast {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        .theme-header.forms {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .theme-header.orchestra {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        }
+
+        .theme-header.masters {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
+
+        .theme-icon {
+            font-size: 3.5rem;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .theme-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-development {
+            padding: 40px;
+            color: #7c2d12;
+        }
+
+        .development-text {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            text-align: justify;
+            margin-bottom: 25px;
+        }
+
+        .development-text strong {
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .baroque-innovation {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .baroque-innovation::before {
+            content: '💫';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .innovation-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .innovation-description {
+            font-size: 1.05rem;
+            color: #a16207;
+            line-height: 1.7;
+        }
+
+        .musical-technique {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border-left: 4px solid #0ea5e9;
+            padding: 22px;
+            margin: 22px 0;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            color: #0c4a6e;
+        }
+
+        .technique-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #075985;
+            margin-bottom: 8px;
+        }
+
+        .contrast-showcase {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            border: 2px solid #f87171;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .contrast-showcase::before {
+            content: '⚡';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .showcase-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #b91c1c;
+            margin-bottom: 12px;
+        }
+
+        .showcase-description {
+            font-size: 1.05rem;
+            color: #dc2626;
+            line-height: 1.7;
+        }
+
+        .forms-gallery {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .forms-gallery::before {
+            content: '🏛️';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .gallery-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #047857;
+            margin-bottom: 12px;
+        }
+
+        .gallery-description {
+            font-size: 1.05rem;
+            color: #065f46;
+            line-height: 1.7;
+        }
+
+        .masters-pantheon {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 2px solid #a855f7;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .masters-pantheon::before {
+            content: '👑';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .pantheon-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #7c3aed;
+            margin-bottom: 12px;
+        }
+
+        .pantheon-description {
+            font-size: 1.05rem;
+            color: #8b5cf6;
+            line-height: 1.7;
+        }
+
+        .baroque-finale {
+            background: linear-gradient(135deg, #2d1b69 0%, #422006 100%);
+            color: #fefce8;
+            padding: 50px;
+            border-radius: 20px;
+            margin-top: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .baroque-finale::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%);
+            animation: finale-grandeur 30s ease-in-out infinite;
+        }
+
+        @keyframes finale-grandeur {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+            50% { transform: scale(1.4) rotate(15deg); opacity: 0.9; }
+        }
+
+        .finale-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .finale-text {
+            font-size: 1.3rem;
+            line-height: 1.9;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .finale-text strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .baroque-ornament {
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #2d1b69, #7c2d12, #fbbf24, #7c2d12, #2d1b69, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 450px;
+        }
+
+        @media (max-width: 768px) {
+            .baroque-salon {
+                margin: 20px;
+            }
+
+            .musical-discourse {
+                padding: 40px 30px;
+            }
+
+            .salon-stage {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .theme-development {
+                padding: 30px 25px;
+            }
+
+            .baroque-finale {
+                padding: 40px 25px;
+            }
+
+            .period-emblem {
+                width: 120px;
+                height: 120px;
+                font-size: 3.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="baroque-salon">
+        <header class="salon-stage">
+            <div class="period-emblem">🎭</div>
+            <h1>El Barroc</h1>
+            <div class="period-years">1600 - 1750</div>
+            <div class="salon-subtitle">Període musical d'expressivitat i dramatisme</div>
+        </header>
+
+        <div class="musical-discourse">
+            <div class="discourse-opening">
+                El Barroc és un període musical que va tenir lloc entre els anys 1600 i 1750 i que es reconeix per la seva gran expressivitat i la riquesa dels detalls. Durant aquesta etapa, la música va deixar enrere la simplicitat del Renaixement per abraçar un estil més elaborat i dramàtic, amb l'objectiu de provocar emocions intenses en el públic.
+            </div>
+
+            <div class="baroque-ornament"></div>
+
+            <div class="musical-themes">
+                <div class="theme-exposition">
+                    <div class="theme-header innovation">
+                        <div class="theme-icon">🎹</div>
+                        <div class="theme-title">Innovació del Baix Continu</div>
+                    </div>
+                    <div class="theme-development">
+                        <div class="development-text">
+                            Una de les novetats més importants va ser la introducció del <strong>baix continu</strong>, que servia com a suport constant i flexible per a la música. Aquest recurs combinava instruments de baix, com el violoncel o la viola da gamba, amb instruments harmònics, com el clavicèmbal o l'orgue.
+                        </div>
+                        
+                        <div class="baroque-innovation">
+                            <div class="innovation-title">Flexibilitat harmònica</div>
+                            <div class="innovation-description">
+                                Gràcies al baix continu, els compositors podien jugar amb acords més complexos i donar més moviment a les seves obres.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-exposition">
+                    <div class="theme-header polyphony">
+                        <div class="theme-icon">🎼</div>
+                        <div class="theme-title">Polifonia Sofisticada</div>
+                    </div>
+                    <div class="theme-development">
+                        <div class="development-text">
+                            La música barroca destaca també per la seva <strong>polifonia sofisticada</strong>, on diverses veus o melodies es combinen de manera intricada. Aquest estil permetia crear teixits musicals molt elaborats i interessants, en què cada línia tenia autonomia però es complementava amb les altres.
+                        </div>
+                        
+                        <div class="musical-technique">
+                            <div class="technique-title">Teixits musicals complexos</div>
+                            La interdependència entre veus creava una riquesa sonora sense precedents, amb cada melodia contribuint al conjunt harmònic global.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-exposition">
+                    <div class="theme-header contrast">
+                        <div class="theme-icon">⚡</div>
+                        <div class="theme-title">Contrast i Dramatisme</div>
+                    </div>
+                    <div class="theme-development">
+                        <div class="development-text">
+                            Els compositors d'aquesta època no només es van centrar en la complexitat, sinó que també van buscar la <strong>contraposició i el contrast</strong>: contrastos forts entre sons forts i suaus, entre tempos ràpids i lents, i entre diferents grups d'instruments.
+                        </div>
+                        
+                        <div class="contrast-showcase">
+                            <div class="showcase-title">Efectes dramàtics</div>
+                            <div class="showcase-description">
+                                Aquestes diferències ajudaven a crear dramatisme i a mantenir viva l'atenció de l'oient, convertint la música en una experiència emocional intensa.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-exposition">
+                    <div class="theme-header forms">
+                        <div class="theme-icon">🏛️</div>
+                        <div class="theme-title">Noves Formes Musicals</div>
+                    </div>
+                    <div class="theme-development">
+                        <div class="development-text">
+                            Durant el Barroc van néixer formes musicals noves que serien molt importants per al futur, com l'<strong>òpera</strong>, que combinava música, text i representació teatral, oferint històries emocionants i espectaculars.
+                        </div>
+                        
+                        <div class="forms-gallery">
+                            <div class="gallery-title">Innovacions formals</div>
+                            <div class="gallery-description">
+                                També van sorgir la <strong>sonata</strong>, peça per a instruments solistes o petits grups, i el <strong>concert</strong>, on un o diversos solistes dialogaven amb l'orquestra.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-exposition">
+                    <div class="theme-header orchestra">
+                        <div class="theme-icon">🎻</div>
+                        <div class="theme-title">Orquestra Barroca</div>
+                    </div>
+                    <div class="theme-development">
+                        <div class="development-text">
+                            L'orquestra barroca tenia una organització més petita que les modernes, però era rica en timbres i colors. Entre els instruments més utilitzats hi havia les cordes fregades, especialment el violí, i instruments de vent com la flauta i l'oboè. A més, el clavicèmbal era un element essencial per marcar el ritme i les harmonies.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-exposition">
+                    <div class="theme-header masters">
+                        <div class="theme-icon">👑</div>
+                        <div class="theme-title">Grans Mestres</div>
+                    </div>
+                    <div class="theme-development">
+                        <div class="development-text">
+                            Alguns dels compositors més rellevants del Barroc, com <strong>Johann Sebastian Bach</strong>, <strong>Georg Friedrich Händel</strong> i <strong>Antonio Vivaldi</strong>, van saber combinar tota aquesta riquesa musical amb gran mestratge, creant obres que encara avui són escoltades i admirades arreu del món.
+                        </div>
+                        
+                        <div class="masters-pantheon">
+                            <div class="pantheon-title">Llegat immortal</div>
+                            <div class="pantheon-description">
+                                Aquests mestres van establir els fonaments tècnics i expressius que van influenciar profundament el desenvolupament posterior de la música occidental.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="baroque-ornament"></div>
+
+            <div class="baroque-finale">
+                <div class="finale-title">Reflex d'una època</div>
+                <div class="finale-text">
+                    En definitiva, la música barroca és un reflex de la seva època: <strong>complexa</strong>, <strong>emotiva</strong> i plena d'<strong>energia</strong>, on l'artista buscava impressionar i captivar a través del so. Aquest període va establir nous paradigmes expressius que van transformar per sempre la manera d'entendre i crear música, deixant un llegat d'innovació tècnica i passió artística que continua inspirant músics i melòmans de tot el món.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

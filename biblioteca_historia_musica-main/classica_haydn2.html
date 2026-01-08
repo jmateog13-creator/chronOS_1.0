@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joseph Haydn: compositor austríac fonamental</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Spectral:wght@300;400;500;600;700&family=Source+Sans+Pro:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            line-height: 1.8;
+            color: #1e293b;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
+            min-height: 100vh;
+        }
+
+        .haydn-compendium {
+            max-width: 1100px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .compendium-header {
+            background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .compendium-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="austrian-pattern" patternUnits="userSpaceOnUse" width="25" height="25"><circle cx="12.5" cy="12.5" r="1" fill="rgba(255,255,255,0.05)"/><path d="M5,12.5 L20,12.5 M12.5,5 L12.5,20" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23austrian-pattern)"/></svg>') repeat;
+            animation: austrian-flow 35s linear infinite;
+        }
+
+        @keyframes austrian-flow {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(-25px) translateY(-15px); }
+        }
+
+        .composer-seal {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+            position: relative;
+            z-index: 1;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .compendium-subtitle {
+            font-size: 1.2rem;
+            font-weight: 300;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .scholarly-content {
+            padding: 50px 50px;
+        }
+
+        .introduction {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 35px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            border-left: 4px solid #475569;
+            font-family: 'Spectral', serif;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            text-align: justify;
+            box-shadow: 0 8px 25px rgba(71, 85, 105, 0.08);
+        }
+
+        .biographical-sections {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .biographical-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .biographical-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .section-header {
+            padding: 25px 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-header.formation {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        .section-header.esterhazy {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .section-header.style {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        .section-header.success {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
+
+        .section-header.legacy {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1.5" fill="rgba(255,255,255,0.08)"/></svg>');
+            animation: section-glow 8s ease-in-out infinite;
+        }
+
+        @keyframes section-glow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.02); }
+        }
+
+        .section-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-body {
+            padding: 30px;
+        }
+
+        .section-content {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            text-align: justify;
+            color: #475569;
+        }
+
+        .section-content strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .highlight-achievement {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 1rem;
+            color: #92400e;
+            position: relative;
+        }
+
+        .highlight-achievement::before {
+            content: '🏆';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            opacity: 0.6;
+        }
+
+        .musical-feature {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 3px solid #0ea5e9;
+            padding: 18px;
+            margin: 18px 0;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #0c4a6e;
+        }
+
+        .feature-title {
+            font-family: 'Spectral', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #075985;
+            margin-bottom: 8px;
+        }
+
+        .innovation-showcase {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            border: 1px solid #f87171;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .innovation-showcase::before {
+            content: '💡';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            opacity: 0.6;
+        }
+
+        .innovation-title {
+            font-family: 'Spectral', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #b91c1c;
+            margin-bottom: 8px;
+        }
+
+        .innovation-description {
+            font-size: 1rem;
+            color: #dc2626;
+            line-height: 1.6;
+        }
+
+        .influence-network {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 1px solid #c4b5fd;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .influence-network::before {
+            content: '🤝';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .influence-title {
+            font-family: 'Spectral', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #6d28d9;
+            margin-bottom: 10px;
+        }
+
+        .influence-description {
+            font-size: 1.05rem;
+            color: #7c3aed;
+            line-height: 1.7;
+        }
+
+        .timeless-impact {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-top: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeless-impact::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
+            animation: impact-radiance 15s ease-in-out infinite;
+        }
+
+        @keyframes impact-radiance {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            50% { transform: scale(1.2) rotate(5deg); opacity: 0.7; }
+        }
+
+        .impact-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .impact-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .impact-text strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .elegant-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #475569, transparent);
+            margin: 40px auto;
+            width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .haydn-compendium {
+                margin: 20px;
+            }
+
+            .scholarly-content {
+                padding: 35px 25px;
+            }
+
+            .compendium-header {
+                padding: 35px 25px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-body {
+                padding: 25px 20px;
+            }
+
+            .timeless-impact {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="haydn-compendium">
+        <header class="compendium-header">
+            <div class="composer-seal">🎼</div>
+            <h1>Joseph Haydn</h1>
+            <div class="compendium-subtitle">Compositor austríac fonamental</div>
+        </header>
+
+        <div class="scholarly-content">
+            <div class="introduction">
+                Joseph Haydn va ser un compositor austríac que va tenir un paper fonamental en la definició de la música clàssica tal com la coneixem avui. Va néixer l'any 1732 en una família humil i va començar la seva formació musical des de ben jove, mostrant un gran interès per la música que el portaria a convertir-se en un dels creadors més influents del seu temps.
+            </div>
+
+            <div class="elegant-divider"></div>
+
+            <div class="biographical-sections">
+                <div class="biographical-section">
+                    <div class="section-header formation">
+                        <div class="section-icon">🌱</div>
+                        <div class="section-title">Formació i Desenvolupament</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-content">
+                            La seva trajectòria professional va estar marcada per la seva feina al servei de la poderosa família <strong>Esterházy</strong>, on va tenir l'oportunitat de dirigir una orquestra pròpia i experimentar amb diferents formes i estils musicals.
+                        </div>
+                        
+                        <div class="highlight-achievement">
+                            <strong>Patronatge aristocràtic:</strong> La relació amb els Esterházy li va proporcionar l'estabilitat i els recursos necessaris per desenvolupar plenament el seu potencial creatiu.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="biographical-section">
+                    <div class="section-header esterhazy">
+                        <div class="section-icon">🎼</div>
+                        <div class="section-title">Període Creatiu Principal</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-content">
+                            Durant els anys en què va estar vinculat a aquesta família, Haydn va poder desenvolupar la seva creativitat i va escriure una gran quantitat d'obres que van marcar la història de la música. Va ser un mestre en la composició de <strong>simfonies</strong>, un gènere que va contribuir a establir i perfeccionar, i també va destacar en la música de cambra, especialment en els <strong>quartets i quintets de corda</strong>, on la interacció entre instruments i la complexitat de les melodies mostren la seva habilitat i geni.
+                        </div>
+                        
+                        <div class="musical-feature">
+                            <div class="feature-title">Mestria simfònica:</div>
+                            Va establir les bases estructurals de la simfonia moderna, creant més de 100 obres en aquest gènere que encara avui són referents inqüestionables.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="biographical-section">
+                    <div class="section-header style">
+                        <div class="section-icon">🎭</div>
+                        <div class="section-title">Estil Musical Innovador</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-content">
+                            Una característica important de la música de Haydn és la seva capacitat per combinar la simplicitat amb la sofisticació. Les seves melodies són accessibles i fàcils de recordar, però al mateix temps contenen elements sorprenents que mantenen l'interès de l'oient.
+                        </div>
+                        
+                        <div class="innovation-showcase">
+                            <div class="innovation-title">Equilibri perfecte</div>
+                            <div class="innovation-description">
+                                Això fa que la seva música sigui molt agradable i intel·ligent, plena de moments d'humor i creativitat que sovint trencaven amb les expectatives dels seus contemporanis.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="biographical-section">
+                    <div class="section-header success">
+                        <div class="section-icon">🌍</div>
+                        <div class="section-title">Reconeixement Internacional</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-content">
+                            Quan va abandonar la seva feina amb els Esterházy, Haydn va viatjar a Anglaterra, on va ser molt ben rebut i va gaudir d'un gran èxit. Aquest període va ser molt productiu per a ell i va permetre que la seva fama s'estengués per tota Europa.
+                        </div>
+                        
+                        <div class="influence-network">
+                            <div class="influence-title">Influència en grans mestres</div>
+                            <div class="influence-description">
+                                La seva influència va arribar a altres grans compositors, com <strong>Mozart</strong> i <strong>Beethoven</strong>, que el van considerar un model i una inspiració.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="biographical-section">
+                    <div class="section-header legacy">
+                        <div class="section-icon">🏛️</div>
+                        <div class="section-title">Llegat Perdurable</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="section-content">
+                            Haydn va morir l'any 1809, però la seva obra continua sent una part essencial de la música clàssica. El seu treball va ajudar a establir les bases de moltes formes musicals que encara avui s'estudien i s'interpreten, i el seu esperit innovador i la seva dedicació a l'art han deixat una empremta inesborrable en la història de la música.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="elegant-divider"></div>
+
+            <div class="timeless-impact">
+                <div class="impact-title">Impacte Atemporal</div>
+                <div class="impact-text">
+                    Joseph Haydn va establir els fonaments de la <strong>tradició simfònica occidental</strong>, creant estructures i principis compositius que han influenciat generacions de músics. La seva capacitat per combinar <strong>rigor tècnic</strong> amb <strong>creativitat</strong> i <strong>humor</strong> el converteix en una figura indispensable per comprendre l'evolució de la música clàssica i el seu llegat perdura com a testimoni de la genialitat artística humana.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

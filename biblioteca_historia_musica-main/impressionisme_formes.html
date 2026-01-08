@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formes Musicals Impressionistes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: #fff;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .header-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .content {
+            padding: 50px 40px;
+        }
+
+        .intro {
+            background: #e8f4fd;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            border-left: 5px solid #3498db;
+        }
+
+        .intro p {
+            font-size: 1.1rem;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: "●";
+            color: #3498db;
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+
+        .section p {
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 35px 0;
+        }
+
+        .form-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .form-title {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .form-description {
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .examples {
+            background: #e8f5e8;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 5px solid #27ae60;
+        }
+
+        .examples-title {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .examples-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .examples-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-style: italic;
+            color: #2c3e50;
+        }
+
+        .examples-list li::before {
+            content: "♪";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .comparison {
+            background: #fff3cd;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 35px 0;
+            border-left: 5px solid #ffc107;
+        }
+
+        .comparison-title {
+            color: #856404;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .comparison-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .comparison-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .comparison-item p {
+            color: #555;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .characteristics {
+            background: #f1f3f4;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 35px 0;
+        }
+
+        .characteristics-title {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .characteristics-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .characteristic-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+        }
+
+        .characteristic-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+            color: #3498db;
+        }
+
+        .characteristic-text {
+            color: #2c3e50;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .conclusion {
+            background: #2c3e50;
+            color: #fff;
+            padding: 40px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .conclusion h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .conclusion p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .content {
+                padding: 30px 25px;
+            }
+            
+            .forms-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .characteristics-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Formes Musicals Impressionistes</h1>
+            <div class="header-subtitle">Llibertat i flexibilitat en l'estructura</div>
+        </header>
+
+        <div class="content">
+            <div class="intro">
+                <p>
+                    Durant el període impressionista, les formes musicals tradicionals es van transformar o fins i tot difuminar. Els compositors ja no es preocupaven tant per seguir estructures fixes, sinó que buscaven més llibertat per plasmar atmosferes, sensacions i paisatges sonors.
+                </p>
+            </div>
+
+            <section class="section">
+                <h2 class="section-title">Transformació de les Formes</h2>
+                <p>
+                    Els compositors impressionistes van abandonar les estructures rígides com la sonata, la simfonia clàssica o la forma ternària tradicional. En lloc d'això, van optar per <span class="highlight">formes més obertes, flexibles i sovint molt personals</span>.
+                </p>
+                <p>
+                    Això va donar lloc a composicions que seguien la lògica de l'atmosfera i la sensació més que la de l'estructura formal predeterminada.
+                </p>
+            </section>
+
+            <div class="forms-grid">
+                <div class="form-card">
+                    <div class="form-title">Música Descriptiva</div>
+                    <div class="form-description">
+                        Inspirada en imatges, emocions o elements de la natura. Les obres portaven títols evocadors i no seguien un desenvolupament temàtic clàssic, sinó que evolucionaven com un passeig sonor.
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <div class="form-title">Formes Lliures A-B-A</div>
+                    <div class="form-description">
+                        Tot i utilitzar estructures conegudes, es feien servir de manera molt lliure, amb repeticions transformades, seccions difuminades o sense contrastos clars.
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <div class="form-title">Poema Simfònic</div>
+                    <div class="form-description">
+                        Heretada del Romanticisme però adaptada a l'estètica impressionista. No explicaven històries concretes, sinó que suggerien paisatges i ambients.
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <div class="form-title">Preludi</div>
+                    <div class="form-description">
+                        Es va convertir en una forma molt popular, especialment al piano. No era una introducció, sinó una peça breu, autosuficient i sovint introspectiva.
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h3 class="examples-title">Exemples de Títols Evocadors</h3>
+                <ul class="examples-list">
+                    <li>Jardins sota la pluja</li>
+                    <li>El mar (La Mer)</li>
+                    <li>Reflexos en l'aigua</li>
+                    <li>Núvols</li>
+                    <li>Clair de Lune</li>
+                    <li>L'illa alegre</li>
+                </ul>
+            </div>
+
+            <div class="comparison">
+                <h3 class="comparison-title">Diferències amb les Formes Tradicionals</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <h4>Formes Clàssiques</h4>
+                        <p>Estructures fixes, desenvolupament temàtic clar, contrastos definits, seccions ben delimitades.</p>
+                    </div>
+                    <div class="comparison-item">
+                        <h4>Formes Impressionistes</h4>
+                        <p>Estructures obertes, evolució lliure, transicions difuminades, unitat de caràcter.</p>
+                    </div>
+                </div>
+            </div>
+
+            <section class="section">
+                <h2 class="section-title">Unitat de Caràcter</h2>
+                <p>
+                    El que predominava era la <span class="highlight">unitat de caràcter</span> més que la divisió en parts oposades. Les obres mantenien una atmosfera coherent al llarg de tota la peça, sense grans contrastos dramàtics.
+                </p>
+                <p>
+                    Aquesta aproximació creava una sensació de continuïtat i fluïdesa que era característica de l'estètica impressionista.
+                </p>
+            </section>
+
+            <div class="characteristics">
+                <h3 class="characteristics-title">Característiques de les Formes Impressionistes</h3>
+                <div class="characteristics-list">
+                    <div class="characteristic-item">
+                        <span class="characteristic-icon">🌊</span>
+                        <div class="characteristic-text">Fluïdesa contínua</div>
+                    </div>
+                    <div class="characteristic-item">
+                        <span class="characteristic-icon">🎨</span>
+                        <div class="characteristic-text">Atmosfera prioritària</div>
+                    </div>
+                    <div class="characteristic-item">
+                        <span class="characteristic-icon">🔄</span>
+                        <div class="characteristic-text">Transformacions graduals</div>
+                    </div>
+                    <div class="characteristic-item">
+                        <span class="characteristic-icon">💫</span>
+                        <div class="characteristic-text">Seccions difuminades</div>
+                    </div>
+                    <div class="characteristic-item">
+                        <span class="characteristic-icon">🎭</span>
+                        <div class="characteristic-text">Menys dramatisme</div>
+                    </div>
+                    <div class="characteristic-item">
+                        <span class="characteristic-icon">🌅</span>
+                        <div class="characteristic-text">Evocació descriptiva</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="section">
+                <h2 class="section-title">Evolució cap a la Modernitat</h2>
+                <p>
+                    Les formes musicals en l'impressionisme esdevenen més <span class="highlight">intuïtives i menys previsibles</span>. La rigidesa formal es dilueix en favor d'una fluïdesa sonora que prioritza l'atmosfera i la sensació estètica.
+                </p>
+                <p>
+                    Aquest tipus d'obres per a orquestra, com <em>La Mer</em> de Debussy, no explicaven una història concreta, sinó que suggerien paisatges, sentiments o ambients aquàtics, on la música flueix de manera contínua.
+                </p>
+            </section>
+        </div>
+
+        <div class="conclusion">
+            <h3>Impacte en l'Art Musical</h3>
+            <p>
+                Aquesta llibertat formal va ser clau per preparar el terreny de les avantguardes del segle XX. Els compositors impressionistes van demostrar que la música podia expressar-se més enllà de les estructures tradicionals, obrint noves possibilitats creatives per a les generacions futures.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

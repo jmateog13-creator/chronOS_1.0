@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Els instruments musicals a l'edat mitjana</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 80px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.03) 2deg, transparent 4deg);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffffff, #ecf0f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            opacity: 0.9;
+            letter-spacing: 1px;
+        }
+
+        .main-content {
+            padding: 60px 40px;
+        }
+
+        .intro {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            border-left: 6px solid #3498db;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .instruments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .instrument-category {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .instrument-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--category-color);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .instrument-category:hover::before {
+            transform: scaleX(1);
+        }
+
+        .instrument-category:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .strings { --category-color: #e74c3c; }
+        .wind { --category-color: #3498db; }
+        .percussion { --category-color: #f39c12; }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .category-emoji {
+            font-size: 3rem;
+            margin-right: 20px;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .category-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            flex: 1;
+        }
+
+        .category-description {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .instruments-list {
+            list-style: none;
+        }
+
+        .instrument-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 12px;
+            border-left: 4px solid var(--category-color);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .instrument-item:hover {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .instrument-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .instrument-name::before {
+            content: '♪';
+            margin-right: 10px;
+            color: var(--category-color);
+            font-size: 1.2em;
+        }
+
+        .instrument-description {
+            color: #5a6c7d;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(52, 152, 219, 0.2) 0%, rgba(155, 89, 182, 0.2) 100%);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .functions-section {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            margin: 60px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .functions-section::before {
+            content: '♫';
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 4rem;
+            opacity: 0.1;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .functions-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .functions-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .conclusion {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            margin-top: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conclusion::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: drift 15s linear infinite;
+        }
+
+        @keyframes drift {
+            from { transform: translateX(0) translateY(0); }
+            to { transform: translateX(-50px) translateY(-50px); }
+        }
+
+        .conclusion-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .conclusion-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .conclusion-text {
+            font-size: 1.2rem;
+            line-height: 1.7;
+        }
+
+        .next-preview {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 16px;
+            }
+            
+            .hero {
+                padding: 50px 20px;
+            }
+            
+            .main-content {
+                padding: 40px 20px;
+            }
+            
+            .instruments-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .instrument-category {
+                padding: 30px 20px;
+            }
+            
+            .functions-section,
+            .conclusion {
+                padding: 40px 20px;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in:nth-child(1) { animation-delay: 0.1s; }
+        .fade-in:nth-child(2) { animation-delay: 0.2s; }
+        .fade-in:nth-child(3) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Els instruments musicals a l'edat mitjana</h1>
+                <div class="hero-subtitle">sons d'una altra època</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="intro">
+                Quan pensem en la música medieval, sovint ens ve al cap el cant gregorià, que es feia sense cap instrument. Però la veritat és que, sobretot en la música profana, els <span class="highlight">instruments musicals tenien un paper molt important</span>. A les places, als castells o en celebracions, la música sovint anava acompanyada d'instruments molt variats, alguns dels quals ens poden semblar molt curiosos avui en dia.
+                <br><br>
+                Els instruments de l'edat mitjana es poden dividir en <span class="highlight">tres grans grups</span>: <strong>corda, vent i percussió</strong>. Cada grup tenia funcions diferents i s'utilitzava en diferents contextos.
+            </div>
+
+            <div class="instruments-grid">
+                <div class="instrument-category strings fade-in">
+                    <div class="category-header">
+                        <div class="category-emoji">🎻</div>
+                        <h2 class="category-title">Instruments de corda</h2>
+                    </div>
+                    <p class="category-description">Es tocaven pinçant, fregant o puntejant les cordes, i produïen sons suaus o rics segons el tipus.</p>
+                    
+                    <ul class="instruments-list">
+                        <li class="instrument-item">
+                            <div class="instrument-name">Llaüt</div>
+                            <div class="instrument-description">Molt popular a les corts. Semblava una guitarra amb la caixa arrodonida. Es tocava amb els dits i s'utilitzava tant per acompanyar la veu com per fer solos.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Fídula</div>
+                            <div class="instrument-description">Era com una mena de violí antic. Es tocava amb arquet, i era habitual tant en música religiosa com profana.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Salteri</div>
+                            <div class="instrument-description">Un instrument de taula amb cordes, que es tocava puntejant. Tenia un so delicat i s'usava en ambients més tranquils.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Rota i arpa</div>
+                            <div class="instrument-description">També tenien cordes, i es feien servir en cerimònies i en la música més refinada.</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="instrument-category wind fade-in">
+                    <div class="category-header">
+                        <div class="category-emoji">🎺</div>
+                        <h2 class="category-title">Instruments de vent</h2>
+                    </div>
+                    <p class="category-description">Es feien sonar bufant aire a través d'un tub. Podien ser de fusta o metall, i s'usaven molt en celebracions i danses.</p>
+                    
+                    <ul class="instruments-list">
+                        <li class="instrument-item">
+                            <div class="instrument-name">Xirimia</div>
+                            <div class="instrument-description">Semblant a un oboè, amb un so fort i brillant. Era molt usada en exteriors.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Cornamusa</div>
+                            <div class="instrument-description">Portava una bossa d'aire i diverses tubs. El so era molt característic, i s'associa amb festes i danses populars.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Flabiol i flautes</div>
+                            <div class="instrument-description">Fàcils de portar i tocar, molt comuns entre els músics de carrer.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Corn natural i trompetes</div>
+                            <div class="instrument-description">S'utilitzaven per fer anuncis, cridar l'atenció o durant actes importants.</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="instrument-category percussion fade-in">
+                    <div class="category-header">
+                        <div class="category-emoji">🥁</div>
+                        <h2 class="category-title">Instruments de percussió</h2>
+                    </div>
+                    <p class="category-description">Donaven ritme i força a la música. Era molt utilitzada en danses, processons i espectacles.</p>
+                    
+                    <ul class="instruments-list">
+                        <li class="instrument-item">
+                            <div class="instrument-name">Tambors</div>
+                            <div class="instrument-description">N'hi havia de molts tipus. Alguns es tocaven amb baquetes, altres amb les mans.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Panderos i campanes</div>
+                            <div class="instrument-description">S'usaven tant en música religiosa com festiva.</div>
+                        </li>
+                        <li class="instrument-item">
+                            <div class="instrument-name">Címbals i cròtals</div>
+                            <div class="instrument-description">Petits plats metàl·lics que es feien xocar entre si.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="functions-section">
+                <h2 class="functions-title">Instruments i funcions</h2>
+                <div class="functions-content">
+                    Els instruments tenien <span class="highlight">funcions diferents segons el context</span>. En la música religiosa, gairebé no s'utilitzaven, o només alguns com l'orgue, i amb molta moderació. En canvi, en la música profana, els instruments eren essencials: <strong>animaven balls, acompanyaven cançons o donaven vida a espectacles</strong>. També s'utilitzaven en cerimònies, com casaments o coronacions, i fins i tot en batalles per donar senyals.
+                    <br><br>
+                    La majoria d'instruments es tocaven <span class="highlight">de memòria o de forma improvisada</span>, ja que no existien partitures com les d'avui. Els músics medievals sovint aprenien escoltant i repetint.
+                </div>
+            </div>
+
+            <div class="conclusion">
+                <div class="conclusion-content">
+                    <h2 class="conclusion-title">Un món sonor molt ric</h2>
+                    <p class="conclusion-text">
+                        Tot i que alguns d'aquests instruments ens poden semblar antics o estranys, molts són <span class="highlight">antecessors dels instruments actuals</span>. Per exemple, el violí prové de la fídula, i la flauta de bec ja existia en formes primitives. La música instrumental de l'edat mitjana, tot i no ser tan coneguda com la vocal, ens mostra un <strong>món sonor molt ric, divers i viu</strong>.
+                    </p>
+                    
+                    <div class="next-preview">
+                        En els propers textos veurem <strong>les formes musicals i els compositors</strong> que van marcar aquesta època fascinant.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

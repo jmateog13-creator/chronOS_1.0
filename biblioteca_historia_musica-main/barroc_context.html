@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El període Barroc</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Crimson+Text:wght@400;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            line-height: 1.8;
+            color: #1e1e1e;
+            background: linear-gradient(135deg, #7c2d12 0%, #92400e 25%, #a16207 50%, #b45309 75%, #d97706 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="baroque-ornament" patternUnits="userSpaceOnUse" width="30" height="30"><path d="M15,5 Q20,10 15,15 Q10,10 15,5" fill="rgba(254,215,170,0.03)"/><path d="M5,15 Q10,20 15,15 Q20,20 25,15" stroke="rgba(254,215,170,0.02)" stroke-width="0.5" fill="none"/><circle cx="15" cy="25" r="1" fill="rgba(254,215,170,0.025)"/></pattern></defs><rect width="100" height="100" fill="url(%23baroque-ornament)"/></svg>') repeat;
+            z-index: -1;
+        }
+
+        .baroque-palace {
+            max-width: 1300px;
+            margin: 40px auto;
+            background: rgba(254, 215, 170, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(124, 45, 18, 0.4);
+            border: 2px solid rgba(154, 52, 18, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .baroque-palace::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="palace-pattern" patternUnits="userSpaceOnUse" width="40" height="40"><path d="M20,5 Q30,15 20,25 Q10,15 20,5" stroke="rgba(124,45,18,0.05)" stroke-width="1" fill="none"/><circle cx="10" cy="30" r="2" fill="rgba(124,45,18,0.03)"/><circle cx="30" cy="10" r="1.5" fill="rgba(124,45,18,0.03)"/></pattern></defs><rect width="200" height="200" fill="url(%23palace-pattern)"/></svg>') repeat;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .palace-hall {
+            background: linear-gradient(135deg, #7c2d12 0%, #92400e 100%);
+            color: #fed7aa;
+            padding: 60px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .palace-hall::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M25,25 Q35,15 45,25 Q35,35 25,25" stroke="rgba(254,215,170,0.1)" stroke-width="1" fill="none"/><path d="M50,50 Q65,40 80,50 Q65,60 50,50" stroke="rgba(254,215,170,0.08)" stroke-width="0.8" fill="none"/><circle cx="75" cy="25" r="3" stroke="rgba(254,215,170,0.06)" stroke-width="0.5" fill="none"/></svg>') repeat;
+            animation: baroque-grandeur 60s linear infinite;
+        }
+
+        @keyframes baroque-grandeur {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(-100px) translateY(-60px) rotate(3deg); }
+        }
+
+        .royal-emblem {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4.5rem;
+            box-shadow: 0 25px 60px rgba(217, 119, 6, 0.5);
+            position: relative;
+            z-index: 1;
+            border: 4px solid rgba(254, 215, 170, 0.4);
+            animation: royal-glow 10s ease-in-out infinite;
+        }
+
+        @keyframes royal-glow {
+            0%, 100% { box-shadow: 0 25px 60px rgba(217, 119, 6, 0.5); }
+            50% { box-shadow: 0 30px 80px rgba(217, 119, 6, 0.8), 0 0 50px rgba(245, 158, 11, 0.6); }
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+            position: relative;
+            z-index: 1;
+            letter-spacing: 1px;
+        }
+
+        .period-dates {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .palace-subtitle {
+            font-size: 1.3rem;
+            font-weight: 400;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .baroque-chronicle {
+            padding: 60px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chronicle-introduction {
+            background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 50px;
+            border: 2px solid #d97706;
+            font-size: 1.2rem;
+            line-height: 1.9;
+            text-align: justify;
+            box-shadow: 0 15px 40px rgba(124, 45, 18, 0.15);
+            position: relative;
+            color: #7c2d12;
+        }
+
+        .chronicle-introduction::before {
+            content: '🏛️';
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        .baroque-galleries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .gallery-room {
+            background: rgba(254, 247, 237, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(124, 45, 18, 0.2);
+            border: 2px solid rgba(154, 52, 18, 0.2);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .gallery-room::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10,10 Q20,5 30,10 Q40,15 30,20 Q20,15 10,10" stroke="rgba(124,45,18,0.03)" stroke-width="0.5" fill="none"/></svg>') repeat;
+            pointer-events: none;
+        }
+
+        .gallery-room:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 70px rgba(124, 45, 18, 0.3);
+        }
+
+        .room-header {
+            padding: 35px 40px;
+            color: #fed7aa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="30" r="4" fill="rgba(254,215,170,0.15)"/><circle cx="75" cy="70" r="3" fill="rgba(254,215,170,0.1)"/><path d="M40,20 Q60,10 80,20" stroke="rgba(254,215,170,0.08)" stroke-width="1" fill="none"/></svg>');
+            animation: room-ornament 20s ease-in-out infinite;
+        }
+
+        @keyframes room-ornament {
+            0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: scale(1.1) rotate(360deg); }
+        }
+
+        .room-header.history {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+
+        .room-header.art {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        }
+
+        .room-header.science {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .room-header.music {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        }
+
+        .room-icon {
+            font-size: 3.5rem;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+            display: block;
+        }
+
+        .room-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.3rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .room-content {
+            padding: 40px;
+            color: #7c2d12;
+        }
+
+        .content-description {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            text-align: justify;
+            margin-bottom: 25px;
+        }
+
+        .content-description strong {
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .baroque-masterpiece {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .baroque-masterpiece::before {
+            content: '👑';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2.2rem;
+            opacity: 0.6;
+        }
+
+        .masterpiece-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 12px;
+        }
+
+        .masterpiece-description {
+            font-size: 1.05rem;
+            color: #a16207;
+            line-height: 1.7;
+        }
+
+        .innovation-highlight {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-left: 4px solid #10b981;
+            padding: 22px;
+            margin: 22px 0;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            color: #065f46;
+        }
+
+        .innovation-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #047857;
+            margin-bottom: 8px;
+        }
+
+        .artistic-technique {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 2px solid #a855f7;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .artistic-technique::before {
+            content: '🎨';
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .technique-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #6d28d9;
+            margin-bottom: 12px;
+        }
+
+        .technique-description {
+            font-size: 1.05rem;
+            color: #7c3aed;
+            line-height: 1.7;
+        }
+
+        .baroque-legacy {
+            background: linear-gradient(135deg, #7c2d12 0%, #92400e 100%);
+            color: #fed7aa;
+            padding: 50px;
+            border-radius: 20px;
+            margin-top: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .baroque-legacy::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 220%;
+            height: 220%;
+            background: radial-gradient(circle, rgba(217, 119, 6, 0.2) 0%, transparent 70%);
+            animation: legacy-radiance 30s ease-in-out infinite;
+        }
+
+        @keyframes legacy-radiance {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+            50% { transform: scale(1.5) rotate(20deg); opacity: 0.9; }
+        }
+
+        .legacy-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .legacy-text {
+            font-size: 1.3rem;
+            line-height: 1.9;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .legacy-text strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .baroque-ornament {
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #7c2d12, #d97706, #f59e0b, #d97706, #7c2d12, transparent);
+            margin: 50px auto;
+            border-radius: 2px;
+            width: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .baroque-palace {
+                margin: 20px;
+            }
+
+            .baroque-chronicle {
+                padding: 40px 30px;
+            }
+
+            .palace-hall {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .baroque-galleries {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .room-content {
+                padding: 30px 25px;
+            }
+
+            .baroque-legacy {
+                padding: 40px 25px;
+            }
+
+            .royal-emblem {
+                width: 120px;
+                height: 120px;
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="baroque-palace">
+        <header class="palace-hall">
+            <div class="royal-emblem">👑</div>
+            <h1>El període Barroc</h1>
+            <div class="period-dates">Segles XVII - XVIII</div>
+            <div class="palace-subtitle">Expressivitat, grandeur i contrastos</div>
+        </header>
+
+        <div class="baroque-chronicle">
+            <div class="chronicle-introduction">
+                El període Barroc va començar a principis del segle XVII i es va estendre fins a mitjans del segle XVIII. Aquesta època va ser molt important perquè va marcar un canvi gran en l'art, la música i la societat. El Barroc es caracteritza per un estil carregat d'expressivitat, decoració abundant i contrastos forts, tant en la pintura i l'arquitectura com en la música.
+            </div>
+
+            <div class="baroque-ornament"></div>
+
+            <div class="baroque-galleries">
+                <div class="gallery-room">
+                    <div class="room-header history">
+                        <div class="room-icon">⚔️</div>
+                        <div class="room-title">Història i Conflictes</div>
+                    </div>
+                    <div class="room-content">
+                        <div class="content-description">
+                            Un esdeveniment històric destacat d'aquest període va ser la <strong>Guerra dels Trenta Anys</strong> (1618-1648), un conflicte que va tenir lloc principalment a Europa i que va afectar molts països.
+                        </div>
+                        
+                        <div class="baroque-masterpiece">
+                            <div class="masterpiece-title">Guerra dels Trenta Anys</div>
+                            <div class="masterpiece-description">
+                                Aquesta guerra va tenir conseqüències socials i polítiques molt importants, com la modificació de fronteres i la consolidació de diferents regnes i estats.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-room">
+                    <div class="room-header art">
+                        <div class="room-icon">🎨</div>
+                        <div class="room-title">Art i Arquitectura</div>
+                    </div>
+                    <div class="room-content">
+                        <div class="content-description">
+                            En el món de l'art, un dels grans noms del Barroc és el pintor italià <strong>Caravaggio</strong>. Les seves obres es caracteritzen per l'ús dramàtic de la llum i la foscor, conegut com a clarobscur, que transmeten molta intensitat emocional.
+                        </div>
+                        
+                        <div class="artistic-technique">
+                            <div class="technique-title">Clarobscur de Caravaggio</div>
+                            <div class="technique-description">
+                                Tècnica revolucionària que utilitza contrastos extrems entre llum i ombra per crear dramatisme i profunditat emocional.
+                            </div>
+                        </div>
+                        
+                        <div class="content-description">
+                            També en arquitectura, artistes com <strong>Gian Lorenzo Bernini</strong> van crear escultures i edificis plens de moviment i detall.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-room">
+                    <div class="room-header science">
+                        <div class="room-icon">🔭</div>
+                        <div class="room-title">Ciència i Descobriments</div>
+                    </div>
+                    <div class="room-content">
+                        <div class="content-description">
+                            Pel que fa a la ciència, un descobriment molt rellevant va ser l'ús del <strong>telescopi</strong> per part de <strong>Galileo Galilei</strong>, que va permetre observar els astres amb més precisió i va aportar dades importants per al desenvolupament de la física i l'astronomia.
+                        </div>
+                        
+                        <div class="innovation-highlight">
+                            <div class="innovation-title">Revolució astronòmica</div>
+                            Aquest avanç científic va influir en la manera com es veia el món i la natura durant el Barroc, qüestionant concepcions tradicionals de l'univers.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-room">
+                    <div class="room-header music">
+                        <div class="room-icon">🎼</div>
+                        <div class="room-title">Música Barroca</div>
+                    </div>
+                    <div class="room-content">
+                        <div class="content-description">
+                            En la música, el Barroc es caracteritza per una expressivitat molt gran i la creació de noves formes i tècniques. Va ser una època en què els compositors van començar a experimentar amb la polifonia complexa i l'ús de l'ornamentació per embellir les melodies.
+                        </div>
+                        
+                        <div class="baroque-masterpiece">
+                            <div class="masterpiece-title">Innovacions musicals</div>
+                            <div class="masterpiece-description">
+                                També es van desenvolupar instruments i formes musicals que van marcar la història de la música, com l'òpera i la sonata.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="baroque-ornament"></div>
+
+            <div class="baroque-legacy">
+                <div class="legacy-title">L'esperit del Barroc</div>
+                <div class="legacy-text">
+                    El període Barroc va transformar radicalment l'expressió artística europea, establint un llenguatge visual i musical caracteritzat per la <strong>grandiositat</strong>, l'<strong>emotivitat intensa</strong> i els <strong>contrastos dramàtics</strong>. Aquesta època va crear les bases de moltes formes artístiques modernes i va deixar un llegat que encara avui influeix en la manera com entenem l'art, la música i l'arquitectura.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

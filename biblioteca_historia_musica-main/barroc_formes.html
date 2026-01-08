@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formes Musicals del Barroc - Innovacions Eternals</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.7;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 20%, #0f3460 40%, #533a71 60%, #6c5b7b 80%, #355c7d 100%);
+            color: #f8f9fa;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .musical-essence {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(25, 25, 112, 0.08) 0%, transparent 60%);
+            animation: baroque-ambience 25s ease-in-out infinite;
+        }
+
+        @keyframes baroque-ambience {
+            0%, 100% { opacity: 0.6; }
+            33% { opacity: 0.8; }
+            66% { opacity: 0.4; }
+        }
+
+        .floating-notation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .note-symbol {
+            position: absolute;
+            color: rgba(255, 215, 0, 0.15);
+            font-size: 2rem;
+            animation: notation-drift 30s infinite linear;
+        }
+
+        @keyframes notation-drift {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 80px 0;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 30px;
+            margin-bottom: 60px;
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(255, 215, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, 
+                rgba(255, 215, 0, 0.1), 
+                rgba(138, 43, 226, 0.1), 
+                rgba(25, 25, 112, 0.1), 
+                rgba(255, 215, 0, 0.1));
+            animation: rotate 35s linear infinite;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .period-icon {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF8C00, #FFD700);
+            background-size: 300% 300%;
+            animation: baroque-glow 10s ease infinite;
+            margin: 0 auto 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            color: #1a1a2e;
+            box-shadow: 0 40px 100px rgba(255, 215, 0, 0.4);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        @keyframes baroque-glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .period-icon::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: -25px;
+            right: -25px;
+            bottom: -25px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFD700, transparent, #FFA500, transparent, #FFD700);
+            z-index: -1;
+            animation: halo-rotation 8s linear infinite;
+        }
+
+        @keyframes halo-rotation {
+            100% { transform: rotate(360deg); }
+        }
+
+        .period-icon:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 50px 120px rgba(255, 215, 0, 0.6);
+        }
+
+        h1 {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #FFD700, #FFF, #FFD700);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            color: #FFD700;
+            font-style: italic;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .period-description {
+            font-size: 1.3rem;
+            color: #e8e8e8;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .form-card {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .form-card:hover::before {
+            left: 100%;
+        }
+
+        .form-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 215, 0, 0.6);
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .form-icon {
+            font-size: 3.5rem;
+            margin-right: 20px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-title {
+            font-size: 2.2rem;
+            color: #FFD700;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-description {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            color: #f0f0f0;
+            text-align: justify;
+        }
+
+        .form-examples {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #FFD700;
+        }
+
+        .form-examples h4 {
+            color: #FFD700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .form-examples p {
+            font-size: 1rem;
+            color: #e8e8e8;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .special-forms {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+
+        .special-form {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 50px;
+            border-radius: 25px;
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(138, 43, 226, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .special-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(138, 43, 226, 0.05), rgba(255, 215, 0, 0.05));
+            animation: special-shimmer 15s ease-in-out infinite;
+        }
+
+        @keyframes special-shimmer {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        .special-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .special-form h3 {
+            color: #DA70D6;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .special-form p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #f5f5f5;
+            text-align: justify;
+        }
+
+        .foundation-technique {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 60px;
+            border-radius: 30px;
+            border: 3px solid rgba(255, 215, 0, 0.5);
+            text-align: center;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .foundation-technique::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1), transparent 50%);
+            animation: rotate 50s linear infinite;
+        }
+
+        .foundation-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .foundation-technique h2 {
+            color: #FFD700;
+            font-size: 3.5rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        .foundation-technique p {
+            font-size: 1.4rem;
+            line-height: 1.9;
+            max-width: 900px;
+            margin: 0 auto;
+            color: #f8f8f8;
+        }
+
+        .technique-visual {
+            margin: 30px 0;
+            font-size: 4rem;
+            color: #FFD700;
+            animation: bass-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes bass-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .forms-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .special-forms {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 3rem;
+            }
+            
+            .form-card {
+                padding: 30px;
+            }
+            
+            .period-icon {
+                width: 200px;
+                height: 200px;
+                font-size: 6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .forms-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .form-card {
+                padding: 25px;
+            }
+            
+            .form-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .form-icon {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="musical-essence"></div>
+    
+    <div class="floating-notation">
+        <div class="note-symbol" style="left: 5%; animation-delay: 0s;">𝄞</div>
+        <div class="note-symbol" style="left: 15%; animation-delay: 5s;">♪</div>
+        <div class="note-symbol" style="left: 25%; animation-delay: 10s;">♫</div>
+        <div class="note-symbol" style="left: 35%; animation-delay: 15s;">𝄢</div>
+        <div class="note-symbol" style="left: 45%; animation-delay: 20s;">♬</div>
+        <div class="note-symbol" style="left: 55%; animation-delay: 3s;">𝄞</div>
+        <div class="note-symbol" style="left: 65%; animation-delay: 8s;">♪</div>
+        <div class="note-symbol" style="left: 75%; animation-delay: 13s;">♫</div>
+        <div class="note-symbol" style="left: 85%; animation-delay: 18s;">𝄢</div>
+        <div class="note-symbol" style="left: 95%; animation-delay: 23s;">♬</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="period-icon">🎼</div>
+                <h1>Formes Musicals del Barroc</h1>
+                <div class="subtitle">Innovacions que van Canviar la Música per Sempre</div>
+                <div class="period-description">
+                    Durant el període barroc, la música va experimentar molts canvis i innovacions. L'aparició de noves formes musicals va ajudar els compositors a expressar idees, emocions i a donar més claredat i equilibri a les seves obres.
+                </div>
+            </div>
+        </header>
+
+        <div class="forms-grid">
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="form-icon">🎻</div>
+                    <div class="form-title">El Concert</div>
+                </div>
+                <div class="form-description">
+                    Una de les formes més importants va ser el <strong>concert</strong>, especialment el <strong>concert solista</strong>, on un instrument té un paper protagonista i dialoga amb la resta de l'orquestra. També existia el <strong>concert grosso</strong>, amb protagonisme repartit entre un petit grup d'instruments i l'orquestra.
+                </div>
+                <div class="form-examples">
+                    <h4>Mestre destacat:</h4>
+                    <p>Antonio Vivaldi va ser un mestre d'aquesta forma. Amb obres com Les Quatre Estacions va demostrar com un sol instrument podia explicar històries i transmetre emocions.</p>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="form-icon">🧩</div>
+                    <div class="form-title">La Fuga</div>
+                </div>
+                <div class="form-description">
+                    Una peça basada en la imitació que comença amb una melodia principal (tema) que es va repetint i transformant a diferents veus. És una forma complexa i molt intel·ligent que demostra la capacitat del compositor per combinar sons i idees.
+                </div>
+                <div class="form-examples">
+                    <h4>Mestre destacat:</h4>
+                    <p>Johann Sebastian Bach va ser el gran expert en aquesta forma. Les seves fugues són encara avui admirades per la seva perfecció tècnica i bellesa estructural.</p>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="form-icon">💃</div>
+                    <div class="form-title">La Suite</div>
+                </div>
+                <div class="form-description">
+                    Una col·lecció de danses instrumentals on cada dansa té un caràcter diferent: algunes són lentes i elegants, d'altres més ràpides i rítmiques. Seguien un ordre fix i es tocaven sense interrupció.
+                </div>
+                <div class="form-examples">
+                    <h4>Danses típiques:</h4>
+                    <p>Allemande, courante, sarabande, gigue, entre d'altres. Permetia als compositors jugar amb contrastos i emocions mantenint un equilibri general.</p>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="form-icon">🎤</div>
+                    <div class="form-title">Motet i Cantata</div>
+                </div>
+                <div class="form-description">
+                    Formes molt utilitzades en l'àmbit religiós que combinaven música vocal i instrumental. La <strong>cantata barroca</strong> podia ser religiosa o profana, formada per àries, cors i recitatius per explicar històries o transmetre missatges.
+                </div>
+                <div class="form-examples">
+                    <h4>Estructura:</h4>
+                    <p>Àries (parts cantades per solista), cors i recitatius (parts parlades o declamades) que s'alternaven per crear una narrativa musical completa.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="special-forms">
+            <div class="special-form">
+                <div class="special-content">
+                    <h3>🎭 L'Òpera</h3>
+                    <p>Una de les formes més espectaculars i noves del Barroc. L'òpera combinava música, teatre, escenografia i emocions en un espectacle total que captivava el públic. Händel va ser un dels compositors més importants d'òperes barroques, creant obres que encara avui emocionenen les audiències.</p>
+                </div>
+            </div>
+
+            <div class="special-form">
+                <div class="special-content">
+                    <h3>🎹 Música Instrumental</h3>
+                    <p>El Barroc va veure el florint de la música purament instrumental, amb formes com la sonata, la partita i el ricercar. Aquestes formes permetien als compositors explorar les possibilitats tècniques i expressives dels instruments sense necessitat de text o veu.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="foundation-technique">
+            <div class="foundation-content">
+                <h2>Baix Continu</h2>
+                <div class="technique-visual">♫ ♪ ♫</div>
+                <p>No és una forma musical en si, però sí una tècnica fonamental present a totes les obres del Barroc. Consistia en una línia de baix tocada per instruments com el violoncel o el fagot, i una harmonia interpretada pel clavicèmbal o l'orgue. Era la base sobre la qual es construïa tota la música barroca.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

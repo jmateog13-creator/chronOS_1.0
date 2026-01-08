@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hildegarda de Bingen - Una creadora excepcional</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .magazine {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .magazine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .cover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="50" cy="10" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="10" cy="60" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="90" cy="40" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            color: white;
+            padding: 80px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover::after {
+            content: '♪';
+            position: absolute;
+            font-size: 200px;
+            opacity: 0.1;
+            top: 20%;
+            right: -50px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .issue-info {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .cover-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 900;
+            line-height: 0.9;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .cover-subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 400;
+            font-style: italic;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .cover-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .content {
+            padding: 80px 60px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 60px;
+        }
+
+        .main-article {
+            position: relative;
+        }
+
+        .article-header {
+            margin-bottom: 40px;
+        }
+
+        .article-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .article-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .article-subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .dropcap {
+            float: left;
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            line-height: 0.8;
+            margin: 0.1em 0.1em 0 0;
+            color: #667eea;
+            font-weight: 900;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .paragraph {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            text-align: justify;
+            color: #444;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(102, 126, 234, 0.2) 0%, rgba(240, 147, 251, 0.2) 100%);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .pullquote {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-left: 6px solid #667eea;
+            padding: 30px;
+            margin: 40px 0;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #2c3e50;
+            border-radius: 0 10px 10px 0;
+            position: relative;
+        }
+
+        .pullquote::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            color: #667eea;
+            opacity: 0.3;
+        }
+
+        .music-section {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            padding: 40px;
+            margin: 40px 0;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .music-section::before {
+            content: '🎵';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        .music-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 40px 30px;
+            border-radius: 15px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .timeline-year {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .timeline-text {
+            font-size: 0.95rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .impact-box {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 40px;
+            margin: 50px 0;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .impact-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .impact-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .impact-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .impact-item::before {
+            content: '✦';
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .magazine {
+                border-radius: 10px;
+            }
+            
+            .cover {
+                padding: 50px 30px;
+            }
+            
+            .content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 50px 30px;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .dropcap {
+                font-size: 3.5rem;
+            }
+            
+            .impact-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in:nth-child(1) { animation-delay: 0.1s; }
+        .fade-in:nth-child(2) { animation-delay: 0.2s; }
+        .fade-in:nth-child(3) { animation-delay: 0.3s; }
+        .fade-in:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <div class="magazine">
+        <div class="cover">
+            <div class="issue-info">Edat Mitjana · Especial Biografies</div>
+            <h1 class="cover-title">Hildegarda<br>de Bingen</h1>
+            <div class="cover-subtitle">Una creadora excepcional en un món medieval</div>
+            <div class="cover-tag">Dona Pioneer</div>
+        </div>
+        
+        <div class="content">
+            <div class="main-article">
+                <div class="article-header fade-in">
+                    <div class="article-tag">Biografia</div>
+                    <h2 class="article-title">La veu que va trencar el silenci</h2>
+                    <div class="article-subtitle">Com una monja alemanya va revolucionar la música medieval</div>
+                </div>
+
+                <div class="fade-in">
+                    <p class="paragraph">
+                        <span class="dropcap">A</span> l'edat mitjana, gairebé tot el coneixement i la cultura estaven controlats per l'Església i pels homes. Les dones tenien molt poques oportunitats per estudiar, escriure o crear música. Però hi ha una dona que va trencar totes aquestes normes: <span class="highlight">Hildegarda de Bingen</span>, una figura que avui ens sorprèn per tot el que va aconseguir en el seu temps.
+                    </p>
+                </div>
+
+                <div class="fade-in">
+                    <p class="paragraph">
+                        Va néixer a Alemanya l'any <span class="highlight">1098</span>, en una època en què les dones no podien fer gaire més que casar-se o entrar en un convent. Ella va triar la vida religiosa, però no es va quedar només pregant. En el convent va estudiar, va escriure llibres, va parlar amb reis i papes i, sobretot, va <span class="highlight">crear música</span>.
+                    </p>
+                </div>
+
+                <div class="music-section fade-in">
+                    <h3 class="music-title">Un estil musical revolucionari</h3>
+                    <p>La música d'Hildegarda és religiosa, però molt diferent del que era habitual. A la seva època, la majoria dels cants litúrgics seguien les normes estrictes del cant gregorià, amb melodies senzilles i repetitives. En canvi, les melodies que ella va compondre són molt més lliures, amb moviments amples i plens d'expressivitat. Sembla que volguessin volar, com si busquessin connectar amb alguna cosa més gran.</p>
+                </div>
+
+                <div class="fade-in">
+                    <p class="paragraph">
+                        Va escriure <span class="highlight">més de setanta peces vocals</span>, moltes d'elles per a ser interpretades per les monges del seu convent. És important recordar que, en aquell temps, gairebé no es feia música per a veus femenines, i encara menys escrita per una dona. Això converteix Hildegarda en una <span class="highlight">figura totalment singular</span>.
+                    </p>
+                </div>
+
+                <div class="pullquote fade-in">
+                    Mentre molts compositors es limitaven a repetir fórmules conegudes, Hildegarda experimentava amb les melodies, les paraules i els significats. Les seves obres són gairebé com pintures sonores, on cada nota i cada paraula tenen un propòsit.
+                </div>
+
+                <div class="fade-in">
+                    <p class="paragraph">
+                        Un altre aspecte destacat és que Hildegarda <span class="highlight">relacionava la música amb la natura i el cos humà</span>. En alguns dels seus escrits, parlava de com la música podia curar l'ànima i portar equilibri. Això mostra que, per a ella, la música no era només per a l'església: era una manera de <span class="highlight">connectar l'ésser humà amb el món i amb si mateix</span>.
+                    </p>
+                </div>
+
+                <div class="fade-in">
+                    <p class="paragraph">
+                        A diferència de molts altres compositors medievals, Hildegarda <span class="highlight">va signar les seves obres</span>, i moltes d'elles han arribat fins avui. Això ens permet escoltar-les encara ara, més de 900 anys després. De fet, la seva música s'ha gravat en CD, s'ha interpretat en concerts moderns i fins i tot ha estat utilitzada en pel·lícules i documentals.
+                    </p>
+                </div>
+
+                <div class="impact-box">
+                    <h3 class="impact-title">Per què encara avui parlem d'ella?</h3>
+                    <ul class="impact-list">
+                        <li class="impact-item">
+                            <strong>Va obrir camí</strong> per a moltes dones artistes i pensadores.
+                        </li>
+                        <li class="impact-item">
+                            La seva música té <strong>una veu pròpia, original i diferent</strong>.
+                        </li>
+                        <li class="impact-item">
+                            Va fer <strong>de la música una eina de comunicació, espiritualitat i coneixement</strong>.
+                        </li>
+                        <li class="impact-item">
+                            Va demostrar que es pot <strong>crear des de dins del sistema</strong> però aportant una mirada diferent.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="fade-in">
+                    <p class="paragraph" style="text-align: center; font-size: 1.2rem; color: #667eea; font-weight: 500; font-style: italic; margin-top: 40px;">
+                        En una època de silenci per a moltes dones, Hildegarda va aconseguir <span class="highlight">fer-se escoltar</span>. I el més impressionant és que encara avui, segles més tard, la seva música continua <span class="highlight">emocionant i fascinant</span>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h3 class="sidebar-title">Cronologia</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">1098</div>
+                        <div class="timeline-text">Neix a Alemanya</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1136</div>
+                        <div class="timeline-text">Es converteix en abadessa</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1151</div>
+                        <div class="timeline-text">Funda el seu propi monestir</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1179</div>
+                        <div class="timeline-text">Mor deixant un llegat immens</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 10px; text-align: center;">
+                    <strong>Sabies que...?</strong>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">
+                        Hildegarda va ser canonitzada per l'Església Catòlica el 2012 i declarada Doctora de l'Església, un reconeixement molt especial.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

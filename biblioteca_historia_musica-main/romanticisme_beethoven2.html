@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludwig van Beethoven - Estudi Educatiu</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M40 40h20v20h-20z" fill="rgba(255,255,255,0.05)"/><path d="M140 60h20v20h-20z" fill="rgba(255,255,255,0.03)"/><circle cx="100" cy="150" r="10" fill="rgba(255,255,255,0.02)"/></svg>');
+        }
+        
+        .main-title {
+            font-size: 3.2em;
+            font-weight: 400;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+            font-style: italic;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .navigation {
+            background: #ecf0f1;
+            padding: 20px 40px;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            color: #2c3e50;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: 2px solid transparent;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .content-section {
+            padding: 50px 40px;
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 2.3em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border-radius: 2px;
+        }
+        
+        .intro-text {
+            font-size: 1.2em;
+            text-align: justify;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-left: 5px solid #3498db;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        
+        .main-content {
+            text-align: justify;
+        }
+        
+        .main-content p {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            text-indent: 30px;
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .sidebar-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .key-facts {
+            list-style: none;
+        }
+        
+        .key-facts li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.95em;
+        }
+        
+        .key-facts li:last-child {
+            border-bottom: none;
+        }
+        
+        .fact-label {
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .timeline-container {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .timeline-title {
+            text-align: center;
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #3498db, #2980b9);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin: 30px 0;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            animation-delay: 0.2s;
+        }
+        
+        .timeline-item:nth-child(even) {
+            animation-delay: 0.4s;
+        }
+        
+        .timeline-content {
+            width: 45%;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 0;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: 55%;
+        }
+        
+        .timeline-year {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-event {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        .timeline-description {
+            font-size: 0.95em;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .works-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .work-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .work-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            transition: left 0.5s ease;
+        }
+        
+        .work-card:hover::before {
+            left: 0;
+        }
+        
+        .work-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .work-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+        
+        .work-subtitle {
+            font-style: italic;
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .work-description {
+            color: #555;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8e6cf 0%, #dcedc8 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .quote-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .quote-text {
+            font-size: 1.4em;
+            font-style: italic;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .quote-author {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .impact-section {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+        
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .impact-item {
+            background: rgba(255,255,255,0.1);
+            padding: 30px 25px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .impact-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-5px);
+        }
+        
+        .impact-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        .impact-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            background: #34495e;
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-content {
+                width: calc(100% - 60px);
+                margin-left: 40px !important;
+            }
+            
+            .main-title {
+                font-size: 2.5em;
+            }
+            
+            .nav-links {
+                gap: 15px;
+            }
+            
+            .nav-link {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="main-title">Ludwig van Beethoven</h1>
+            <p class="subtitle">Estudi Educatiu: El Geni que va Transformar la Música</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <div class="nav-links">
+                <a href="#" class="nav-link active" onclick="showSection(event, 'introduccion')">Introducció</a>
+                <a href="#" class="nav-link" onclick="showSection(event, 'cronologia')">Cronologia</a>
+                <a href="#" class="nav-link" onclick="showSection(event, 'obres')">Obres Principals</a>
+                <a href="#" class="nav-link" onclick="showSection(event, 'impacte')">Impacte Cultural</a>
+            </div>
+        </div>
+
+        <!-- Introduction Section -->
+        <div id="introduccion" class="content-section active">
+            <h2 class="section-title">Introducció Biogràfica</h2>
+            
+            <div class="intro-text">
+                Durant el segle XIX, la figura de Beethoven va destacar com una de les més influents dins del món musical. Més enllà de les seves composicions, va ser un artista que va trencar barreres, que va lluitar contra les dificultats i que va transformar la manera com s'entenia la música fins aquell moment.
+            </div>
+
+            <div class="content-grid">
+                <div class="main-content">
+                    <p>Va néixer l'any 1770 a Bonn, Alemanya. Des de petit va demostrar tenir un gran talent per a la música i ben aviat va començar a estudiar amb mestres importants, com Haydn. Però a diferència de molts compositors del seu temps, Beethoven no es va conformar a seguir les regles. Volia innovar, experimentar, expressar sentiments profunds a través de la música. I això ho va fer amb una força i una intensitat que ningú abans havia mostrat.</p>
+
+                    <p>El que fa tan especial a Beethoven no és només la seva creativitat, sinó també la seva història personal. Amb el pas dels anys, va començar a perdre l'oïda fins a quedar gairebé sord. Tot i així, va continuar escrivint algunes de les seves obres més famoses en aquest període. <span class="highlight">Imaginar-se un compositor que no pot sentir, però que crea música que ha emocionat generacions, és una mostra de la seva genialitat i de la seva determinació.</span></p>
+
+                    <p>El seu caràcter no era fàcil. Era una persona solitària, de vegades complicada, però completament dedicada a la seva feina. La seva vida està marcada per la passió, el patiment i la recerca constant de llibertat artística.</p>
+
+                    <p>Amb Beethoven, la música va deixar de ser només entreteniment per convertir-se en un mitjà d'expressió profunda. Va obrir les portes al Romanticisme i va inspirar a molts altres compositors que vindrien després. Per això, estudiar la seva figura no és només conèixer un músic, sinó també entendre com l'art pot reflectir l'ànima humana.</p>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-title">Dades Clau</div>
+                    <ul class="key-facts">
+                        <li><span class="fact-label">Naixement:</span> 1770, Bonn</li>
+                        <li><span class="fact-label">Mort:</span> 1827, Viena</li>
+                        <li><span class="fact-label">Període:</span> Classicisme-Romanticisme</li>
+                        <li><span class="fact-label">Mestres:</span> Haydn, Albrechtsberger</li>
+                        <li><span class="fact-label">Simfonies:</span> 9 obres</li>
+                        <li><span class="fact-label">Sonates:</span> 32 per a piano</li>
+                        <li><span class="fact-label">Característica:</span> Sordesa progressiva</li>
+                        <li><span class="fact-label">Llegat:</span> Pont al Romanticisme</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <div id="cronologia" class="content-section">
+            <h2 class="section-title">Cronologia Vital</h2>
+            
+            <div class="timeline-container">
+                <div class="timeline-title">Etapes de la Vida de Beethoven</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-year">1770-1792</div>
+                            <div class="timeline-event">Formació a Bonn</div>
+                            <div class="timeline-description">Naixement i primers estudis musicals. Influència paterna i aprenentatge amb mestres locals.</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-year">1792-1802</div>
+                            <div class="timeline-event">Arribada a Viena - Primer Període</div>
+                            <div class="timeline-description">Estudis amb Haydn. Primeres composicions importants. Primers símptomes de sordesa.</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-year">1803-1814</div>
+                            <div class="timeline-event">Període Heroic</div>
+                            <div class="timeline-description">Màxima creativitat. Simfonies 3a-8a. Única òpera "Fidelio". Progressió de la sordesa.</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-year">1815-1827</div>
+                            <div class="timeline-event">Període Tardà</div>
+                            <div class="timeline-description">Últimes obres mestres. Novena Simfonia. Sordesa total. Mort a Viena.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Works Section -->
+        <div id="obres" class="content-section">
+            <h2 class="section-title">Obres Principals</h2>
+            
+            <p style="text-align: center; font-size: 1.1em; margin-bottom: 30px; color: #555;">
+                Entre les seves composicions més reconegudes hi trobem les simfonies, sonates i altres obres que han marcat la història de la música.
+            </p>
+
+            <div class="works-gallery">
+                <div class="work-card">
+                    <div class="work-title">Cinquena Simfonia</div>
+                    <div class="work-subtitle">Op. 67 (1804-1808)</div>
+                    <div class="work-description">
+                        Comença amb un ritme que s'ha fet mundialment famós i que s'interpreta sovint com una trucada del destí. L'obra exemplifica la lluita contra l'adversitat.
+                    </div>
+                </div>
+                
+                <div class="work-card">
+                    <div class="work-title">Novena Simfonia "Coral"</div>
+                    <div class="work-subtitle">Op. 125 (1822-1824)</div>
+                    <div class="work-description">
+                        Incorpora cors i veus en un moment en què això no era gens habitual. Conté l'"Himne a l'Alegria", que avui dia simbolitza la unitat europea.
+                    </div>
+                </div>
+                
+                <div class="work-card">
+                    <div class="work-title">Sonata "Claro de Luna"</div>
+                    <div class="work-subtitle">Op. 27 Nº 2 (1801)</div>
+                    <div class="work-description">
+                        Una de les sonates per a piano més conegudes, que mostra la seva sensibilitat i capacitat d'innovar en formes ja conegudes.
+                    </div>
+                </div>
+                
+                <div class="work-card">
+                    <div class="work-title">Òpera "Fidelio"</div>
+                    <div class="work-subtitle">Op. 72 (1805-1814)</div>
+                    <div class="work-description">
+                        La seva única òpera, on es defensa la llibertat i la justícia. Reflexa els ideals humanitaris del compositor.
+                    </div>
+                </div>
+                
+                <div class="work-card">
+                    <div class="work-title">Tercera Simfonia "Heroica"</div>
+                    <div class="work-subtitle">Op. 55 (1803-1804)</div>
+                    <div class="work-description">
+                        Marca l'inici del seu període heroic. Revolucionaria en extensió i contingut emocional, trenca amb les convencions clàssiques.
+                    </div>
+                </div>
+                
+                <div class="work-card">
+                    <div class="work-title">Concerts per a Piano</div>
+                    <div class="work-subtitle">Op. 15, 19, 37, 58, 73</div>
+                    <div class="work-description">
+                        Cinc concerts que mostren l'evolució del seu estil pianístic, des del classicisme vienès fins a la seva maduresa expressiva.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Impact Section -->
+        <div id="impacte" class="content-section">
+            <h2 class="section-title">Impacte Cultural i Llegat</h2>
+            
+            <div class="quote-section">
+                <div class="quote-text">
+                    "La música ha de fer saltar espurnes del cor de l'home i llàgrimes dels ulls de la dona."
+                </div>
+                <div class="quote-author">— Ludwig van Beethoven</div>
+            </div>
+
+            <div class="main-content">
+                <p>L'impacte de Beethoven en la música occidental és incalculable. No només va transformar les formes musicals existents, sinó que va establir un nou paradigma sobre el que havia de ser la música: una expressió directa de l'ànima humana.</p>
+
+                <p>La seva influència s'estén més enllà de la música clàssica. Compositors com Brahms, Wagner, i Mahler van reconèixer el seu deute amb Beethoven. Fins i tot avui, la seva música continua inspirant artistes de tots els gèneres.</p>
+
+                <p>Des del punt de vista social, Beethoven va democratitzar la música. Va ser un dels primers compositors a viure exclusivament de la seva art, sense dependre de mecenes aristocràtics. Això va obrir el camí per a futures generacions de músics independents.</p>
+            </div>
+        </div>
+
+        <!-- Final Impact Section -->
+        <div class="impact-section">
+            <h2 class="section-title" style="color: white;">El Llegat Etern</h2>
+            <div class="impact-grid">
+                <div class="impact-item">
+                    <div class="impact-icon">🎼</div>
+                    <div class="impact-title">Innovació Musical</div>
+                    <p>Va expandir les formes clàssiques i va crear noves estructures compositives</p>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">💪</div>
+                    <div class="impact-title">Superació Personal</div>
+                    <p>Un exemple de triomf sobre l'adversitat i la determinació artística</p>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">🌍</div>
+                    <div class="impact-title">Impacte Universal</div>
+                    <p>La seva música transcendeix cultures i continua emocionant avui dia</p>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">🎭</div>
+                    <div class="impact-title">Expressió Emocional</div>
+                    <p>Va obrir les portes al Romanticisme i l'expressió personal en l'art</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2024 - Estudi Educatiu sobre Ludwig van Beethoven (1770-1827)</p>
+            <p style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">Material formatiu per a l'estudi de la música clàssica</p>
+        </div>
+    </div>
+
+    <script>
+        function showSection(event, sectionId) {
+            // Prevent default link behavior
+            event.preventDefault();
+            
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update active nav link
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Scroll to top of content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Add smooth scrolling and entrance animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate timeline items when they come into view
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe timeline items and work cards
+            document.querySelectorAll('.timeline-item, .work-card, .impact-item').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

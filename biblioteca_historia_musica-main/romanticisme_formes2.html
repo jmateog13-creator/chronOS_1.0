@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formes Musicals del Romanticisme - Viatge Cronològic</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at top, #16213e 0%, #0f3460 35%, #1a1a2e 100%),
+                radial-gradient(ellipse at bottom, #533a71 0%, #6c5b7b 35%, #1a1a2e 100%);
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite ease-in-out alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 50px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .universe-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 300% 300%;
+            animation: cosmic-flow 4s ease-in-out infinite;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes cosmic-flow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #fff;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .intro-nebula {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(255, 107, 107, 0.1));
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            color: #ddd;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .timeline-container {
+            position: relative;
+            margin: 50px 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ff6b6b);
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 80px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .timeline-content:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(78, 205, 196, 0.5);
+        }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+            transform: translateY(-50%);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content::before {
+            right: -30px;
+            border-left-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .timeline-item:nth-child(even) .timeline-content::before {
+            left: -30px;
+            border-right-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 2;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .form-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .form-subtitle {
+            font-size: 1rem;
+            color: #96ceb4;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .form-description {
+            font-size: 1rem;
+            color: #ddd;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .composers-constellation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .composer-star {
+            background: linear-gradient(45deg, #45b7d1, #96ceb4);
+            color: #1a1a2e;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .composer-star:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(69, 183, 209, 0.4);
+        }
+
+        .example-galaxy {
+            background: rgba(255, 107, 107, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #ff6b6b;
+            margin-top: 15px;
+        }
+
+        .work-title {
+            font-weight: 600;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+
+        .work-description {
+            font-size: 0.9rem;
+            color: #ccc;
+            font-style: italic;
+        }
+
+        .evolution-section {
+            background: linear-gradient(135deg, rgba(69, 183, 209, 0.1), rgba(150, 206, 180, 0.1));
+            padding: 50px;
+            border-radius: 20px;
+            margin: 60px 0;
+            border: 1px solid rgba(69, 183, 209, 0.3);
+            text-align: center;
+        }
+
+        .evolution-title {
+            font-size: 2.5rem;
+            color: #45b7d1;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .evolution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .evolution-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .evolution-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(78, 205, 196, 0.5);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.2);
+        }
+
+        .evolution-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .evolution-text {
+            font-size: 1rem;
+            color: #ddd;
+            line-height: 1.6;
+        }
+
+        .conclusion-cosmos {
+            background: radial-gradient(ellipse at center, rgba(78, 205, 196, 0.2), transparent);
+            padding: 60px;
+            border-radius: 25px;
+            text-align: center;
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            margin-top: 50px;
+        }
+
+        .conclusion-title {
+            font-size: 2.5rem;
+            color: #4ecdc4;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+
+        .conclusion-text {
+            font-size: 1.2rem;
+            color: #ddd;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .highlight {
+            color: #ff6b6b;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .timeline-line {
+                left: 30px;
+            }
+            
+            .timeline-item {
+                flex-direction: column !important;
+                align-items: flex-start;
+                padding-left: 80px;
+            }
+            
+            .timeline-content {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            .timeline-content::before {
+                display: none;
+            }
+            
+            .timeline-dot {
+                left: 30px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+
+        /* Generate stars */
+        .star:nth-child(1) { top: 10%; left: 20%; width: 2px; height: 2px; animation-delay: 0s; }
+        .star:nth-child(2) { top: 20%; left: 80%; width: 3px; height: 3px; animation-delay: 0.5s; }
+        .star:nth-child(3) { top: 30%; left: 30%; width: 1px; height: 1px; animation-delay: 1s; }
+        .star:nth-child(4) { top: 40%; left: 70%; width: 2px; height: 2px; animation-delay: 1.5s; }
+        .star:nth-child(5) { top: 50%; left: 10%; width: 3px; height: 3px; animation-delay: 2s; }
+        .star:nth-child(6) { top: 60%; left: 90%; width: 2px; height: 2px; animation-delay: 0.3s; }
+        .star:nth-child(7) { top: 70%; left: 40%; width: 1px; height: 1px; animation-delay: 0.8s; }
+        .star:nth-child(8) { top: 80%; left: 60%; width: 3px; height: 3px; animation-delay: 1.3s; }
+        .star:nth-child(9) { top: 90%; left: 25%; width: 2px; height: 2px; animation-delay: 1.8s; }
+        .star:nth-child(10) { top: 15%; left: 50%; width: 1px; height: 1px; animation-delay: 2.3s; }
+    </style>
+</head>
+<body>
+    <div class="cosmic-bg"></div>
+    <div class="stars">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="universe-icon">🌌</div>
+            <h1>Formes Musicals del Romanticisme</h1>
+            <div class="subtitle">Viatge Cronològic per l'Univers Expressiu</div>
+        </header>
+
+        <div class="intro-nebula">
+            <div class="intro-text">
+                El Romanticisme va suposar un canvi important en la manera com s'organitzava la música. Les formes musicals van deixar de ser estrictes i rígides, per esdevenir més flexibles i obertes a la creativitat personal dels compositors. Aquesta nova llibertat va permetre que la música pogués expressar una gran varietat d'emocions i idees, des de la més íntima sensibilitat fins a la grandiositat i el dramatisme.
+            </div>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">🎵</div>
+                <div class="timeline-content">
+                    <div class="form-icon">🎤</div>
+                    <div class="form-title">Lied</div>
+                    <div class="form-subtitle">Cançó Solista Expressiva</div>
+                    <div class="form-description">
+                        Una cançó solista, normalment per a veu i piano, que interpretava poemes o textos amb molta expressivitat. A Alemanya va esdevenir una autèntica obra d'art, plena de sentiment i detalls musicals.
+                    </div>
+                    <div class="composers-constellation">
+                        <div class="composer-star">Franz Schubert</div>
+                        <div class="composer-star">Robert Schumann</div>
+                    </div>
+                    <div class="example-galaxy">
+                        <div class="work-title">Die schöne Müllerin - Schubert</div>
+                        <div class="work-description">Cicle de lieder que narra la història d'un moliner enamorat</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">🎼</div>
+                <div class="timeline-content">
+                    <div class="form-icon">🎶</div>
+                    <div class="form-title">Simfonia Romàntica</div>
+                    <div class="form-subtitle">Grandiositat Orquestral Expandida</div>
+                    <div class="form-description">
+                        Les obres simfòniques es van ampliar en durada i en nombre d'instruments. Es van crear simfonies més complexes que narraven històries o pintaven escenes, portant aquesta forma a un nou nivell d'expressivitat.
+                    </div>
+                    <div class="composers-constellation">
+                        <div class="composer-star">Johannes Brahms</div>
+                        <div class="composer-star">Pyotr I. Txaikovski</div>
+                        <div class="composer-star">Gustav Mahler</div>
+                    </div>
+                    <div class="example-galaxy">
+                        <div class="work-title">Simfonia núm. 6 "Patètica" - Txaikovski</div>
+                        <div class="work-description">Una simfonia que explora les profunditats de l'ànima humana</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">📖</div>
+                <div class="timeline-content">
+                    <div class="form-icon">🎨</div>
+                    <div class="form-title">Poema Simfònic</div>
+                    <div class="form-subtitle">Narrativa Musical Instrumental</div>
+                    <div class="form-description">
+                        Una forma pròpia del Romanticisme que combina música i narrativa. Busca descriure una història, un sentiment o un paisatge a través d'una sola peça instrumental que estimula la imaginació de l'oient.
+                    </div>
+                    <div class="composers-constellation">
+                        <div class="composer-star">Franz Liszt</div>
+                        <div class="composer-star">Richard Strauss</div>
+                    </div>
+                    <div class="example-galaxy">
+                        <div class="work-title">Les Preludis - Liszt</div>
+                        <div class="work-description">Reflexió musical sobre la natura de la vida humana</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">🎹</div>
+                <div class="timeline-content">
+                    <div class="form-icon">✨</div>
+                    <div class="form-title">Concert per a Piano</div>
+                    <div class="form-subtitle">Virtuosisme i Expressivitat</div>
+                    <div class="form-description">
+                        Van guanyar molta popularitat. El solista destaca amb virtuositat i expressivitat mentre és acompanyat per l'orquestra. Aquestes obres eren un aparador perfecte per als grans pianistes de l'època.
+                    </div>
+                    <div class="composers-constellation">
+                        <div class="composer-star">Frederic Chopin</div>
+                        <div class="composer-star">Franz Liszt</div>
+                        <div class="composer-star">Robert Schumann</div>
+                    </div>
+                    <div class="example-galaxy">
+                        <div class="work-title">Concert per a piano núm. 1 - Chopin</div>
+                        <div class="work-description">Obra mestra del virtuosisme romàntic</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">🎭</div>
+                <div class="timeline-content">
+                    <div class="form-icon">👑</div>
+                    <div class="form-title">Òpera Romàntica</div>
+                    <div class="form-subtitle">Drama Total Revolucionari</div>
+                    <div class="form-description">
+                        Van assolir un gran nivell de dramatització i emoció. Les òperes no només narraven històries, sinó que també transmetien idees polítiques, culturals i filosòfiques amb arguments intensos i orquestres potents.
+                    </div>
+                    <div class="composers-constellation">
+                        <div class="composer-star">Giuseppe Verdi</div>
+                        <div class="composer-star">Richard Wagner</div>
+                    </div>
+                    <div class="example-galaxy">
+                        <div class="work-title">La traviata - Verdi</div>
+                        <div class="work-description">Drama que combina passió personal i crítica social</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">🎹</div>
+                <div class="timeline-content">
+                    <div class="form-icon">💫</div>
+                    <div class="form-title">Sonata Romàntica</div>
+                    <div class="form-subtitle">Expressió Íntima Personal</div>
+                    <div class="form-description">
+                        Un espai per a l'expressió íntima, on els compositors podien plasmar el seu món interior i jugar amb la forma i la tècnica. Aquestes peces sovint mostraven canvis sobtats que reflectien la naturalesa imprevisible dels sentiments.
+                    </div>
+                    <div class="composers-constellation">
+                        <div class="composer-star">Ludwig van Beethoven</div>
+                        <div class="composer-star">Franz Schubert</div>
+                        <div class="composer-star">Frederic Chopin</div>
+                    </div>
+                    <div class="example-galaxy">
+                        <div class="work-title">Sonata "Clar de lluna" - Beethoven</div>
+                        <div class="work-description">Expressió poètica i introspectiva del sentiment romàntic</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="evolution-section">
+            <div class="evolution-title">L'Evolució de l'Expressió</div>
+            <div class="evolution-grid">
+                <div class="evolution-card">
+                    <div class="evolution-icon">🔗</div>
+                    <div class="evolution-text">
+                        <strong>Flexibilitat Formal:</strong> Les estructures rígides es van tornar més obertes i adaptables a la creativitat personal.
+                    </div>
+                </div>
+                <div class="evolution-card">
+                    <div class="evolution-icon">💭</div>
+                    <div class="evolution-text">
+                        <strong>Narrativitat:</strong> La música va començar a explicar històries i descriure paisatges de manera més directa.
+                    </div>
+                </div>
+                <div class="evolution-card">
+                    <div class="evolution-icon">🎨</div>
+                    <div class="evolution-text">
+                        <strong>Expressivitat:</strong> Cada forma va esdevenir un vehicle per expressar emocions profundes i idees personals.
+                    </div>
+                </div>
+                <div class="evolution-card">
+                    <div class="evolution-icon">🌟</div>
+                    <div class="evolution-text">
+                        <strong>Individualitat:</strong> Els compositors van desenvolupar estils personals distintius dins de cada forma musical.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="conclusion-cosmos">
+            <div class="conclusion-title">L'Univers Expressiu Romàntic</div>
+            <div class="conclusion-text">
+                El Romanticisme va transformar les formes musicals en vehicles d'expressió personal sense precedents. Cada forma va esdevenir una eina per explorar les <span class="highlight">profunditats de l'emoció humana</span>, des de la intimitat del lied fins a la grandiositat de la simfonia. Aquesta revolució formal va establir les bases de l'expressió musical moderna, permetent que la música es convertís en un llenguatge universal dels sentiments.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

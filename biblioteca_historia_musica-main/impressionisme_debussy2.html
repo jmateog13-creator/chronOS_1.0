@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Debussy - Pintor de Sons</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #2d3748;
+            background: #f7fafc;
+        }
+
+        .page {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+        }
+
+        .hero {
+            background: linear-gradient(to bottom, #4a5568, #2d3748);
+            color: white;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 200;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .hero-years {
+            font-size: 1rem;
+            opacity: 0.7;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 60px 50px;
+        }
+
+        .quote {
+            font-size: 1.4rem;
+            font-style: italic;
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #edf2f7;
+            border-radius: 10px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .article {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: justify;
+            margin-bottom: 30px;
+        }
+
+        .article p {
+            margin-bottom: 25px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fed7d7 0%, #feb2b2 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #742a2a;
+        }
+
+        .section-divider {
+            width: 60px;
+            height: 2px;
+            background: #4299e1;
+            margin: 40px auto;
+            border-radius: 1px;
+        }
+
+        .works-section {
+            background: #f7fafc;
+            padding: 40px;
+            border-radius: 12px;
+            margin: 50px 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .works-title {
+            font-size: 1.6rem;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2d3748;
+            font-weight: 400;
+        }
+
+        .works-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .work-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #4299e1;
+        }
+
+        .work-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .work-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .work-description {
+            font-size: 0.95rem;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .characteristics {
+            margin: 50px 0;
+        }
+
+        .characteristics-title {
+            font-size: 1.6rem;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2d3748;
+            font-weight: 400;
+        }
+
+        .characteristics-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .characteristic {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .characteristic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .characteristic-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+            color: #4299e1;
+        }
+
+        .characteristic-text {
+            font-size: 0.95rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .legacy {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 50px 40px;
+            text-align: center;
+            margin-top: 60px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .legacy-title {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            font-weight: 300;
+            color: white;
+        }
+
+        .legacy-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer {
+            background: #1a202c;
+            color: #a0aec0;
+            text-align: center;
+            padding: 30px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content {
+                padding: 40px 25px;
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .characteristics-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .quote {
+                font-size: 1.2rem;
+                padding: 25px;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="hero">
+            <h1>Claude Debussy</h1>
+            <div class="hero-subtitle">Pintor de Sons</div>
+            <div class="hero-years">França, 1862 - 1918</div>
+        </header>
+
+        <main class="content">
+            <div class="quote fade-in">
+                "Més que explicar històries o provocar grans emocions, Debussy volia pintar amb sons, suggerir sensacions, deixar que l'oient imaginés paisatges, moments, llums i ombres."
+            </div>
+
+            <article class="article fade-in">
+                <p>
+                    A la França de finals del segle XIX va aparèixer una figura que canviaria la història de la música: <span class="highlight">Claude Debussy</span>. El seu nom va quedar associat a un nou llenguatge musical que fugia de les regles convencionals. Més que explicar històries o provocar grans emocions com els romàntics, Debussy volia pintar amb sons, suggerir sensacions, deixar que l'oient imaginés paisatges, moments, llums i ombres.
+                </p>
+
+                <div class="section-divider"></div>
+
+                <p>
+                    Tot i que sovint se l'anomena <span class="highlight">compositor impressionista</span>, ell preferia no ser etiquetat. No obstant això, hi ha una connexió clara entre la seva música i els quadres de pintors com Monet o Renoir. Igual que aquests artistes pintaven escenes difuses plenes de color i llum, Debussy utilitzava l'harmonia, el timbre i el ritme per crear atmosferes musicals que semblaven flotar.
+                </p>
+
+                <p>
+                    Les seves composicions no seguien sempre les estructures habituals. Debussy va buscar <span class="highlight">llibertat i flexibilitat</span>. L'harmonia tradicional donava pas a escales noves, sons exòtics i combinacions inesperades. El resultat era una música que no caminava amb pas ferm com la d'altres èpoques, sinó que es deixava portar com una onada suau o una brisa.
+                </p>
+
+                <div class="section-divider"></div>
+
+                <p>
+                    L'orquestra, en mans de Debussy, es convertia en una <span class="highlight">paleta de colors</span>. Donava protagonisme a instruments com la flauta, el clarinet, l'arpa o el piano, i els feia dialogar entre ells d'una manera delicada i expressiva. El piano, especialment, va ser per a ell un camp de proves ideal, on va experimentar textures i efectes nous.
+                </p>
+            </article>
+
+            <section class="works-section fade-in">
+                <h2 class="works-title">Obres Emblemàtiques</h2>
+                <div class="works-grid">
+                    <div class="work-card">
+                        <div class="work-title">La Mer</div>
+                        <div class="work-description">
+                            Una composició que evoca el moviment i la grandesa del mar, capturant les seves diferents facetes i estats d'ànim.
+                        </div>
+                    </div>
+                    <div class="work-card">
+                        <div class="work-title">Clair de Lune</div>
+                        <div class="work-description">
+                            Una melodia de piano plena de melancolia i llum suau, que transporta l'oient a un paisatge nocturn poètic.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="characteristics fade-in">
+                <h2 class="characteristics-title">El seu Llenguatge Musical</h2>
+                <div class="characteristics-list">
+                    <div class="characteristic">
+                        <span class="characteristic-icon">🎨</span>
+                        <div class="characteristic-text">Pintar amb sons i crear atmosferes</div>
+                    </div>
+                    <div class="characteristic">
+                        <span class="characteristic-icon">🌊</span>
+                        <div class="characteristic-text">Música que flueix com onades suaus</div>
+                    </div>
+                    <div class="characteristic">
+                        <span class="characteristic-icon">🎹</span>
+                        <div class="characteristic-text">El piano com a camp d'experimentació</div>
+                    </div>
+                    <div class="characteristic">
+                        <span class="characteristic-icon">🎼</span>
+                        <div class="characteristic-text">Harmonia innovadora i sons exòtics</div>
+                    </div>
+                </div>
+            </section>
+
+            <article class="article fade-in">
+                <p>
+                    Entre les seves obres més reconegudes hi ha peces com <em>La Mer</em>, que evoca el moviment i la grandesa del mar, o <em>Clair de Lune</em>, una melodia de piano plena de melancolia i llum suau. Però Debussy no només va escriure música bonica; també va ser un <span class="highlight">innovador valent</span>, capaç d'inspirar tota una generació de músics i d'obrir nous camins en el món sonor.
+                </p>
+            </article>
+        </main>
+
+        <section class="legacy fade-in">
+            <h2 class="legacy-title">Llegat Etern</h2>
+            <div class="legacy-text">
+                Va morir el 1918, però el seu llegat continua viu. Gràcies a ell, la música es va atrevir a mirar cap a altres cultures, a deixar-se portar per l'instint i a explorar l'invisible. <strong>Debussy no només va compondre; va somiar en sons.</strong>
+            </div>
+        </section>
+
+        <footer class="footer">
+            Un homenatge al compositor que va canviar la música per sempre
+        </footer>
+    </div>
+
+    <script>
+        // Animacions d'aparició
+        function initScrollAnimations() {
+            const elements = document.querySelectorAll('.fade-in');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            elements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        // Efectes hover per targetes
+        function initCardEffects() {
+            const cards = document.querySelectorAll('.work-card, .characteristic');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        }
+
+        // Destacar highlights dinàmicament
+        function initHighlights() {
+            const highlights = document.querySelectorAll('.highlight');
+            
+            highlights.forEach(highlight => {
+                highlight.addEventListener('mouseenter', function() {
+                    this.style.background = 'linear-gradient(120deg, #fbb6ce 0%, #f687b3 100%)';
+                    this.style.transform = 'scale(1.05)';
+                });
+                
+                highlight.addEventListener('mouseleave', function() {
+                    this.style.background = 'linear-gradient(120deg, #fed7d7 0%, #feb2b2 100%)';
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        }
+
+        // Efecte de typing per al títol
+        function typewriterEffect() {
+            const title = document.querySelector('.hero h1');
+            const text = 'Claude Debussy';
+            title.textContent = '';
+            
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    title.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 120);
+                }
+            }
+            
+            setTimeout(type, 800);
+        }
+
+        // Scroll suau automàtic
+        function smoothScrolling() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Inicialització
+        document.addEventListener('DOMContentLoaded', function() {
+            initScrollAnimations();
+            initCardEffects();
+            initHighlights();
+            smoothScrolling();
+        });
+
+        // Efecte typing quan es carrega la pàgina
+        window.addEventListener('load', typewriterEffect);
+
+        // Efecte parallax suau
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            
+            if (hero) {
+                hero.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frédéric Chopin - El Poeta del Piano</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            line-height: 1.8;
+            color: #2d3748;
+            background: #0f0f23;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            box-shadow: 0 0 100px rgba(79, 172, 254, 0.1);
+        }
+
+        .ornamental-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid;
+            border-image: linear-gradient(45deg, #4facfe, #00f2fe, #4facfe) 1;
+            pointer-events: none;
+        }
+
+        .header {
+            text-align: center;
+            padding: 80px 40px 60px;
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(79, 172, 254, 0.1) 0%, transparent 70%);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4facfe, transparent);
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 0 30px rgba(79, 172, 254, 0.5);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 30px rgba(79, 172, 254, 0.5); }
+            to { text-shadow: 0 0 40px rgba(79, 172, 254, 0.8), 0 0 60px rgba(79, 172, 254, 0.3); }
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: #a0aec0;
+            font-style: italic;
+            margin-bottom: 30px;
+        }
+
+        .years {
+            font-size: 1.1rem;
+            color: #4facfe;
+            font-weight: 600;
+            letter-spacing: 3px;
+        }
+
+        .content {
+            padding: 0 60px 80px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, #4facfe, #00f2fe);
+            border-radius: 2px;
+        }
+
+        .section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #4facfe;
+            margin-bottom: 25px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .section h2::after {
+            content: '♪';
+            position: absolute;
+            right: 0;
+            top: 0;
+            color: #00f2fe;
+            font-size: 1.2em;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .section p {
+            font-size: 1.2rem;
+            line-height: 2;
+            color: #e2e8f0;
+            text-align: justify;
+            margin-bottom: 20px;
+            padding-left: 20px;
+            position: relative;
+            opacity: 0;
+            transform: translateX(-30px);
+            animation: slideIn 1s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .highlight {
+            color: #4facfe;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+        }
+
+        .quote-section {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 60px 0;
+            text-align: center;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .quote-section::before,
+        .quote-section::after {
+            content: '"';
+            font-size: 6rem;
+            color: rgba(79, 172, 254, 0.2);
+            position: absolute;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .quote-section::before {
+            top: -10px;
+            left: 20px;
+        }
+
+        .quote-section::after {
+            bottom: -40px;
+            right: 20px;
+            transform: rotate(180deg);
+        }
+
+        .quote-text {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #ffffff;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        .music-forms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+            padding-left: 20px;
+        }
+
+        .music-form {
+            background: linear-gradient(145deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.05));
+            border: 1px solid rgba(79, 172, 254, 0.2);
+            border-radius: 15px;
+            padding: 25px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .music-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.2);
+            border-color: rgba(79, 172, 254, 0.5);
+        }
+
+        .music-form h3 {
+            color: #4facfe;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .music-form p {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            padding: 0;
+            margin: 0;
+            opacity: 1;
+            transform: none;
+            animation: none;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 50px 0;
+            padding-left: 50px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #4facfe, #00f2fe);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: #4facfe;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.5);
+        }
+
+        .timeline-date {
+            color: #4facfe;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .floating-notes {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            color: rgba(79, 172, 254, 0.1);
+            font-size: 2rem;
+            animation: floatUp 15s linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .content {
+                padding: 0 30px 50px;
+            }
+            
+            .section::before {
+                left: -15px;
+            }
+            
+            .timeline {
+                padding-left: 30px;
+            }
+            
+            .music-forms {
+                grid-template-columns: 1fr;
+                padding-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    
+    <div class="container">
+        <div class="ornamental-border"></div>
+        
+        <div class="header">
+            <h1>Frédéric Chopin</h1>
+            <div class="subtitle">El Poeta del Piano</div>
+            <div class="years">1810 - 1849</div>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>Els Primers Anys</h2>
+                <p>En plena època romàntica, en un segle XIX ple de revolucions i canvis, va aparèixer un músic capaç d'expressar emocions profundes només amb les tecles d'un piano. Aquest compositor es deia <span class="highlight">Frédéric Chopin</span>, nascut a Polònia l'any 1810, i és considerat una de les figures més representatives de la música per a piano de tots els temps.</p>
+                
+                <p>Des de ben petit, Chopin ja destacava pel seu talent. Amb només uns anys de vida, ja tocava i improvisava melodies que impressionaven als adults. Va créixer envoltat de música i cultura, i de seguida es va convertir en una promesa musical.</p>
+            </div>
+
+            <div class="section">
+                <h2>L'Exili a París</h2>
+                <p>Però la situació política del seu país el va obligar a viure fora, i es va instal·lar a <span class="highlight">París</span>, una ciutat molt activa culturalment. Allà, tot i estar lluny de casa, va trobar el seu espai com a artista.</p>
+            </div>
+
+            <div class="section">
+                <h2>El Mestre del Piano</h2>
+                <p>Tot i que altres compositors escrivien per a grans orquestres o òperes, Chopin va centrar-se gairebé exclusivament en el <span class="highlight">piano</span>. No només coneixia a fons l'instrument, sinó que també el feia servir per explicar històries, emocions i records. El seu estil és molt expressiu, ple de detalls i de canvis subtils de ritme, intensitat i caràcter.</p>
+            </div>
+
+            <div class="quote-section">
+                <div class="quote-text">
+                    Quan escoltem una obra seva, sembla que ens parli directament, com si fos un diàleg íntim.
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Les Seves Composicions</h2>
+                <p>La majoria de les peces que va escriure són curtes però molt intenses. Totes tenen en comú una gran delicadesa i un toc molt personal.</p>
+                
+                <div class="music-forms">
+                    <div class="music-form">
+                        <h3>Nocturns</h3>
+                        <p>Melodies suaus i tristes</p>
+                    </div>
+                    <div class="music-form">
+                        <h3>Valsos</h3>
+                        <p>Recorden festes elegants</p>
+                    </div>
+                    <div class="music-form">
+                        <h3>Mazurques</h3>
+                        <p>Danses populars poloneses</p>
+                    </div>
+                    <div class="music-form">
+                        <h3>Estudis</h3>
+                        <p>Milloren la tècnica pianística</p>
+                    </div>
+                    <div class="music-form">
+                        <h3>Preludis</h3>
+                        <p>Peces breus i expressives</p>
+                    </div>
+                    <div class="music-form">
+                        <h3>Balades</h3>
+                        <p>Narracions musicals</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>L'Intèrpret Íntim</h2>
+                <p>Com a intèrpret, Chopin no buscava grans escenaris ni públics massius. Li agradava tocar en <span class="highlight">sales petites</span>, amb poques persones, on el silenci i la concentració li permetien expressar-se millor. Era tímid, reservat i sovint malalt, però quan es posava davant del piano, tota la seva personalitat es transformava en música.</p>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">1810</div>
+                    <p>Naixement a Polònia</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">1817</div>
+                    <p>Primeres composicions</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">1831</div>
+                    <p>Arribada a París</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">1849</div>
+                    <p>Mort als 39 anys</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>L'Herència Eterna</h2>
+                <p>Va viure només <span class="highlight">39 anys</span>, però va deixar una obra molt valuosa. Avui dia, les seves composicions encara s'interpreten arreu del món, i molts estudiants de piano el tenen com a referent. Amb la seva música, Chopin va saber transmetre tot allò que no es pot dir amb paraules: els sentiments més personals, la nostàlgia de la seva terra, l'amor, la tristesa i fins i tot l'esperança.</p>
+                
+                <p>Chopin és un exemple clar del que significa el <span class="highlight">Romanticisme</span>: donar importància a les emocions, a la llibertat artística i a l'expressió personal. Va crear un estil únic, reconeixible, que combina sensibilitat i tècnica. Per això, tot i el pas dels anys, continua emocionant a qui l'escolta.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-notes">♪</div>
+    <div class="floating-notes" style="left: 20%; animation-delay: -3s;">♫</div>
+    <div class="floating-notes" style="left: 40%; animation-delay: -6s;">♪</div>
+    <div class="floating-notes" style="left: 60%; animation-delay: -9s;">♬</div>
+    <div class="floating-notes" style="left: 80%; animation-delay: -12s;">♫</div>
+
+    <script>
+        // Crear estrelles de fons
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            const numStars = 100;
+            
+            for (let i = 0; i < numStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = Math.random() * 3 + 1 + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Animació d'entrada per seccions
+        function animateSections() {
+            const sections = document.querySelectorAll('.section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        const paragraphs = entry.target.querySelectorAll('p');
+                        paragraphs.forEach((p, pIndex) => {
+                            setTimeout(() => {
+                                p.style.animationDelay = `${pIndex * 0.3}s`;
+                                p.style.opacity = '1';
+                                p.style.transform = 'translateX(0)';
+                            }, pIndex * 200);
+                        });
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            sections.forEach(section => observer.observe(section));
+        }
+
+        // Efectes hover per les formes musicals
+        function setupMusicFormEffects() {
+            const musicForms = document.querySelectorAll('.music-form');
+            musicForms.forEach(form => {
+                form.addEventListener('mouseenter', () => {
+                    form.style.background = 'linear-gradient(145deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.1))';
+                });
+                
+                form.addEventListener('mouseleave', () => {
+                    form.style.background = 'linear-gradient(145deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.05))';
+                });
+            });
+        }
+
+        // Inicialitzar tot
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            animateSections();
+            setupMusicFormEffects();
+        });
+
+        // Efecte de parallax suau per les notes flotants
+        document.addEventListener('mousemove', (e) => {
+            const notes = document.querySelectorAll('.floating-notes');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            notes.forEach((note, index) => {
+                const speed = (index + 1) * 0.5;
+                note.style.transform += ` translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

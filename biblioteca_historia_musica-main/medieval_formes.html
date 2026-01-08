@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les formes musicals de l'edat mitjana</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '♪ ♫ ♪ ♫ ♪';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            opacity: 0.3;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .intro {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #e67e22;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .religious {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-left: 5px solid #3498db;
+        }
+
+        .secular {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-left: 5px solid #e74c3c;
+        }
+
+        .conclusion {
+            background: linear-gradient(135deg, #c3cfe2 0%, #c3cfe2 100%);
+            border-left: 5px solid #9b59b6;
+        }
+
+        .section-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        .musical-form {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            border-left: 3px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .musical-form:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-width: 6px;
+        }
+
+        .form-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-title::before {
+            content: '•';
+            color: #e74c3c;
+            font-size: 1.5em;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .summary-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .summary-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .summary-item strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .section-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Les formes musicals de l'edat mitjana</h1>
+            <div class="subtitle">com s'organitzava la música?</div>
+        </div>
+        
+        <div class="content">
+            <div class="intro">
+                <p>A l'edat mitjana, la música no només era sons i melodies: també seguia unes <span class="highlight">formes</span>, és a dir, <span class="highlight">estructures que donaven ordre a les composicions</span>. Aquestes formes podien ser senzilles o molt elaborades, i servien per ajudar els músics a interpretar, repetir i entendre millor la música.</p>
+                
+                <p>Durant aquest període, hi havia una gran diferència entre les formes <span class="highlight">religioses</span> (usades a l'Església) i les <span class="highlight">profanes</span> (usades fora de l'àmbit religiós). En aquest text veurem les més importants de cada tipus.</p>
+            </div>
+
+            <div class="section religious">
+                <h2 class="section-title">
+                    <span class="emoji">🎵</span>
+                    Formes musicals religioses
+                </h2>
+                
+                <div class="musical-form">
+                    <h3 class="form-title">Cant gregorià</h3>
+                    <p>És la forma musical més coneguda de l'edat mitjana. Es tracta de <span class="highlight">cants vocals monòdics</span> (una sola melodia) que es feien en llatí i que s'usaven en les cerimònies de l'Església, sobretot en misses i oracions. Les melodies eren <span class="highlight">lliures</span>, sense compàs fix, i seguien el ritme del text. S'utilitzaven per <span class="highlight">crear un ambient de calma i espiritualitat</span>.</p>
+                </div>
+                
+                <div class="musical-form">
+                    <h3 class="form-title">Seqüència</h3>
+                    <p>Era un tipus especial de cant religiós que s'afegia a la missa en moments concrets. A diferència del cant gregorià, la seqüència tenia <span class="highlight">una estructura més clara i repetitiva</span>, amb frases que es repetien dues en dues (AABBCC…). Això la feia més fàcil de recordar i cantar.</p>
+                </div>
+                
+                <div class="musical-form">
+                    <h3 class="form-title">Organum</h3>
+                    <p>Quan es va començar a fer música polifònica, una de les primeres formes va ser l'organum. Consistia en <span class="highlight">agafar un cant gregorià i afegir-hi una altra veu</span>, que cantava una melodia diferent a sobre. Els primers organums eren senzills, però amb compositors com <span class="highlight">Léonin o Pérotin</span>, es van fer més complexos i amb més veus.</p>
+                </div>
+                
+                <div class="musical-form">
+                    <h3 class="form-title">Motet</h3>
+                    <p>És una forma religiosa <span class="highlight">polifònica</span> que va aparèixer cap al segle XIII. Era molt més elaborada: cada veu podia tenir <span class="highlight">un text diferent</span>, i fins i tot en idiomes diferents. El motet era utilitzat tant dins com fora del culte religiós, i va ser una forma molt important durant tota la baixa edat mitjana.</p>
+                </div>
+            </div>
+
+            <div class="section secular">
+                <h2 class="section-title">
+                    <span class="emoji">🎶</span>
+                    Formes musicals profanes
+                </h2>
+                
+                <div class="musical-form">
+                    <h3 class="form-title">Cançó de trobador (o canso)</h3>
+                    <p>Els <span class="highlight">trobadors</span> (al sud de França i a Catalunya) i els <span class="highlight">trouvères</span> (al nord) composaven cançons en llengua vulgar, no en llatí. Les seves cançons parlaven <span class="highlight">d'amor, de natura, de guerra o de la vida cortesana</span>. La forma solia ser <span class="highlight">estròfica</span>, és a dir, cada estrofa tenia la mateixa melodia. Aquestes cançons sovint s'acompanyaven d'instruments.</p>
+                </div>
+                
+                <div class="musical-form">
+                    <h3 class="form-title">Balada</h3>
+                    <p>Tot i que avui en dia pensem en una balada com una cançó lenta, a l'edat mitjana era una forma musical amb <span class="highlight">estructura fixa</span> i sovint dansable. Tenia repeticions regulars i era molt utilitzada pels joglars i músics de carrer.</p>
+                </div>
+                
+                <div class="musical-form">
+                    <h3 class="form-title">Estampida</h3>
+                    <p>Era una <span class="highlight">forma instrumental</span> (una de les poques documentades) pensada per al ball. Tenia un ritme viu i una estructura amb repeticions i variacions. Es creu que es tocava en festes i celebracions.</p>
+                </div>
+            </div>
+
+            <div class="section conclusion">
+                <h2 class="section-title">Per què són importants aquestes formes?</h2>
+                <p>Gràcies a aquestes estructures, la música de l'edat mitjana <span class="highlight">no era improvisada del tot</span>. Encara que molts músics tocaven de memòria, les formes ajudaven a <span class="highlight">organitzar les melodies, repetir patrons i transmetre el coneixement musical</span>. Algunes d'aquestes formes, com el <span class="highlight">motet</span> o l'<span class="highlight">organum</span>, van ser les bases de formes més avançades que apareixerien en el Renaixement i més endavant.</p>
+                
+                <p>La música medieval pot semblar senzilla a primera vista, però aquestes formes demostren que ja hi havia <span class="highlight">molta organització, creativitat i varietat</span>. Entendre com funcionaven ens ajuda a <span class="highlight">valorar millor l'evolució de la música al llarg del temps</span>.</p>
+            </div>
+
+            <div class="summary-box">
+                <h2 class="summary-title">Resum de les formes més destacades</h2>
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <strong>Religioses:</strong>
+                        cant gregorià, seqüència, organum, motet.
+                    </div>
+                    <div class="summary-item">
+                        <strong>Profanes:</strong>
+                        cançó de trobador, balada, estampida.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
