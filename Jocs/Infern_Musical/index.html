@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Infern Musical de Dant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f0f0f;
+            --bg-panel: #1a0505;
+            /* Reddish black */
+            --text-main: #ffcccc;
+            --red-blood: #8a0303;
+            --red-bright: #ff3333;
+            --hell-fire: #ff4500;
+            /* Replaces Gold */
+            --font-gothic: 'Cinzel', serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            background-color: #000;
+            color: var(--text-main);
+            font-family: var(--font-gothic);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- LAYOUT --- */
+        #game-container {
+            width: 1400px;
+            height: 900px;
+            background: var(--bg-panel);
+            border: 5px solid var(--red-blood);
+            box-shadow: 0 0 80px rgba(138, 3, 3, 0.6), inset 0 0 150px rgba(0, 0, 0, 0.9);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-image 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Ambient Fire Effect */
+        #fire-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to top, rgba(138, 3, 3, 0.4), transparent);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes burn {
+            0% {
+                opacity: 0.3;
+                transform: scaleY(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scaleY(1.2);
+            }
+
+            100% {
+                opacity: 0.3;
+                transform: scaleY(1);
+            }
+        }
+
+        #fire-overlay::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: rgba(255, 50, 0, 0.1);
+            animation: burn 3s infinite ease-in-out;
+        }
+
+        /* --- HEADER & HUD --- */
+        #header {
+            height: 100px;
+            border-bottom: 3px solid var(--red-blood);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 50px;
+            background: rgba(40, 0, 0, 0.8);
+            z-index: 20;
+            backdrop-filter: blur(5px);
+        }
+
+        #level-title {
+            font-size: 32px;
+            color: var(--hell-fire);
+            text-shadow: 0 0 10px var(--red-blood);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        #controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #lives-container {
+            font-size: 40px;
+            filter: drop-shadow(0 0 5px var(--red-bright));
+        }
+
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+        }
+
+        input[type=range] {
+            accent-color: var(--red-bright);
+            width: 150px;
+        }
+
+        /* --- CONTENT AREA --- */
+        #content-area {
+            flex: 1;
+            position: relative;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            /* Move content up to leave room for dialogue */
+            text-align: center;
+            z-index: 20;
+        }
+
+        /* NPC AVATAR MODE - Center Screen */
+        #npc-visual-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        .npc-avatar {
+            font-size: 150px;
+            /* Placeholder size, replace with img */
+            width: 250px;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            border: 6px solid var(--red-blood);
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 30px var(--red-blood));
+            animation: float 3s infinite ease-in-out;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .npc-name {
+            font-size: 48px;
+            color: var(--hell-fire);
+            text-shadow: 2px 2px 0 #000, 0 0 20px var(--red-blood);
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 40px;
+            border: 2px solid var(--red-blood);
+        }
+
+        /* QUESTION MODE */
+        #quiz-container {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 40px;
+        }
+
+        #question-display {
+            font-size: 36px;
+            margin-bottom: 40px;
+            color: #fff;
+            background: rgba(20, 0, 0, 0.7);
+            padding: 30px;
+            border: 2px solid var(--red-blood);
+            box-shadow: 0 0 20px rgba(138, 3, 3, 0.4);
+        }
+
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .option-btn {
+            background: rgba(30, 0, 0, 0.95);
+            border: 2px solid #555;
+            color: #e0e0e0;
+            padding: 30px;
+            font-family: var(--font-gothic);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--hell-fire);
+            background: rgba(60, 0, 0, 0.95);
+            color: #fff;
+            box-shadow: 0 0 15px var(--red-blood);
+            transform: scale(1.02);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* --- RPG DIALOGUE BOX (Bottom) --- */
+        #rpg-panel {
+            min-height: 220px;
+            background: rgba(10, 0, 0, 0.98);
+            border-top: 5px solid var(--red-blood);
+            display: flex;
+            padding: 30px;
+            align-items: flex-start;
+            z-index: 30;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        #speaker-portrait {
+            width: 150px;
+            height: 150px;
+            background: #2a0505;
+            border: 3px solid var(--red-blood);
+            margin-right: 30px;
+            background-size: cover;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            box-shadow: inset 0 0 20px #000;
+        }
+
+        #dialogue-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #speaker-name {
+            color: var(--hell-fire);
+            font-size: 26px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--red-blood);
+        }
+
+        #dialogue-text {
+            color: #fff;
+            font-size: 22px;
+            line-height: 1.6;
+        }
+
+        #continue-indicator {
+            align-self: flex-end;
+            color: var(--hell-fire);
+            animation: blink 1s infinite;
+            display: none;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 20px;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #start-screen {
+            background-image: url('img/fonspantallainicial.jpg');
+        }
+
+        .title-main {
+            font-size: 70px;
+            color: var(--red-blood);
+            text-shadow: 0 0 20px #000;
+            margin-bottom: 20px;
+        }
+
+        .btn-action {
+            margin-top: 40px;
+            padding: 20px 60px;
+            background: transparent;
+            border: 3px solid var(--hell-fire);
+            color: var(--hell-fire);
+            font-family: var(--font-gothic);
+            font-size: 30px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-action:hover {
+            background: var(--red-blood);
+            color: #fff;
+            box-shadow: 0 0 30px var(--red-blood);
+            transform: scale(1.05);
+        }
+
+        /* ANIMATIONS */
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+        }
+
+        .shake-anim {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        /* Helpers */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+        <div id="fire-overlay"></div>
+
+        <div id="header">
+            <div id="level-title">CERCLE I: EL LIMB</div>
+            <div id="controls">
+                <div id="volume-control">
+                    🔈 <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"
+                        oninput="setVolume(this.value)"> 🔊
+                </div>
+                <div id="lives-container">🕯️🕯️🕯️</div>
+            </div>
+        </div>
+
+        <div id="content-area">
+            <!-- NPC VISUAL -->
+            <div id="npc-visual-container">
+                <div id="npc-avatar" class="npc-avatar">👤</div>
+                <div id="npc-name-display" class="npc-name">NPC Name</div>
+            </div>
+
+            <!-- QUIZ VISUAL -->
+            <div id="quiz-container">
+                <!-- Question is asked by the Voice, so displayed in dialogue, but maybe a visual reminder here? 
+                     Or stick to standard quiz format but the Voice speaks?
+                     Let's keep the question text here for clarity, voice will 'speak' it in text box.
+                -->
+                <div id="question-display">En espera...</div>
+                <div id="options-grid"></div>
+            </div>
+        </div>
+
+        <!-- RPG DIALOGUE PANEL -->
+        <div id="rpg-panel">
+            <div id="speaker-portrait">👁️</div>
+            <div id="dialogue-content">
+                <div id="speaker-name">Veu Misteriosa</div>
+                <div id="dialogue-text">Benvingut a l'Infern...</div>
+                <div id="continue-indicator" onclick="advanceDialogue()">▼ CONTINUAR</div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1 class="title-main">L'INFERN MUSICAL</h1>
+            <p style="font-size: 24px; color: #888;">La Divina Comèdia de Dant</p>
+            <p style="max-width: 600px; margin-top: 30px; line-height: 1.5;">Perdut en la selva obscura, has de baixar
+                els 6 Cercles de la Història per purificar la teva ànima.</p>
+            <button class="btn-action" onclick="startGame()">COMENÇAR VIATGE</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen" style="display: none; background: #000;">
+            <h1 class="title-main" style="color: grey;">ABANDON ALL HOPE</h1>
+            <p id="game-over-msg" style="font-size: 24px;">La teva ànima s'ha apagat per sempre.</p>
+            <div style="font-size: 80px; margin: 20px;">☠️</div>
+            <button class="btn-action" onclick="location.reload()">REINTENTAR</button>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="screen" style="display: none;">
+            <h1 class="title-main" style="color: var(--hell-fire); text-shadow: none;">PARADISE FOUND</h1>
+            <p style="font-size: 24px; color: #333;">Has derrotat Cacofonia i recuperat l'Harmonia.</p>
+            <div style="font-size: 80px; margin: 20px;">😇</div>
+            <button class="btn-action" style="border-color: #000; color: #000;" onclick="location.reload()">NOVA
+                VIDA</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA & ASSETS ---
+        // Placeholders or paths if user processes prompts
+        const ASSETS = {
+            narrator: "url('img/veumisteriosa.jpg')",
+            circles: [
+                { bg: "url('img/fonsmitjana.jpg')", npc_img: "url('img/bossmitjana.jpg')", music: "audio/mitjana.m4a" },
+                { bg: "url('img/fonsrenaixement.jpg')", npc_img: "url('img/bossrenaixement.jpg')", music: "audio/renaixement.m4a" },
+                { bg: "url('img/fonsbarroc.jpg')", npc_img: "url('img/bossbarroc.jpg')", music: "audio/barroc.m4a" },
+                { bg: "url('img/fonsclassic.jpg')", npc_img: "url('img/bossclassic.jpg')", music: "audio/classicisme.m4a" },
+                { bg: "url('img/fonsromanticisme.jpg')", npc_img: "url('img/bossromantic.jpg')", music: "audio/romanticisme.m4a" },
+                { bg: "url('img/fonssegleXX.jpg')", npc_img: "url('img/bosssegleXX.jpg')", music: "audio/segleXX.m4a" },
+                // Boss
+                { bg: "url('img/fonsfinal.jpg')", npc_img: "url('img/bossfinal.jpg')", music: "audio/bossfinal.m4a" }
+            ],
+            mainTheme: "audio/temainicial.m4a"
+        };
+
+        const bgAudio = new Audio();
+        bgAudio.loop = true;
+        bgAudio.volume = 0.5;
+
+        const MYSTERY_VOICE = {
+            name: "Veu Misteriosa",
+            skin: ASSETS.narrator,
+            correct: [
+                "Correcte... la teva ànima s'eleva.",
+                "Ben fet, mortal.",
+                "La veritat et fa lliure.",
+                "Una resposta pura."
+            ],
+            wrong: [
+                "Ignorant! Això et costarà car.",
+                "Fals! Sents el foc?",
+                "Decepció absoluta...",
+                "No saps res de música, ànima perduda."
+            ]
+        };
+
+        const INFERNO_DATA = [
+            {
+                id: "circle1",
+                name: "CERCLE I: EL LIMB MEDIEVAL",
+                npc: { name: "El Monjo sense Veu", dialogue: "Benvingut... Aquí estem condemnats al silenci. Només la veu pura pot parlar amb Déu. Els instruments són del diable..." },
+                pool: [
+                    { q: "On vivien els monjos?", options: ["Al Monestir", "Al Castell", "Al Mercat"], correct: 0 },
+                    { q: "Quin idioma usaven per cantar?", options: ["Llatí", "Català", "Francès"], correct: 0 },
+                    { q: "Textura del Cant Gregorià?", options: ["Monodia (una veu)", "Polifonia", "Soroll"], correct: 0 },
+                    { q: "Els monjos usaven instruments?", options: ["No, A Cappella", "Sí, guitarres", "Sí, pianos"], correct: 0 },
+                    { q: "Músics dels castells?", options: ["Trobadors", "Monjos", "DJs"], correct: 0 },
+                    { q: "Tema dels Trobadors?", options: ["Amor i cavallers", "Déu", "Política"], correct: 0 },
+                    { q: "Primera compositora famosa?", options: ["Hildegard von Bingen", "Madonna", "Maria"], correct: 0 },
+                    { q: "Instrument amb forma de pera?", options: ["Llaüt", "Violí", "Piano"], correct: 0 },
+                    { q: "Idioma dels Trobadors?", options: ["Llengua del poble", "Llatí", "Anglès"], correct: 0 },
+                    { q: "Centre de la vida medieval?", options: ["Déu (Teocentrisme)", "Diners", "L'Home"], correct: 0 }
+                ]
+            },
+            {
+                id: "circle2",
+                name: "CERCLE II: LA VANITAT RENAIXENTISTA",
+                npc: { name: "L'Humanista Caigut", dialogue: "Vam creure que l'Home era el centre de tot... Vam oblidar la humilitat. La nostra ciència i impremta ens van fer superbs." },
+                pool: [
+                    { q: "Què és l'Humanisme?", options: ["L'Home és el centre", "Déu és el centre", "La Natura mana"], correct: 0 },
+                    { q: "Invent per fer llibres ràpid?", options: ["Impremta", "Ploma", "Ordinador"], correct: 0 },
+                    { q: "Què és la Polifonia?", options: ["Moltes veus alhora", "Una veu", "Silenci"], correct: 0 },
+                    { q: "Veu de dona més aguda?", options: ["Soprano", "Contralt", "Tenor"], correct: 0 },
+                    { q: "Superstar religiosa?", options: ["Palestrina", "Mozart", "Elvis"], correct: 0 },
+                    { q: "On treballava Palestrina?", options: ["Al Vaticà", "A París", "A Londres"], correct: 0 },
+                    { q: "Forma religiosa principal?", options: ["La Missa", "L'Òpera", "El Rock"], correct: 0 },
+                    { q: "Veu d'home més greu?", options: ["Baix", "Tenor", "Soprano"], correct: 0 },
+                    { q: "Música profana tema?", options: ["Amor i diversió", "Déu", "Mort"], correct: 0 },
+                    { q: "Instruments profans?", options: ["Llaüt i flauta", "Guitarra elèctrica", "Cap"], correct: 0 }
+                ]
+            },
+            {
+                id: "circle3",
+                name: "CERCLE III: L'OR DEL BARROC",
+                npc: { name: "El Comte Ofegat", dialogue: "Massa or... massa ornaments... No puc respirar! El contrast fort i fluix em torna boig. Necessito equilibri!" },
+                pool: [
+                    { q: "Com és l'art Barroc?", options: ["Recarregat i luxós", "Senzill", "Buit"], correct: 0 },
+                    { q: "Què busca el Barroc?", options: ["Contrast (Fort/Fluix)", "Calma", "Igualtat"], correct: 0 },
+                    { q: "Teatre cantat?", options: ["Òpera", "Missa", "Concert"], correct: 0 },
+                    { q: "Instrument rei (teclat)?", options: ["Clavicèmbal", "Piano", "Orgue"], correct: 0 },
+                    { q: "Compositor mestre (família)?", options: ["J.S. Bach", "Vivaldi", "Mozart"], correct: 0 },
+                    { q: "Instrument de Vivaldi?", options: ["Violí", "Flauta", "Trompeta"], correct: 0 },
+                    { q: "Obra de Vivaldi?", options: ["Les 4 Estacions", "La 9a Simfonia", "Rèquiem"], correct: 0 },
+                    { q: "Base rítmica constant?", options: ["Baix Continu", "Solo", "Silenci"], correct: 0 },
+                    { q: "Palau del Rei de França?", options: ["Versalles", "Buckingham", "Escorial"], correct: 0 },
+                    { q: "Ritme Barroc?", options: ["Motor (no para)", "Lent", "Parat"], correct: 0 }
+                ]
+            },
+            {
+                id: "circle4",
+                name: "CERCLE IV: EL GEL DE LA RAÓ",
+                npc: { name: "L'Arquitecte Fred", dialogue: "Tot ha de ser perfecte. Raó. Ordre. Estructura. No permetis cap error emocional. Viena ens observa." },
+                pool: [
+                    { q: "Important al Classicisme?", options: ["Raó i Ordre", "Sentiments", "Luxe"], correct: 0 },
+                    { q: "Com sona la música?", options: ["Equilibrada i elegant", "Caòtica", "Forta"], correct: 0 },
+                    { q: "Substitut del Clavicèmbal?", options: ["Piano", "Arpa", "Guitarra"], correct: 0 },
+                    { q: "Per què Piano-Forte?", options: ["Fa fort i fluix", "Pesa molt", "És car"], correct: 0 },
+                    { q: "Capital musical?", options: ["Viena", "París", "Roma"], correct: 0 },
+                    { q: "Nen prodigi?", options: ["Mozart", "Haydn", "Beethoven"], correct: 0 },
+                    { q: "Orquestra clàssica?", options: ["Ordenada per seccions", "Desordenada", "Petita"], correct: 0 },
+                    { q: "Pare de la Simfonia?", options: ["Haydn", "Bach", "Mozart"], correct: 0 },
+                    { q: "Textura principal?", options: ["Melodia Acompanyada", "Polifonia", "Monodia"], correct: 0 },
+                    { q: "Estil de Mozart?", options: ["Elegant", "Fosc", "Trist"], correct: 0 }
+                ]
+            },
+            {
+                id: "circle5",
+                name: "CERCLE V: LA TEMPESTA ROMÀNTICA",
+                npc: { name: "L'Esperit Turmentat", dialogue: "Ah! El dolor! La passió! El meu cor es trenca com una tempesta. La raó no serveix de res aquí, només el sentiment!" },
+                pool: [
+                    { q: "Més important?", options: ["Sentiments i Passió", "Raó", "Diners"], correct: 0 },
+                    { q: "Instrument preferit?", options: ["Piano", "Flauta", "Tambor"], correct: 0 },
+                    { q: "Què és Rubato?", options: ["Velocitat flexible", "Robar", "Tocar igual"], correct: 0 },
+                    { q: "Mida de l'orquestra?", options: ["Gegant", "Petita", "Mitjana"], correct: 0 },
+                    { q: "Pont entre èpoques?", options: ["Beethoven", "Mozart", "Vivaldi"], correct: 0 },
+                    { q: "Problema de Beethoven?", options: ["Sord", "Cec", "Mut"], correct: 0 },
+                    { q: "Obra famosa Beethoven?", options: ["9a Simfonia", "4 Estacions", "Òpera"], correct: 0 },
+                    { q: "Temes preferits?", options: ["Natura salvatge", "Jardins", "Fàbriques"], correct: 0 },
+                    { q: "Què és un Virtuós?", options: ["Superstar tècnic", "Instrument", "Cantant"], correct: 0 },
+                    { q: "Caràcter de l'artista?", options: ["Solitari i individualista", "Sociable", "Alegre"], correct: 0 }
+                ]
+            },
+            {
+                id: "circle6",
+                name: "CERCLE VI: EL CAOS MODERN",
+                npc: { name: "El Rebel Dissonant", dialogue: "Trenca les normes! Crida! Fes soroll! La bellesa ja no importa, només la veritat, encara que sigui lletja i dissonant." },
+                pool: [
+                    { q: "Normes al S.XX?", options: ["Trencar-les", "Seguir-les", "Oblidar-les"], correct: 0 },
+                    { q: "Tecnologia nova?", options: ["Enregistrament/Ràdio", "Impremta", "Piano"], correct: 0 },
+                    { q: "Estil atmosfera/somni?", options: ["Impressionisme", "Expressionisme", "Barroc"], correct: 0 },
+                    { q: "Compositor Impressionista?", options: ["Debussy", "Schönberg", "Mozart"], correct: 0 },
+                    { q: "Què expressa l'Expressionisme?", options: ["Pors i angoixa", "Paisatges", "Alegria"], correct: 0 },
+                    { q: "Música de Schönberg?", options: ["Dissonància (xoc)", "Relaxant", "Pop"], correct: 0 },
+                    { q: "Dodecafonisme?", options: ["12 notes sense ordre", "12 instruments", "7 notes"], correct: 0 },
+                    { q: "Inspiració Impressionista?", options: ["Quadres de Monet", "Geometria", "Reis"], correct: 0 },
+                    { q: "Dissonàncies?", options: ["Notes que xoquen", "Notes maques", "Silencis"], correct: 0 },
+                    { q: "El quadre 'El Crit' és...", options: ["Expressionista", "Impressionista", "Romàntic"], correct: 0 }
+                ]
+            }
+        ];
+
+        // --- GAME LOGIC ---
+        let currentLevel = 0;
+        let lives = 3;
+        let currentQuizPool = [];
+        let currentQuestionIndex = 0;
+        let isBossLevel = false;
+
+        // Typing State
+        let isTyping = false;
+        let typingTimeout = null;
+        let onContinueAction = null; // What happens when "Continue" is clicked
+
+        // Elements
+        const elContainer = document.getElementById('game-container');
+        const elLevelTitle = document.getElementById('level-title');
+        const elLives = document.getElementById('lives-container');
+
+        const elNpcContainer = document.getElementById('npc-visual-container');
+        const elNpcAvatar = document.getElementById('npc-avatar');
+        const elNpcName = document.getElementById('npc-name-display');
+
+        const elQuizContainer = document.getElementById('quiz-container');
+        const elQuestionDisplay = document.getElementById('question-display');
+        const elOptionsGrid = document.getElementById('options-grid');
+
+        const elSpeakerPortrait = document.getElementById('speaker-portrait');
+        const elSpeakerName = document.getElementById('speaker-name');
+        const elDialogueText = document.getElementById('dialogue-text');
+        const elContinue = document.getElementById('continue-indicator');
+
+        function playMusic(src) {
+            if (bgAudio.src.includes(src)) return; // Don't restart if same
+            bgAudio.src = src;
+            bgAudio.play().catch(e => console.log("Interaction needed for audio"));
+        }
+
+        function setVolume(val) {
+            bgAudio.volume = val;
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            // playMusic(ASSETS.mainTheme); // REMOVED: Main theme is for start screen only
+            currentLevel = 0;
+            lives = 3;
+            updateLives();
+            startLevelSequence();
+        }
+
+        // Try to play Main Theme on load or first click
+        window.addEventListener('load', () => {
+            playMusic(ASSETS.mainTheme);
+        });
+        document.body.addEventListener('click', () => {
+            // If we are on start screen and music isn't playing main theme yet
+            const startScreen = document.getElementById('start-screen');
+            if (startScreen.style.display !== 'none' && !bgAudio.src.includes(ASSETS.mainTheme)) {
+                playMusic(ASSETS.mainTheme);
+            }
+        }, { once: true });
+
+        function updateLives() {
+            let candles = "";
+            for (let i = 0; i < lives; i++) candles += "🕯️";
+            elLives.innerHTML = candles;
+        }
+
+        function setBackground(index) {
+            if (ASSETS.circles[index]) {
+                elContainer.style.backgroundImage = ASSETS.circles[index].bg;
+                playMusic(ASSETS.circles[index].music);
+            }
+        }
+
+        // --- SEQUENCE MANAGERS ---
+
+        function startLevelSequence() {
+            // Is it Boss?
+            if (currentLevel >= INFERNO_DATA.length) {
+                initBossLevel();
+            } else {
+                initNormalLevel();
+            }
+        }
+
+        function initNormalLevel() {
+            isBossLevel = false;
+            const data = INFERNO_DATA[currentLevel];
+
+            // Setup Background & Title
+            setBackground(currentLevel);
+            elLevelTitle.innerText = data.name;
+
+            // Prepare Quiz Pool
+            let pool = [...data.pool];
+            shuffle(pool);
+            currentQuizPool = pool.slice(0, 4);
+
+            // 1. Show NPC Intro
+            showNPC(ASSETS.circles[currentLevel].npc_img, data.npc.name);
+            typeDialogue(data.npc.name, data.npc.dialogue, () => {
+                // On Dialog End -> Start Narrative Transition to Quiz
+                startQuizPhase();
+            });
+        }
+
+        function initBossLevel() {
+            isBossLevel = true;
+            setBackground(6); // Boss bg
+            elLevelTitle.innerText = "CERCLE FINAL: EL JUDICI";
+
+            // Boss Logic: 1 Life
+            if (lives > 1) {
+                lives = 1;
+                updateLives();
+            }
+
+            // Boss Pool
+            currentQuizPool = [];
+            INFERNO_DATA.forEach(l => {
+                currentQuizPool.push(l.pool[Math.floor(Math.random() * l.pool.length)]);
+            });
+
+            showNPC(ASSETS.circles[6].npc_img, "CACOFONIA");
+            typeDialogue("CACOFONIA", "JO SÓC EL SILENCI ETERN. UNA FADA I MORIRÀS PER SEMPRE.", () => {
+                startQuizPhase();
+            });
+        }
+
+        function startQuizPhase() {
+            // Hide NPC Visual, Show Quiz Layout
+            elNpcContainer.style.display = 'none';
+            elQuizContainer.style.display = 'block';
+            currentQuestionIndex = 0;
+
+            // Narrator Introduction
+            setSpeaker(MYSTERY_VOICE.name, MYSTERY_VOICE.skin);
+            typeDialogue(MYSTERY_VOICE.name, "Prepara la teva ànima... Aquí tes la pregunta.", () => {
+                askQuestion();
+            });
+        }
+
+        function askQuestion() {
+            if (currentQuestionIndex >= currentQuizPool.length) {
+                // Level Done
+                handleLevelComplete();
+                return;
+            }
+
+            const qData = currentQuizPool[currentQuestionIndex];
+
+            // Visual update
+            elQuestionDisplay.innerText = qData.q;
+            elOptionsGrid.innerHTML = '';
+
+            // Narrator "speaks" the question in the box
+            typeDialogue(MYSTERY_VOICE.name, qData.q, null, true); // true = auto-hide continue? No, wait for answer interaction.
+
+            // HIDE continue button, user must click option
+            elContinue.style.display = 'none';
+            onContinueAction = null;
+
+            // Render Options
+            const ops = qData.options.map((txt, idx) => ({ txt, isCorrect: idx === qData.correct }));
+            shuffle(ops);
+
+            ops.forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = op.txt;
+                btn.onclick = () => handleAnswer(op.isCorrect, btn);
+                elOptionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect, btn) {
+            // Disable buttons
+            const all = document.querySelectorAll('.option-btn');
+            all.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                btn.style.borderColor = "#0f0";
+                btn.style.color = "#0f0";
+
+                // Reaction
+                const reaction = MYSTERY_VOICE.correct[Math.floor(Math.random() * MYSTERY_VOICE.correct.length)];
+                typeDialogue(MYSTERY_VOICE.name, reaction, () => {
+                    currentQuestionIndex++;
+                    askQuestion();
+                });
+
+            } else {
+                btn.style.borderColor = "red";
+                btn.style.color = "red";
+                elContainer.classList.add('shake-anim');
+                lives--;
+                updateLives();
+
+                const reaction = MYSTERY_VOICE.wrong[Math.floor(Math.random() * MYSTERY_VOICE.wrong.length)];
+
+                setTimeout(() => {
+                    elContainer.classList.remove('shake-anim');
+
+                    if (lives <= 0) {
+                        typeDialogue(MYSTERY_VOICE.name, "S'ha acabat. La teva llum s'extingeix.", () => {
+                            document.getElementById('game-over-screen').style.display = 'flex';
+                        });
+                    } else {
+                        // Continue even if wrong (narrative flow)
+                        typeDialogue(MYSTERY_VOICE.name, reaction, () => {
+                            currentQuestionIndex++;
+                            askQuestion();
+                        });
+                    }
+                }, 500);
+            }
+        }
+
+        function handleLevelComplete() {
+            elQuizContainer.style.display = 'none';
+
+            if (isBossLevel) {
+                document.getElementById('victory-screen').style.display = 'flex';
+            } else {
+                typeDialogue(MYSTERY_VOICE.name, "Has purificat aquest cercle. Baixem més...", () => {
+                    currentLevel++;
+                    startLevelSequence();
+                });
+            }
+        }
+
+        // --- VISUAL & TYPEWRITER ---
+
+        function showNPC(skin, name) {
+            elNpcContainer.style.display = 'flex';
+            elQuizContainer.style.display = 'none';
+
+            if (skin && skin.includes('url')) {
+                elNpcAvatar.innerText = '';
+                elNpcAvatar.style.backgroundImage = skin;
+            } else {
+                elNpcAvatar.style.backgroundImage = '';
+                elNpcAvatar.innerText = skin;
+            }
+
+            elNpcName.innerText = name;
+
+            // Set speaker in dialog box too
+            setSpeaker(name, skin);
+        }
+
+        function setSpeaker(name, portraitChar) {
+            elSpeakerName.innerText = name;
+
+            if (portraitChar && portraitChar.includes('url')) {
+                elSpeakerPortrait.innerText = '';
+                elSpeakerPortrait.style.backgroundImage = portraitChar;
+            } else {
+                elSpeakerPortrait.style.backgroundImage = '';
+                elSpeakerPortrait.innerText = portraitChar;
+            }
+        }
+
+        function typeDialogue(name, text, callback, waitingForQuizInput = false) {
+            // Cancel previous typing
+            if (isTyping) clearTimeout(typingTimeout);
+            isTyping = true;
+
+            elSpeakerName.innerText = name;
+            elDialogueText.innerHTML = "";
+            elContinue.style.display = 'none';
+
+            let i = 0;
+            function step() {
+                if (i < text.length) {
+                    elDialogueText.innerHTML += text.charAt(i);
+                    i++;
+                    typingTimeout = setTimeout(step, 20); // Speed
+                } else {
+                    isTyping = false;
+                    if (!waitingForQuizInput) {
+                        elContinue.style.display = 'block';
+                        onContinueAction = callback;
+                    }
+                }
+            }
+            step();
+        }
+
+        function advanceDialogue() {
+            if (isTyping) {
+                // If clicked while typing, complete instantly (optional feature, not imp here)
+                return;
+            }
+            if (onContinueAction) {
+                onContinueAction();
+                onContinueAction = null;
+            }
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+    </script>
+</body>
+
+</html>

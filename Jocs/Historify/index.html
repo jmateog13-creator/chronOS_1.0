@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historify: YouTube Edition</title>
+    <style>
+        :root {
+            --bg-base: #121212;
+            --bg-highlight: #181818;
+            --bg-press: #282828;
+            --text-base: #FFFFFF;
+            --text-subdued: #B3B3B3;
+            --accent: #1DB954;
+            --error: #E91429;
+            --font-stack: 'Circular Std', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-base);
+            font-family: var(--font-stack);
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: 1fr 90px;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: #000000;
+            padding: 24px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            grid-row: 1 / 2;
+            position: relative;
+            z-index: 20;
+        }
+
+        .logo {
+            color: var(--text-base);
+            font-size: 24px;
+            font-weight: 700;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-title {
+            color: var(--text-subdued);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            padding: 0 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            color: var(--text-subdued);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: color 0.2s, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            color: var(--text-base);
+        }
+
+        .nav-item.active {
+            color: var(--text-base);
+            background-color: var(--bg-press);
+        }
+
+        /* Tooltip */
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-item:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            margin-left: 10px;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Main Content */
+        .main-view {
+            background: linear-gradient(180deg, #202020 0%, var(--bg-base) 100%);
+            overflow-y: auto;
+            padding: 24px 32px;
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 16px 0;
+            margin-top: -24px;
+        }
+
+        .search-bar {
+            background-color: #FFFFFF;
+            border-radius: 500px;
+            padding: 6px 48px;
+            border: 0;
+            color: #000;
+            font-weight: 500;
+            width: 360px;
+            height: 40px;
+            font-size: 14px;
+        }
+
+        .publish-btn {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 500px;
+            padding: 12px 32px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        .publish-btn:hover {
+            transform: scale(1.04);
+            filter: brightness(1.1);
+        }
+
+        .playlist-header {
+            display: flex;
+            align-items: flex-end;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .playlist-cover {
+            width: 192px;
+            height: 192px;
+            background: linear-gradient(135deg, #450af5, #c4efd9);
+            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+        }
+
+        .playlist-info h1 {
+            font-size: 72px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+
+        .playlist-info p {
+            color: var(--text-subdued);
+            font-size: 14px;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--bg-press);
+            border-radius: 8px;
+            min-height: 150px;
+            margin-bottom: 48px;
+            padding: 24px;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--accent);
+            background-color: rgba(29, 185, 84, 0.1);
+        }
+
+        .drop-zone-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-subdued);
+            gap: 12px;
+        }
+
+        /* Song Grid */
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .song-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 24px;
+        }
+
+        .song-card {
+            background-color: var(--bg-highlight);
+            padding: 16px;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        .song-card:hover {
+            background-color: var(--bg-press);
+        }
+
+        .song-card.dragging {
+            opacity: 0.5;
+        }
+
+        .song-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background-color: #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .song-title {
+            font-weight: 700;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .song-artist {
+            color: var(--text-subdued);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .play-btn {
+            background-color: var(--accent);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 0.3s;
+            box-shadow: 0 8px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .song-card:hover .play-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Player Bar (Footer) */
+        .player-bar {
+            background-color: var(--bg-highlight);
+            border-top: 1px solid #282828;
+            grid-column: 1 / 3;
+            grid-row: 2 / 3;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 100;
+        }
+
+        .player-now-playing {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 30%;
+        }
+
+        .player-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 40%;
+        }
+
+        .player-controls-buttons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 20px;
+            color: #B3B3B3;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #535353;
+            border-radius: 2px;
+        }
+
+        /* Feedback & Validation */
+        .song-card.error {
+            border: 2px solid var(--error);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fff;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <span>⚡</span> Historify
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Per Època</div>
+            <div id="nav-epochs"></div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Temàtiques</div>
+            <div id="nav-themes"></div>
+        </div>
+    </div>
+
+    <div class="main-view">
+        <div class="header">
+            <input type="text" class="search-bar" placeholder="Cerca cançons, artistes..."
+                oninput="filterSongs(this.value)">
+            <button class="publish-btn" onclick="validatePlaylist()">Publicar Playlist</button>
+        </div>
+
+        <div class="playlist-header">
+            <div class="playlist-cover" id="current-cover">🏰</div>
+            <div class="playlist-info">
+                <p>PLAYLIST PÚBLICA</p>
+                <h1 id="playlist-title">Edat Mitjana</h1>
+                <p id="playlist-desc">Sons de castells i monestirs. Viatja a l'origen!</p>
+            </div>
+        </div>
+
+        <div class="drop-zone" id="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"
+            ondragleave="dragLeave(event)">
+            <div class="drop-zone-empty">
+                <span style="font-size: 24px">➕</span>
+                <p>Arrossega cançons aquí per afegir-les</p>
+            </div>
+            <!-- Added songs will appear here -->
+        </div>
+
+        <div class="section-title">Banc de Cançons</div>
+        <div class="song-grid" id="song-grid">
+            <!-- Songs generated by JS -->
+        </div>
+    </div>
+
+    <div class="player-bar">
+        <div class="player-now-playing">
+            <div
+                style="width: 56px; height: 56px; background: #333; display:flex; align-items:center; justify-content:center;">
+                🎵</div>
+            <div>
+                <div style="font-size: 14px; font-weight: 600;">Historify</div>
+                <div style="font-size: 12px; color: #B3B3B3;">YouTube Edition</div>
+            </div>
+        </div>
+        <div class="player-controls">
+            <div class="player-controls-buttons">
+                <span>⏮</span>
+                <span style="color: #fff; font-size: 32px;">▶</span>
+                <span>⏭</span>
+            </div>
+            <div class="progress-bar"></div>
+        </div>
+        <div style="width: 30%"></div>
+    </div>
+
+    <div class="toast" id="toast">Missatge</div>
+    <canvas class="confetti" id="confetti"></canvas>
+
+    <canvas class="confetti" id="confetti"></canvas>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const PLAYLISTS = {
+            medieval: {
+                title: "Edat Mitjana",
+                icon: "🏰",
+                desc: "Sons de castells i monestirs. Viatja a l'origen!",
+                img: "img/playlist_medieval.jpg",
+                filter: s => s.tags.includes('medieval')
+            },
+            renaissance: {
+                title: "Renaixement",
+                icon: "🎨",
+                desc: "L'humanisme fet música. Polifonia en estat pur.",
+                img: "img/playlist_renaissance.jpg",
+                filter: s => s.tags.includes('renaissance')
+            },
+            baroque: {
+                title: "Barroc",
+                icon: "🎻",
+                desc: "Ornamentació i contrast. El drama del Barroc!",
+                img: "img/playlist_baroque.jpg",
+                filter: s => s.tags.includes('baroque')
+            },
+            classicism: {
+                title: "Classicisme",
+                icon: "🏛️",
+                desc: "Equilibri i perfecció. L'elegància feta so.",
+                img: "img/playlist_classicism.jpg",
+                filter: s => s.tags.includes('classicism')
+            },
+            romanticism: {
+                title: "Romanticisme",
+                icon: "🌹",
+                desc: "Emoció desbordada. El sentiment per sobre de la raó.",
+                img: "img/playlist_romanticism.jpg",
+                filter: s => s.tags.includes('romanticism')
+            },
+            '20th': {
+                title: "Segle XX",
+                icon: "🚀",
+                desc: "Trencant les normes. Nous sons per un nou món.",
+                img: "img/playlist_20th.jpg",
+                filter: s => s.tags.includes('20th')
+            },
+            women: {
+                title: "Dones Compositores",
+                icon: "💜",
+                desc: "Les grans oblidades. Descobreix el seu talent!",
+                img: "img/playlist_women.jpg",
+                filter: s => s.tags.includes('dones')
+            },
+            instrumental: {
+                title: "Instrumental Vibes",
+                icon: "🎻",
+                desc: "Sense paraules. Deixa que la música parli.",
+                img: "img/playlist_instrumental.jpg",
+                filter: s => s.tags.includes('instrumental')
+            },
+            sacred: {
+                title: "Música Sacra",
+                icon: "⛪",
+                desc: "Música per a l'ànima. Connexió divina.",
+                img: "img/playlist_sacred.jpg",
+                filter: s => s.tags.includes('religiosa')
+            },
+            vocal: {
+                title: "Vocal Power",
+                icon: "🎤",
+                desc: "La veu humana com a instrument. Pura expressió.",
+                img: "img/playlist_vocal.jpg",
+                filter: s => s.tags.includes('vocal')
+            }
+        };
+
+        const SONG_DB = [
+            // Dones Compositores (10+)
+            { id: 1, title: "O Viridissima Virga", composer: "Hildegard von Bingen", img: "img/song_1_hildegard.jpg", tags: ['medieval', 'dones', 'religiosa', 'vocal'] },
+            { id: 2, title: "Che si può fare", composer: "Barbara Strozzi", img: "img/song_2_strozzi.jpg", tags: ['baroque', 'dones', 'vocal'] },
+            { id: 3, title: "Lasciatemi qui solo", composer: "Francesca Caccini", img: "img/song_3_caccini.jpg", tags: ['baroque', 'dones', 'vocal'] },
+            { id: 4, title: "Piano Trio in G minor", composer: "Clara Schumann", img: "img/song_4_schumann.jpg", tags: ['romanticism', 'dones', 'instrumental'] },
+            { id: 5, title: "Das Jahr", composer: "Fanny Mendelssohn", img: "img/song_5_mendelssohn.jpg", tags: ['romanticism', 'dones', 'instrumental'] },
+            { id: 6, title: "Concertino for Flute", composer: "Cécile Chaminade", img: "img/song_6_chaminade.jpg", tags: ['romanticism', 'dones', 'instrumental'] },
+            { id: 7, title: "Pie Jesu", composer: "Lili Boulanger", img: "img/song_7_boulanger.jpg", tags: ['20th', 'dones', 'religiosa', 'vocal'] },
+            { id: 8, title: "Offertorium", composer: "Sofia Gubaidulina", img: "img/song_8_gubaidulina.jpg", tags: ['20th', 'dones', 'instrumental'] },
+            { id: 9, title: "Concertino for Harp", composer: "Germaine Tailleferre", img: "img/song_9_tailleferre.jpg", tags: ['20th', 'dones', 'instrumental'] },
+            { id: 10, title: "Mass in D", composer: "Ethel Smyth", img: "img/song_10_smyth.jpg", tags: ['romanticism', 'dones', 'religiosa', 'vocal'] },
+
+            // Música Religiosa (10+)
+            { id: 11, title: "Puer Natus Est", composer: "Cant Gregorià", img: "img/song_11_puer_natus.jpg", tags: ['medieval', 'religiosa', 'vocal'] },
+            { id: 12, title: "Missa Papae Marcelli", composer: "Palestrina", img: "img/song_12_palestrina.jpg", tags: ['renaissance', 'religiosa', 'vocal'] },
+            { id: 13, title: "Messe de Nostre Dame", composer: "Guillaume de Machaut", img: "img/song_13_machaut.jpg", tags: ['medieval', 'religiosa', 'vocal'] },
+            { id: 14, title: "St. Matthew Passion", composer: "J.S. Bach", img: "img/song_14_bach_passion.jpg", tags: ['baroque', 'religiosa', 'vocal'] },
+            { id: 15, title: "Messiah (Hallelujah)", composer: "G.F. Händel", img: "img/song_15_handel_messiah.jpg", tags: ['baroque', 'religiosa', 'vocal'] },
+            { id: 16, title: "Requiem (Lacrimosa)", composer: "W.A. Mozart", img: "img/song_16_mozart_requiem.jpg", tags: ['classicism', 'religiosa', 'vocal'] },
+            { id: 17, title: "Messa da Requiem", composer: "Giuseppe Verdi", img: "img/song_17_verdi.jpg", tags: ['romanticism', 'religiosa', 'vocal'] },
+            { id: 18, title: "Spem in alium", composer: "Thomas Tallis", img: "img/song_18_tallis.jpg", tags: ['renaissance', 'religiosa', 'vocal'] },
+            { id: 19, title: "Ave Maria", composer: "Josquin des Prez", img: "img/song_19_josquin.jpg", tags: ['renaissance', 'religiosa', 'vocal'] },
+            { id: 20, title: "War Requiem", composer: "Benjamin Britten", img: "img/song_20_britten.jpg", tags: ['20th', 'religiosa', 'vocal'] },
+
+            // Instrumental (10+)
+            { id: 21, title: "The Four Seasons (Spring)", composer: "Antonio Vivaldi", img: "img/song_21_vivaldi_spring.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 22, title: "Symphony No. 5", composer: "L.V. Beethoven", img: "img/song_22_beethoven_5.jpg", tags: ['classicism', 'instrumental'] },
+            { id: 23, title: "Eine kleine Nachtmusik", composer: "W.A. Mozart", img: "img/song_23_mozart_eine_kleine.jpg", tags: ['classicism', 'instrumental'] },
+            { id: 24, title: "Brandenburg Concerto No. 3", composer: "J.S. Bach", img: "img/song_24_bach_brandenburg.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 25, title: "The Planets (Mars)", composer: "Gustav Holst", img: "img/song_25_holst.jpg", tags: ['20th', 'instrumental'] },
+            { id: 26, title: "Boléro", composer: "Maurice Ravel", img: "img/song_26_ravel.jpg", tags: ['20th', 'instrumental'] },
+            { id: 27, title: "Symphonie Fantastique", composer: "Hector Berlioz", img: "img/song_27_berlioz.jpg", tags: ['romanticism', 'instrumental'] },
+            { id: 28, title: "Nocturne Op. 9 No. 2", composer: "Frédéric Chopin", img: "img/song_28_chopin.jpg", tags: ['romanticism', 'instrumental'] },
+            { id: 29, title: "Lute Suite in E minor", composer: "J.S. Bach", img: "img/song_29_bach_lute.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 30, title: "Estampies Royales", composer: "Anonymous", img: "img/song_30_estampies.jpg", tags: ['medieval', 'instrumental'] },
+
+            // Èpoques (Mix)
+            // Medieval
+            { id: 31, title: "Cantigas de Santa Maria", composer: "Alfonso X", img: "img/song_31_cantigas.jpg", tags: ['medieval', 'vocal', 'religiosa'] },
+            { id: 32, title: "Llibre Vermell de Montserrat", composer: "Anonymous", img: "img/song_32_llibre_vermell.jpg", tags: ['medieval', 'vocal', 'religiosa'] },
+            { id: 33, title: "Sumer is icumen in", composer: "Anonymous", img: "img/song_33_sumer.jpg", tags: ['medieval', 'vocal'] },
+
+            // Renaissance
+            { id: 34, title: "Flow, my tears", composer: "John Dowland", img: "img/song_34_dowland.jpg", tags: ['renaissance', 'vocal'] },
+            { id: 35, title: "Il bianco e dolce cigno", composer: "Jacques Arcadelt", img: "img/song_35_arcadelt.jpg", tags: ['renaissance', 'vocal'] },
+            { id: 36, title: "O Magnum Mysterium", composer: "Tomás Luis de Victoria", img: "img/song_36_victoria.jpg", tags: ['renaissance', 'religiosa', 'vocal'] },
+
+            // Baroque
+            { id: 37, title: "Canon in D", composer: "Johann Pachelbel", img: "img/song_37_pachelbel.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 38, title: "Toccata and Fugue in D minor", composer: "J.S. Bach", img: "img/song_38_bach_toccata.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 39, title: "Music for the Royal Fireworks", composer: "G.F. Händel", img: "img/song_39_handel_fireworks.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 40, title: "Dido and Aeneas (Lament)", composer: "Henry Purcell", img: "img/song_40_purcell_dido.jpg", tags: ['baroque', 'vocal'] },
+
+            // Classicism
+            { id: 41, title: "Symphony No. 40", composer: "W.A. Mozart", img: "img/song_41_mozart_40.jpg", tags: ['classicism', 'instrumental'] },
+            { id: 42, title: "Surprise Symphony", composer: "Joseph Haydn", img: "img/song_42_haydn_surprise.jpg", tags: ['classicism', 'instrumental'] },
+            { id: 43, title: "The Magic Flute (Queen of Night)", composer: "W.A. Mozart", img: "img/song_43_mozart_magic_flute.jpg", tags: ['classicism', 'vocal'] },
+            { id: 44, title: "Emperor Quartet", composer: "Joseph Haydn", img: "img/song_44_haydn_emperor.jpg", tags: ['classicism', 'instrumental'] },
+            { id: 45, title: "Piano Sonata No. 11 (Rondo)", composer: "W.A. Mozart", img: "img/song_45_mozart_rondo.jpg", tags: ['classicism', 'instrumental'] },
+
+            // Romanticism
+            { id: 46, title: "Ride of the Valkyries", composer: "Richard Wagner", img: "img/song_46_wagner.jpg", tags: ['romanticism', 'vocal', 'instrumental'] },
+            { id: 47, title: "Swan Lake", composer: "P.I. Tchaikovsky", img: "img/song_47_tchaikovsky.jpg", tags: ['romanticism', 'instrumental'] },
+            { id: 48, title: "Liebestraum No. 3", composer: "Franz Liszt", img: "img/song_48_liszt.jpg", tags: ['romanticism', 'instrumental'] },
+            { id: 49, title: "Carmen (Habanera)", composer: "Georges Bizet", img: "img/song_49_bizet.jpg", tags: ['romanticism', 'vocal'] },
+            { id: 50, title: "New World Symphony", composer: "Antonín Dvořák", img: "img/song_50_dvorak.jpg", tags: ['romanticism', 'instrumental'] },
+
+            // 20th Century
+            { id: 51, title: "The Rite of Spring", composer: "Igor Stravinsky", img: "img/song_51_stravinsky.jpg", tags: ['20th', 'instrumental'] },
+            { id: 52, title: "Rhapsody in Blue", composer: "George Gershwin", img: "img/song_52_gershwin.jpg", tags: ['20th', 'instrumental'] },
+            { id: 53, title: "Carmina Burana (O Fortuna)", composer: "Carl Orff", img: "img/song_53_orff.jpg", tags: ['20th', 'vocal'] },
+            { id: 54, title: "Adagio for Strings", composer: "Samuel Barber", img: "img/song_54_barber.jpg", tags: ['20th', 'instrumental'] },
+            { id: 55, title: "4'33\"", composer: "John Cage", img: "img/song_55_cage.jpg", tags: ['20th', 'instrumental'] },
+            { id: 56, title: "Pierrot Lunaire", composer: "Arnold Schoenberg", img: "img/song_56_schoenberg.jpg", tags: ['20th', 'vocal'] },
+
+            // More fillers to reach 70+
+            { id: 57, title: "Gymnopédie No. 1", composer: "Erik Satie", img: "img/song_57_satie.jpg", tags: ['20th', 'instrumental'] },
+            { id: 58, title: "Clair de Lune", composer: "Claude Debussy", img: "img/song_58_debussy.jpg", tags: ['20th', 'instrumental'] },
+            { id: 59, title: "Moonlight Sonata", composer: "L.V. Beethoven", img: "img/song_59_beethoven_moonlight.jpg", tags: ['classicism', 'romanticism', 'instrumental'] }, // Bridge
+            { id: 60, title: "Ave Verum Corpus", composer: "W.A. Mozart", img: "img/song_60_mozart_ave_verum.jpg", tags: ['classicism', 'religiosa', 'vocal'] },
+            { id: 61, title: "Zadok the Priest", composer: "G.F. Händel", img: "img/song_61_handel_zadok.jpg", tags: ['baroque', 'religiosa', 'vocal'] },
+            { id: 62, title: "Cello Suite No. 1", composer: "J.S. Bach", img: "img/song_62_bach_cello.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 63, title: "Winter (Four Seasons)", composer: "Antonio Vivaldi", img: "img/song_63_vivaldi_winter.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 64, title: "Water Music", composer: "G.F. Händel", img: "img/song_64_handel_water.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 65, title: "Orfeo (Toccata)", composer: "Claudio Monteverdi", img: "img/song_65_monteverdi_orfeo.jpg", tags: ['baroque', 'instrumental'] },
+            { id: 66, title: "Miserere", composer: "Gregorio Allegri", img: "img/song_66_miserere.jpg", tags: ['baroque', 'religiosa', 'vocal'] },
+            { id: 67, title: "Symphony No. 9 (Ode to Joy)", composer: "L.V. Beethoven", img: "img/song_67_beethoven_9.jpg", tags: ['romanticism', 'vocal'] },
+            { id: 68, title: "1812 Overture", composer: "P.I. Tchaikovsky", img: "img/song_68_tchaikovsky_1812.jpg", tags: ['romanticism', 'instrumental'] },
+            { id: 69, title: "Finlandia", composer: "Jean Sibelius", img: "img/song_69_sibelius.jpg", tags: ['romanticism', '20th', 'instrumental'] },
+            { id: 70, title: "Appalachian Spring", composer: "Aaron Copland", img: "img/song_70_copland.jpg", tags: ['20th', 'instrumental'] },
+            { id: 71, title: "West Side Story (Mambo)", composer: "Leonard Bernstein", img: "img/song_71_bernstein.jpg", tags: ['20th', 'instrumental'] }
+        ];
+
+        // --- STATE ---
+        let currentPlaylistKey = 'medieval';
+        let addedSongs = [];
+
+        // --- DOM ELEMENTS ---
+        const songGrid = document.getElementById('song-grid');
+        const dropZone = document.getElementById('drop-zone');
+        const playlistTitle = document.getElementById('playlist-title');
+        const playlistDesc = document.getElementById('playlist-desc');
+        const currentCover = document.getElementById('current-cover');
+        const toastEl = document.getElementById('toast');
+        const confettiCanvas = document.getElementById('confetti');
+
+        // --- INITIALIZATION ---
+        function init() {
+            renderSidebar();
+            renderSongs(SONG_DB);
+            updatePlaylistUI();
+        }
+
+        function renderSidebar() {
+            const epochsDiv = document.getElementById('nav-epochs');
+            const themesDiv = document.getElementById('nav-themes');
+
+            const epochKeys = ['medieval', 'renaissance', 'baroque', 'classicism', 'romanticism', '20th'];
+            const themeKeys = ['women', 'instrumental', 'sacred', 'vocal'];
+
+            function createItem(key) {
+                const pl = PLAYLISTS[key];
+                const div = document.createElement('div');
+                div.className = 'nav-item';
+                div.textContent = `${pl.icon} ${pl.title}`;
+                div.setAttribute('data-tooltip', pl.desc);
+                div.onclick = () => selectPlaylist(key);
+                if (key === currentPlaylistKey) div.classList.add('active');
+                return div;
+            }
+
+            epochKeys.forEach(key => epochsDiv.appendChild(createItem(key)));
+            themeKeys.forEach(key => themesDiv.appendChild(createItem(key)));
+        }
+
+        // --- RENDER ---
+        function renderSongs(songs) {
+            songGrid.innerHTML = '';
+            // Shuffle songs for randomness
+            const shuffled = [...songs].sort(() => 0.5 - Math.random());
+
+            shuffled.forEach(song => {
+                // If song is already added, don't show in grid
+                if (addedSongs.find(s => s.id === song.id)) return;
+
+                const card = document.createElement('div');
+                card.className = 'song-card';
+                card.draggable = true;
+                card.ondragstart = (e) => drag(e, song.id);
+
+                // Generate random pastel color for placeholder
+                const hue = Math.floor(Math.random() * 360);
+                const color = `hsl(${hue}, 70%, 80%)`;
+
+                if (song.img) {
+                    card.innerHTML = `
+                        <div class="song-image" style="background-image: url('${song.img}'); background-size: cover; background-position: center; border:none;"></div>
+                        <div class="song-title">${song.title}</div>
+                        <div class="song-artist">${song.composer}</div>
+                        <button class="play-btn" onclick="openYouTube('${song.title}', '${song.composer}')">🎧</button>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="song-image" style="background-color: ${color}; color: #333;">🎵</div>
+                        <div class="song-title">${song.title}</div>
+                        <div class="song-artist">${song.composer}</div>
+                        <button class="play-btn" onclick="openYouTube('${song.title}', '${song.composer}')">🎧</button>
+                    `;
+                }
+                songGrid.appendChild(card);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const pl = PLAYLISTS[currentPlaylistKey];
+            playlistTitle.textContent = pl.title;
+            playlistDesc.textContent = pl.desc;
+            if (pl.img) {
+                currentCover.textContent = '';
+                currentCover.style.backgroundImage = `url('${pl.img}')`;
+                currentCover.style.backgroundSize = 'cover';
+                currentCover.style.backgroundPosition = 'center';
+                currentCover.style.border = 'none';
+            } else {
+                currentCover.style.backgroundImage = 'none';
+                currentCover.textContent = pl.icon;
+            }
+
+            // Highlight active sidebar item
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.includes(pl.title));
+            if (activeNav) activeNav.classList.add('active');
+
+            renderDropZone();
+        }
+
+        function renderDropZone() {
+            dropZone.innerHTML = '';
+            if (addedSongs.length === 0) {
+                dropZone.innerHTML = `
+                    <div class="drop-zone-empty">
+                        <span style="font-size: 24px">➕</span>
+                        <p>Arrossega cançons aquí per afegir-les</p>
+                    </div>`;
+                return;
+            }
+
+            // Render added songs in a mini grid or list
+            const container = document.createElement('div');
+            container.style.display = 'grid';
+            container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+            container.style.gap = '16px';
+            container.style.width = '100%';
+
+            addedSongs.forEach(song => {
+                const card = document.createElement('div');
+                card.className = 'song-card';
+                card.style.backgroundColor = '#282828';
+
+                // Check if it was marked as error
+                if (song.error) card.classList.add('error');
+
+                card.innerHTML = `
+                    <div class="song-title" style="font-size:14px;">${song.title}</div>
+                    <div class="song-artist" style="font-size:12px;">${song.composer}</div>
+                    <div style="color: #E91429; font-size: 12px; cursor: pointer; margin-top: 8px;" onclick="removeSong(${song.id})">❌ Treure</div>
+                `;
+                container.appendChild(card);
+            });
+            dropZone.appendChild(container);
+        }
+
+        // --- ACTIONS ---
+        function selectPlaylist(key) {
+            currentPlaylistKey = key;
+            addedSongs = []; // Reset added songs when switching playlist? 
+            // Requirement says "The student chooses a TARGET PLAYLIST". 
+            // Usually in games you reset when changing levels.
+            updatePlaylistUI();
+            renderSongs(SONG_DB); // Re-render grid to show all available
+        }
+
+        function filterSongs(query) {
+            const lower = query.toLowerCase();
+            const filtered = SONG_DB.filter(s =>
+                s.title.toLowerCase().includes(lower) ||
+                s.composer.toLowerCase().includes(lower)
+            );
+            renderSongs(filtered);
+        }
+
+        function openYouTube(title, composer) {
+            const query = encodeURIComponent(`${title} ${composer}`);
+            window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+        }
+
+        function removeSong(id) {
+            addedSongs = addedSongs.filter(s => s.id !== id);
+            renderDropZone();
+            // Re-render grid to show the song again
+            const searchVal = document.querySelector('.search-bar').value;
+            if (searchVal) filterSongs(searchVal);
+            else renderSongs(SONG_DB);
+        }
+
+        // --- DRAG AND DROP ---
+        function drag(ev, id) {
+            ev.dataTransfer.setData("text", id);
+            ev.target.classList.add('dragging');
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            dropZone.classList.add('drag-over');
+        }
+
+        function dragLeave(ev) {
+            dropZone.classList.remove('drag-over');
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const id = parseInt(ev.dataTransfer.getData("text"));
+            const song = SONG_DB.find(s => s.id === id);
+
+            if (song && !addedSongs.find(s => s.id === id)) {
+                addedSongs.push(song);
+                renderDropZone();
+                // Remove from grid visually
+                const searchVal = document.querySelector('.search-bar').value;
+                if (searchVal) filterSongs(searchVal);
+                else renderSongs(SONG_DB);
+            }
+        }
+
+        // --- VALIDATION ---
+        function validatePlaylist() {
+            const currentRule = PLAYLISTS[currentPlaylistKey].filter;
+            let errors = 0;
+            let correctCount = 0;
+
+            addedSongs.forEach(song => {
+                if (currentRule(song)) {
+                    song.error = false;
+                    correctCount++;
+                } else {
+                    song.error = true;
+                    errors++;
+                }
+            });
+
+            renderDropZone(); // Update UI to show red borders
+
+            if (addedSongs.length === 0) {
+                showToast("La llista és buida! Afegeix cançons.");
+                return;
+            }
+
+            if (errors === 0 && addedSongs.length >= 5) {
+                showToast("Playlist Perfecta! Publicant...");
+                // Confetti or something
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'historify_mix',
+                        'Curador Musical',
+                        'Has creat la playlist històrica perfecta!',
+                        '../../img/card_historify.png'
+                    );
+                }
+            } else if (errors > 0) {
+                showToast(`Hi ha ${errors} cançons incorrectes.`);
+            } else {
+                showToast("Afegeix almenys 5 cançons.");
+            }
+        }
+
+
+        function showToast(msg) {
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            setTimeout(() => toastEl.classList.remove('show'), 3000);
+        }
+
+        // --- CONFETTI ---
+        function startConfetti() {
+            const ctx = confettiCanvas.getContext('2d');
+            confettiCanvas.style.display = 'block';
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+
+            const particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    color: ['#1DB954', '#FFFFFF', '#E91429', '#FFFF00'][Math.floor(Math.random() * 4)],
+                    size: Math.random() * 10 + 5,
+                    speed: Math.random() * 5 + 2
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                    p.y += p.speed;
+                    if (p.y > confettiCanvas.height) p.y = -20;
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+            setTimeout(() => {
+                confettiCanvas.style.display = 'none';
+            }, 5000);
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>

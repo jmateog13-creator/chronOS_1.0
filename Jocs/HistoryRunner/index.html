@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Music Time Runner</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff00;
+            --neon-red: #ff0000;
+            --bg-dark: #050510;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            background: linear-gradient(to bottom, #000000, #1a1a2e);
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.2);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI Screens */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            background: rgba(5, 5, 16, 0.9);
+            backdrop-filter: blur(5px);
+            transition: opacity 0.3s ease;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        /* Start Screen Layout */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            /* Prevent scrolling */
+        }
+
+        .logo-title {
+            font-size: 2.2rem;
+            /* Smaller Title */
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue);
+            margin-bottom: 15px;
+            text-align: center;
+            margin-top: 0;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--neon-pink);
+            margin-bottom: 15px;
+        }
+
+        /* Mix Button Compact */
+        #btn-mix {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            width: auto;
+            /* Auto width */
+            max-width: 80%;
+            background: linear-gradient(45deg, #ff00de, #00f3ff);
+            border: none;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 0, 222, 0.4);
+        }
+
+        .era-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            /* Allow it to take space */
+            max-height: 50vh;
+            /* Limit height */
+        }
+
+        .era-buttons .btn {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 50px;
+            /* Ensure clickability */
+            font-size: 0.85rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 5px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--neon-pink);
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px;
+            font-size: 0.9rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin: 0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+            transition: all 0.2s;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .btn-mix {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+
+        .btn-mix:hover {
+            background: var(--neon-pink);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--neon-pink);
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #era-display {
+            font-size: 1.5rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            margin-bottom: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--neon-green);
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .score {
+            color: #ffcc00;
+        }
+
+        .lives {
+            color: #ff0000;
+        }
+
+        /* Alarm Overlay */
+        #alarm-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 8;
+            pointer-events: none;
+            animation: flash 0.5s infinite;
+        }
+
+        #alarm-text {
+            font-size: 3rem;
+            color: white;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 0 20px red;
+            transform: rotate(-5deg);
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #back-btn-game {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Controls Hint */
+        #controls-hint {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            font-family: 'Roboto', sans-serif;
+            pointer-events: none;
+        }
+
+        /* Instruction Screen */
+        .emoji-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .inst-emoji {
+            font-size: 2rem;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .inst-desc {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            color: #ddd;
+        }
+
+        .instruction-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .instruction-label {
+            font-size: 1rem;
+            color: #aaa;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        /* Rules Popup */
+        #rules-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .rules-content {
+            background: #1a1a2e;
+            border: 2px solid var(--neon-blue);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 90%;
+            width: 400px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+            text-align: left;
+        }
+
+        .rules-content h3 {
+            color: var(--neon-blue);
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .rules-content p {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: #cef;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        #btn-show-rules {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        #btn-show-rules:hover {
+            background: var(--neon-blue);
+            color: black;
+        }
+
+        /* Volume Slider */
+        .volume-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .volume-icon {
+            color: var(--neon-blue);
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+        #volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--neon-blue);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Completed Era Button */
+        .btn.completed {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            position: relative;
+        }
+
+        .btn.completed::after {
+            content: '✓';
+            position: absolute;
+            right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <body>
+        <!-- Audio -->
+        <audio id="bg-music" loop>
+            <source src="audio/Storm at the Iron Gates.m4a" type="audio/mpeg">
+        </audio>
+
+        <div class="volume-control">
+            <span class="volume-icon">🎵</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+
+            <div id="hud" class="hidden">
+                <button id="back-btn-game">✕</button>
+                <div id="era-display">ÈPOCA ACTUAL: BARROC</div>
+                <div class="stats-row">
+                    <div class="score">SCORE: <span id="score-val">0</span></div>
+                    <div class="lives">❤❤❤</div>
+                </div>
+            </div>
+
+            <div id="alarm-overlay" class="hidden">
+                <div id="alarm-text">SALT TEMPORAL!</div>
+            </div>
+
+            <div id="start-screen" class="screen">
+                <h1>MUSIC TIME<br>RUNNER</h1>
+                <h2>Edició Viatge en el Temps</h2>
+                <button id="btn-show-rules">❓ COM JUGAR</button>
+                <button id="btn-mix" class="btn btn-mix">🔥 MODO MIX (EL GRAN VIATGE)</button>
+                <div style="margin: 1rem 0; width: 100%; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                <p style="margin-bottom: 1rem; color: #aaa;">O practica una època:</p>
+                <div id="era-buttons"
+                    style="display: flex; flex-direction: column; align-items: center; width: 100%; max-height: 200px; overflow-y: auto;">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <div id="instruction-screen" class="screen hidden">
+                <h2 id="inst-title">BARROC</h2>
+
+                <div class="instruction-box">
+                    <div class="instruction-label" style="color: var(--neon-green)">AGAFA AQUESTS (CORRECTES):</div>
+                    <div id="inst-correct" class="emoji-list"></div>
+                </div>
+                <div class="instruction-box">
+                    <div class="instruction-label" style="color: var(--neon-red)">EVITA AQUESTS (TRAMPES):</div>
+                    <div id="inst-trap" class="emoji-list"></div>
+                </div>
+                <button id="btn-start-game" class="btn">COMENÇAR!</button>
+            </div>
+
+            <!-- Rules Modal -->
+            <div id="rules-modal" class="hidden">
+                <div class="rules-content">
+                    <button class="close-modal" id="btn-close-rules">✕</button>
+                    <h3>NORMES DEL JOC</h3>
+                    <p>🎯 <strong>OBJECTIU:</strong> Arriba a <strong>100 PUNTS</strong> per guanyar!</p>
+                    <p>✅ <strong>CORRECTES:</strong> +10 Punts</p>
+                    <p>❌ <strong>TRAMPES:</strong> -1 Vida (Tens 3 ❤)</p>
+                    <p>🔙 <strong>BOTÓ X:</strong> Torna al menú quan vulguis.</p>
+                </div>
+            </div>
+
+            <div id="gameover-screen" class="screen hidden">
+                <h1 style="color: var(--neon-red);">GAME OVER</h1>
+                <p style="font-size: 1.5rem; margin-bottom: 1rem;">Score Final: <span id="final-score">0</span></p>
+                <button id="btn-menu" class="btn">TORNAR AL MENÚ</button>
+            </div>
+
+            <div id="win-screen" class="screen hidden">
+                <h1 style="color: var(--neon-green);">MISSIÓ ACONSEGUIDA!</h1>
+                <p style="font-size: 1.5rem; margin-bottom: 1rem;">Has arribat a 100 punts!</p>
+                <button id="btn-win-menu" class="btn">TORNAR AL MENÚ</button>
+            </div>
+
+            <div id="controls-hint">
+                Fletxes o Toca els costats per moure't
+            </div>
+        </div>
+
+        </div>
+
+        <script src="../../../js/rewards.js"></script>
+        <script>
+            // --- ASSET MANAGEMENT ---
+            const ASSETS = {
+                player: 'img/personatge.png',
+                bg: {
+                    'EDAT MITJANA': 'img/fonsedatmitjana.jpg',
+                    'RENAIXEMENT': 'img/fonsrenaixement.jpg',
+                    'BARROC': 'img/fonsbarroc.jpg',
+                    'CLASSICISME': 'img/fonsclassic.jpg',
+                    'ROMANTICISME': 'img/fonsromanticisme.jpg',
+                    'SEGLE XX': 'img/fonssegleXX.jpg'
+                }
+            };
+
+            const ERAS_DATA = {
+                "EDAT MITJANA": {
+                    correct: [
+                        { img: "img/castell.png", d: "Castells (Feudalisme)" },
+                        { img: "img/esglesia.png", d: "Esglésies (Teocentrisme)" },
+                        { img: "img/manuscrit.png", d: "Manuscrits (Cant Gregorià)" },
+                        { img: "img/espelma.png", d: "Il·luminació amb espelmes" }
+                    ],
+                    trap: [
+                        { img: "img/piano.png", d: "Piano (No existia)" },
+                        { img: "img/saxo.png", d: "Saxòfon (Molt modern)" },
+                        { img: "img/mobil.png", d: "Tecnologia moderna" }
+                    ]
+                },
+                "RENAIXEMENT": {
+                    correct: [
+                        { img: "img/impremta.png", d: "Impremta (Gutenberg)" },
+                        { img: "img/violadegamba.png", d: "Viola de Gamba" },
+                        { img: "img/cantcoral.png", d: "Cant Coral (Polifonia)" },
+                        { img: "img/partitura.png", d: "Partitures impreses" }
+                    ],
+                    trap: [
+                        { img: "img/guitarraelectrica.png", d: "Guitarra Elèctrica" },
+                        { img: "img/ordinador.png", d: "Ordinadors" },
+                        { img: "img/fabrica.png", d: "Fàbriques" }
+                    ]
+                },
+                "BARROC": {
+                    correct: [
+                        { img: "img/clave.png", d: "Clavicèmbal" },
+                        { img: "img/perruca.png", d: "Perruques" },
+                        { img: "img/violi.png", d: "Violí (Stradivarius)" },
+                        { img: "img/orgue.png", d: "Orgue d'Església" }
+                    ],
+                    trap: [
+                        { img: "img/bateria.png", d: "Bateria de Rock" },
+                        { img: "img/microfon.png", d: "Micròfon" },
+                        { img: "img/tren.png", d: "Tren d'Alta Velocitat" }
+                    ]
+                },
+                "CLASSICISME": {
+                    correct: [
+                        { img: "img/pianofortte.png", d: "Piano (Forte-piano)" },
+                        { img: "img/simfonia.png", d: "Simfonies (Mozart/Haydn)" },
+                        { img: "img/temple.png", d: "Neoclassicisme" },
+                        { img: "img/cervell.png", d: "Il·lustració (Raó)" }
+                    ],
+                    trap: [
+                        { img: "img/castell1.png", d: "Castells Medievals" },
+                        { img: "img/robot.png", d: "Robots" },
+                        { img: "img/futurisme.png", d: "Futurisme" }
+                    ]
+                },
+                "ROMANTICISME": {
+                    correct: [
+                        { img: "img/granpiano.png", d: "Gran Piano (Virtuosisme)" },
+                        { img: "img/tempesta.png", d: "Tempesta (Sentiments)" },
+                        { img: "img/cortrencat.png", d: "Amor Tràgic" },
+                        { img: "img/fantasma.png", d: "Misteri i Fantasia" }
+                    ],
+                    trap: [
+                        { img: "img/regle.png", d: "Racionalisme" },
+                        { img: "img/emoticonorisa.png", d: "Emojis (Modern)" },
+                        { img: "img/disquet.png", d: "Disquets" }
+                    ]
+                },
+                "SEGLE XX": {
+                    correct: [
+                        { img: "img/radio.png", d: "Ràdio" },
+                        { img: "img/electrica1.png", d: "Guitarra Elèctrica" },
+                        { img: "img/saxofon2.png", d: "Jazz / Saxo" },
+                        { img: "img/cinema.png", d: "Cinema" }
+                    ],
+                    trap: [
+                        { img: "img/pergami2.png", d: "Pergamins antics" },
+                        { img: "img/arcifletxa.png", d: "Arcs i fletxes" },
+                        { img: "img/corona.png", d: "Monarquia absoluta" }
+                    ]
+                }
+            };
+
+            const ERA_NAMES = Object.keys(ERAS_DATA);
+
+            // --- IMAGE CACHE ---
+            const IMAGES = {};
+
+            function preloadImages() {
+                // Player
+                const p = new Image(); p.src = ASSETS.player; IMAGES['player'] = p;
+
+                // Backgrounds
+                Object.values(ASSETS.bg).forEach(src => {
+                    const img = new Image(); img.src = src; IMAGES[src] = img;
+                });
+
+                // Items
+                for (let era in ERAS_DATA) {
+                    ERAS_DATA[era].correct.forEach(i => {
+                        if (!IMAGES[i.img]) { const im = new Image(); im.src = i.img; IMAGES[i.img] = im; }
+                    });
+                    ERAS_DATA[era].trap.forEach(i => {
+                        if (!IMAGES[i.img]) { const im = new Image(); im.src = i.img; IMAGES[i.img] = im; }
+                    });
+                }
+            }
+            preloadImages();
+
+            // --- AUDIO ---
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioCtx = new AudioContext();
+
+            function playSound(type) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'ding') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'alarm') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.square(800, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            }
+
+            // --- GAME ENGINE ---
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            let animationId;
+            let lastTime = 0;
+
+            // State
+            const state = {
+                screen: 'start', // start, game, gameover
+                mode: 'practice', // practice, mix
+                currentEra: 'BARROC',
+                score: 0,
+                lives: 3,
+                speed: 300,
+                laneWidth: 0,
+                playerLane: 1, // 0, 1, 2
+                items: [],
+                spawnTimer: 0,
+                mixTimer: 0,
+                mixInterval: 15000, // 15s
+                isAlarming: false,
+                isAlarming: false,
+                targetScore: 100,
+                bgY: 0,
+                completedEras: new Set()
+            };
+
+            // Resize
+            function resize() {
+                canvas.width = window.innerWidth > 600 ? 600 : window.innerWidth;
+                canvas.height = window.innerHeight;
+                state.laneWidth = canvas.width / 3;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // --- CLASSES ---
+            class Player {
+                constructor() {
+                    this.y = canvas.height - 120; // A bit higher
+                    this.width = 80;
+                    this.height = 80;
+                    this.targetX = state.laneWidth * 1.5;
+                    this.x = this.targetX;
+                }
+
+                update(dt) {
+                    // Smooth movement
+                    this.targetX = (state.playerLane * state.laneWidth) + (state.laneWidth / 2);
+                    this.x += (this.targetX - this.x) * 15 * dt;
+                }
+
+                draw(ctx) {
+                    ctx.save();
+                    // Draw Character Image
+                    const img = IMAGES['player'];
+                    if (img && img.complete) {
+                        // Center draw
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#00f3ff';
+                        ctx.drawImage(img, this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+                    } else {
+                        // Fallback
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText('🏃', this.x, this.y);
+                    }
+                    ctx.restore();
+                }
+            }
+
+            class Item {
+                constructor() {
+                    this.lane = Math.floor(Math.random() * 3);
+                    this.x = (this.lane * state.laneWidth) + (state.laneWidth / 2);
+                    this.y = -80;
+                    this.width = 75;
+                    this.height = 75;
+
+                    // Determine type based on CURRENT era rules
+                    const eraData = ERAS_DATA[state.currentEra];
+                    // 50% chance of correct item
+                    this.isCorrect = Math.random() < 0.5;
+
+                    let data;
+                    if (this.isCorrect) {
+                        const list = eraData.correct;
+                        data = list[Math.floor(Math.random() * list.length)];
+                    } else {
+                        const list = eraData.trap;
+                        data = list[Math.floor(Math.random() * list.length)];
+                    }
+                    this.imgSrc = data.img;
+                }
+
+                update(dt) {
+                    this.y += state.speed * dt;
+                }
+
+                draw(ctx) {
+                    ctx.save();
+                    const img = IMAGES[this.imgSrc];
+
+                    // Glow effect (User requested Blue Bubbles originally, 
+                    // but since these are high quality images, a subtle outer glow is better)
+
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.isCorrect ? '#00ff00' : '#ff0000'; // Hint glow? Or uniform blue?
+                    // Stick to "Bubble" theme -> Blue Aura
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(0, 243, 255, 0.6)';
+
+                    if (img && img.complete) {
+                        ctx.drawImage(img, this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+                    } else {
+                        ctx.fillStyle = 'red';
+                        ctx.fillRect(this.x, this.y, 50, 50);
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            const player = new Player();
+
+            // --- LOGIC ---
+            function switchEra() {
+                // Pick new random era different from current
+                let newEra;
+                do {
+                    newEra = ERA_NAMES[Math.floor(Math.random() * ERA_NAMES.length)];
+                } while (newEra === state.currentEra);
+
+                state.currentEra = newEra;
+
+                // Clear items to avoid unfair hits
+                state.items = [];
+
+                // Update HUD
+                document.getElementById('era-display').textContent = `ÈPOCA ACTUAL: ${state.currentEra}`;
+
+                // Visual Feedback
+                const overlay = document.getElementById('alarm-overlay');
+                overlay.classList.remove('hidden');
+                playSound('alarm');
+
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 2000);
+            }
+
+            function spawnItem() {
+                state.items.push(new Item());
+            }
+
+            function update(dt) {
+                // Background Scroll
+                state.bgY += (state.speed * 0.5) * dt;
+                if (state.bgY >= canvas.height) state.bgY = 0;
+
+                // Mix Mode Timer
+                if (state.mode === 'mix') {
+                    state.mixTimer += dt;
+                    if (state.mixTimer >= state.mixInterval / 1000) {
+                        switchEra();
+                        state.mixTimer = 0;
+                    }
+                }
+
+                // Speed ramp (slower increase)
+                state.speed = 300 + (state.score * 2);
+
+                // Player
+                player.update(dt);
+
+                // Spawning
+                state.spawnTimer += dt;
+                if (state.spawnTimer > 1.8 - (state.score * 0.005)) { // Spawn faster as score goes up
+                    spawnItem();
+                    state.spawnTimer = 0;
+                }
+
+                // Items
+                for (let i = state.items.length - 1; i >= 0; i--) {
+                    const item = state.items[i];
+                    item.update(dt);
+
+                    // Collision
+                    const dy = item.y - player.y; // Center to center check approx
+                    // Simple box-circle collision
+                    const dist = Math.sqrt(Math.pow(item.x - player.x, 2) + Math.pow(item.y - player.y, 2));
+
+                    if (dist < 60) { // Hit
+                        if (item.isCorrect) {
+                            state.score += 10;
+                            playSound('ding');
+                            if (state.score >= state.targetScore) {
+                                winGame();
+                                return;
+                            }
+                        } else {
+                            state.lives--;
+                            playSound('error');
+                            if (state.lives <= 0) endGame();
+                        }
+                        state.items.splice(i, 1);
+                        updateHUD();
+                        continue;
+                    }
+
+                    // Off screen
+                    if (item.y > canvas.height + 100) {
+                        state.items.splice(i, 1);
+                    }
+                }
+            }
+
+            function draw() {
+                // DRAW BACKGROUND
+                const bgSrc = ASSETS.bg[state.currentEra];
+                const bgImg = IMAGES[bgSrc];
+
+                if (bgImg && bgImg.complete) {
+                    // Efficient scrolling
+                    ctx.drawImage(bgImg, 0, state.bgY, canvas.width, canvas.height);
+                    ctx.drawImage(bgImg, 0, state.bgY - canvas.height, canvas.width, canvas.height);
+
+                    // Darken it slightly for contrast
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.fillStyle = '#050510';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+
+                // Moving Grid Lines (Overlay on top of bg?)
+                // Keep lane markers
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 2;
+                for (let i = 1; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * state.laneWidth, 0);
+                    ctx.lineTo(i * state.laneWidth, canvas.height);
+                    ctx.stroke();
+                }
+
+                // Player
+                player.draw(ctx);
+
+                // Items
+                state.items.forEach(item => item.draw(ctx));
+            }
+
+            function gameLoop(timestamp) {
+                if (state.screen !== 'game') return;
+
+                const dt = (timestamp - lastTime) / 1000;
+                lastTime = timestamp;
+
+                update(dt);
+                draw();
+
+                animationId = requestAnimationFrame(gameLoop);
+            }
+
+            function showInstructions(mode, era) {
+                state.mode = mode;
+                // If mix mode, pick random start era but show its items
+                const startEra = era || ERA_NAMES[Math.floor(Math.random() * ERA_NAMES.length)];
+                state.currentEra = startEra;
+
+                // Populate lists
+                document.getElementById('inst-title').textContent = mode === 'mix' ? `MODE MIX (Inici: ${startEra})` : startEra;
+
+                const data = ERAS_DATA[startEra];
+
+                const createList = (items) => items.map(item => `
+                <div class="instruction-item">
+                    <div class="inst-emoji"><img src="${item.img}" style="width:40px;height:40px;object-fit:contain;"></div>
+                    <div class="inst-desc">${item.d}</div>
+                </div>
+            `).join('');
+
+                document.getElementById('inst-correct').innerHTML = createList(data.correct);
+                document.getElementById('inst-trap').innerHTML = createList(data.trap);
+
+                showScreen('instruction');
+            }
+
+            function startGame() {
+                state.score = 0;
+                state.lives = 3;
+                state.items = [];
+                state.mixTimer = 0;
+                state.playerLane = 1;
+                player.x = state.laneWidth * 1.5;
+
+                document.getElementById('era-display').textContent = `ÈPOCA ACTUAL: ${state.currentEra}`;
+                updateHUD();
+
+                showScreen('game');
+                document.getElementById('hud').classList.remove('hidden');
+                document.getElementById('controls-hint').classList.remove('hidden');
+
+                lastTime = performance.now();
+                gameLoop(lastTime);
+            }
+
+            function endGame() {
+                state.screen = 'gameover';
+                document.getElementById('final-score').textContent = state.score;
+                document.getElementById('hud').classList.add('hidden');
+                document.getElementById('controls-hint').classList.add('hidden');
+                showScreen('gameover');
+            }
+
+            function winGame() {
+                state.screen = 'win';
+                document.getElementById('win-screen').classList.remove('hidden');
+                document.getElementById('hud').classList.add('hidden');
+                playSound('ding');
+
+                // Mark ERA as completed
+                if (state.mode !== 'mix') {
+                    state.completedEras.add(state.currentEra);
+                }
+
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'runner_mix',
+                        'Viatger Veloch',
+                        'Has corregut a través de la història!',
+                        '../../img/card_runner.png'
+                    );
+                }
+            }
+
+            function updateHUD() {
+                document.getElementById('score-val').textContent = state.score;
+                let hearts = '';
+                for (let i = 0; i < state.lives; i++) hearts += '❤';
+                document.querySelector('.lives').textContent = hearts;
+            }
+
+            // --- INPUT ---
+            window.addEventListener('keydown', (e) => {
+                if (state.screen !== 'game') return;
+                if (e.key === 'ArrowLeft') {
+                    if (state.playerLane > 0) state.playerLane--;
+                } else if (e.key === 'ArrowRight') {
+                    if (state.playerLane < 2) state.playerLane++;
+                }
+            });
+
+            canvas.addEventListener('pointerdown', (e) => {
+                if (state.screen !== 'game') return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+
+                if (x < canvas.width / 2) {
+                    if (state.playerLane > 0) state.playerLane--;
+                } else {
+                    if (state.playerLane < 2) state.playerLane++;
+                }
+            });
+
+            // --- UI ---
+            function showScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+                if (id !== 'game') {
+                    document.getElementById(id + '-screen').classList.remove('hidden');
+                }
+                state.screen = id;
+
+                // Regenerate buttons if showing start screen
+                if (id === 'start') {
+                    generateEraButtons();
+                }
+            }
+
+            // Generate Era Buttons
+            function generateEraButtons() {
+                const eraContainer = document.getElementById('era-buttons');
+                eraContainer.innerHTML = '';
+                ERA_NAMES.forEach(era => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    if (state.completedEras.has(era)) {
+                        btn.classList.add('completed');
+                    }
+                    btn.textContent = era;
+                    btn.onclick = () => showInstructions('practice', era);
+                    eraContainer.appendChild(btn);
+                });
+            }
+
+            document.getElementById('btn-mix').onclick = () => showInstructions('mix');
+            document.getElementById('btn-menu').onclick = () => showScreen('start');
+            document.getElementById('btn-win-menu').onclick = () => showScreen('start');
+            document.getElementById('btn-start-game').onclick = startGame;
+            document.getElementById('back-btn-game').onclick = () => {
+                cancelAnimationFrame(animationId);
+                showScreen('start');
+            };
+
+            // Rules Modal Logic
+            document.getElementById('btn-show-rules').onclick = () => {
+                document.getElementById('rules-modal').classList.remove('hidden');
+            };
+            document.getElementById('btn-close-rules').onclick = () => {
+                document.getElementById('rules-modal').classList.add('hidden');
+            };
+
+            // Audio Init
+            const bgMusic = document.getElementById('bg-music');
+            const volSlider = document.getElementById('volume-slider');
+            if (bgMusic) {
+                bgMusic.volume = 0.5;
+                if (volSlider) {
+                    volSlider.addEventListener('input', (e) => {
+                        bgMusic.volume = e.target.value;
+                    });
+                }
+                // Auto-play interaction
+                document.body.addEventListener('click', () => {
+                    if (bgMusic.paused) {
+                        bgMusic.play().catch(e => console.log("Audio play failed", e));
+                    }
+                }, { once: true });
+            }
+
+            // Init
+            showScreen('start');
+
+        </script>
+    </body>
+
+</html>

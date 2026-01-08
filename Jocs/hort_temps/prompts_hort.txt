@@ -1,0 +1,79 @@
+
+# HORT DEL TEMPS - PROMPTS CARTOON (ESTIL PVZ)
+
+**ESTIL GENERAL (STYLE GUIDE):**
+> "Plants vs Zombies Art Style. 2D Cartoon, Vector Art, Bold Outlines, Vibrant and Saturated Colors. Exaggerated proportions, fun and expressive. Non-realistic, game asset style. Isolated on white background (to be transparent PNG)."
+
+---
+
+## 1. UI GENERICA
+**[seed_packet.png]**
+A cartoon seed packet, beige paper texture with thick outlines. A bright green, chunky Question Mark "?" in the center. Looks like a game item.
+
+**[dirt_hole.png]**
+A stylized mound of dark brown dirt. Chunky, cartoonish texture. A clean black hole in the center.
+
+---
+
+## 2. FONS D'ESCENARI (BACKGROUNDS)
+**Format:** 16:9 Landscape
+**Prompt Prefix:** `2d game background, plants vs zombies cartoon style, vector art, --ar 16:9`
+
+### [bg_medieval.jpg] - Edat Mitjana (Hivern)
+A cartoon medieval monastery garden. Chunky grey stone walls with snow caps on top. A goofy, stylized stone chapel in the back. The ground has patches of white snow and dark dirt. Cold blue sky with swirl clouds.
+
+### [bg_renaixement.jpg] - Renaixement (Primavera)
+A bright, colorful Renaissance garden. Perfectly square green hedges (very geometric). A cute white marble fountain splashing blue water droplets. Tall, funny-looking cypress trees. Bright blue sky with a smiling sun vibe.
+
+### [bg_barroc.jpg] - Barroc (Tardor)
+A fancy, exaggerated Baroque garden. Everything is Gold and Orange. Over-the-top golden statues (cartoonish). Huge, leafy bushes with red autumn leaves. Intense, vibrant sunset colors (purple and orange sky).
+
+### [bg_classicisme.jpg] - Classicisme (Dia)
+A clean, simple English garden. Smooth, rounded green hills (Teletubbies style). A cute, mini Greek temple on a hill. A shiny blue lake. Very peaceful and bright pastel colors.
+
+### [bg_romanticisme.jpg] - Romanticisme (Fosc)
+A spooky, Halloween-style garden. Twisted, scary trees with faces in the bark (subtle). Old ruins covered in purple ivy. Dark blue sky with a zig-zag yellow lightning bolt. Foggy and fun-scary.
+
+### [bg_segle_xx.jpg] - Segle XX (Sci-Fi)
+A futuristic cartoon lab. Glass dome roof. Neon purple grow-lights. Pipes and metal panels with rivets. Plants growing in test tubes. High-tech, clean, and alien-looking.
+
+---
+
+## 3. PLANTES PER CONCEPTE (24 TOTAL)
+**Prompt Prefix:** `single potted plant, full screen, isolated on white background, plants vs zombies style, bold lines`
+
+### EDAT MITJANA (Medieval)
+*   **[cant_gregoria.png]**: A cartoon **White Lily** standing straight up like a soldier. Minimalist and holy.
+*   **[monodia.png]**: A single **Wheat Stalk** with big eyes (optional) or just very expressive single line.
+*   **[neumes.png]**: A **Fern** where the leaves are shaped like distinct square blocks.
+*   **[trobador.png]**: A prickly **Bramble** holding a small wooden lute.
+
+### RENAIXEMENT (Primavera)
+*   **[polifonia.png]**: A braided **Ivy** plant. The stems are thick and woven together like a rope.
+*   **[madrigal.png]**: A bush with **5 Singing Flowers** (faces with open mouths singing).
+*   **[llaut.png]**: A **Pear** fruit shaped exactly like a Lute instrument. Funny and round.
+*   **[humanisme.png]**: A **Tree Man**. A wide oak tree that looks perfectly symmetrical, Da Vinci style but cartoon.
+
+### BARROC (Tardor)
+*   **[baix_continu.png]**: A plant with HUGE **Feet/Roots** stomping the ground. Supporting a small stem.
+*   **[clavicembal.png]**: A spiky **Thistle** with sharp metallic gold tips. Looks aggressive and fancy.
+*   **[fuga.png]**: A **Hypno-Vine**. A spiral plant that loops around itself dizzily.
+*   **[ornament.png]**: A giant **Pink Carnation** with WAY too many petals. Explosively fluffy.
+
+### CLASSICISME (Equilibri)
+*   **[simfonia.png]**: A bouquet of **Hydrangeas**. Many small flower heads forming one big round head.
+*   **[sonata.png]**: A **Double Cherry** or plant with two identical heads mirroring each other.
+*   **[equilibri.png]**: A **Bonsai** balancing on one tiny point root. Perfectly steady.
+*   **[clarinet.png]** (Clarinet): A **Bamboo** stick that looks like a clarinet (black with silver rings).
+
+### ROMANTICISME (Tempesta)
+*   **[passio.png]**: A **Bleeding Heart** flower. Bright red, dripping shape, dramatic expression.
+*   **[lied.png]**: A tiny, sad **Violet** hiding under a big leaf. Cute and shy.
+*   **[piano.png]**: A **Sunflower** but the petals are black and white keys.
+*   **[poema_simfonic.png]**: A vine shaped like a **Sword**. Epic and heroic.
+
+### SEGLE XX (Futur)
+*   **[atonalitat.png]**: A **Crazy Cactus**. Spikes going everywhere, eyes looking different directions. Confused.
+*   **[dodecafonisme.png]**: A geometric plant with exactly **12 Cube Leaves**. Mathematical.
+*   **[soroll.png]**: A **Glitch Plant**. Pixelated edges, static noise colors (TV static).
+*   **[electronica.png]**: A **Robo-Plant**. Metal leaves, glowing blue wires, LED lights.

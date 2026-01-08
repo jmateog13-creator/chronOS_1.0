@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmony Hunter: La Plaga Disonante</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000 url('img/fonsextern.jpg');
+            background-size: cover;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            width: 1000px;
+            height: 800px;
+            background: #000;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.6);
+            border: 8px solid #d4af37;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            /* Retro look */
+        }
+
+        #hud {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: #222;
+            border-top: 4px solid #444;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px #000;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: gold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #ddd;
+        }
+
+        .controls {
+            margin: 20px 0;
+            border: 1px solid #555;
+            padding: 10px;
+            background: #222;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 24px;
+            background: #d00;
+            color: white;
+            border: 4px solid #fff;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: #f00;
+        }
+
+        .stat {
+            color: gold;
+        }
+
+        .weapon-display {
+            width: 150px;
+            height: 50px;
+            background: #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #666;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        #pause-btn {
+            background: #444;
+            border: 2px solid gold;
+            color: gold;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        #pause-btn:hover {
+            background: gold;
+            color: black;
+        }
+
+        /* Trivia Modal */
+        #trivia-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #trivia-question {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: gold;
+            text-align: center;
+        }
+
+        .trivia-btn {
+            width: 80%;
+            padding: 10px;
+            margin: 5px;
+            background: #333;
+            color: white;
+            border: 2px solid #555;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .trivia-btn:hover {
+            background: #444;
+            border-color: gold;
+        }
+
+        .trivia-btn.correct {
+            background: green;
+        }
+
+        .trivia-btn.wrong {
+            background: red;
+        }
+
+        /* Transition Overlay */
+        #transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 4px solid gold;
+        }
+
+        #transition-era {
+            font-size: 36px;
+            color: gold;
+            margin-bottom: 20px;
+        }
+
+        .transition-section {
+            background: #222;
+            border: 2px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            width: 80%;
+        }
+
+        .transition-label {
+            color: #888;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .transition-value {
+            font-size: 20px;
+            color: #fff;
+        }
+
+        /* General Overlay Style */
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #pause-overlay {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        #gameover-overlay {
+            background: rgba(100, 0, 0, 0.9);
+            border: 10px solid black;
+        }
+
+        .shimmer {
+            animation: shimmer-effect 2s infinite;
+        }
+
+        @keyframes shimmer-effect {
+            0% {
+                color: gold;
+            }
+
+            50% {
+                color: #fff;
+            }
+
+            100% {
+                color: gold;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <canvas id="screen" width="640" height="480"></canvas>
+
+        <div id="start-screen">
+            <h1 class="shimmer">Harmony Hunter</h1>
+            <h2 style="color: #aaa; margin-top: -15px; font-size: 18px;">LA PLAGA DISSONANT</h2>
+            <p>Restaura l'harmonia viatjant a través de les èpoques.</p>
+
+            <div class="controls">
+                <p>⌨️ <strong>W/A/S/D:</strong> Moure | <strong>RATOLÍ:</strong> Apuntar i Disparar</p>
+                <p>🖱️ <strong>CLIC:</strong> Disparar | <strong>R:</strong> Recarregar</p>
+                <p>⏸️ <strong>P:</strong> Pausa (Allibera ratolí)</p>
+            </div>
+
+            <p style="font-size: 14px; color: gold;">OBJECTIU: Recupera els 5 Fragments Musicals d'or (🎵)</p>
+
+            <button onclick="startGame()">INICIAR VIATGE TEMPORAL</button>
+        </div>
+
+        <div id="trivia-overlay">
+            <h2 id="trivia-title">TRIVIA MUSICAL</h2>
+            <p id="trivia-question">Pregunta aquí?</p>
+            <div id="trivia-options">
+                <button class="trivia-btn" onclick="checkTrivia(0)">Opció A</button>
+                <button class="trivia-btn" onclick="checkTrivia(1)">Opció B</button>
+                <button class="trivia-btn" onclick="checkTrivia(2)">Opció C</button>
+            </div>
+        </div>
+
+        <div id="transition-overlay">
+            <h2 id="transition-label">SALT TEMPORAL...</h2>
+            <div id="transition-era">NOVA ÈPOCA</div>
+
+            <div class="transition-section">
+                <div class="transition-label">ARMA ÚNICA</div>
+                <div id="transition-weapon" class="transition-value">CRONOPISTOLA</div>
+            </div>
+
+            <div class="transition-section">
+                <div class="transition-label">NOVES AMENACES</div>
+                <div id="transition-enemies" class="transition-value">ENEMICS</div>
+            </div>
+
+            <button onclick="closeTransition()" style="margin-top: 20px;">CONTINUAR</button>
+        </div>
+
+        <div id="pause-overlay" class="game-overlay">
+            <h1 style="font-size: 64px;">PAUSA</h1>
+            <p>EL TEMPS S'HA ATURAT</p>
+            <p style="font-size: 14px; color: gold;">Fes clic al joc per reprendre el control del ratolí.</p>
+            <button onclick="togglePause()">REPRENDRE</button>
+        </div>
+
+        <div id="gameover-overlay" class="game-overlay">
+            <h1 style="font-size: 48px; color: white;">FI DEL JOC</h1>
+            <p id="gameover-msg" style="color: #ffcccc;">Has estat silenciat per la dissonància.</p>
+            <button onclick="location.reload()"
+                style="background: white; color: black; border-color: black;">REINTENTAR</button>
+        </div>
+
+        <div id="hud">
+            <div id="stats" style="display: flex; gap: 20px; align-items: center;">
+                <div>BALES: <span id="ammo" class="stat">20</span></div>
+                <div>SALUT: <span id="health" class="stat">100%</span></div>
+                <div id="score">FRAGMENTS: 0/5</div>
+            </div>
+            <button id="pause-btn" onclick="togglePause()">⏸</button>
+            <div class="weapon-display">CRONOPISTOLA</div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONSTANTS ---
+        const SCREEN_WIDTH = 800;
+        const SCREEN_HEIGHT = 600;
+        const TICK_RATE = 30;
+        const FOV = Math.PI / 3;
+        const BLOCK_SIZE = 64;
+        const MAP_SIZE = 16;
+        const SPEED = 4.0;
+        const ROT_SPEED = 3.0;
+
+        // --- STATE ---
+        let canvas, ctx;
+        let pX = 3.5 * BLOCK_SIZE;
+        let pY = 3.5 * BLOCK_SIZE;
+        let pDir = 0; // Angle in radians
+        let keys = {};
+        let gameInterval;
+
+        // Assets
+        const ASSETS = {
+            pistola: new Image(),
+            pocio: new Image(),
+            fragment: new Image(),
+            projectil: new Image(),
+            enemies: {}
+        };
+
+        let assetsLoaded = 0;
+        const totalAssets = 4 + 14; // pistola, pocio, fragment, projectil + 14 enemy types
+
+        function loadAssets(callback) {
+            const onload = () => {
+                assetsLoaded++;
+                if (assetsLoaded === totalAssets) callback();
+            };
+            const onerror = (e) => {
+                console.warn("Failed to load asset:", e.target.src);
+                assetsLoaded++;
+                if (assetsLoaded === totalAssets) callback();
+            };
+
+            ASSETS.pistola.onload = onload;
+            ASSETS.pistola.onerror = onerror;
+            ASSETS.pistola.src = 'img/pistola.png';
+
+            ASSETS.pocio.onload = onload;
+            ASSETS.pocio.onerror = onerror;
+            ASSETS.pocio.src = 'img/pocio.png';
+
+            ASSETS.fragment.onload = onload;
+            ASSETS.fragment.onerror = onerror;
+            ASSETS.fragment.src = 'img/fragmentmusical.png';
+
+            ASSETS.projectil.onload = onload;
+            ASSETS.projectil.onerror = onerror;
+            ASSETS.projectil.src = 'img/projectil.png';
+
+            const enemyFiles = [
+                'monjo', 'gargola', 'bufo', 'verdugo', 'fantasma', 'armadura',
+                'compositor', 'estatuamarbre', 'vampir', 'homellop', 'soldat',
+                'entitatdegas', 'glitchmonster', 'virusinformatic'
+            ];
+
+            enemyFiles.forEach(name => {
+                ASSETS.enemies[name] = new Image();
+                ASSETS.enemies[name].onload = onload;
+                ASSETS.enemies[name].onerror = onerror;
+                ASSETS.enemies[name].src = `img/${name}.png`;
+            });
+        }
+
+        // Audio Manager
+        const music = {
+            current: null,
+            next: null,
+            fadeDuration: 2000,
+            play: function (fileName) {
+                if (this.current && this.current.src.includes(fileName)) return;
+
+                this.next = new Audio(`audio/${fileName}`);
+                this.next.loop = true;
+                this.next.volume = 0;
+                this.next.play();
+
+                const steps = 20;
+                const interval = this.fadeDuration / steps;
+                const volStep = 1 / steps;
+
+                let count = 0;
+                const fade = setInterval(() => {
+                    count++;
+                    if (this.current) {
+                        this.current.volume = Math.max(0, 1 - (count * volStep));
+                    }
+                    this.next.volume = Math.min(1, count * volStep);
+
+                    if (count >= steps) {
+                        clearInterval(fade);
+                        if (this.current) {
+                            this.current.pause();
+                            this.current = null;
+                        }
+                        this.current = this.next;
+                        this.next = null;
+                        this.current.volume = 1;
+                    }
+                }, interval);
+            }
+        };
+
+        let gameState = {
+            score: 0,
+            era: 1,
+            eraName: 'EDAT MITJANA',
+            ammo: 20,
+            health: 100,
+            projectiles: [],
+            potions: [],
+            fragments: [],
+            fragmentsCollected: 0,
+            isPaused: false,
+            invulnTimer: 0,
+            askedQuestions: [],
+            activeFragment: null
+        };
+
+        let damageFlash = 0.0;
+
+        // Items config
+        const ITEMS_PER_LEVEL = { potions: 3, fragments: 5, enemies: 5 };
+
+        const PROJECTILE_SPEED = 12.0;
+
+        const ERAS = [
+            { id: 1, name: 'EDAT MITJANA', weapon: 'CRONOPISTOLA', audio: 'mitjana.m4a', sky: '#111', wall: [100, 100, 100] },
+            { id: 2, name: 'RENAIXEMENT', weapon: 'CRONOPISTOLA', audio: 'renaixement.m4a', sky: '#2a2a2a', wall: [150, 50, 50] },
+            { id: 3, name: 'BARROC', weapon: 'CRONOPISTOLA', audio: 'barroc.m4a', sky: '#443300', wall: [200, 180, 50] },
+            { id: 4, name: 'CLASSICISME', weapon: 'CRONOPISTOLA', audio: 'classicisme.m4a', sky: '#CCCCFF', wall: [220, 220, 200] },
+            { id: 5, name: 'ROMANTICISME', weapon: 'CRONOPISTOLA', audio: 'romanticisme.m4a', sky: '#220022', wall: [100, 20, 50] },
+            { id: 6, name: 'SEGLE XX', weapon: 'CRONOPISTOLA', audio: 'segleXX.m4a', sky: '#002233', wall: [50, 100, 100] },
+            { id: 7, name: 'ACTUALITAT', weapon: 'CRONOPISTOLA', audio: 'actualitat.m4a', sky: '#000000', wall: [50, 255, 50] }
+        ];
+
+        // ...
+
+        // --- ENTITIES ---
+        const SPRITE_SIZE = 64;
+        let enemies = [];
+
+        const ENEMY_TYPES = {
+            1: [ // Medieval
+                { name: 'Monjo', hp: 80, speed: 0.1, damage: 1, img: 'monjo' },
+                { name: 'Gargola', hp: 40, speed: 0.18, damage: 2, img: 'gargola' }
+            ],
+            2: [ // Renaixement
+                { name: 'Bufó', hp: 60, speed: 0.15, damage: 1, img: 'bufo' },
+                { name: 'Verdugo', hp: 100, speed: 0.08, damage: 3, img: 'verdugo' }
+            ],
+            3: [ // Barroc
+                { name: 'Fantasma', hp: 50, speed: 0.12, damage: 1, img: 'fantasma' },
+                { name: 'Armadura', hp: 120, speed: 0.05, damage: 4, img: 'armadura' }
+            ],
+            4: [ // Classicisme
+                { name: 'Director', hp: 70, speed: 0.14, damage: 2, img: 'compositor' },
+                { name: 'Marbre', hp: 110, speed: 0.06, damage: 3, img: 'estatuamarbre' }
+            ],
+            5: [ // Romanticisme
+                { name: 'Vampir', hp: 70, speed: 0.16, damage: 2, img: 'vampir' },
+                { name: 'Llop', hp: 50, speed: 0.20, damage: 1, img: 'homellop' }
+            ],
+            6: [ // Segle XX
+                { name: 'Soldat', hp: 90, speed: 0.1, damage: 3, img: 'soldat' },
+                { name: 'Gas', hp: 30, speed: 0.25, damage: 1, img: 'entitatdegas' }
+            ],
+            7: [ // Actualitat
+                { name: 'Glitch', hp: 150, speed: 0.05, damage: 5, img: 'glitchmonster' },
+                { name: 'Virus', hp: 40, speed: 0.22, damage: 2, img: 'virusinformatic' }
+            ]
+        };
+
+        const ARTIFACTS_BY_ERA = {
+            1: [
+                { name: 'Pergamí Gregorià', img: 'fragment' },
+                { name: 'Càpsula de Monjo', img: 'fragment' },
+                { name: 'Càlix Sagrat', img: 'fragment' },
+                { name: 'Flauta de Fusta', img: 'fragment' },
+                { name: 'Creu Processional', img: 'fragment' }
+            ],
+            2: [
+                { name: "Full d'Impremta", img: 'fragment' },
+                { name: 'Vihuela de Mà', img: 'fragment' },
+                { name: 'Dibuix de Da Vinci', img: 'fragment' },
+                { name: 'Llibre de Madrigals', img: 'fragment' },
+                { name: 'Compàs de Navegant', img: 'fragment' }
+            ],
+            3: [
+                { name: "Tecla d'Orgue", img: 'fragment' },
+                { name: 'Partitura de Vivaldi', img: 'fragment' },
+                { name: 'Perruca de Pols', img: 'fragment' },
+                { name: 'Ploma de Tinter', img: 'fragment' },
+                { name: 'Ventall Blau', img: 'fragment' }
+            ],
+            4: [
+                { name: 'Martell de Piano', img: 'fragment' },
+                { name: 'Metrònom de Fusta', img: 'fragment' },
+                { name: 'Simfonia de Haydn', img: 'fragment' },
+                { name: 'Cravat de Silk', img: 'fragment' },
+                { name: 'Fragment de Marbre', img: 'fragment' }
+            ],
+            5: [
+                { name: 'Nocturn de Chopin', img: 'fragment' },
+                { name: 'Primer Saxofon', img: 'fragment' },
+                { name: 'Flor Seva', img: 'fragment' },
+                { name: 'Diari Íntim', img: 'fragment' },
+                { name: 'Llaç de Terciopel', img: 'fragment' }
+            ],
+            6: [
+                { name: 'Disc de Vinil', img: 'fragment' },
+                { name: 'Vàlvula de Ràdio', img: 'fragment' },
+                { name: 'Cinta de Casset', img: 'fragment' },
+                { name: 'Tecla de Sintetitzador', img: 'fragment' },
+                { name: 'Pòster del Woodstock', img: 'fragment' }
+            ],
+            7: [
+                { name: 'Memòria USB', img: 'fragment' },
+                { name: 'Telèfon Intel·ligent', img: 'fragment' },
+                { name: 'Auriculars Sens Fils', img: 'fragment' },
+                { name: 'Ona Sonora', img: 'fragment' },
+                { name: 'Casc de VR', img: 'fragment' }
+            ],
+        };
+
+        const TRIVIA_QUESTIONS = {
+            1: [ // Medieval
+                { q: "Quin estil de cant a capella era predominant?", a: ["Cant Gregorià", "Òpera", "Jazz"], correct: 0 },
+                { q: "Quin instrument és típic de l'Edat Mitjana?", a: ["Sintetitzador", "Llaüt", "Saxofon"], correct: 1 },
+                { q: "Com s'anomenaven els poetes-músics francesos?", a: ["Rapers", "Trobadors", "DJs"], correct: 1 },
+                { q: "Quina era la funció principal de la música?", a: ["Religiosa/Cortès", "Publicitat", "Venda de discos"], correct: 0 },
+                { q: "Quin d'aquests NOTA existia ja?", a: ["Ut (Do)", "Si bemoll", "Fa sostingut"], correct: 0 }
+            ],
+            2: [ // Renaixement
+                { q: "Què significa 'Polifonia'?", a: ["Una sola veu", "Moltes veus simultànies", "Música sense veu"], correct: 1 },
+                { q: "Quin compositor és famós en aquesta època?", a: ["Bach", "Palestrina", "Mozart"], correct: 1 },
+                { q: "Quin d'aquests instruments és corda premuda?", a: ["Vihuela", "Trompeta", "Tímbal"], correct: 0 },
+                { q: "Quin gènere profà vocal va destacar a Itàlia?", a: ["Madrigal", "Motet", "Missa"], correct: 0 },
+                { q: "Gràcies a què es va difondre més la música?", a: ["Internet", "Impremta", "Ràdio"], correct: 1 }
+            ],
+            3: [ // Barroc
+                { q: "Qui va compondre 'Les Quatre Estacions'?", a: ["Vivaldi", "Handel", "Bach"], correct: 0 },
+                { q: "Quin gènere dramàtic neix al Barroc?", a: ["Òpera", "Musical", "Thriller"], correct: 0 },
+                { q: "Quin instrument de teclat és el rei del Barroc?", a: ["Piano", "Clavicèmbal", "Acordió"], correct: 1 },
+                { q: "Què és el 'Baix Continu'?", a: ["Un solo de bateria", "Un acompanyament constant", "Un cant d'ocell"], correct: 1 },
+                { q: "Quin d'aquests és un compositor barroc?", a: ["Beethoven", "Bach", "Chopin"], correct: 1 }
+            ],
+            4: [ // Classicisme
+                { q: "Quin d'aquests és el 'Pare de la Simfonia'?", a: ["Haydn", "Mozart", "Beethoven"], correct: 0 },
+                { q: "On era el centre musical del món?", a: ["Londres", "Viena", "Barcelona"], correct: 1 },
+                { q: "Com és la melodia clàssica?", a: ["Molt complexa", "Clara i equilibrada", "Atonal"], correct: 1 },
+                { q: "Quin instrument substitueix el clavicèmbal?", a: ["Piano", "Orgue", "Guitarra"], correct: 0 },
+                { q: "A qui servia principalment la música?", a: ["Al poble", "A l'aristocràcia", "Als bancs"], correct: 1 }
+            ],
+            5: [ // Romanticisme
+                { q: "Què expressa principalment aquesta música?", a: ["Sentiments i emocions", "Lògica pura", "Res"], correct: 0 },
+                { q: "Qui va compondre la 9a Simfonia?", a: ["Beethoven", "Wagner", "Liszt"], correct: 0 },
+                { q: "Quin instrument va arribar a la seva plenitud?", a: ["Piano", "Llaüt", "Arpa"], correct: 0 },
+                { q: "Què és un 'Poema Simfònic'?", a: ["Un vers curtet", "Música que narra una història", "Un tipus de sopes"], correct: 1 },
+                { q: "Quin compositor polonès és el rei del piano?", a: ["Chopin", "Verdi", "Brahms"], correct: 0 }
+            ],
+            6: [ // Segle XX
+                { q: "Quin d'aquests estils neix al Segle XX?", a: ["Barroc", "Impressionisme", "Renaixement"], correct: 1 },
+                { q: "Quin gènere americà influeix molt?", a: ["Jazz", "Cant Gregorià", "Flamenc"], correct: 0 },
+                { q: "Quin tipus de música utilitza sons gravats?", a: ["Música Concreta", "Música sacra", "Rock"], correct: 0 },
+                { q: "Quin compositor va crear el dodecafonisme?", a: ["Schönberg", "Debussy", "Stravinsky"], correct: 0 },
+                { q: "Quina revolució tecnològica apareix?", a: ["L'electricitat/Sintetitzador", "La roda", "El foc"], correct: 0 }
+            ],
+            7: [ // Actualitat
+                { q: "Què defineix la música actual?", a: ["Dissonància total", "Pluralitat d'estils", "Només flauta dolça"], correct: 1 },
+                { q: "Quin paper té la informàtica?", a: ["Cap", "Fonamental (DAWs)", "Només per jugar"], correct: 1 },
+                { q: "Què és un 'Home Studio'?", a: ["Estudi a casa", "Estudi d'homes", "Una tenda de mobles"], correct: 0 },
+                { q: "Quin estil és global actualment?", a: ["Música Urbana/Electrònica", "Polifonia flamenca", "Barroc digital"], correct: 0 },
+                { q: "Com es consumeix la música avui?", a: ["Només en viu", "Streaming/Digital", "Cassets"], correct: 1 }
+            ]
+        };
+
+        // Simple Map (1 = Wall, 0 = Empty)
+        const map = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1], // Opened up
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ];
+
+        function init() {
+            canvas = document.getElementById('screen');
+            ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            window.addEventListener('keydown', e => {
+                keys[e.key.toLowerCase()] = true;
+                if (e.key.toLowerCase() === 'p') togglePause();
+            });
+            window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+            // Mouse Controls
+            canvas.addEventListener('mousedown', e => {
+                if (!gameState.isPaused && e.button === 0) {
+                    if (shootCooldown === 0 && gameState.ammo > 0) {
+                        shoot();
+                        shootCooldown = 15;
+                    }
+                }
+            });
+
+            window.addEventListener('mousemove', e => {
+                if (document.pointerLockElement === canvas && !gameState.isPaused) {
+                    pDir += e.movementX * 0.003; // Sensitivity
+                }
+            });
+
+            // Pointer Lock Change listener
+            document.addEventListener('pointerlockchange', () => {
+                if (document.pointerLockElement !== canvas && !gameState.isPaused && gameState.health > 0) {
+                    togglePause(); // Auto-pause if lock released (e.g. Esc)
+                }
+            });
+
+            loadAssets(() => {
+                console.log("Assets loaded!");
+                spawnItems();
+                updateHUD();
+            });
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            if (canvas && canvas.requestPointerLock) {
+                canvas.requestPointerLock();
+            }
+            if (gameInterval) clearInterval(gameInterval);
+
+            // New Game Setup
+            spawnItems();
+            spawnEnemies();
+
+            // Start music
+            const firstEra = ERAS.find(e => e.id === gameState.era);
+            if (firstEra) music.play(firstEra.audio);
+
+            gameInterval = setInterval(gameLoop, 1000 / TICK_RATE);
+            updateHUD();
+        }
+
+        function spawnItems() {
+            // Clear existing
+            gameState.potions = [];
+            gameState.fragments = [];
+
+            // Spawn Potions
+            for (let i = 0; i < ITEMS_PER_LEVEL.potions; i++) spawnEntity(gameState.potions, 'pocio');
+
+            // Spawn Fragments (Era-specific artifacts)
+            let artList = ARTIFACTS_BY_ERA[gameState.era] || ARTIFACTS_BY_ERA[1];
+            for (let i = 0; i < ITEMS_PER_LEVEL.fragments; i++) {
+                let art = artList[i % artList.length];
+                spawnEntity(gameState.fragments, art.img, art.name);
+            }
+        }
+
+        function spawnEntity(array, imgKey, name = "") {
+            let placed = false;
+            while (!placed) {
+                let rX = Math.floor(Math.random() * 14) + 1;
+                let rY = Math.floor(Math.random() * 14) + 1;
+                if (map[rY][rX] === 0) {
+                    array.push({
+                        x: rX * BLOCK_SIZE + BLOCK_SIZE / 2,
+                        y: rY * BLOCK_SIZE + BLOCK_SIZE / 2,
+                        active: true,
+                        img: imgKey,
+                        name: name
+                    });
+                    placed = true;
+                }
+            }
+        }
+
+
+
+        function spawnEnemy(type) {
+            let placed = false;
+            let attempts = 0;
+            while (!placed && attempts < 50) {
+                attempts++;
+                // Arc of ±90 degrees from current pDir
+                let angle = pDir + (Math.random() - 0.5) * Math.PI;
+                let dist = (Math.random() * 6 + 4) * BLOCK_SIZE; // Further away
+                let rX = pX + Math.cos(angle) * dist;
+                let rY = pY + Math.sin(angle) * dist;
+
+                let mX = Math.floor(rX / BLOCK_SIZE);
+                let mY = Math.floor(rY / BLOCK_SIZE);
+
+                if (mX >= 0 && mX < MAP_SIZE && mY >= 0 && mY < MAP_SIZE && map[mY][mX] === 0) {
+                    enemies.push({
+                        x: rX,
+                        y: rY,
+                        hp: type.hp,
+                        maxHp: type.hp, // Store max hp
+                        speed: type.speed,
+                        damage: type.damage,
+                        name: type.name,
+                        img: type.img,
+                        active: true
+                    });
+                    placed = true;
+                }
+            }
+        }
+
+        function spawnEnemies() {
+            enemies = [];
+            let types = ENEMY_TYPES[gameState.era] || ENEMY_TYPES[1];
+            for (let i = 0; i < ITEMS_PER_LEVEL.enemies; i++) {
+                spawnEnemy(types[i % types.length]);
+            }
+        }
+
+        // Z-Buffer for sprite occlusion
+        let zBuffer = new Array(SCREEN_WIDTH).fill(0);
+
+        let shootCooldown = 0;
+        let flashTimer = 0;
+
+        function gameLoop() {
+            if (!gameState.isPaused) {
+                update();
+            }
+            draw();
+        }
+
+        function update() {
+            // Rotation
+            if (keys['ArrowLeft'] || keys['a']) pDir -= ROT_SPEED * 0.05;
+            if (keys['ArrowRight'] || keys['d']) pDir += ROT_SPEED * 0.05;
+
+            // Movement
+            let moveStep = 0;
+            if (keys['ArrowUp'] || keys['w']) moveStep = SPEED;
+            if (keys['ArrowDown'] || keys['s']) moveStep = -SPEED;
+
+            if (moveStep !== 0) {
+                let newX = pX + Math.cos(pDir) * moveStep;
+                let newY = pY + Math.sin(pDir) * moveStep;
+
+                // Wall Collision (Simple Box)
+                if (map[Math.floor(newY / BLOCK_SIZE)][Math.floor(newX / BLOCK_SIZE)] === 0) {
+                    pX = newX;
+                    pY = newY;
+                }
+            }
+
+            // Shooting
+            if (shootCooldown > 0) shootCooldown--;
+            if ((keys[' '] || keys['Control']) && shootCooldown === 0) {
+                if (gameState.ammo > 0) {
+                    shoot();
+                    shootCooldown = 15; // Fire rate
+                }
+            }
+
+            // Reloading
+            if (keys['r'] || keys['R']) {
+                gameState.ammo = 20;
+                updateHUD();
+            }
+
+            if (flashTimer > 0) flashTimer--;
+            if (damageFlash > 0) damageFlash -= 0.05;
+
+            checkItemCollisions();
+
+            // Projectiles Logic
+            gameState.projectiles.forEach(proj => {
+                if (!proj.active) return;
+
+                // Move
+                proj.x += Math.cos(proj.dir) * PROJECTILE_SPEED;
+                proj.y += Math.sin(proj.dir) * PROJECTILE_SPEED;
+
+                // Wall Collision
+                if (map[Math.floor(proj.y / BLOCK_SIZE)][Math.floor(proj.x / BLOCK_SIZE)] !== 0) {
+                    proj.active = false;
+                }
+
+                // Enemy Collision
+                if (proj.active) {
+                    enemies.forEach(e => {
+                        if (!e.active) return;
+                        let dx = proj.x - e.x;
+                        let dy = proj.y - e.y;
+                        if (Math.sqrt(dx * dx + dy * dy) < BLOCK_SIZE / 2) {
+                            e.hp -= 50;
+                            proj.active = false; // Bullet destroys on hit
+                            if (e.hp <= 0) {
+                                e.active = false;
+                                gameState.score += 100;
+                                updateHUD();
+
+                                // Respawn same type in front of player after a delay
+                                setTimeout(() => {
+                                    let types = ENEMY_TYPES[gameState.era] || ENEMY_TYPES[1];
+                                    let originalType = types.find(t => t.img === e.img) || types[0];
+                                    spawnEnemy(originalType);
+                                }, 3000); // 3 seconds delay
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Clean projectiles
+            gameState.projectiles = gameState.projectiles.filter(p => p.active);
+
+            // Enemy Logic (Simple Chase & Attack)
+            enemies.forEach(e => {
+                if (!e.active) return;
+                let dx = pX - e.x;
+                let dy = pY - e.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist > BLOCK_SIZE && dist < 12 * BLOCK_SIZE) {
+                    // USE ENEMY SPEED
+                    let enemySpeed = (e.speed || 0.1) * SPEED;
+                    e.x += (dx / dist) * enemySpeed;
+                    e.y += (dy / dist) * enemySpeed;
+                }
+
+                // Damage Player
+                if (dist < BLOCK_SIZE * 1.0) {
+                    takeDamage(e.damage || 1);
+                }
+
+                // Physics Pushback
+                if (dist < BLOCK_SIZE * 0.7) {
+                    pX += (dx / dist) * 5;
+                    pY += (dy / dist) * 5;
+                }
+            });
+
+            if (gameState.invulnTimer > 0) gameState.invulnTimer--;
+
+            checkEra();
+        }
+
+        function checkItemCollisions() {
+            // Potions
+            gameState.potions.forEach(p => {
+                if (!p.active) return;
+                let dist = Math.sqrt((pX - p.x) ** 2 + (pY - p.y) ** 2);
+                if (dist < BLOCK_SIZE / 2) {
+                    p.active = false;
+                    gameState.health = Math.min(100, gameState.health + 20);
+                    updateHUD();
+                }
+            });
+
+            // Fragments
+            gameState.fragments.forEach(f => {
+                if (!f.active) return;
+                let dist = Math.sqrt((pX - f.x) ** 2 + (pY - f.y) ** 2);
+                if (dist < BLOCK_SIZE / 2) {
+                    // Start Trivia instead of immediate collection
+                    startTrivia(f);
+                }
+            });
+        }
+
+        let currentTrivia = null;
+        let currentTriviaIndex = -1;
+
+        function startTrivia(fragment) {
+            gameState.isPaused = true;
+            if (canvas && canvas.requestPointerLock) {
+                try { document.exitPointerLock(); } catch (e) { }
+            }
+            gameState.activeFragment = fragment;
+
+            let questions = TRIVIA_QUESTIONS[gameState.era];
+
+            // Filter available questions
+            let available = [];
+            questions.forEach((q, i) => {
+                if (!gameState.askedQuestions.includes(i)) available.push(i);
+            });
+
+            // If all asked (shouldn't happen with 5 per level), reset or just pick random
+            if (available.length === 0) {
+                available = questions.map((_, i) => i);
+                gameState.askedQuestions = [];
+            }
+
+            currentTriviaIndex = available[Math.floor(Math.random() * available.length)];
+            currentTrivia = questions[currentTriviaIndex];
+
+            document.getElementById('trivia-question').innerText = currentTrivia.q;
+            const btns = document.querySelectorAll('.trivia-btn');
+            btns.forEach((btn, i) => {
+                btn.innerText = currentTrivia.a[i];
+                btn.className = 'trivia-btn'; // Reset classes
+            });
+
+            document.getElementById('trivia-overlay').style.display = 'flex';
+        }
+
+        function checkTrivia(index) {
+            const btns = document.querySelectorAll('.trivia-btn');
+            if (index === currentTrivia.correct) {
+                btns[index].classList.add('correct');
+                setTimeout(() => {
+                    gameState.askedQuestions.push(currentTriviaIndex);
+                    gameState.activeFragment.active = false;
+                    gameState.fragmentsCollected++;
+                    updateHUD();
+                    closeTrivia();
+                }, 500);
+            } else {
+                btns[index].classList.add('wrong');
+                takeDamage(10); // Penalty for wrong answer
+
+                // Relocate artifact
+                let placed = false;
+                while (!placed) {
+                    let rX = Math.floor(Math.random() * 14) + 1;
+                    let rY = Math.floor(Math.random() * 14) + 1;
+                    if (map[rY][rX] === 0) {
+                        gameState.activeFragment.x = rX * BLOCK_SIZE + BLOCK_SIZE / 2;
+                        gameState.activeFragment.y = rY * BLOCK_SIZE + BLOCK_SIZE / 2;
+                        placed = true;
+                    }
+                }
+
+                setTimeout(() => {
+                    closeTrivia();
+                }, 500);
+            }
+        }
+
+        function closeTrivia() {
+            document.getElementById('trivia-overlay').style.display = 'none';
+            gameState.isPaused = false;
+            canvas.requestPointerLock();
+            gameState.activeFragment = null;
+        }
+
+        function shoot() {
+            // Spawn Projectile
+            gameState.projectiles.push({
+                x: pX,
+                y: pY,
+                dir: pDir,
+                active: true
+            });
+
+            gameState.ammo--;
+            updateHUD();
+
+            // Visual Effect
+            flashTimer = 5;
+        }
+
+        function takeDamage(amount) {
+            if (gameState.invulnTimer > 0) return;
+
+            gameState.health -= amount;
+            damageFlash = 0.5;
+            gameState.invulnTimer = 30; // 1 second of invulnerability at 30fps
+
+            if (gameState.health <= 0) {
+                gameState.health = 0;
+                showGameOver("T'han silenciat les dissonàncies del passat.");
+            }
+            updateHUD();
+        }
+
+        function showGameOver(msg) {
+            gameState.isPaused = true;
+            document.exitPointerLock();
+            document.getElementById('gameover-msg').innerText = msg;
+            document.getElementById('gameover-overlay').style.display = 'flex';
+            if (music.current) music.current.pause();
+        }
+
+        function togglePause() {
+            if (gameState.health <= 0) return;
+            gameState.isPaused = !gameState.isPaused;
+            document.getElementById('pause-overlay').style.display = gameState.isPaused ? 'flex' : 'none';
+
+            if (gameState.isPaused) {
+                document.exitPointerLock();
+                if (music.current) music.current.pause();
+            } else {
+                canvas.requestPointerLock();
+                if (music.current) music.current.play();
+            }
+        }
+
+        function checkEra() {
+            if (gameState.fragmentsCollected >= ITEMS_PER_LEVEL.fragments) {
+                // Find next era
+                let currentEraIndex = ERAS.findIndex(e => e.id === gameState.era);
+                if (currentEraIndex < ERAS.length - 1) {
+                    let nextEra = ERAS[currentEraIndex + 1];
+                    showTransition(nextEra);
+                } else {
+                    // Won game
+                    alert("¡VICTORIA! Has restaurado la armonía en todas las épocas. 🎵✨");
+                    location.reload();
+                }
+            }
+        }
+
+        function showTransition(nextEra) {
+            gameState.isPaused = true;
+            document.exitPointerLock();
+
+            // Populate overlay
+            document.getElementById('transition-era').innerText = nextEra.name;
+            document.getElementById('transition-weapon').innerText = nextEra.weapon;
+
+            // Get enemies for this era
+            let enemyList = ENEMY_TYPES[nextEra.id] || [];
+            let enemyNames = enemyList.map(e => e.name).join(' / ');
+            document.getElementById('transition-enemies').innerText = enemyNames;
+
+            // Audio Fade
+            music.play(nextEra.audio);
+
+            document.getElementById('transition-overlay').style.display = 'flex';
+        }
+
+        function closeTransition() {
+            document.getElementById('transition-overlay').style.display = 'none';
+            gameState.isPaused = false;
+            canvas.requestPointerLock();
+
+            // Advancing logic now happens AFTER closing the transition
+            let currentEraIndex = ERAS.findIndex(e => e.id === gameState.era);
+            let nextEra = ERAS[currentEraIndex + 1];
+
+            gameState.era = nextEra.id;
+            gameState.eraName = nextEra.name;
+
+            // Reset Level
+            gameState.fragmentsCollected = 0;
+            gameState.askedQuestions = [];
+            gameState.health = 100;
+            gameState.ammo = 20;
+            spawnItems();
+            spawnEnemies();
+
+            updateHUD();
+
+            // Close UI
+            document.getElementById('transition-overlay').style.display = 'none';
+            gameState.isPaused = false;
+        }
+
+        function updateHUD() {
+            document.getElementById('ammo').innerText = gameState.ammo;
+            document.getElementById('score').innerHTML = `FRAGMENTS: ${gameState.fragmentsCollected}/${ITEMS_PER_LEVEL.fragments} <span style='font-size:14px; color:#aaa'>(${ERAS.find(e => e.id === gameState.era)?.name})</span>`;
+            document.getElementById('health').innerText = Math.ceil(gameState.health) + "%";
+            document.getElementById('health').style.color = gameState.health < 30 ? 'red' : 'gold';
+
+            // Update Weapon Display
+            const currentEra = ERAS.find(e => e.id === gameState.era);
+            document.querySelector('.weapon-display').innerText = currentEra ? currentEra.weapon : 'LLAUT';
+        }
+
+        function draw() {
+            // No early return for assetsLoaded - let it draw what it has
+            // No early return for paused - allow drawing the scene behind the pause menu
+
+            // Get Current Era Theme
+            const currentTheme = ERAS.find(e => e.id === gameState.era) || ERAS[0];
+
+            // Background
+            ctx.fillStyle = currentTheme.sky;
+            ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+            ctx.fillStyle = '#332211'; // Floor
+            ctx.fillRect(0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+
+            // Wall Raycasting
+            let zBuffer = new Array(SCREEN_WIDTH);
+            for (let x = 0; x < SCREEN_WIDTH; x++) {
+                const rayAngle = (pDir - FOV / 2.0) + (x / SCREEN_WIDTH) * FOV;
+
+                let dist = 0;
+                let hitWall = false;
+                let stepSize = 1;
+
+                let eyeX = Math.cos(rayAngle);
+                let eyeY = Math.sin(rayAngle);
+
+                while (!hitWall && dist < 20 * BLOCK_SIZE) {
+                    dist += stepSize;
+                    let testX = pX + eyeX * dist;
+                    let testY = pY + eyeY * dist;
+                    let mapX = Math.floor(testX / BLOCK_SIZE);
+                    let mapY = Math.floor(testY / BLOCK_SIZE);
+
+                    if (mapX < 0 || mapX >= MAP_SIZE || mapY < 0 || mapY >= MAP_SIZE) {
+                        hitWall = true; dist = 20 * BLOCK_SIZE;
+                    } else if (map[mapY][mapX] > 0) {
+                        hitWall = true;
+                    }
+                }
+
+                // Fix fisheye
+                let correctDist = dist * Math.cos(rayAngle - pDir);
+                zBuffer[x] = correctDist;
+
+                let wallHeight = (BLOCK_SIZE / correctDist) * (SCREEN_HEIGHT * 0.86); // Proportional scale
+                let ceiling = (SCREEN_HEIGHT / 2.0) - wallHeight / 2.0;
+
+                // Dynamic Wall Color
+                let baseColor = currentTheme.wall;
+                let shading = 200 / (dist / BLOCK_SIZE);
+                if (shading > 1) shading = 1;
+
+                let r = Math.min(255, baseColor[0] * shading);
+                let g = Math.min(255, baseColor[1] * shading);
+                let b = Math.min(255, baseColor[2] * shading);
+
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fillRect(x, ceiling, 1, wallHeight);
+            }
+
+            // PROJECTILES
+            gameState.projectiles.forEach(p => {
+                let dx = p.x - pX;
+                let dy = p.y - pY;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                let spriteAngle = Math.atan2(dy, dx) - pDir;
+                while (spriteAngle < -Math.PI) spriteAngle += 2 * Math.PI;
+                while (spriteAngle > Math.PI) spriteAngle -= 2 * Math.PI;
+
+                if (Math.abs(spriteAngle) < FOV / 1.5 && dist > 10) {
+                    let spriteHeight = (BLOCK_SIZE / dist) * 150;
+                    let spriteWidth = spriteHeight;
+                    let spriteTop = (SCREEN_HEIGHT - spriteHeight) / 2;
+                    let spriteLeft = (SCREEN_WIDTH / 2) + (Math.tan(spriteAngle) * (SCREEN_WIDTH / 2) / Math.tan(FOV / 2)) - (spriteWidth / 2);
+
+                    let centerX = Math.floor(spriteLeft + spriteWidth / 2);
+                    if (centerX >= 0 && centerX < SCREEN_WIDTH && dist < zBuffer[centerX]) {
+                        if (ASSETS.projectil.complete) {
+                            ctx.drawImage(ASSETS.projectil, spriteLeft, spriteTop, spriteWidth, spriteHeight);
+                        }
+                    }
+                }
+            });
+
+            // ALL SPRITES (Enemies + Items)
+            let sprites = [];
+            enemies.forEach(e => { if (e.active) sprites.push({ ...e, type: 'enemy' }); });
+            gameState.potions.forEach(p => { if (p.active) sprites.push({ ...p, type: 'potion' }); });
+            gameState.fragments.forEach(f => { if (f.active) sprites.push({ ...f, type: 'fragment' }); });
+
+            sprites.sort((a, b) => {
+                let dA = Math.sqrt((a.x - pX) ** 2 + (a.y - pY) ** 2);
+                let dB = Math.sqrt((b.x - pX) ** 2 + (b.y - pY) ** 2);
+                return dB - dA;
+            });
+
+            sprites.forEach(s => {
+                let dx = s.x - pX;
+                let dy = s.y - pY;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                let spriteAngle = Math.atan2(dy, dx) - pDir;
+                while (spriteAngle < -Math.PI) spriteAngle += 2 * Math.PI;
+                while (spriteAngle > Math.PI) spriteAngle -= 2 * Math.PI;
+
+                if (Math.abs(spriteAngle) < FOV / 1.5 && dist > 10) {
+                    let scale = (s.type === 'enemy') ? 1.0 : 0.6;
+                    let spriteSize = (BLOCK_SIZE / dist) * (SCREEN_HEIGHT * 0.86) * scale;
+                    let spriteTop = (SCREEN_HEIGHT - spriteSize) / 2;
+                    if (s.type !== 'enemy') spriteTop += spriteSize / 2; // On floor
+
+                    let spriteLeft = (SCREEN_WIDTH / 2) + (Math.tan(spriteAngle) * (SCREEN_WIDTH / 2) / Math.tan(FOV / 2)) - (spriteSize / 2);
+
+                    let centerX = Math.floor(spriteLeft + spriteSize / 2);
+                    if (centerX >= 0 && centerX < SCREEN_WIDTH && dist < zBuffer[centerX]) {
+                        let img;
+                        if (s.type === 'enemy') img = ASSETS.enemies[s.img];
+                        else if (s.type === 'potion') img = ASSETS.pocio;
+                        else img = ASSETS.fragment;
+
+                        if (img && img.complete) {
+                            ctx.drawImage(img, spriteLeft, spriteTop, spriteSize, spriteSize);
+                        }
+                    }
+                }
+            });
+
+            // Weapon bobbing
+            let weaponBob = Math.sin(Date.now() * 0.008) * 10;
+            let recoil = flashTimer > 0 ? 40 : 0;
+            let weaponSize = 250;
+            if (ASSETS.pistola.complete) {
+                ctx.drawImage(ASSETS.pistola, (SCREEN_WIDTH - weaponSize) / 2, SCREEN_HEIGHT - weaponSize + 40 + weaponBob + recoil, weaponSize, weaponSize);
+            }
+
+            // Crosshair
+            ctx.fillStyle = 'lime';
+            ctx.fillRect(SCREEN_WIDTH / 2 - 2, SCREEN_HEIGHT / 2 - 2, 4, 4);
+
+            // Damage Flash
+            if (damageFlash > 0) {
+                ctx.fillStyle = `rgba(255, 0, 0, ${damageFlash})`;
+                ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            }
+
+            // Reload Prompt
+            if (gameState.ammo <= 0) {
+                ctx.font = '24px Courier New';
+                ctx.fillStyle = 'red';
+                ctx.textAlign = 'center';
+                ctx.fillText("PREM R PER RECARREGAR", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 100);
+            }
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>

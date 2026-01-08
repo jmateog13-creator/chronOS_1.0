@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Kombat: Fatality Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blood: #ff0000;
+            --gold: #d4af37;
+            --arcade-bg: #000;
+            --hud-font: 'Press Start 2P', cursive;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: white;
+            font-family: var(--hud-font);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            width: 1200px;
+            height: 850px;
+            position: relative;
+            background-color: var(--arcade-bg);
+            border: 8px solid #333;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Viewport: The Combat */
+        #game-viewport {
+            flex: 6;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            border-bottom: 6px solid var(--gold);
+        }
+
+        #game-viewport::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 3px 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Interaction Panel: Questions & Controls */
+        #interaction-panel {
+            flex: 4;
+            background: #111;
+            position: relative;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 30px;
+            width: 100%;
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 15;
+        }
+
+        .fighter-info {
+            width: 42%;
+        }
+
+        .hp-bar-container {
+            width: 100%;
+            height: 40px;
+            background: #333;
+            border: 4px solid #fff;
+            position: relative;
+        }
+
+        .hp-bar {
+            height: 100%;
+            background: linear-gradient(to bottom, #f00, #900);
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .fighter-name {
+            font-size: 18px;
+            margin-top: 10px;
+            text-shadow: 3px 3px #000;
+        }
+
+        .enemy-info .fighter-name {
+            text-align: right;
+        }
+
+        /* Arena */
+        #arena {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            height: 450px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 80px;
+            align-items: flex-end;
+            bottom: -50px;
+            /* Lowered to prevent HUD overlap */
+        }
+
+        .sprite {
+            width: 380px;
+            height: 500px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom;
+            transition: transform 0.2s;
+            filter: drop-shadow(10px 10px 0px rgba(0, 0, 0, 0.5));
+        }
+
+        #player-sprite {
+            background-image: url('img/player.png');
+        }
+
+        /* Combo Bar - Centered overlay */
+        #combo-bar {
+            position: absolute;
+            top: 350px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 25;
+        }
+
+        .combo-slot {
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+        }
+
+        /* Question UI */
+        #question-text {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            color: var(--gold);
+            max-width: 900px;
+        }
+
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            width: 90%;
+            margin-bottom: 20px;
+        }
+
+        #options-container.single-column {
+            grid-template-columns: 1fr;
+            width: 60%;
+        }
+
+        .btn {
+            background: #222;
+            border: 4px solid #555;
+            color: #fff;
+            padding: 20px;
+            font-family: var(--hud-font);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--gold);
+            color: #000;
+            border-color: #fff;
+            transform: scale(1.02);
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #start-screen {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('img/fonsmitjana.jpg');
+            background-size: cover;
+        }
+
+        .instructions {
+            max-width: 850px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px;
+            border: 6px solid var(--gold);
+            margin-bottom: 40px;
+        }
+
+        .instructions h2 {
+            color: var(--gold);
+            font-size: 24px;
+            margin-top: 0;
+        }
+
+        .instructions p {
+            font-size: 14px;
+            line-height: 2;
+            margin-bottom: 20px;
+        }
+
+        .instructions ul {
+            text-align: left;
+            font-size: 12px;
+            line-height: 1.8;
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 12px;
+        }
+
+        /* Error Screen */
+        #error-screen {
+            background: rgba(100, 0, 0, 0.9);
+            display: none;
+        }
+
+        /* D-Pad controls hidden */
+        #d-pad {
+            display: none;
+        }
+
+        /* Messages & Timer */
+        #msg-pop {
+            position: absolute;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: 80px;
+            color: var(--blood);
+            text-shadow: 6px 6px #000;
+            display: none;
+            z-index: 50;
+            font-weight: bold;
+        }
+
+        #timer {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 50px;
+            color: #fff;
+            display: none;
+            z-index: 100;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0% {
+                transform: translate(2px, 2px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-2px, -4px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-6px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(6px, 4px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(2px, -2px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-2px, 4px) rotate(-1deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes dizzy {
+            0% {
+                transform: translateX(0);
+                filter: hue-rotate(0deg);
+            }
+
+            25% {
+                transform: translateX(15px);
+                filter: hue-rotate(90deg);
+            }
+
+            75% {
+                transform: translateX(-15px);
+                filter: hue-rotate(270deg);
+            }
+
+            100% {
+                transform: translateX(0);
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        .dizzy {
+            animation: dizzy 0.3s infinite;
+            filter: brightness(1.5);
+        }
+
+        .blood-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes bflash {
+            0% {
+                background: transparent;
+            }
+
+            50% {
+                background: rgba(255, 0, 0, 0.6);
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        .blood-active {
+            animation: bflash 0.5s 3;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: 140px;
+            right: 15%;
+            /* Default for enemy */
+            background: #fff;
+            color: #000;
+            padding: 20px;
+            border: 4px solid #000;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: var(--hud-font);
+            max-width: 300px;
+            z-index: 80;
+            display: none;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.5);
+            line-height: 1.4;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            right: 40px;
+            border-width: 20px 20px 0;
+            border-style: solid;
+            border-color: #fff transparent;
+            display: block;
+            width: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1 style="color: var(--blood); font-size: 60px; text-shadow: 6px 6px #000; margin-bottom: 40px;">HISTORY
+                KOMBAT</h1>
+            <div class="instructions">
+                <h2>INSTRUCCIONS</h2>
+                <p>Domina la història de la música per derrotar els guardians del temps.</p>
+                <ul>
+                    <li>1. Respon correctament per debilitar l'enemic.</li>
+                    <li>2. Cada encert et revela una fletxa del combo Fatality (necessites 4).</li>
+                    <li>3. Si falles, perdràs vida. El combat no acaba fins que un mor o fas la Fatality.</li>
+                    <li>4. Quan l'enemic estigui atordit, reprodueix el combo ràpidament.</li>
+                </ul>
+            </div>
+            <button class="btn" style="font-size: 30px; padding: 30px 60px;" onclick="startGame()">COMENÇAR
+                COMBAT</button>
+        </div>
+
+        <!-- Error/Lose Screen -->
+        <div id="error-screen" class="screen">
+            <h1 style="color: #fff; font-size: 50px; text-shadow: 4px 4px #000; margin-bottom: 40px;">HAS CAIGUT EN
+                COMBAT</h1>
+            <p style="font-size: 20px; margin-bottom: 40px;">El guardià de l'era t'ha derrotat...</p>
+            <button class="btn" style="font-size: 25px; padding: 25px 50px;" onclick="retryLevel()">REINTENTAR
+                ERA</button>
+        </div>
+
+        <!-- Gameplay Area -->
+        <div id="game-viewport">
+            <div id="hud">
+                <div class="fighter-info player-info">
+                    <div class="hp-bar-container">
+                        <div id="player-hp" class="hp-bar"></div>
+                    </div>
+                    <div class="fighter-name">EL DEIXEBLE</div>
+                </div>
+                <div class="fighter-info enemy-info">
+                    <div class="hp-bar-container">
+                        <div id="enemy-hp" class="hp-bar"></div>
+                    </div>
+                    <div id="enemy-name" class="fighter-name">ERA GUARDIAN</div>
+                </div>
+            </div>
+
+            <div id="timer">5</div>
+            <div id="msg-pop">FINISH HIM!</div>
+            <div class="blood-overlay" id="blood-fx"></div>
+            <div id="combo-bar"></div>
+            <div id="intro-bubble" class="speech-bubble"></div>
+
+            <div id="arena">
+                <div id="player-sprite" class="sprite"></div>
+                <div id="enemy-sprite" class="sprite"></div>
+            </div>
+
+        </div>
+
+        <!-- Interaction Area -->
+        <div id="interaction-panel">
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="screen" style="display: none;">
+            <h1 style="color: var(--gold); font-size: 60px;">VICTÒRIA FINAL</h1>
+            <p style="font-size: 20px; margin-top: 20px;">Has dominat totes les eres de la història de la música!</p>
+            <button class="btn" style="margin-top: 40px;" onclick="location.reload()">TORNA A L'INICI</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop src="audio/Tournament of Pixels.m4a"></audio>
+
+    <script>
+        const FIGHTERS = [
+            {
+                id: "medieval", name: "MASTER MONK", skin: "img/bossmitjana.png", bg: "img/fonsmitjana.jpg",
+                intro: "Ora et labora... però avui toca REPARTIR!",
+                questions: [
+                    { q: "On vivien els monjos?", options: ["Al Castell", "Al Monestir", "Al Mercat"], correct: 1 },
+                    { q: "Idioma del cant sagrat?", options: ["Llatí", "Català", "Anglès"], correct: 0 },
+                    { q: "Textura d'una sola línia melòdica?", options: ["Polifonia", "Monodia", "Dissonància"], correct: 1 },
+                    { q: "Compositora i visionària medieval?", options: ["Madonna", "Hildegard von Bingen", "Clara Schumann"], correct: 1 },
+                    { q: "Com s'anomenaven les notes abans?", options: ["Punts", "Neumes", "Pixels"], correct: 1 },
+                    { q: "Qui cantava fora de l'església?", options: ["Monjos", "Trobadors", "DJs"], correct: 1 },
+                    { q: "Símbol de la notació quadrada?", options: ["Cercle", "Punctum", "Creu"], correct: 1 },
+                    { q: "L'escala musical neix de...", options: ["Pitàgores", "Guido d'Arezzo", "Bach"], correct: 1 },
+                    { q: "Cant sense acompanyament?", options: ["A capella", "A cappella", "Solo"], correct: 1 },
+                    { q: "Instrument típic?", options: ["Sintetitzador", "Llaüt", "Piano"], correct: 1 }
+                ]
+            },
+            {
+                id: "renaix", name: "HUMANIST DUELIST", skin: "img/bossrenaixement.png", bg: "img/fonsrenaixement.jpg",
+                intro: "L'home és la mesura de totes les coses... i del teu DOLOR!",
+                questions: [
+                    { q: "Centre de l'Univers al Renaixement?", options: ["Déu", "L'Ésser Humà", "La Terra"], correct: 1 },
+                    { q: "Invent que revoluciona el saber?", options: ["La Impremta", "La Brúixola", "L'Arpa"], correct: 0 },
+                    { q: "Textura de moltes veus independents?", options: ["Monodia", "Polifonia", "Uníson"], correct: 1 },
+                    { q: "Mestre del Vaticà?", options: ["Palestrina", "Elvis", "Mozart"], correct: 0 },
+                    { q: "Cançó polifònica en castellà?", options: ["Madrigal", "Villancico", "Pop"], correct: 1 },
+                    { q: "Instrument de corda polsat?", options: ["Violí", "Vihuela", "Trompeta"], correct: 1 },
+                    { q: "Estil italià per excel·lència?", options: ["Chanson", "Madrigal", "Coral"], correct: 1 },
+                    { q: "Reforma protestant luterana fa servir el...", options: ["Coral", "Gregorià", "Rap"], correct: 0 },
+                    { q: "L'escola de Venècia usava...", options: ["Policoralisme", "Silenci", "Monodia"], correct: 0 },
+                    { q: "L'ideal estètic és la...", options: ["Foscor", "Proporció i bellesa", "Dissonància"], correct: 1 }
+                ]
+            },
+            {
+                id: "barroc", name: "KING BAROQUE", skin: "img/bossbarroc.png", bg: "img/fonsbarroc.jpg",
+                intro: "Tinc més ornaments que la teva cara quan acabi amb tu!",
+                questions: [
+                    { q: "Instrument rei del Barroc?", options: ["Piano", "Clavicèmbal", "Flauta"], correct: 1 },
+                    { q: "Element clau del Barroc?", options: ["Calma", "Contrast", "Puresa"], correct: 1 },
+                    { q: "El 'Capellà pèl-roig' era...", options: ["Vivaldi", "Bach", "Handel"], correct: 0 },
+                    { q: "Base rítmica obligatòria?", options: ["Baix Continu", "Solo", "Silence"], correct: 0 },
+                    { q: "Gènere vocal dramàtic nou?", options: ["Cantata", "Òpera", "Madrigal"], correct: 1 },
+                    { q: "Compositor de 'El Messies'?", options: ["Vivaldi", "Handel", "Bach"], correct: 1 },
+                    { q: "L'arquitecte del contrapunt?", options: ["Bach", "Telemann", "Corelli"], correct: 0 },
+                    { q: "Contrast entre solo i tutti?", options: ["Simfonia", "Concerto Grosso", "Sonata"], correct: 1 },
+                    { q: "Peça per a teclat virtuosística?", options: ["Tocata", "Motet", "Coral"], correct: 0 },
+                    { q: "Decoració de les notes?", options: ["Sms", "Ornaments", "Brossa"], correct: 1 }
+                ]
+            },
+            {
+                id: "classic", name: "PRODIGY KID", skin: "img/bossclassic.png", bg: "img/fonsclassic.jpg",
+                intro: "La perfecció no té lloc per a errors com tu.",
+                questions: [
+                    { q: "L'ideal del Classicisme és...", options: ["Caos", "Ordre i Raó", "Excessos"], correct: 1 },
+                    { q: "Evolució del Clavicèmbal?", options: ["Piano", "Arpa", "Guitarra"], correct: 0 },
+                    { q: "Geni de Salzburg?", options: ["Haydn", "Mozart", "Salieri"], correct: 1 },
+                    { q: "Pare de la Simfonia?", options: ["Haydn", "Bach", "Beethoven"], correct: 0 },
+                    { q: "Format musical de 4 moviments?", options: ["Sonata", "Simfonia", "Preludi"], correct: 1 },
+                    { q: "Melodia acompanyada és...", options: ["Principal", "Secundària", "Inexistent"], correct: 0 },
+                    { q: "Ciutat capital de la música?", options: ["París", "Viena", "Londres"], correct: 1 },
+                    { q: "Òpera buffa és...", options: ["Tràgica", "Còmica", "Religiosa"], correct: 1 },
+                    { q: "L'estructura més important?", options: ["Fuga", "Forma Sonata", "Rondó"], correct: 1 },
+                    { q: "Símbol de l'equilibri?", options: ["Simetria", "Asimetria", "Foscor"], correct: 0 }
+                ]
+            },
+            {
+                id: "roman", name: "STORM RIDER", skin: "img/bossromantic.png", bg: "img/fonsromanticisme.jpg",
+                intro: "La meva passió et desbordarà com una tempesta!",
+                questions: [
+                    { q: "Quin és el motor de l'artista?", options: ["Raó", "Sentiments", "Diners"], correct: 1 },
+                    { q: "Llibertat de tempo?", options: ["Rubato", "Ritardando", "Presto"], correct: 0 },
+                    { q: "Pont entre Classicisme i Romanticisme?", options: ["Mozart", "Beethoven", "Chopin"], correct: 1 },
+                    { q: "Inspiració principal?", options: ["La Indústria", "La Natura", "La Llei"], correct: 1 },
+                    { q: "Poeta del piano?", options: ["Liszt", "Chopin", "Brahms"], correct: 1 },
+                    { q: "Cançó per a veu i piano?", options: ["Lied", "Aria", "Cor"], correct: 0 },
+                    { q: "Virtuós del violí?", options: ["Paganini", "Wagner", "Verdi", "Paganini"], correct: 0 },
+                    { q: "L'amor a la pàtria?", options: ["Globalisme", "Nacionalisme", "Nihilisme"], correct: 1 },
+                    { q: "Música que explica una història?", options: ["Pura", "Programàtica", "Absoluta"], correct: 1 },
+                    { q: "Instruments nous a l'orquestra?", options: ["Tuba i Saxo", "Llaüt", "Clavicèmbal"], correct: 0 }
+                ]
+            },
+            {
+                id: "sxx", name: "CYBER DISSONANCE", skin: "img/bosssegleXX.png", bg: "img/fonssegleXX.jpg",
+                intro: "Les regles estan per trencar-les... com els teus ossos!",
+                questions: [
+                    { q: "Tractament de les regles?", options: ["Es segueixen", "Es trenquen", "S'ignoren"], correct: 1 },
+                    { q: "El Crit de Munch recorda a l'...", options: ["Impressionisme", "Expressionisme", "Pop Art"], correct: 1 },
+                    { q: "Notes que generen tensió?", options: ["Consonància", "Dissonància", "Melodia"], correct: 1 },
+                    { q: "Mètode de 12 notes?", options: ["Dodecafonisme", "Podecafonisme", "Tonalisme"], correct: 0 },
+                    { q: "Música amb sons quotidians?", options: ["Concreta", "Absoluta", "Simfònica"], correct: 0 },
+                    { q: "Moviment de Debussy?", options: ["Romanticisme", "Impressionisme", "Neoclassicisme"], correct: 1 },
+                    { q: "L'atzar decideix el resultat?", options: ["Aleatòria", "Determinista", "Barroca"], correct: 0 },
+                    { q: "Sons sintetitzats i oscil·ladors?", options: ["Electrònica", "Acústica", "Cant"], correct: 0 },
+                    { q: "Minimalisme busca...", options: ["Repetició", "Caos", "Complexitat"], correct: 0 },
+                    { q: "Ritmes complexos d'Igor...", options: ["Stravinsky", "Bach", "Mozart"], correct: 0 }
+                ]
+            }
+        ];
+
+        const ARROWS = ['⬆️', '⬇️', '⬅️', '➡️'];
+        const KEY_MAP = {
+            'ArrowUp': '⬆️',
+            'ArrowDown': '⬇️',
+            'ArrowLeft': '⬅️',
+            'ArrowRight': '➡️'
+        };
+
+        let currentEra = 0;
+        let currentQuestionIndex = 0;
+        let eraQuestions = [];
+        let playerHP = 100;
+        let enemyHP = 100;
+        let fatalityBuffer = [];
+        let userInputBuffer = [];
+        let isFatalityPhase = false;
+        let fatalityTimer = null;
+        let timerValue = 5;
+
+        const viewport = document.getElementById('game-viewport');
+        const playerHPBar = document.getElementById('player-hp');
+        const enemyHPBar = document.getElementById('enemy-hp');
+        const comboBar = document.getElementById('combo-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+
+        const msgPop = document.getElementById('msg-pop');
+        const timerEl = document.getElementById('timer');
+        const enemySprite = document.getElementById('enemy-sprite');
+        const playerSprite = document.getElementById('player-sprite');
+        const enemyNameEl = document.getElementById('enemy-name');
+        const bloodFX = document.getElementById('blood-fx');
+        const bgMusic = document.getElementById('bg-music');
+        const errorScreen = document.getElementById('error-screen');
+        const introBubble = document.getElementById('intro-bubble');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            bgMusic.play();
+            currentEra = 0;
+            playerHP = 100;
+            initStage();
+        }
+
+        function initStage() {
+            const fighter = FIGHTERS[currentEra];
+            enemyHP = 100;
+            currentQuestionIndex = 0;
+            eraQuestions = shuffle([...fighter.questions]);
+            fatalityBuffer = [];
+            userInputBuffer = [];
+            isFatalityPhase = false;
+
+            updateHP();
+            enemyNameEl.innerText = fighter.name;
+            viewport.style.backgroundImage = `url('${fighter.bg}')`;
+            enemySprite.style.backgroundImage = `url('${fighter.skin}')`;
+            enemySprite.classList.remove('dizzy', 'fade-out');
+
+            msgPop.style.display = 'none';
+            timerEl.style.display = 'none';
+
+            optionsContainer.style.display = 'none'; // Hidden during intro
+            errorScreen.style.display = 'none';
+
+            // Show Intro Bubble
+            if (fighter.intro) {
+                introBubble.innerText = fighter.intro;
+                introBubble.style.display = 'block';
+                // Shake effect for emphasis
+                introBubble.classList.add('shake');
+                setTimeout(() => introBubble.classList.remove('shake'), 500);
+
+                setTimeout(() => {
+                    introBubble.style.display = 'none';
+                    introBubble.innerText = "";
+                    optionsContainer.style.display = 'grid'; // Check grid layout again
+                    if (eraQuestions[0].options.length === 3) optionsContainer.classList.add('single-column');
+                    else optionsContainer.classList.remove('single-column');
+                    loadQuestion();
+                }, 3000);
+            } else {
+                optionsContainer.style.display = 'grid';
+                loadQuestion();
+            }
+        }
+
+        function updateHP() {
+            playerHPBar.style.width = playerHP + '%';
+            enemyHPBar.style.width = enemyHP + '%';
+        }
+
+        function clearSlots() {
+            // slots removed
+        }
+
+        let isProcessing = false;
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= eraQuestions.length) {
+                eraQuestions = shuffle([...FIGHTERS[currentEra].questions]);
+                currentQuestionIndex = 0;
+            }
+
+            const qData = eraQuestions[currentQuestionIndex];
+            questionText.innerText = qData.q;
+            optionsContainer.innerHTML = '';
+
+            if (qData.options.length === 3) optionsContainer.classList.add('single-column');
+            else optionsContainer.classList.remove('single-column');
+
+            // Creating shuffled options with original index tracking
+            const shuffledOptions = qData.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+            shuffle(shuffledOptions);
+
+            shuffledOptions.forEach((item) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = item.text;
+                btn.onclick = (e) => checkAnswer(item.originalIndex, e.target);
+                optionsContainer.appendChild(btn);
+            });
+            isProcessing = false;
+        }
+
+        function checkAnswer(index, btn) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const qData = eraQuestions[currentQuestionIndex];
+
+            if (index === qData.correct) {
+                btn.style.background = 'var(--gold)';
+                btn.style.color = '#000';
+
+                damageEnemy(25);
+                const randomArrow = ARROWS[Math.floor(Math.random() * ARROWS.length)];
+                fatalityBuffer.push(randomArrow);
+                updateComboSlots();
+
+                currentQuestionIndex++;
+                if (fatalityBuffer.length >= 4) {
+                    // Auto-Trigger Fatality
+                    setTimeout(() => {
+                        msgPop.style.display = 'block';
+                        msgPop.innerText = "FINISH HIM!";
+                        if (enemySprite) enemySprite.classList.add('dizzy');
+
+                        setTimeout(winFatality, 1500);
+                    }, 500);
+                } else {
+                    setTimeout(loadQuestion, 500);
+                }
+            } else {
+                btn.style.background = 'var(--blood)';
+                damagePlayer(20);
+                viewport.classList.add('shake');
+                setTimeout(() => viewport.classList.remove('shake'), 500);
+                currentQuestionIndex++;
+                setTimeout(loadQuestion, 800);
+            }
+        }
+
+        function damageEnemy(amt) {
+            enemyHP -= amt;
+            if (enemyHP < 0) enemyHP = 0;
+            enemySprite.classList.add('shake');
+            setTimeout(() => enemySprite.classList.remove('shake'), 500);
+            updateHP();
+        }
+
+        function damagePlayer(amt) {
+            playerHP -= amt;
+            updateHP();
+            playerSprite.classList.add('shake');
+            setTimeout(() => playerSprite.classList.remove('shake'), 500);
+
+            if (playerHP <= 0) {
+                playerHP = 0;
+                updateHP();
+                showError();
+            }
+        }
+
+        function showError() {
+            errorScreen.style.display = 'flex';
+        }
+
+        function retryLevel() {
+            playerHP = 100;
+            initStage();
+        }
+
+        function updateComboSlots() {
+            if (!comboBar) return;
+            comboBar.innerHTML = '';
+            fatalityBuffer.forEach(arrow => {
+                const slot = document.createElement('div');
+                slot.className = 'combo-slot';
+                slot.innerText = arrow;
+                comboBar.appendChild(slot);
+            });
+        }
+
+        function winFatality() {
+            clearInterval(fatalityTimer);
+            isFatalityPhase = false;
+            msgPop.innerText = "FATALITY!";
+            bloodFX.classList.add('blood-active');
+            if (enemySprite) enemySprite.classList.add('fade-out'); // Enemy dies
+
+            setTimeout(() => {
+                bloodFX.classList.remove('blood-active');
+                currentEra++;
+                if (currentEra < FIGHTERS.length) {
+                    initStage(); // Next era
+                } else {
+                    document.getElementById('victory-screen').style.display = 'flex';
+                }
+            }, 2000);
+        }
+
+        // Global Keyboard Listener (removed as D-Pad is deprecated)
+    </script>
+</body>
+
+</html>

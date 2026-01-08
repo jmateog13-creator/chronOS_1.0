@@ -1,0 +1,41 @@
+# PROMPTS PER A "IMMOBILIÀRIA MUSICAL"
+# ESTIL: The Sims 4 / Sims Aesthetic (Semi-realistic 3D render, bright lighting, clean textures)
+
+# --- FONS (BACKGROUND) ---
+# FILE: img/office_bg.jpg
+PROMPT_BACKGROUND:
+A wide shot of a modern, stylish real estate office interior in The Sims 4 aesthetic. Bright and airy. Large glass windows with a view of a city skyline. A sleek wooden desk in the center with a computer and some paperwork. A comfortable client chair. Indoor plants in the corners. Soft, warm lighting. High quality 3d render, isometric perspective felt but frontal view. No text.
+
+# --- CLIENTS (10 VARIANTS) ---
+# ESTIL: Sims 4 Character CAS (Create A Sim) Portrait. Neutral background or transparent. Expressive faces.
+# FILES: img/client1.png TO img/client10.png
+
+PROMPT_CLIENT_1 (The Executive):
+A Sims 4 style character portrait of a wealthy businessman. Wearing a sharp navy blue suit. Short, neat hair. Confident expression. Standing straight. High quality 3d render.
+
+PROMPT_CLIENT_2 (The Artist):
+A Sims 4 style character portrait of an eccentric female artist. Colorful bohemian dress, messy bun hairstyle with paint brushes in it. Creative and dreamy expression. High quality 3d render.
+
+PROMPT_CLIENT_3 (The Historian):
+A Sims 4 style character portrait of an elderly male professor. Tweed jacket with patches on elbows, bowtie, round glasses. Holding an old book. Kindly, intellectual expression. High quality 3d render.
+
+PROMPT_CLIENT_4 (The Punk/Rebel):
+A Sims 4 style character portrait of a young punk musician. Spiked colored hair, leather jacket, piercings. Rebellious interaction. High quality 3d render.
+
+PROMPT_CLIENT_5 (The Goth):
+A Sims 4 style character portrait of a goth girl. All black victorian-inspired clothing, pale skin, dark makeup. Melancholic expression. High quality 3d render.
+
+PROMPT_CLIENT_6 (The Sporty):
+A Sims 4 style character portrait of a fitness enthusiast. Wearing gym clothes, smartwatch. Energetic and happy expression. High quality 3d render.
+
+PROMPT_CLIENT_7 (The Tech Bro):
+A Sims 4 style character portrait of a silicone valley tech worker. Hoodie, jeans, sneakers, headphones around neck. Casual but smart look. High quality 3d render.
+
+PROMPT_CLIENT_8 (The Old Money Lady):
+A Sims 4 style character portrait of a wealthy older woman. Pearl necklace, elegant pastel suit, perfectly coiffed hair. Snobbish but polite expression. High quality 3d render.
+
+PROMPT_CLIENT_9 (The Hipster):
+A Sims 4 style character portrait of a hipster guy. Beanie hat, flannel shirt, big beard, thick-rimmed glasses. Drinking a coffee. High quality 3d render.
+
+PROMPT_CLIENT_10 (The Minimalist):
+A Sims 4 style character portrait of a minimalist architect. Wearing all white or grey geometric clothing. Very clean and precise look. Serious expression. High quality 3d render.

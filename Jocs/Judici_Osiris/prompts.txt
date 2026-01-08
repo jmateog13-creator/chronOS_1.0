@@ -1,0 +1,124 @@
+# PROMPTS D'IMATGES - EL JUDICI D'OSIRIS
+# Estil: Epic Fantasy Art, Digital Painting, semi-realista però estilitzat, "Dark Egyptian Fantasy".
+# Públic: Adolescents (3r ESO). Èpic i impressionant, lleugerament fosc/misteriós però no "gore" ni terrorífic.
+# Format: 16:9 per fons, 1:1 o Vertical per personatges.
+
+## 1. FONS (BACKGROUNDS)
+**Nom del fitxer**: `bg_courtroom.png`
+**Descripció**:
+> A wide, majestic view of the "Hall of Judgment" (Duat) in Ancient Egypt.
+> Dark, atmospheric lighting with golden accents.
+> In the center, a large empty space for the gods to appear.
+> On the sides, massive pillars with hieroglyphs glowing faintly in turquoise.
+> In the background, a starry cosmic void visible through arches.
+> The floor is polished obsidian reflecting the scene.
+> Cinematic lighting, mystic fog.
+
+## 2. UI / OBJECTES
+**Nom del fitxer**: `scales_maat.png`
+**Descripció**:
+> An ancient Egyptian golden scale (Balança).
+> Intricate details, decorated with lapis lazuli.
+> One pan holds a glowing red realistic human heart.
+> The other pan holds a shining white feather (Maat).
+> The scale is balanced but tipping slightly.
+> Isolated on transparent background or simple dark background (for UI element).
+
+## 3. PERSONATGES (DÉUS i MONSTRES)
+# Estil: Retrats de cos sencer o mig cos, mirant al front, imposants.
+# IMPORTANT: TOTS ELS PERSONATGES HAN DE SER "CLOSE-UP PORTRAIT" I "NO BACKGROUND" / ISOLATED.
+
+**Nom del fitxer**: `char_anubis.png`
+**Descripció**:
+> Close-up portrait of Anubis, the jackal-headed god.
+> Isolated on transparent background, no background.
+> Wearing dark gold and black armor. Glowing eyes.
+> Holding a staff.
+> Pose: Welcoming but stern, acting as a guide.
+> Dark aura, mysterious.
+
+**Nom del fitxer**: `char_soul.png` (Jugador)
+**Descripció**:
+> Close-up portraitof a glowing, ethereal human soul (silhouette or translucent figure).
+> Isolated on transparent background, no background.
+> Pale blue/white light.
+> Wearing simple spectral robes.
+> Looks lost but determined.
+
+**Nom del fitxer**: `char_ammit.png` (La Bèstia)
+**Descripció**:
+> Close-up portrait of Ammit, the Devourer.
+> Isolated on transparent background, no background.
+> Composite creature: head of a crocodile, front of a lion, back of a hippo.
+> Monstrous and scary, mouth slightly open showing teeth.
+> Glowing red eyes, waiting in the shadows.
+> Dynamic pose, ready to strike.
+
+**Nom del fitxer**: `char_osiris.png`
+**Descripció**:
+> Close-up portrait of Osiris, Lord of the Underworld.
+> Isolated on transparent background, no background.
+> Green skin (traditional), mummified form wearing white crown with feathers.
+> Holding the crook and flail.
+> Sitting on a throne or standing tall.
+> Aura of absolute power and peace.
+
+## 4. ELS 6 JUTGES (PORTES)
+
+**Nom del fitxer**: `char_isis.png` (Porta 1 - Edat Mitjana)
+**Descripció**:
+> Close-up portrait of Isis, Goddess of Magic.
+> Isolated on transparent background, no background.
+> Beautiful woman with wings (spread out).
+> Solar disk and horns on head.
+> Magical glyphs floating around her hands.
+> Mystical atmosphere.
+
+**Nom del fitxer**: `char_thoth.png` (Porta 2 - Renaixement)
+**Descripció**:
+> Close-up portrait of Thoth, the Ibis-headed god (bird head).
+> Isolated on transparent background, no background.
+> Holding a scroll and a stylus (writing).
+> Surrounded by floating letters or geometric shapes.
+> Wise, scholarly appearance.
+
+**Nom del fitxer**: `char_hathor.png` (Porta 3 - Barroc)
+**Descripció**:
+> Close-up portrait of Hathor, Goddess of Joy and Music.
+> Isolated on transparent background, no background.
+> Woman with cow ears or cow horns holding a sun disk.
+> Holding a Sistrum (musical rattle).
+> Vibrant, wearing jewelry, festive but divine look.
+
+**Nom del fitxer**: `char_maat.png` (Porta 4 - Classicisme)
+**Descripció**:
+> Close-up portrait of Maat, Goddess of Truth and Order.
+> Isolated on transparent background, no background.
+> Wearing a single ostrich feather on her head.
+> Symmetrical pose, perfectly balanced.
+> Stern face, representing law and order.
+
+**Nom del fitxer**: `char_sekhmet.png` (Porta 5 - Romanticisme)
+**Descripció**:
+> Close-up portrait of Sekhmet, the Lioness-headed goddess.
+> Isolated on transparent background, no background.
+> Warrior goddess, fiery solar disk on head.
+> Intense expression, powerful.
+> Red dress, symbolizing blood/passion.
+
+**Nom del fitxer**: `char_horus.png` (Porta 6 - Segle XX)
+**Descripció**:
+> Close-up portrait of Horus, the Falcon-headed god.
+> Isolated on transparent background, no background.
+> Wearing the Double Crown of Egypt.
+> One eye glowing brighter (The Eye of Horus).
+> Visionary look, looking into the distance/future.
+
+## 5. MÚSICA DE FONS (AUDIO)
+**Nom del fitxer**: `bg_judgment.mp3`
+**Descripció**:
+> A continuous, epic and atmospheric track for the "Hall of Judgment".
+> **Style**: Ancient Egyptian Dark Fantasy / Cinematic Ambient.
+> **Instruments**: Deep drones (pads), distant frame drums (rhythmic but slow), Ney flute or Duduk (mournful/mysterious melody), occasional chimes.
+> **Mood**: Solemn, epic, mysterious, slightly tense. It should feel like a serious spiritual trial in a massive temple.
+> **Reference**: "The Mummy" soundtrack, "Assassin's Creed Origins" ambient, "Raiders of the Lost Ark" map room.

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invasió d'Anacronismes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff;
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud-text {
+            font-size: 24px;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+        }
+
+        #message-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            text-align: center;
+        }
+
+        #msg-title {
+            font-size: 50px;
+            color: #f00;
+            margin-bottom: 20px;
+        }
+
+        #msg-subtitle {
+            font-size: 20px;
+            color: #ccc;
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 0 15px #0ff;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* LEGEND */
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border: 1px solid #555;
+        }
+
+        .key-hint {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+
+        /* VOLUME CONTROL */
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 20px;
+            pointer-events: auto;
+        }
+
+        #volume-slider {
+            cursor: pointer;
+            accent-color: #0ff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Audio -->
+        <audio id="bg-music" loop>
+            <source src="audio/Pixel Hearts on Fire.m4a" type="audio/mpeg">
+        </audio>
+
+        <div id="volume-control">
+            <span>🔊</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.4">
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="ui-layer">
+            <div class="hud-text" id="score-display">Punts: 0</div>
+            <div class="hud-text" id="wave-display">Estatus: Esperant missió...</div>
+            <div class="hud-text" id="lives-display">Vides: 3</div>
+        </div>
+
+        <div id="legend">
+            <div><span class="key-hint" style="background:#0f0; color:black;">Z</span> o <span class="key-hint"
+                    style="background:#0f0; color:black;">Clic Esq.</span> = Validar Correcte (Verd)</div>
+            <div style="margin-top:5px;"><span class="key-hint" style="background:#f00; color:white;">X</span> o <span
+                    class="key-hint" style="background:#f00; color:white;">Clic Dret</span> = Destruir Anacronisme
+                (Vermell)</div>
+        </div>
+
+        <div id="message-overlay">
+            <h1 id="msg-title">PROTOCOL DE SEGURETAT TEMPORAL</h1>
+            <div id="msg-subtitle">
+                Benvingut, agent. La línia temporal ha estat contaminada.<br><br>
+                <strong>CONTROLS MOVIMENT:</strong> ⬅ FLETXES ➡<br><br>
+                1. Utilitza el <strong>Raig Verd (Z)</strong> per recollir conceptes de l'època correcta.<br>
+                2. Utilitza el <strong>Làser Vermell (X)</strong> per destruir anacronismes intrusos.<br><br>
+                OBJECTIU: Netejar completament la pantalla sense errors.
+            </div>
+            <button class="btn" onclick="goToLevelSelect()">ACCEDIR AL MAPA</button>
+        </div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        // Added 'completed' flag to track progress
+        const WAVES_CONFIG = [
+            {
+                id: 0,
+                name: "EDAT MITJANA",
+                completed: false,
+                ship: "Monestir",
+                enemies: ["Piano", "Acord", "Simfonia", "Rock", "Mozart"], // Anachronisms
+                allies: ["Monodia", "Gregorià", "Neumes", "Guido"] // Correct
+            },
+            {
+                id: 1,
+                name: "RENAIXEMENT",
+                completed: false,
+                ship: "Cúpula",
+                enemies: ["Caos", "Atonalisme", "Monjo Solitari", "Jazz"],
+                allies: ["Polifonia", "Humanisme", "Madrigal", "Impremta"]
+            },
+            {
+                id: 2,
+                name: "BARROC",
+                completed: false,
+                ship: "Clavecí",
+                enemies: ["Senzillesa", "Minimalisme", "Jazz", "Tecno"],
+                allies: ["Baix Continu", "Contrast", "Vivaldi", "Bach"]
+            },
+            {
+                id: 3,
+                name: "CLASSICISME",
+                completed: false,
+                ship: "Temple Grec",
+                enemies: ["Foscor", "Exageració", "Soroll", "Barroc"],
+                allies: ["Sonata", "Claredat", "Mozart", "Haydn"]
+            },
+            {
+                id: 4,
+                name: "ROMANTICISME",
+                completed: false,
+                ship: "Vaixell",
+                enemies: ["Calma", "Raó", "Màquina", "Clavecí"],
+                allies: ["Sentiment", "Lied", "Beethoven", "Wagner"]
+            },
+            {
+                id: 5,
+                name: "SEGLE XX",
+                completed: false,
+                ship: "Coet",
+                enemies: ["Normes", "Tradició", "Rei", "Tonalitat"],
+                allies: ["Ruptura", "Dodecafonisme", "Stravinsky", "Atonal"]
+            }
+        ];
+
+        // --- CONSTANTS ---
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 600;
+        const PLAYER_SPEED = 6;
+        const BULLET_SPEED = 8;
+
+        // --- STATE ---
+        let canvas, ctx;
+        let gameState = 'START'; // START, LEVEL_SELECT, PLAYING, GAME_OVER
+        let currentWaveIdx = 0;
+        let score = 0;
+        let lives = 3;
+
+        let player = { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT - 50, w: 40, h: 40 };
+        let bullets = [];
+        let projectiles = []; // Generic name for flying concepts
+        let particles = [];
+
+        let keys = {};
+
+        // Audio
+        let bgMusic;
+
+        // --- INIT ---
+        window.onload = () => {
+            canvas = document.getElementById('gameCanvas');
+            canvas.width = CANVAS_WIDTH;
+            canvas.height = CANVAS_HEIGHT;
+            ctx = canvas.getContext('2d');
+
+            // Audio Setup
+            bgMusic = document.getElementById('bg-music');
+            const volSlider = document.getElementById('volume-slider');
+            bgMusic.volume = 0.4;
+            volSlider.addEventListener('input', (e) => bgMusic.volume = e.target.value);
+
+            // Listeners
+            document.addEventListener('keydown', e => {
+                keys[e.code] = true;
+                if (gameState === 'PLAYING') {
+                    if (e.code === 'KeyZ') fireBullet('GREEN');
+                    if (e.code === 'KeyX') fireBullet('RED');
+                }
+            });
+            document.addEventListener('keyup', e => keys[e.code] = false);
+
+            canvas.addEventListener('mousedown', e => {
+                if (gameState === 'PLAYING') {
+                    if (e.button === 0) fireBullet('GREEN'); // Left Click
+                    if (e.button === 2) fireBullet('RED');   // Right Click
+                } else if (gameState === 'LEVEL_SELECT') {
+                    handleLevelClick(e);
+                }
+            });
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+            requestAnimationFrame(gameLoop);
+        };
+
+        function goToLevelSelect() {
+            gameState = 'LEVEL_SELECT';
+            document.getElementById('message-overlay').classList.add('hidden');
+            document.getElementById('wave-display').textContent = "SELECTOR DE MISSIÓ";
+            // Start music safely here if needed, or on first click
+            bgMusic.play().catch(e => console.log("Audio autoplay policy", e));
+        }
+
+        function startWave(index) {
+            currentWaveIdx = index;
+            gameState = 'PLAYING';
+            score = 0;
+            lives = 3;
+            bullets = [];
+            projectiles = [];
+
+            updateHUD();
+            spawnFn();
+        }
+
+        function updateHUD() {
+            document.getElementById('score-display').textContent = `Punts: ${score}`;
+            document.getElementById('lives-display').textContent = `Vides: ${lives}`;
+            if (gameState === 'PLAYING') {
+                document.getElementById('wave-display').textContent = `Missió: ${WAVES_CONFIG[currentWaveIdx].name}`;
+            }
+        }
+
+        function spawnFn() {
+            const waveData = WAVES_CONFIG[currentWaveIdx];
+            // Mix both lists
+            let pool = [];
+            // Duplicate to fill more rows if needed
+            // We want ~30 items (5 cols x 6 rows)
+            // Current list is small (~9 items). Need to multiply.
+            const totalSlots = 30; // 5 cols * 6 rows
+
+            let originalList = [];
+            waveData.enemies.forEach(txt => originalList.push({ t: txt, type: 'ENEMY' }));
+            waveData.allies.forEach(txt => originalList.push({ t: txt, type: 'ALLY' }));
+
+            while (pool.length < totalSlots) {
+                const item = originalList[Math.floor(Math.random() * originalList.length)];
+                pool.push(item);
+            }
+
+            // Shuffle
+            pool.sort(() => Math.random() - 0.5);
+
+            // Layout
+            const cols = 5;
+            const rows = 6; // INCREASED ROWS
+            const startX = 50;
+            const startY = 40;
+            const gapX = 140;
+            const gapY = 50; // Tighter vertical gap
+
+            for (let i = 0; i < totalSlots; i++) {
+                const c = i % cols;
+                const r = Math.floor(i / cols);
+                projectiles.push({
+                    x: startX + c * gapX,
+                    y: startY + r * gapY,
+                    w: 120, h: 35,
+                    text: pool[i].t,
+                    type: pool[i].type,
+                    color: '#00e5ff' // UNIFORM CYAN COLOR
+                });
+            }
+        }
+
+        function fireBullet(type) {
+            bullets.push({
+                x: player.x + player.w / 2,
+                y: player.y,
+                r: 6,
+                type: type // 'RED' or 'GREEN'
+            });
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // Clear
+
+            if (gameState === 'LEVEL_SELECT') {
+                drawLevelSelect();
+            } else if (gameState === 'PLAYING') {
+                updateGame();
+                drawGame();
+            } else if (gameState === 'GAME_OVER') {
+                // Nothing logic-wise
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- LEVEL SELECTOR ---
+        function drawLevelSelect() {
+            ctx.fillStyle = '#001122';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            ctx.font = '30px Orbitron';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText("SELECCIONA UNA ÈPOCA", CANVAS_WIDTH / 2, 60);
+
+            const gridCols = 3;
+            const startX = 150;
+            const startY = 120;
+            const boxW = 180;
+            const boxH = 100;
+            const gap = 40;
+
+            WAVES_CONFIG.forEach((wave, i) => {
+                const c = i % gridCols;
+                const r = Math.floor(i / gridCols);
+                const x = startX + c * (boxW + gap);
+                const y = startY + r * (boxH + gap);
+
+                // Box
+                ctx.fillStyle = wave.completed ? '#2ecc71' : '#34495e';
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.fillRect(x, y, boxW, boxH);
+                ctx.strokeRect(x, y, boxW, boxH);
+
+                // Text
+                ctx.fillStyle = '#fff';
+                ctx.font = '16px Orbitron';
+                ctx.fillText(wave.name, x + boxW / 2, y + boxH / 2);
+
+                if (wave.completed) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = '20px Arial';
+                    ctx.fillText("✓", x + boxW - 20, y + 30);
+                }
+
+                // Store hitbox for click
+                wave.hitbox = { x, y, w: boxW, h: boxH };
+            });
+        }
+
+        function handleLevelClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            WAVES_CONFIG.forEach((wave, i) => {
+                if (mx > wave.hitbox.x && mx < wave.hitbox.x + wave.hitbox.w &&
+                    my > wave.hitbox.y && my < wave.hitbox.y + wave.hitbox.h) {
+                    startWave(i);
+                }
+            });
+        }
+
+
+        // --- GAMEPLAY ---
+        function updateGame() {
+            // Player Move
+            if (keys['ArrowLeft'] && player.x > 0) player.x -= PLAYER_SPEED;
+            if (keys['ArrowRight'] && player.x < CANVAS_WIDTH - player.w) player.x += PLAYER_SPEED;
+
+            // Bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].y -= BULLET_SPEED;
+                if (bullets[i].y < 0) bullets.splice(i, 1);
+            }
+
+            // Projectiles Move (Slowly Fall)
+            let hitBottom = false;
+            projectiles.forEach(p => {
+                p.y += 0.2; // Slower fall because more rows
+                if (p.y + p.h > player.y) hitBottom = true;
+            });
+
+            if (hitBottom) {
+                // Fail logic
+                lives = 0;
+            }
+
+            // Collisions
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                let hitIdx = -1;
+
+                for (let j = projectiles.length - 1; j >= 0; j--) {
+                    const p = projectiles[j];
+                    if (b.x > p.x && b.x < p.x + p.w && b.y > p.y && b.y < p.y + p.h) {
+                        hitIdx = j;
+                        break;
+                    }
+                }
+
+                if (hitIdx !== -1) {
+                    const p = projectiles[hitIdx];
+                    let correctAction = false;
+
+                    // LOGIC:
+                    // RED shot -> Destroys ANACHRONISM (Enemy) -> GOOD
+                    // GREEN shot -> Collects ALLY (Correct) -> GOOD
+
+                    if (b.type === 'RED' && p.type === 'ENEMY') correctAction = true;
+                    if (b.type === 'GREEN' && p.type === 'ALLY') correctAction = true;
+
+                    createExplosion(p.x + p.w / 2, p.y + p.h / 2, correctAction ? (b.type == 'RED' ? '#f00' : '#0f0') : '#fff');
+
+                    if (correctAction) {
+                        score += 100;
+                        projectiles.splice(hitIdx, 1);
+                    } else {
+                        score -= 50;
+                        lives--;
+                        projectiles.splice(hitIdx, 1);
+                    }
+
+                    bullets.splice(i, 1);
+                    updateHUD();
+                }
+            }
+
+            // Check End
+            if (lives <= 0) {
+                gameState = 'GAME_OVER';
+                showModal("MISSIÓ FALLIDA", "Has comès massa errors.", true);
+            } else if (projectiles.length === 0) {
+                // WIN WAVE
+                WAVES_CONFIG[currentWaveIdx].completed = true;
+
+                // Unlock Card if all completed?
+                const allDone = WAVES_CONFIG.every(w => w.completed);
+                if (allDone && typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'invasió_total',
+                        'Guardià del Temps',
+                        'Has netejat totes les invasions anacròniques!',
+                        '../../img/card_invasio.png'
+                    );
+                }
+
+                goToLevelSelect();
+            }
+
+            // Particles
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+                if (p.life <= 0) particles.splice(i, 1);
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    color: color,
+                    life: 1
+                });
+            }
+        }
+
+        function drawGame() {
+            // Stars BG handled by clearRect + black
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 5; i++) ctx.fillRect(Math.random() * CANVAS_WIDTH, Math.random() * CANVAS_HEIGHT, 1, 1);
+
+            // Player
+            ctx.fillStyle = '#0ff';
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.w / 2, player.y);
+            ctx.lineTo(player.x + player.w, player.y + player.h);
+            ctx.lineTo(player.x, player.y + player.h);
+            ctx.fill();
+
+            // Projectiles
+            ctx.font = '14px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            projectiles.forEach(p => {
+                // ALL CYAN
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(p.x, p.y, p.w, p.h);
+
+                ctx.fillStyle = '#000';
+                ctx.fillText(p.text, p.x + p.w / 2, p.y + p.h / 2);
+            });
+
+            // Bullets
+            bullets.forEach(b => {
+                ctx.fillStyle = b.type === 'RED' ? '#f00' : '#0f0';
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Particles
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        function showModal(title, msg, btn) {
+            document.getElementById('msg-title').innerText = title;
+            document.getElementById('msg-subtitle').innerText = msg;
+            document.getElementById('message-overlay').classList.remove('hidden');
+            const b = document.querySelector('#message-overlay .btn');
+            if (btn) b.style.display = 'inline-block';
+            else b.style.display = 'none';
+        }
+
+    </script>
+</body>
+
+</html>

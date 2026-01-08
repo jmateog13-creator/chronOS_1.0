@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoDate - Cites amb la Història</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            --primary: #FF4785;
+            --secondary: #6C5CE7;
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: #111;
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-app {
+            width: 100%;
+            height: 100%;
+            /* Removed max-width for landscape view */
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: none;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* --- HOME SCREEN --- */
+        #home-screen {
+            background: linear-gradient(135deg, #1e0524 0%, #2d1038 100%);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .logo-img {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 20px var(--primary));
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, #FF4785, #ff9a9e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin-bottom: 3rem;
+        }
+
+        .btn-start {
+            background: var(--primary);
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 71, 133, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .btn-start:active {
+            transform: scale(0.95);
+        }
+
+        /* --- SELECT SCREEN --- */
+        #select-screen {
+            background: #1a1a1a;
+            padding-top: 10px;
+            /* Reduced padding */
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .header-nav {
+            padding: 0.5rem;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            flex-shrink: 0;
+            /* Don't shrink title */
+        }
+
+        .profiles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            /* Force 3 rows */
+            gap: 15px;
+            padding: 15px;
+            flex-grow: 1;
+            /* Fill remaining space */
+            overflow: hidden;
+            /* No scroll needed if it fits */
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .profile-card {
+            background: #2a2a2a;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            /* Remove aspect-ratio to let grid stretch it */
+            height: 100%;
+        }
+
+        .profile-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(255, 71, 133, 0.4);
+            z-index: 10;
+        }
+
+        /* Match Success State */
+        .profile-card.matched {
+            border-color: #00b894;
+            /* Green */
+            box-shadow: 0 0 15px #00b894;
+        }
+
+        .profile-card.matched::after {
+            content: '❤️ MATCH';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00b894;
+            color: black;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+            /* Important: Focus on faces */
+        }
+
+        .profile-overlay {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            padding: 10px 15px;
+            box-sizing: border-box;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+            /* Adjusted for density */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            color: white;
+        }
+
+        .profile-age {
+            display: none;
+        }
+
+        /* --- DATE SCREEN --- */
+        #date-screen {
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Backdrop Blur Layer */
+        .date-backdrop {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            z-index: 1;
+        }
+
+        /* Character */
+        .char-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 95%;
+            /* Much taller */
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            pointer-events: none;
+        }
+
+        .char-img {
+            height: 100%;
+            width: auto;
+            max-width: none;
+            filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.6));
+            transition: filter 0.3s, transform 0.3s;
+        }
+
+        /* UI Top */
+        .date-ui-top {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .heart-meter-bg {
+            flex: 1;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .heart-meter-fill {
+            width: 50%;
+            height: 100%;
+            /* Fixed Blue Gradient as requested */
+            background: linear-gradient(90deg, #0984e3, #74b9ff);
+            box-shadow: 0 0 10px #74b9ff;
+            transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .heart-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+            animation: beat 1s infinite;
+        }
+
+
+        /* Dialogue Box */
+        .dialogue-box {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 800px;
+            /* Limit width of text for readability */
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            z-index: 20;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s;
+        }
+
+        .dialogue-text {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #eee;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 12px;
+            color: white;
+            text-align: left;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        /* Feedback Overlay */
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .feedback-img {
+            width: 150px;
+            transform: scale(0);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* --- END SCREEN --- */
+        #end-screen {
+            background: #000;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .end-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-family: 'Playfair Display';
+        }
+
+        .end-desc {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        /* ANIMATIONS */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes beat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* Volume Slider */
+        .volume-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .volume-icon {
+            color: white;
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+        #volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Audio -->
+    <audio id="bg-music" loop>
+        <source src="audio/Hearts on the Screen.m4a" type="audio/mpeg">
+    </audio>
+
+    <div class="volume-control">
+        <span class="volume-icon">🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <div id="game-app">
+
+        <!-- HOME SCREEN -->
+        <div id="home-screen" class="screen active">
+            <img src="img/logo.png" alt="ChronoDate" class="logo-img">
+            <h1>ChronoDate</h1>
+            <p class="subtitle">Troba el teu amor històric</p>
+            <button class="btn-start" onclick="showSelectScreen()">Començar</button>
+        </div>
+
+        <!-- SELECT SCREEN -->
+        <div id="select-screen" class="screen">
+            <div class="header-nav">Qui t'interessa avui?</div>
+            <div class="profiles-grid" id="profiles-grid">
+                <!-- Profiles injected by JS -->
+            </div>
+        </div>
+
+        <!-- DATE SCREEN -->
+        <div id="date-screen" class="screen">
+            <div class="date-backdrop"></div>
+
+            <div class="date-ui-top">
+                <span class="heart-icon">💖</span>
+                <div class="heart-meter-bg">
+                    <div class="heart-meter-fill" id="heart-fill"></div>
+                </div>
+            </div>
+
+            <div class="char-container">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" id="char-img"
+                    class="char-img" alt="Personatge Històric">
+            </div>
+
+            <div class="feedback-overlay" id="feedback-overlay">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                    id="feedback-img" class="feedback-img" alt="Feedback">
+            </div>
+
+            <div class="dialogue-box" id="dialogue-box">
+                <div class="dialogue-text" id="dialogue-text">...</div>
+                <div class="options-container" id="options-container">
+                    <!-- Options injected -->
+                </div>
+                <button id="next-btn" class="option-btn"
+                    style="background:var(--primary); text-align:center; display:none;"
+                    onclick="nextQuestion()">Següent</button>
+            </div>
+        </div>
+
+        <!-- END SCREEN -->
+        <div id="end-screen" class="screen">
+            <h1 id="end-title" class="end-title">Match!</h1>
+            <p id="end-desc" class="end-desc">Has aconseguit una segona cita.</p>
+            <button class="btn-start" onclick="showSelectScreen()">Tornar a jugar</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Filenames mapping based on checking folder
+        const ASSETS = {
+            medieval: { bg: 'img/fonsitjana.jpg', neutral: 'img/mitjananeutral.png', happy: 'img/mitjanacontent.png', angry: 'img/mitjanaenfadat.png' },
+            renaissance: { bg: 'img/fonsrenaixement.jpg', neutral: 'img/renaixementneutrual.png', happy: 'img/renaixementconent.png', angry: 'img/renaixementenfadat.png' },
+            baroque: { bg: 'img/fonsbarroc.jpg', neutral: 'img/barrocneutral.png', happy: 'img/barroccontent.png', angry: 'img/barrocenfadat.png' },
+            classicism: { bg: 'img/fonsclassicisme.jpg', neutral: 'img/clasicneutral.png', happy: 'img/clasiccontent.png', angry: 'img/clasicenfadat.png' },
+            romanticism: { bg: 'img/fonsromanticisme.jpg', neutral: 'img/romanticneutral.png', happy: 'img/romanticcontent.png', angry: 'img/romanticenfadat.png' },
+            '20th': { bg: 'img/fonssegleXX.jpg', neutral: 'img/segleXXneutral.png', happy: 'img/segleXXcontent.png', angry: 'img/segleXXenfadat.png' }
+        };
+
+        const CHARACTERS = [
+            {
+                id: 'medieval',
+                name: "Beatriz, la Trobairitz",
+                age: "19 anys",
+                bio: "M'agrada trencar normes i llaüts.",
+                questions: [
+                    {
+                        q: "Aquesta taverna és massa sorollosa... On t'agradaria portar-me?", a: [
+                            { t: "A un monestir en silenci.", type: "wrong", r: "Què avorrit! Jo vull vida!" },
+                            { t: "A la plaça, a cantar versos.", type: "correct", r: "Sii! M'encanta que la gent ens escolti." },
+                            { t: "A fer ganxet.", type: "joke", r: "No tinc paciència..." }
+                        ]
+                    },
+                    {
+                        q: "La societat diu que hauria de casar-me amb un noble, però jo...", a: [
+                            { t: "Hauries de fer cas al teu pare.", type: "wrong", r: "Uf, ets com ells. Adéu." },
+                            { t: "Ets lliure, segueix el teu cor.", type: "correct", r: "Exacte! L'amor cortès és llibertat." },
+                            { t: "Hauries de fer-te monja.", type: "joke", r: "Ni parlar-ne!" }
+                        ]
+                    },
+                    {
+                        q: "Què opines de la música sacra?", a: [
+                            { t: "És l'única que val la pena.", type: "wrong", r: "Massa seriosa per a mi." },
+                            { t: "El Gregorià és bonic, però prefereixo danses.", type: "correct", r: "Jo també! Ballem una estampida!" },
+                            { t: "És massa moderna.", type: "joke", r: "Moderna? Fa segles que dura!" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'renaissance',
+                name: "Leo, l'Humanista",
+                age: "25 anys",
+                bio: "Busco la Proporció Àuria en l'amor.",
+                questions: [
+                    {
+                        q: "Mira aquell edifici... què hi veus?", a: [
+                            { t: "Un munt de pedres.", type: "wrong", r: "Quina falta de sensibilitat..." },
+                            { t: "Simetria i equilibri perfecte.", type: "correct", r: "Sí! La bellesa és matemàtica pura." },
+                            { t: "Un bon lloc per escalar.", type: "joke", r: "No t'arrisquis!" }
+                        ]
+                    },
+                    {
+                        q: "Estic treballant en un nou invent.", a: [
+                            { t: "Segur que és una màquina de guerra.", type: "wrong", r: "No! És per ajudar la humanitat." },
+                            { t: "Una màquina per volar?", type: "correct", r: "Com ho has sabut? Ets brillant!" },
+                            { t: "Una màquina de fer deures?", type: "joke", r: "Tampoc estaria malament..." }
+                        ]
+                    },
+                    {
+                        q: "La música ha de ser...", a: [
+                            { t: "Complexa i inintel·ligible.", type: "wrong", r: "No! L'Humanisme busca claredat." },
+                            { t: "Expressiva i que s'entengui el text.", type: "correct", r: "Bravo! La paraula és el primer." },
+                            { t: "Molt forta.", type: "joke", r: "Quin horror." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'baroque',
+                name: "Valentina, la Diva",
+                age: "Unknown",
+                bio: "Si no hi ha drama, no m'interessa.",
+                questions: [
+                    {
+                        q: "No trobes que aquest vestit és massa senzill?", a: [
+                            { t: "Sí, et falta més or i perles.", type: "correct", r: "M'encantes! Més és més!" },
+                            { t: "Estàs perfecta així.", type: "wrong", r: "Perfecta? Sóc invisible!" },
+                            { t: "Sembles una carpa de circ.", type: "joke", r: "Insolent!" }
+                        ]
+                    },
+                    {
+                        q: "Què sents quan canto?", a: [
+                            { t: "Tranquil·litat.", type: "wrong", r: "Tranquil·litat?! Vull que ploris!" },
+                            { t: "Una passió desbocada, m'emociones.", type: "correct", r: "Això és la Teoria dels Afectes, carinyo." },
+                            { t: "Gana.", type: "joke", r: "Fora d'aquí!" }
+                        ]
+                    },
+                    {
+                        q: "Qui és el millor compositor?", a: [
+                            { t: "Algú discret i humil.", type: "wrong", r: "Avorrit!" },
+                            { t: "Händel, perquè fa espectacle!", type: "correct", r: "Sii! Focs artificials i glòria!" },
+                            { t: "El meu veí que toca la flauta.", type: "joke", r: "Qui? Un bufó?" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'classicism',
+                name: "Amadeus, el Geni",
+                age: "24 anys",
+                bio: "Vols venir a una festa a Viena?",
+                questions: [
+                    {
+                        q: "M'avorreixo... Juguem a alguna cosa?", a: [
+                            { t: "Estudiem contrapunt sever.", type: "wrong", r: "Quin pal! Jo vull diversió." },
+                            { t: "Toquem el piano d'esquena!", type: "correct", r: "Jajaja! Sii, a veure qui falla menys!" },
+                            { t: "Al parxís.", type: "joke", r: "Té bona pinta això!" }
+                        ]
+                    },
+                    {
+                        q: "La meva música sembla fàcil, però...", a: [
+                            { t: "És molt difícil de tocar bé.", type: "correct", r: "Exacte! La senzillesa és l'art més difícil." },
+                            { t: "És per a nens petits.", type: "wrong", r: "Perdona?! Sóc un geni!" },
+                            { t: "És per dormir.", type: "joke", r: "Et tallaré la perruca!" }
+                        ]
+                    },
+                    {
+                        q: "Què opines de Haydn?", a: [
+                            { t: "És el Papa Haydn, un mestre.", type: "correct", r: "L'estimo molt, em va ensenyar molt." },
+                            { t: "És un vell antiquat.", type: "wrong", r: "Respecte als grans!" },
+                            { t: "Qui?", type: "joke", r: "Llegeix un llibre..." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'romanticism',
+                name: "Werther, el Poeta",
+                age: "21 anys",
+                bio: "El patiment és l'única veritat.",
+                questions: [
+                    {
+                        q: "Mira aquest paisatge... què et suggereix?", a: [
+                            { t: "Un bon lloc per fer un pícnic.", type: "wrong", r: "Com pots pensar en menjar davant l'abisme?" },
+                            { t: "La grandesa de la natura i la meva petitesa.", type: "correct", r: "Oh... tens ànima de poeta." },
+                            { t: "Que fa fred.", type: "joke", r: "Ets buit per dins." }
+                        ]
+                    },
+                    {
+                        q: "L'amor és...", a: [
+                            { t: "Un contracte social.", type: "wrong", r: "Quin fredor... l'amor és foc!" },
+                            { t: "Un patiment deliciós i etern.", type: "correct", r: "Sí... moriria per tu ara mateix." },
+                            { t: "Una pèrdua de temps.", type: "joke", r: "Trist." }
+                        ]
+                    },
+                    {
+                        q: "Toco el piano per...", a: [
+                            { t: "Guanyar diners.", type: "wrong", r: "L'art no es ven!" },
+                            { t: "Expressar el que no puc dir amb paraules.", type: "correct", r: "Ets la meva musa!" },
+                            { t: "Trencar les tecles.", type: "joke", r: "Brut!" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: '20th',
+                name: "Roxie, la Modernista",
+                age: "22 anys",
+                bio: "El ritme ho és tot. Let's dance!",
+                questions: [
+                    {
+                        q: "Què fem aquesta nit?", a: [
+                            { t: "Quedar-nos a casa llegint.", type: "wrong", r: "Boooooring!" },
+                            { t: "Anar a un club de Jazz clandestí.", type: "correct", r: "That's logic! Posa't les sabates de ball!" },
+                            { t: "Dormir d'hora.", type: "joke", r: "Ets un iaio!" }
+                        ]
+                    },
+                    {
+                        q: "Què opines de les normes de la música clàssica?", a: [
+                            { t: "S'han de respectar sempre.", type: "wrong", r: "Trenca-les totes! Llibertat!" },
+                            { t: "Estan per trencar-les. Experimentem!", type: "correct", r: "Així m'agrada! Dissonància al poder!" },
+                            { t: "No les conec.", type: "joke", r: "Millor! Més intuïtiu." }
+                        ]
+                    },
+                    {
+                        q: "El futur és...", a: [
+                            { t: "L'electricitat i la velocitat.", type: "correct", r: "El Futurisme és lo més!" },
+                            { t: "Tornar al passat.", type: "wrong", r: "Mai miris enrere, nena." },
+                            { t: "Pavorós.", type: "joke", r: "Sigues valent!" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentChar = null;
+        let currentQuestionIndex = 0;
+        let heartValue = 50; // 0 to 100
+        let matchedCharacters = new Set(); // Track matches
+
+        // --- DOM ---
+        const homeScreen = document.getElementById('home-screen');
+        const selectScreen = document.getElementById('select-screen');
+        const dateScreen = document.getElementById('date-screen');
+        const endScreen = document.getElementById('end-screen');
+
+        function showScreen(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            screen.classList.add('active');
+        }
+
+        // --- INITIALIZATION ---
+        function init() {
+            renderProfiles();
+        }
+
+        function renderProfiles() {
+            const grid = document.getElementById('profiles-grid');
+            grid.innerHTML = '';
+            CHARACTERS.forEach(char => {
+                const assets = ASSETS[char.id];
+                const div = document.createElement('div');
+                div.className = 'profile-card';
+                if (matchedCharacters.has(char.id)) {
+                    div.classList.add('matched');
+                }
+                div.onclick = () => startDate(char);
+                div.innerHTML = `
+                    <img src="${assets.neutral}" class="profile-img">
+                    <div class="profile-overlay">
+                        <div class="profile-name">${char.name}</div>
+                        <div class="profile-age">${char.age}</div>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function showSelectScreen() {
+            showScreen(selectScreen);
+            renderProfiles(); // Re-render to show updates
+        }
+
+        // --- DATE LOGIC ---
+        function startDate(char) {
+            currentChar = char;
+            currentQuestionIndex = 0;
+            heartValue = 50;
+            updateHeartUI();
+
+            // Setup UI
+            const assets = ASSETS[char.id];
+            document.getElementById('date-screen').style.backgroundImage = `url('${assets.bg}')`;
+            setCharImage('neutral');
+
+            showScreen(dateScreen);
+
+            // Start dialogue
+            showQuestion();
+        }
+
+        function setCharImage(mood) {
+            const imgEl = document.getElementById('char-img');
+            const assets = ASSETS[currentChar.id];
+
+            // Fade out
+            imgEl.style.opacity = '0';
+            setTimeout(() => {
+                if (mood === 'neutral') imgEl.src = assets.neutral;
+                if (mood === 'happy') imgEl.src = assets.happy;
+                if (mood === 'angry') imgEl.src = assets.angry;
+                imgEl.style.opacity = '1';
+
+                // Add pop animation
+                imgEl.style.transform = 'scale(1.05)';
+                setTimeout(() => imgEl.style.transform = 'scale(1)', 300);
+            }, 200);
+        }
+
+        function updateHeartUI() {
+            const fill = document.getElementById('heart-fill');
+            fill.style.width = `${heartValue}%`;
+
+            // Color is handled by CSS now
+        }
+
+        function showQuestion() {
+            const q = currentChar.questions[currentQuestionIndex];
+            const dialogueText = document.getElementById('dialogue-text');
+            const optionsContainer = document.getElementById('options-container');
+            const nextBtn = document.getElementById('next-btn');
+
+            dialogueText.textContent = q.q;
+            optionsContainer.innerHTML = '';
+            nextBtn.style.display = 'none';
+            optionsContainer.style.display = 'flex';
+
+            q.a.sort(() => Math.random() - 0.5).forEach(ans => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = ans.t;
+                btn.onclick = () => handleAnswer(ans);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(ans) {
+            const dialogueText = document.getElementById('dialogue-text');
+            const optionsContainer = document.getElementById('options-container');
+            const nextBtn = document.getElementById('next-btn');
+
+            // Show consequence text
+            dialogueText.textContent = ans.r;
+            optionsContainer.style.display = 'none'; // Hide options
+            nextBtn.style.display = 'block';
+
+            // Effect
+            if (ans.type === 'correct') {
+                heartValue = Math.min(100, heartValue + 20);
+                setCharImage('happy');
+                showFeedback('img/corbien.png');
+            } else if (ans.type === 'wrong') {
+                heartValue = Math.max(0, heartValue - 20);
+                setCharImage('angry');
+                showFeedback('img/cormal.png');
+            } else {
+                // Joke - minimal change
+                setCharImage('neutral');
+            }
+            updateHeartUI();
+        }
+
+        function showFeedback(imgSrc) {
+            const overlay = document.getElementById('feedback-overlay');
+            const img = document.getElementById('feedback-img');
+            img.src = imgSrc;
+
+            overlay.style.opacity = '1';
+            img.style.transform = 'scale(1)';
+
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                img.style.transform = 'scale(0)';
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (heartValue <= 0) {
+                endGame(false);
+                return;
+            }
+            if (currentQuestionIndex >= currentChar.questions.length) {
+                endGame(true);
+                return;
+            }
+
+            setCharImage('neutral');
+            showQuestion();
+        }
+
+        function endGame(win) {
+            showScreen(endScreen);
+            const title = document.getElementById('end-title');
+            const desc = document.getElementById('end-desc');
+
+            if (win && heartValue >= 60) {
+                title.textContent = "It's a Match! 💘";
+                title.style.color = "#ff7675";
+                desc.textContent = `${currentChar.name} vol una segona cita amb tu.`;
+
+                // Track match
+                matchedCharacters.add(currentChar.id);
+            } else {
+                title.textContent = "Ghosted... 👻";
+                title.style.color = "#74b9ff";
+                desc.textContent = "Sembla que no heu connectat gaire.";
+            }
+        }
+
+        // Check orientation or loading
+        window.onload = () => {
+            init();
+
+            // Audio Init
+            const bgMusic = document.getElementById('bg-music');
+            const volSlider = document.getElementById('volume-slider');
+            if (bgMusic) {
+                bgMusic.volume = 0.5;
+                if (volSlider) {
+                    volSlider.addEventListener('input', (e) => {
+                        bgMusic.volume = e.target.value;
+                    });
+                }
+                // Auto-play interaction
+                document.body.addEventListener('click', () => {
+                    if (bgMusic.paused) {
+                        bgMusic.play().catch(e => console.log("Audio play failed", e));
+                    }
+                }, { once: true });
+            }
+        };
+
+    </script>
+</body>
+
+</html>

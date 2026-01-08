@@ -1,0 +1,33 @@
+/* Activity Styles */
+.activity-container {
+    padding-bottom: 60px;
+    /* Nav height */
+}
+
+.activity-header {
+    padding: 15px;
+    border-bottom: 1px solid #dbdbdb;
+    text-align: center;
+}
+
+.activity-header h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    color: #8e8e8e;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+/* Reuse profile-grid from style.css, but ensure it works here */

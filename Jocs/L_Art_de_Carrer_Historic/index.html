@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Art de Carrer Històric 🎨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Roboto+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-wall: #212121;
+            --primary-color: #ff0055;
+            --secondary-color: #00e5ff;
+            --accent-yellow: #ffeb3b;
+            --zone-bg: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Architects Daughter', cursive;
+            background-color: var(--bg-wall);
+            height: 100vh;
+            color: white;
+            overflow: hidden;
+            display: grid;
+            grid-template-areas:
+                "header header header"
+                "left   wall   right"
+                "bottom bottom bottom";
+            grid-template-columns: 140px 1fr 140px;
+            grid-template-rows: 60px 1fr 140px;
+        }
+
+        /* HEADER */
+        header {
+            grid-area: header;
+            padding: 0 20px;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Bangers', cursive;
+            color: var(--secondary-color);
+            margin: 0;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0px #000;
+            -webkit-text-stroke: 1px black;
+        }
+
+        #hud {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .hud-btn {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            font-family: 'Bangers', cursive;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .hud-btn:hover {
+            transform: scale(1.05);
+            background: white;
+            color: var(--primary-color);
+        }
+
+        /* VOLUME SLIDER STYLING */
+        #volume-control {
+            background: black;
+            padding: 5px 15px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            border: 2px solid white;
+            gap: 10px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 8px;
+            background: #555;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--secondary-color);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        /* STICKER ZONES */
+        .sticker-zone {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: var(--zone-bg);
+            padding: 10px;
+            overflow: auto;
+        }
+
+        #zone-left {
+            grid-area: left;
+            flex-direction: column;
+            gap: 15px;
+            border-right: 2px dashed #444;
+            justify-content: flex-start;
+            padding-top: 20px;
+        }
+
+        #zone-right {
+            grid-area: right;
+            flex-direction: column;
+            gap: 15px;
+            border-left: 2px dashed #444;
+            justify-content: flex-start;
+            padding-top: 20px;
+        }
+
+        #zone-bottom {
+            grid-area: bottom;
+            flex-direction: row;
+            gap: 20px;
+            border-top: 2px dashed #444;
+        }
+
+        /* WALL SCENE */
+        #scene {
+            grid-area: wall;
+            background-color: #333;
+            /* Brick Texturing */
+            background-image:
+                linear-gradient(335deg, rgba(0, 0, 0, 0.3) 23px, transparent 23px),
+                linear-gradient(155deg, rgba(0, 0, 0, 0.3) 23px, transparent 23px),
+                linear-gradient(335deg, rgba(0, 0, 0, 0.3) 23px, transparent 23px),
+                linear-gradient(155deg, rgba(0, 0, 0, 0.3) 23px, transparent 23px);
+            background-size: 58px 58px;
+            background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #wall-surface {
+            width: 80%;
+            height: 80%;
+            background: #4e342e;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+            border: 10px solid #282828;
+            position: relative;
+            background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="%23000000" fill-opacity="0.1"><circle cx="10" cy="10" r="2"/><circle cx="50" cy="60" r="3"/><circle cx="80" cy="20" r="1"/></g></svg>');
+        }
+
+        .era-sign {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            background: var(--accent-yellow);
+            color: black;
+            font-family: 'Bangers', cursive;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            border: 3px solid black;
+            padding: 5px 30px;
+            box-shadow: 5px 5px 0 black;
+            z-index: 5;
+        }
+
+        /* STICKERS */
+        .sticker {
+            width: 110px;
+            height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            transition: transform 0.2s;
+            position: relative;
+            filter: drop-shadow(3px 3px 0px rgba(0, 0, 0, 0.3));
+            flex-shrink: 0;
+        }
+
+        .sticker-img-container {
+            width: 100%;
+            height: 80%;
+            background: white;
+            padding: 4px;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid white;
+        }
+
+        .sticker img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .sticker-name {
+            font-size: 0.6rem;
+            margin-top: 4px;
+            background: black;
+            color: white;
+            padding: 2px 6px;
+            font-family: 'Permanent Marker', cursive;
+            text-transform: uppercase;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .sticker:active {
+            cursor: grabbing;
+            transform: scale(1.2);
+            z-index: 1000;
+        }
+
+        .sticker.placed {
+            position: absolute;
+            cursor: grab;
+            filter: drop-shadow(1px 1px 0px rgba(0, 0, 0, 0.5));
+            transform: scale(1.1);
+        }
+
+        /* TOOLTIP */
+        #tooltip {
+            position: fixed;
+            background: var(--accent-yellow);
+            color: black;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: bold;
+            font-size: 0.9rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2000;
+            box-shadow: 4px 4px 0px black;
+            max-width: 250px;
+            text-align: center;
+            transform: translate(-50%, -120%);
+            /* Center above cursor */
+        }
+
+        #tooltip.visible {
+            opacity: 1;
+        }
+
+        /* ERA SELECTION SCREEN */
+        #era-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #era-selection h2 {
+            font-family: 'Bangers', cursive;
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 40px;
+            text-shadow: 5px 5px 0 var(--primary-color);
+            -webkit-text-stroke: 2px black;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 800px;
+        }
+
+        .era-card {
+            background: #333;
+            border: 2px solid #555;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            font-family: 'Bangers', cursive;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 5px 5px 0 black;
+        }
+
+        .era-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0 var(--primary-color);
+            border-color: white;
+            background: #444;
+        }
+
+        /* Win Modal */
+        #win-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .win-box {
+            background: var(--primary-color);
+            padding: 40px;
+            text-align: center;
+            border: 4px solid white;
+            transform: rotate(-3deg);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .win-box h2 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+        }
+
+        .win-btn {
+            background: white;
+            color: black;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: bold;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 5px 5px 0 black;
+        }
+
+        .win-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Cozy Sticker Shuffle.m4a" type="audio/mp3">
+    </audio>
+
+    <header>
+        <h1>L'ART DE CARRER HISTÒRIC</h1>
+        <div id="hud">
+            <button class="hud-btn" onclick="showEraSelection()">MENU</button>
+            <div id="volume-control"
+                style="background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:15px; display:flex; align-items:center;">
+                <span>🔊</span>
+                <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+            </div>
+        </div>
+    </header>
+
+    <div class="sticker-zone" id="zone-left"></div>
+
+    <div id="scene">
+        <div id="wall-surface">
+            <div class="era-sign" id="wall-title">BARROC</div>
+        </div>
+    </div>
+
+    <div class="sticker-zone" id="zone-right"></div>
+
+    <div class="sticker-zone" id="zone-bottom"></div>
+
+    <div id="tooltip"></div>
+
+    <!-- ERA SELECTION SCREEN -->
+    <div id="era-selection">
+        <h2>CITY MAP SELECTOR</h2>
+        <div class="era-grid">
+            <div class="era-card" onclick="startGame(0)">EDAT MITJANA</div>
+            <div class="era-card" onclick="startGame(1)">RENAIXEMENT</div>
+            <div class="era-card" onclick="startGame(2)">BARROC</div>
+            <div class="era-card" onclick="startGame(3)">CLASSICISME</div>
+            <div class="era-card" onclick="startGame(4)">ROMANTICISME</div>
+            <div class="era-card" onclick="startGame(5)">SEGLE XX</div>
+        </div>
+    </div>
+
+    <!-- WIN MODAL -->
+    <div id="win-modal">
+        <div class="win-box">
+            <h2>RESPECT! 👊</h2>
+            <p style="font-size:1.2rem; margin-bottom:30px;">Barri conquerit (Nivell Completat)</p>
+            <button class="win-btn" onclick="showEraSelection()">SEGUENT BARRI >></button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const STICKERS_DB = [
+            // 1. Edat Mitjana
+            { name: "Monodia", era: "Edat Mitjana", img: "img/monodia.png", desc: "Una sola melodia sense acompanyament." },
+            { name: "Cant Gregorià", era: "Edat Mitjana", img: "img/gregoria.png", desc: "Cant religiós en llatí, a capella i monòdic." },
+            { name: "Monestir", era: "Edat Mitjana", img: "img/monestir.png", desc: "Centre religiós on es guardava la cultura." },
+            { name: "Guido", era: "Edat Mitjana", img: "img/guido.png", desc: "Inventor de les notes musicals (Do-Re-Mi...)." },
+            { name: "Viola de Roda", era: "Edat Mitjana", img: "img/violaderoda.png", desc: "Instrument medieval de corda fregada." },
+            // 2. Renaixement
+            { name: "Polifonia", era: "Renaixement", img: "img/polifonia.png", desc: "Diverses veus melòdiques sonant alhora." },
+            { name: "Humanisme", era: "Renaixement", img: "img/humaninsme.png", desc: "L'ésser humà és el centre del pensament." },
+            { name: "Impremta", era: "Renaixement", img: "img/imprempta.png", desc: "Invent per fer partitures ràpidament." },
+            { name: "Home Vitruvi", era: "Renaixement", img: "img/vitruvi.png", desc: "Estudi de les proporcions humanes perfectes." },
+            { name: "Madrigal", era: "Renaixement", img: "img/madrigal.png", desc: "Forma vocal profana a diverses veus." },
+            // 3. Barroc
+            { name: "Baix Continu", era: "Barroc", img: "img/baixcontinu.png", desc: "Base rítmica i harmònica constant." },
+            { name: "Contrast", era: "Barroc", img: "img/contrast.png", desc: "Canvis bruscos: Fort/Fluix, Ràpid/Lent." },
+            { name: "Violí", era: "Barroc", img: "img/violi.png", desc: "Instrument rei de l'orquestra barroca." },
+            { name: "Perruca", era: "Barroc", img: "img/perruca.png", desc: "Símbol de luxe i exageració de l'època." },
+            { name: "Orgue", era: "Barroc", img: "img/orgue.png", desc: "L'instrument de teclat més potent a l'església." },
+            // 4. Classicisme
+            { name: "Melodia Acomp.", era: "Classicisme", img: "img/melodiaacompanyada.png", desc: "Melodia clara amb acompanyament suau." },
+            { name: "Equilibri", era: "Classicisme", img: "img/equilibri.png", desc: "Música ordenada, sense exageracions." },
+            { name: "Piano", era: "Classicisme", img: "img/piano.png", desc: "Invent que permet tocar fort i fluix." },
+            { name: "Quartet", era: "Classicisme", img: "img/quartetedecorda.png", desc: "Dos violins, viola i violoncel." },
+            { name: "Mozart", era: "Classicisme", img: "img/mozart.png", desc: "Nen prodigi i geni del Classicisme." },
+            // 5. Romanticisme
+            { name: "Rubato", era: "Romanticisme", img: "img/rubato.png", desc: "Canviar la velocitat per expressar emoció." },
+            { name: "Virtuosisme", era: "Romanticisme", img: "img/virtuosisme.png", desc: "Tocar molt ràpid i difícil per impressionar." },
+            { name: "Gran Piano", era: "Romanticisme", img: "img/granpiano.png", desc: "El rei dels instruments per expressar sentiments." },
+            { name: "Beethoven", era: "Romanticisme", img: "img/beethoven.png", desc: "Compositor que va obrir pas al Romanticisme." },
+            { name: "Tempesta", era: "Romanticisme", img: "img/tempesta.png", desc: "La natura salvatge agrada als romàntics." },
+            // 6. Segle XX
+            { name: "Atonalisme", era: "Segle XX", img: "img/atonalitat.png", desc: "Música sense una nota principal o tonalitat." },
+            { name: "Dodecafonisme", era: "Segle XX", img: "img/dodecafonisme.png", desc: "Mètode de compondre amb 12 notes." },
+            { name: "Ràdio", era: "Segle XX", img: "img/radio.png", desc: "La música arriba a tothom a casa." },
+            { name: "Saxòfon", era: "Segle XX", img: "img/saxofon.png", desc: "Instrument clau del Jazz i la música moderna." },
+            { name: "Guitarra", era: "Segle XX", img: "img/guitarraelectrica.png", desc: "Símbol del Rock i la música elèctrica." }
+        ];
+
+        const ERAS = [
+            "Edat Mitjana",
+            "Renaixement",
+            "Barroc",
+            "Classicisme",
+            "Romanticisme",
+            "Segle XX"
+        ];
+
+        // --- STATE ---
+        let currentEraIndex = 0;
+        let placedInEra = 0;
+        const TOTAL_PER_ERA = 5;
+
+        const bgMusic = document.getElementById('bg-music');
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // --- AUDIO ---
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'spray') {
+                const bufferSize = audioCtx.sampleRate * 0.2;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const noiseGain = audioCtx.createGain();
+                noise.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                noiseGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                noise.start();
+
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+
+            } else if (type === 'drop') {
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'win') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }
+        }
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        // --- NAVIGATION & LOGIC ---
+        function showEraSelection() {
+            document.getElementById('era-selection').style.display = 'flex';
+            document.getElementById('win-modal').style.display = 'none';
+        }
+
+        function startGame(eraIndex) {
+            document.getElementById('era-selection').style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(e => console.log("Audio autoplay check:", e));
+
+            loadLevel(eraIndex);
+        }
+
+        function loadLevel(eraIndex) {
+            currentEraIndex = eraIndex;
+
+            // Clear Zones
+            document.getElementById('zone-left').innerHTML = '';
+            document.getElementById('zone-right').innerHTML = '';
+            document.getElementById('zone-bottom').innerHTML = '';
+
+            const wall = document.getElementById('wall-surface');
+            Array.from(wall.children).forEach(c => {
+                if (c.classList.contains('sticker')) c.remove();
+            });
+
+            placedInEra = 0;
+
+            const eraName = ERAS[eraIndex];
+            document.getElementById('wall-title').innerText = eraName.toUpperCase();
+
+            // 1. Correct
+            const correctStickers = STICKERS_DB.filter(m => m.era === eraName).map(m => ({ ...m, correct: true }));
+
+            // 2. Incorrect (Distractors) - Need 10 now (5R + 5B total distractors + 5 Correct).
+            // Total 15 items: 5 in Left, 5 in Right, 5 in Bottom.
+            const otherStickers = STICKERS_DB.filter(m => m.era !== eraName);
+            const distractors = [];
+            const shuffledOthers = otherStickers.sort(() => 0.5 - Math.random());
+            for (let i = 0; i < 10 && i < shuffledOthers.length; i++) {
+                distractors.push({ ...shuffledOthers[i], correct: false });
+            }
+
+            // 3. Shuffle (Total 15 items max)
+            const levelItems = [...correctStickers, ...distractors].sort(() => 0.5 - Math.random());
+
+            // 4. Distribute to zones (5 Left, 5 Right, 5 Bottom)
+            levelItems.forEach((data, index) => {
+                let zoneId;
+                if (index < 5) zoneId = 'zone-left';
+                else if (index < 10) zoneId = 'zone-right';
+                else zoneId = 'zone-bottom';
+
+                const s = document.createElement('div');
+                s.className = 'sticker';
+                s.dataset.era = data.era;
+                s.dataset.correct = data.correct;
+                s.dataset.desc = data.desc; // For tooltip
+                s.innerHTML = `
+                    <div class="sticker-img-container">
+                        <img src="${data.img}" onerror="this.onerror=null;this.parentElement.innerHTML='❓'; this.parentElement.style.fontSize='3rem';">
+                    </div>
+                    <div class="sticker-name">${data.name}</div>
+                `;
+
+                // Add hover tooltip listeners
+                s.addEventListener('mouseenter', (e) => showTooltip(e, data.desc));
+                s.addEventListener('mouseleave', hideTooltip);
+                s.addEventListener('mousemove', (e) => moveTooltip(e));
+
+                document.getElementById(zoneId).appendChild(s);
+                makeDraggable(s, zoneId);
+            });
+        }
+
+        // --- TOOLTIP LOGIC ---
+        const tooltip = document.getElementById('tooltip');
+
+        function showTooltip(e, text) {
+            if (!text) return;
+            tooltip.innerText = text;
+            tooltip.classList.add('visible');
+            moveTooltip(e);
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+        }
+
+        function moveTooltip(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // Basic positioning
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = y + 'px';
+
+            // Boundary checks
+            const rect = tooltip.getBoundingClientRect();
+            const padding = 15;
+
+            // Horizontal check
+            if (x + (rect.width / 2) > window.innerWidth - padding) {
+                // Too far right -> shift left
+                tooltip.style.transform = 'translate(-100%, -120%)';
+            } else if (x - (rect.width / 2) < padding) {
+                // Too far left -> shift right
+                tooltip.style.transform = 'translate(0%, -120%)';
+            } else {
+                // Center default
+                tooltip.style.transform = 'translate(-50%, -120%)';
+            }
+
+            // Vertical check (Top edge)
+            if (y - rect.height - padding < 0) {
+                const currentTransform = tooltip.style.transform || 'translate(-50%, -120%)';
+                tooltip.style.transform = currentTransform.replace('-120%', '20px');
+            }
+        }
+
+        function checkLevelCompletion() {
+            if (placedInEra >= TOTAL_PER_ERA) {
+                playSound('win');
+                document.getElementById('win-modal').style.display = 'flex';
+            }
+        }
+
+        function makeDraggable(el, originalZoneId) {
+            let isDragging = false;
+            let startX, startY;
+
+            const onDown = (e) => {
+                isDragging = true;
+
+                hideTooltip(); // Hide tooltip while dragging
+
+                // If in zone, bring to body
+                if (el.parentElement !== document.body && !el.classList.contains('placed')) {
+                    const rect = el.getBoundingClientRect();
+                    el.style.position = 'absolute';
+                    el.style.left = rect.left + 'px';
+                    el.style.top = rect.top + 'px';
+                    // el.style.width = '100px'; 
+                    document.body.appendChild(el);
+                }
+
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                startX = clientX - el.offsetLeft;
+                startY = clientY - el.offsetTop;
+
+                el.style.zIndex = 1000;
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                el.style.left = (clientX - startX) + 'px';
+                el.style.top = (clientY - startY) + 'px';
+            };
+
+            const onUp = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                el.style.zIndex = '';
+
+                // Hit detection
+                const wall = document.getElementById('wall-surface');
+                const wallRect = wall.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+
+                // Check overlap
+                if (elRect.left < wallRect.right && elRect.right > wallRect.left &&
+                    elRect.top < wallRect.bottom && elRect.bottom > wallRect.top) {
+
+                    if (el.dataset.correct === 'true') {
+                        // Stick it!
+                        playSound('spray');
+
+                        const relLeft = e.clientX - wallRect.left - (elRect.width / 2);
+                        const relTop = e.clientY - wallRect.top - (elRect.height / 2);
+                        const rot = Math.random() * 20 - 10;
+
+                        el.style.left = relLeft + 'px';
+                        el.style.top = relTop + 'px';
+                        el.style.transform = `rotate(${rot}deg) scale(1.1)`;
+
+                        wall.appendChild(el);
+                        el.classList.add('placed');
+
+                        // Cloning logic to remove event listeners? 
+                        // Actually just leave them, but tooltip fits weirdly on rotated element. 
+                        // Maybe disable tooltip once placed.
+                        el.removeEventListener('mouseenter', showTooltip); // remove listeners
+
+                        const count = wall.querySelectorAll('.sticker.placed').length;
+                        placedInEra = count;
+                        checkLevelCompletion();
+
+                    } else {
+                        // REJECT
+                        playSound('drop');
+                        el.style.transition = 'top 0.5s ease-in, opacity 0.5s';
+                        el.style.top = (window.innerHeight + 100) + 'px';
+                        el.style.opacity = '0';
+                        setTimeout(() => el.remove(), 500);
+                    }
+                } else {
+                    // Reset to original zone
+                    document.getElementById(originalZoneId).appendChild(el);
+                    el.style.position = 'relative';
+                    el.style.left = 'auto';
+                    el.style.top = 'auto';
+                    el.style.transform = 'none';
+                    playSound('drop');
+                }
+            };
+
+            el.addEventListener('mousedown', onDown);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+            el.addEventListener('touchstart', onDown);
+            window.addEventListener('touchmove', onMove, { passive: false });
+            window.addEventListener('touchend', onUp);
+        }
+    </script>
+</body>
+
+</html>

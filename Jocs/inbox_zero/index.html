@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox Zero: History Edition</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #2c3e50;
+            --sidebar-text: #ecf0f1;
+            --inbox-bg: #ffffff;
+            --item-bg: #ecf0f1;
+            --item-hover: #dfe6e9;
+            --primary: #3498db;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar (Folders) */
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #bdc3c7;
+        }
+
+        .folder {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid transparent;
+        }
+
+        .folder:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .folder.drag-over {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: var(--success);
+            transform: scale(1.02);
+        }
+
+        .folder-icon {
+            font-size: 1.2rem;
+        }
+
+        .folder-name {
+            font-weight: 500;
+        }
+
+        /* Main Area (Inbox) */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .counter {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .inbox-container {
+            flex: 1;
+            background: var(--inbox-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-auto-rows: 100px;
+            gap: 15px;
+            align-content: start;
+        }
+
+        .email-item {
+            background: var(--item-bg);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+            user-select: none;
+            font-size: 14px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .email-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: var(--item-hover);
+        }
+
+        .email-item:active {
+            cursor: grabbing;
+        }
+
+        .email-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+
+        .email-subject {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .email-sender {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        /* Feedback Animation */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.3s ease-in-out;
+            border-color: var(--error) !important;
+            background: #fadbd8 !important;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pop {
+            animation: pop 0.3s ease-out;
+        }
+
+        /* Modal (Start & Game Over) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal h1 {
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        .modal p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Start Modal -->
+    <div id="start-modal" class="modal-overlay">
+        <div class="modal">
+            <h1>📥 Inbox Zero: History Edition</h1>
+            <p>
+                Benvingut a l'Arxiu Històric Digital.<br><br>
+                Tens la safata d'entrada plena de correus desordenats.<br>
+                La teva missió és <strong>arrossegar cada correu a la carpeta de la seva època</strong>.<br><br>
+                ⚠️ Compte! Si t'equivoques, el correu rebotarà i es duplicarà (rebràs una queixa!).<br>
+                Objectiu: Deixar la safata buida.
+            </p>
+            <button class="btn" onclick="game.start()">Començar a Arxivar</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <h1>🎉 Safata Buida!</h1>
+            <p>
+                Felicitats! Has aconseguit l'Inbox Zero.<br>
+                Tots els correus estan correctament arxivats.
+            </p>
+            <button class="btn" onclick="location.reload()">Tornar a Jugar</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Inbox In A Sweater.m4a" type="audio/mpeg">
+    </audio>
+
+    <div class="sidebar" id="sidebar">
+        <h2>📂 Carpetes</h2>
+        <!-- Folders injected here -->
+    </div>
+
+    <div class="main-area">
+        <div class="header">
+            <div class="title">Safata d'entrada</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span>🎵</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="counter">Pendents: <span id="count">0</span></div>
+        </div>
+        <div class="inbox-container" id="inbox">
+            <!-- Emails injected here -->
+        </div>
+    </div>
+
+    <script>
+        const ERAS = [
+            { id: "Edat Mitjana", color: "#e74c3c" },
+            { id: "Renaixement", color: "#e67e22" },
+            { id: "Barroc", color: "#f1c40f" },
+            { id: "Classicisme", color: "#2ecc71" },
+            { id: "Romanticisme", color: "#3498db" },
+            { id: "Segle XX", color: "#9b59b6" }
+        ];
+
+        const EMAILS_DATA = [
+            // Edat Mitjana
+            { subject: "Cant Gregorià", sender: "Monjos", era: "Edat Mitjana" },
+            { subject: "Neumes", sender: "Copista", era: "Edat Mitjana" },
+            { subject: "Trobador", sender: "Cort Reial", era: "Edat Mitjana" },
+            { subject: "Ars Nova", sender: "Philippe de Vitry", era: "Edat Mitjana" },
+            { subject: "Llatí", sender: "Església", era: "Edat Mitjana" },
+            // Renaixement
+            { subject: "Madrigal", sender: "Claudio Monteverdi", era: "Renaixement" },
+            { subject: "Impremta Musical", sender: "Petrucci", era: "Renaixement" },
+            { subject: "Humanisme", sender: "Erasme", era: "Renaixement" },
+            { subject: "Missa Papae Marcelli", sender: "Palestrina", era: "Renaixement" },
+            { subject: "Viola da Gamba", sender: "Lutier", era: "Renaixement" },
+            // Barroc
+            { subject: "Clavecí", sender: "Constructor", era: "Barroc" },
+            { subject: "Perruca Blanca", sender: "Moda", era: "Barroc" },
+            { subject: "Fuga", sender: "J.S. Bach", era: "Barroc" },
+            { subject: "Baix Continu", sender: "Director", era: "Barroc" },
+            { subject: "Les Quatre Estacions", sender: "Vivaldi", era: "Barroc" },
+            // Classicisme
+            { subject: "Sonata", sender: "Mozart", era: "Classicisme" },
+            { subject: "Equilibri i Claredat", sender: "Estètica", era: "Classicisme" },
+            { subject: "Simfonia núm. 40", sender: "Mozart", era: "Classicisme" },
+            { subject: "Clarinet", sender: "Inventors", era: "Classicisme" },
+            { subject: "Concerts a Viena", sender: "Empresari", era: "Classicisme" },
+            // Romanticisme
+            { subject: "Sentiment i Passió", sender: "Goethe", era: "Romanticisme" },
+            { subject: "Piano Virtuós", sender: "Liszt", era: "Romanticisme" },
+            { subject: "L'Anell del Nibelung", sender: "Wagner", era: "Romanticisme" },
+            { subject: "Lied", sender: "Schubert", era: "Romanticisme" },
+            { subject: "Nacionalisme", sender: "Poble", era: "Romanticisme" },
+            // Segle XX
+            { subject: "Jazz", sender: "New Orleans", era: "Segle XX" },
+            { subject: "Música Electrònica", sender: "Estudi", era: "Segle XX" },
+            { subject: "Atonalisme", sender: "Schönberg", era: "Segle XX" },
+            { subject: "The Beatles", sender: "Liverpool", era: "Segle XX" },
+            { subject: "Banda Sonora", sender: "Hollywood", era: "Segle XX" }
+        ];
+
+        class Game {
+            constructor() {
+                this.emails = [...EMAILS_DATA].sort(() => Math.random() - 0.5);
+                this.inbox = document.getElementById('inbox');
+                this.sidebar = document.getElementById('sidebar');
+                this.countDisplay = document.getElementById('count');
+
+                // Audio
+                this.audio = document.getElementById('bg-music');
+                document.getElementById('volume-slider').addEventListener('input', (e) => {
+                    this.audio.volume = e.target.value;
+                });
+                this.audio.volume = 0.5;
+
+                this.initFolders();
+                this.renderInbox();
+                this.updateCount();
+            }
+
+            start() {
+                document.getElementById('start-modal').classList.add('hidden');
+                this.audio.play().catch(e => console.log("Audio requires interaction"));
+            }
+
+            initFolders() {
+                ERAS.forEach(era => {
+                    const folder = document.createElement('div');
+                    folder.className = 'folder';
+                    folder.dataset.era = era.id;
+                    folder.innerHTML = `<span class="folder-icon" style="color:${era.color}">📁</span> <span class="folder-name">${era.id}</span>`;
+
+                    // Drop Events
+                    folder.addEventListener('dragover', e => {
+                        e.preventDefault();
+                        folder.classList.add('drag-over');
+                    });
+                    folder.addEventListener('dragleave', () => folder.classList.remove('drag-over'));
+                    folder.addEventListener('drop', e => this.handleDrop(e, folder));
+
+                    this.sidebar.appendChild(folder);
+                });
+            }
+
+            renderInbox() {
+                this.inbox.innerHTML = '';
+                this.emails.forEach((email, index) => {
+                    this.createEmailElement(email, index);
+                });
+            }
+
+            createEmailElement(email, index) {
+                const el = document.createElement('div');
+                el.className = 'email-item';
+                el.draggable = true;
+                el.dataset.index = index;
+                el.dataset.era = email.era;
+                el.innerHTML = `
+                    <div class="email-subject">${email.subject}</div>
+                    <div class="email-sender">${email.sender}</div>
+                `;
+
+                // Drag Events
+                el.addEventListener('dragstart', e => {
+                    el.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', index);
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+                this.inbox.appendChild(el);
+            }
+
+            handleDrop(e, folder) {
+                e.preventDefault();
+                folder.classList.remove('drag-over');
+
+                const index = e.dataTransfer.getData('text/plain');
+                const email = this.emails[index];
+
+                const draggedEl = document.querySelector(`.email-item[data-index="${index}"]`);
+
+                if (!draggedEl) return;
+
+                if (email.era === folder.dataset.era) {
+                    // Correct
+                    draggedEl.remove();
+                    this.emails.splice(index, 1);
+
+                    // Note: Splicing invalidates other indices if we relied on them strictly, 
+                    // but we re-render immediately below, so it's fine.
+                    // However, to be cleaner let's just re-render.
+
+                    this.renderInbox();
+                    this.updateCount();
+
+                    if (this.emails.length === 0) {
+                        setTimeout(() => document.getElementById('game-over-modal').classList.remove('hidden'), 500);
+                    }
+
+                } else {
+                    // Incorrect
+                    draggedEl.classList.add('shake');
+                    setTimeout(() => draggedEl.classList.remove('shake'), 500);
+
+                    // Penalty: Duplicate
+                    const complaint = {
+                        subject: `RE: ${email.subject} (Queixa!)`,
+                        sender: "Admin",
+                        era: email.era
+                    };
+                    this.emails.push(complaint);
+
+                    // Visual feedback
+                    setTimeout(() => {
+                        this.renderInbox();
+                        this.updateCount();
+                        const newItems = document.querySelectorAll('.email-item');
+                        newItems[newItems.length - 1].classList.add('pop');
+                    }, 500);
+                }
+            }
+
+            updateCount() {
+                this.countDisplay.textContent = this.emails.length;
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

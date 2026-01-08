@@ -1,0 +1,48 @@
+
+# ESTIL VISUAL: RETRO-FUTURISTA "TIME AGENCY" (Anys 70/80 - Sci-Fi Analògic)
+# Referències: TVA (Loki), Fallout Terminals, Alien (Nostromo), Control (Videjoc).
+# Colors: Ambre fòsfor, Verd CRT, Beix birocràtic, Taronja rovellat, Gris Industrial.
+# Textura: Grano de pel·lícula, línies d'escaneig (scanlines), interfícies de "consola".
+
+[BACKGROUND]
+Nom: fons.jpg
+Descripció: Un escriptori de treball d'una agència temporal burocràtica. Vista en primera persona. Hi ha una tassa de cafè tacada, un cendrer ple, i molts papers desordenats. Al centre, un monitor de tub (CRT) encès que emet una llum ambre suau. L'estil és hiper-realista però amb un toc d'il·lustració retro (com Syd Mead o art conceptual dels 70).
+Estil: Retro-Tech, Cassette Futurism, Cinematic Lighting.
+
+[UI ASSETS]
+Nom: ui_crt_overlay.png
+Descripció: Una textura semitrasparent amb "scanlines" (línies horitzontals fines) i un lleuger vinyetejat fosc a les cantonades per simular una pantalla corba antiga.
+Estil: Overlay gràfic, transparent.
+
+Nom: ui_folder_slot.png
+Descripció: Un "slot" o ranura d'entrada de dades futurista-retro. Sembla una disquetera o una safata d'entrada pneumàtica. Metall raspallat i llums indicadors petits.
+Estil: Realista, mecànic.
+
+Nom: icon_mail_data.png
+Descripció: Una representació física d'un "correu de dades". No un sobre de paper, sinó una targeta perforada (punch card) o un mini-disquet de colors vius.
+Estil: Icona 3D, retro-tech.
+
+Nom: icon_mail_virus.png
+Descripció: Una targeta de dades corrupte, amb espurnes o un símbol d'advertència vermell brillant.
+Estil: Icona 3D, perillós.
+
+[ICONES ÈPOQUES (PELS SLOTS)]
+# Aquestes icones aniran sobreposades o marcant els slots de destí.
+
+Nom: badge_med.png
+Descripció: Un segell de cera o emblema medieval (espasa/creu) metàl·lic i rovellat.
+
+Nom: badge_ren.png
+Descripció: Un emblema renaixentista (home de vitruvi o flor de lis) gravat en coure.
+
+Nom: badge_bar.png
+Descripció: Un emblema barroc (ornamentada lira o perruca) daurat i excessiu.
+
+Nom: badge_cla.png
+Descripció: Un emblema clàssic (columna grega o violí) de marbre o plata polida.
+
+Nom: badge_rom.png
+Descripció: Un emblema romàntic (rosa o llamp) amb un toc dramàtic i fosc.
+
+Nom: badge_sxx.png
+Descripció: Un emblema del segle XX (àtom o ràdio) d'estil "Atomic Age".

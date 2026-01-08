@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hogwarts Historia: Duel de Màgia Musical</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a0b2e;
+            --text-color: #e0d4fc;
+            --accent-color: #b794f6;
+            --hp-player: #2ecc71;
+            --hp-enemy: #e74c3c;
+            --gold: #f1c40f;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 50%, #2c1e3d 0%, #0d0518 100%);
+            color: var(--text-color);
+            font-family: 'MedievalSharp', cursive;
+            user-select: none;
+            /* Custom Cursor attempts to load; if too big, falls back to auto */
+            cursor: url('img/varita.png') 10 10, auto;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Cinzel', serif;
+            text-shadow: 0 0 10px rgba(183, 148, 246, 0.5);
+            margin: 0;
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+
+        .instructions-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 700px;
+            margin: 20px auto;
+            border: 1px solid var(--accent-color);
+            line-height: 1.6;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .btn-era {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            cursor: url('img/varita.png') 10 10, pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .btn-era:hover {
+            background: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 20px var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .btn-era.completed {
+            border-color: #2ecc71;
+            color: #2ecc71;
+            box-shadow: 0 0 10px #2ecc71 inset;
+        }
+
+        .btn-era.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 1.5rem;
+            color: #2ecc71;
+        }
+
+        /* VOLUME CONTROLS */
+        #volume-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+        }
+
+        /* BATTLE SCREEN */
+        #battle-screen {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            /* Reduced side padding to maximize width */
+            box-sizing: border-box;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.5s ease;
+        }
+
+        /* Character HUDs */
+        .hud-container {
+            width: 40vw;
+            /* logical width for HUD bars */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+            position: relative;
+            /* Remove justify-content since img is absolute */
+        }
+
+        .char-img {
+            position: fixed;
+            /* Fixed relative to viewport to guarantee size */
+            bottom: 0;
+            height: 90vh;
+            /* Restore to 90vh without scale */
+            width: auto;
+            max-width: 45vw;
+            /* Restore constraints */
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+            transition: transform 0.2s, filter 0.2s;
+            z-index: 15;
+            pointer-events: none;
+            /* transform: scale(1.5); REMOVED */
+        }
+
+        #player-img {
+            left: 0;
+            /* Stick to left */
+            right: auto;
+            object-position: bottom left;
+            /* transform-origin removed */
+        }
+
+        #enemy-img {
+            right: 0;
+            /* Stick to right */
+            left: auto;
+            /* Force clear left */
+            object-position: bottom right;
+            /* transform-origin removed */
+        }
+
+        /* RED FLASH EFFECT */
+        .char-img.hit {
+            filter: drop-shadow(0 0 20px red) sepia(1) hue-rotate(-50deg) saturate(5) brightness(0.8);
+            animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        /* HUD Bars */
+        .hud-ui {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            padding: 15px;
+            width: 80%;
+            /* Don't span full width of container */
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            text-align: center;
+            position: absolute;
+            /* Float HUD above character */
+            top: 60px;
+            /* Position at top */
+            z-index: 25;
+        }
+
+        .hp-bar-track {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.8);
+        }
+
+        .hp-bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #player-hp {
+            background: var(--hp-player);
+        }
+
+        #enemy-hp {
+            background: var(--hp-enemy);
+        }
+
+        /* SPELL AREA - CENTERED */
+        #spell-area {
+            position: absolute;
+            top: 50%;
+            /* Center Vertically */
+            left: 50%;
+            /* Center Horizontally */
+            transform: translate(-50%, -50%);
+            /* Distinct centering */
+            width: 600px;
+            /* Slightly more compact to fit magic action */
+            text-align: center;
+            background: rgba(16, 12, 29, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            z-index: 30;
+        }
+
+        #spell-text {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            color: #fff;
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .missing-word {
+            border-bottom: 2px solid var(--accent-color);
+            padding: 0 10px;
+            color: var(--gold);
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--gold);
+        }
+
+        #options-area {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .spell-option {
+            background: linear-gradient(135deg, #2c1e3d, #4a192c);
+            border: 1px solid var(--gold);
+            color: white;
+            padding: 12px 25px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            cursor: url('img/varita.png') 10 10, pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .spell-option:hover {
+            background: var(--gold);
+            color: #1a0b2e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .spell-option:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 1px solid white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 100;
+        }
+
+        /* CANVAS */
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ANIMATIONS */
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop>
+        <source src="audio/Arcane Clash at Dawn.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- CANVAS -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h1>Hogwarts Historia</h1>
+        <h3>Duel de Màgia Musical</h3>
+
+        <div id="volume-controls">
+            <label for="volume-slider">🔊</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <div class="instructions-box">
+            <p>Benvingut, jove mag! Per dominar la història de la música, has de derrotar als Grans Mestres de cada
+                Època.</p>
+            <p>✨ <strong>Instruccions de Duel:</strong></p>
+            <ul style="text-align: left; margin: 0 auto; display: inline-block;">
+                <li>Selecciona una <strong>Època</strong> per començar.</li>
+                <li>Completa els <strong>Encanteris</strong> amb la paraula correcta.</li>
+                <li>Acerta <strong>5 encanteris</strong> per derrotar el rival (20 punts/encert).</li>
+                <li>Vigila la teva barra de màgia (HP).</li>
+                <li>Domina totes les èpoques per guanyar!</li>
+            </ul>
+        </div>
+
+        <div class="era-grid" id="era-grid">
+            <!-- Generated by JS -->
+        </div>
+    </div>
+
+    <!-- BATTLE SCREEN -->
+    <div id="battle-screen" class="screen">
+        <button class="back-btn" onclick="showStartScreen()">🔙 Tornar</button>
+
+        <!-- Player HUD (LEFT) -->
+        <div class="hud-container">
+            <div class="hud-ui">
+                <h2 id="player-name">L'Alumne</h2>
+                <div class="hp-bar-track">
+                    <div id="player-hp" class="hp-bar-fill"></div>
+                </div>
+            </div>
+            <img src="img/protagonista.png" class="char-img" id="player-img" alt="Player">
+        </div>
+
+        <!-- Spell Area (CENTER BOTTOM) -->
+        <div id="spell-area">
+            <div id="spell-text">...</div>
+            <div id="options-area">
+                <!-- Buttons generated by JS -->
+            </div>
+        </div>
+
+        <!-- Enemy HUD (RIGHT) -->
+        <div class="hud-container">
+            <div class="hud-ui">
+                <h2 id="enemy-name">Rival</h2>
+                <div class="hp-bar-track">
+                    <div id="enemy-hp" class="hp-bar-fill"></div>
+                </div>
+            </div>
+            <img src="" class="char-img" id="enemy-img" alt="Enemy">
+        </div>
+    </div>
+
+    <!-- VICTORY SCREEN (MODAL) -->
+    <div id="victory-screen" class="screen" style="background: rgba(0,0,0,0.9);">
+        <h1 style="color: var(--gold); font-size: 4rem;">VICTÒRIA!</h1>
+        <p id="victory-msg" style="font-size: 1.5rem; margin-bottom: 30px;">Has dominat aquesta època!</p>
+        <button class="btn-era" onclick="showStartScreen()">Tornar al Mapa</button>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Questions: Magical Prefixes + Clue -> Target Answer
+        const ERAS_DATA = {
+            medieval: {
+                id: 'medieval',
+                name: 'Edat Mitjana',
+                bg: 'img/fonsmitjana.jpg',
+                rivalImg: 'img/medieval.png',
+                rivalName: "L'Inquisidor Fosc",
+                questions: [
+                    { q: "Revelio Caràcter: La música religiosa és ______!", a: "SOLEMNE", options: ["ALEGRE", "BALLABLE", "SOLEMNE"] },
+                    { q: "Accio Textura: Una sola veu és ______!", a: "MONODIA", options: ["POLIFONIA", "MONODIA", "HOMOFONIA"] },
+                    { q: "Lumos Cantus: Els monjos canten al ______!", a: "MONESTIR", options: ["MERCAT", "MONESTIR", "PALAU"] },
+                    { q: "Alohomora Músics: Els poetes viatgers són ______!", a: "TROBADORS", options: ["JOGLARS", "TROBADORS", "MONJOS"] },
+                    { q: "Expecto Notació: Les primeres notes són ______!", a: "NEUMES", options: ["NOTES", "NEUMES", "CLAUS"] },
+                    { q: "Cantus Firmus: La música profana és més ______!", a: "ANIMADA", options: ["TRISTA", "ANIMADA", "RELIGIOSA"] },
+                    { q: "Wingardium Gregorià: Transmet molta ______!", a: "PAU", options: ["PAU", "GUERRA", "FESTA"] }
+                ]
+            },
+            renaixement: {
+                id: 'renaixement',
+                name: 'Renaixement',
+                bg: 'img/fonsreniaxmenet.jpg',
+                rivalImg: 'img/renaixement.png',
+                rivalName: "L'Alquimista Borgia",
+                questions: [
+                    { q: "Revelio Ideal: Es busca la bellesa i l'______!", a: "EQUILIBRI", options: ["EQUILIBRI", "CAOS", "SOROLL"] },
+                    { q: "Alohomora Textura: Totes les veus importen: ______!", a: "POLIFONIA", options: ["MONODIA", "POLIFONIA", "MELODIA"] },
+                    { q: "Accio Invent: Gutenberg va crear la ______!", a: "IMPREMTA", options: ["RÀDIO", "IMPREMTA", "INTERNET"] },
+                    { q: "Wingardium Forma: Cançó profana vocal: ______!", a: "MADRIGAL", options: ["MOTET", "MADRIGAL", "MISSA"] },
+                    { q: "Lumos Filosofia: L'home és el centre: ______!", a: "HUMANISME", options: ["TEOCENTRISME", "HUMANISME", "ATEISME"] },
+                    { q: "Imitatios Repetitus: Repetir el tema: ______!", a: "IMITACIÓ", options: ["IMITACIÓ", "VARIACIÓ", "REPETICIÓ"] },
+                    { q: "Mecenatus Vitas: Els músics viuen a les ______!", a: "CORTS", options: ["ESGLÉSIES", "CORTS", "PLACES"] }
+                ]
+            },
+            barroc: {
+                id: 'barroc',
+                name: 'Barroc',
+                bg: 'img/fonsbarrocv.jpg',
+                rivalImg: 'img/barroc.png',
+                rivalName: "El Fantasma de l'Òpera",
+                questions: [
+                    { q: "Revelio Significat: Perla de forma ______!", a: "IRREGULAR", options: ["RODONA", "IRREGULAR", "PETITA"] },
+                    { q: "Accio Poder: Els Reis volen mostrar ______!", a: "PODER", options: ["PODER", "AMOR", "FE"] },
+                    { q: "Alohomora Gènere: Teatre cantat es diu ______!", a: "ÒPERA", options: ["SARSUELA", "ÒPERA", "MUSICAL"] },
+                    { q: "Lumos Baix: Acompanyament continu: ______!", a: "BAIX CONTINU", options: ["RENAIXEMENT", "BAIX CONTINU", "CLASSICISME"] },
+                    { q: "Expecto Vivaldi: Va fer les Quatre ______!", a: "ESTACIONS", options: ["ESTACIONS", "SIMFONIES", "SONATES"] },
+                    { q: "Virtuosis Veus: Els cantants famosos eren ______!", a: "CASTRATI", options: ["CASTRATI", "MONJOS", "TROBADORS"] },
+                    { q: "Contrastus Dinàmica: Fort i Fluix és ______!", a: "CONTRAST", options: ["IGUALTAT", "CONTRAST", "SILENCI"] }
+                ]
+            },
+            classicisme: {
+                id: 'classicisme',
+                name: 'Classicisme',
+                bg: 'img/fonsclassicisme.jpg',
+                rivalImg: 'img/clasicisme.png',
+                rivalName: "La Directora Severa",
+                questions: [
+                    { q: "Revelio Estil: Més senzill i amb ______!", a: "SENZILLESA", options: ["COMPLEXITAT", "SENZILLESA", "FOSCOR"] },
+                    { q: "Accio Formació: Grup gran d'instruments: ______!", a: "ORQUESTRA", options: ["QUARTET", "ORQUESTRA", "TRIO"] },
+                    { q: "Alohomora Nen: Mozart era un nen ______!", a: "PRODIGI", options: ["PRODIGI", "NORMAL", "ENTREMALIAT"] },
+                    { q: "Lumos Forma: Sonata té ______ moviments!", a: "QUATRE", options: ["DOS", "TRES", "QUATRE"] },
+                    { q: "Wingardium Públic: La música arriba a la ______!", a: "BURGESIA", options: ["NOBLESA", "BURGESIA", "ESGLÉSIA"] },
+                    { q: "Melodia Clara: S'acompanya la ______!", a: "MELODIA", options: ["POLIFONIA", "MELODIA", "MONODIA"] },
+                    { q: "Racionalismus Època: Segle de la ______!", a: "IL·LUSTRACIÓ", options: ["RENAIXEMENT", "IL·LUSTRACIÓ", "ROMANTICISME"] }
+                ]
+            },
+            romanticisme: {
+                id: 'romanticisme',
+                name: 'Romanticisme',
+                bg: 'img/fonsromanticisme.jpg',
+                rivalImg: 'img/romanticisme.png',
+                rivalName: "El Poeta Maleït",
+                questions: [
+                    { q: "Revelio Objectiu: Expressar els ______!", a: "SENTIMENTS", options: ["PENSAMENTS", "SENTIMENTS", "DEURES"] },
+                    { q: "Accio Instrument: El rei del teclat és el ______!", a: "PIANO", options: ["VIOLÍ", "PIANO", "FLAUTA"] },
+                    { q: "Alohomora Ritme: El temps flexible es diu ______!", a: "RUBATO", options: ["RITME", "TEMPO", "RUBATO"] },
+                    { q: "Lumos Wagner: Va crear el Drama ______!", a: "MUSICAL", options: ["TEATRAL", "MUSICAL", "LÍRIC"] },
+                    { q: "Expecto Lied: Cançó per a veu i ______!", a: "PIANO", options: ["ORQUESTRA", "PIANO", "GUITARRA"] },
+                    { q: "Nationalismus Inspiració: Música del ______!", a: "POBLE", options: ["CIÈNCIA", "POBLE", "RELIGIÓ"] },
+                    { q: "Titanicus Forma: Simfonies molt ______!", a: "LLARQUES", options: ["CURTES", "LLARQUES", "SIMPLES"] }
+                ]
+            },
+            segle_xx: {
+                id: 'segle_xx',
+                name: 'Segle XX',
+                bg: 'img/fons segleXX.jpg',
+                rivalImg: 'img/segleXX.png',
+                rivalName: "El Tecnomag Dissonant",
+                questions: [
+                    { q: "Revelio Art: Trencar amb el ______!", a: "PASSAT", options: ["FUTUR", "PASSAT", "PRESENT"] },
+                    { q: "Accio Jazz: Música que neix a ______!", a: "AMÈRICA", options: ["EUROPA", "AMÈRICA", "ÀFRICA"] },
+                    { q: "Alohomora Tecnologia: Permet gravar i ______!", a: "DIFONDRE", options: ["ESBORRAR", "DIFONDRE", "AMAGAR"] },
+                    { q: "Lumos Stravinsky: La Consagració de la ______!", a: "PRIMAVERA", options: ["TARDOR", "PRIMAVERA", "HIVERN"] },
+                    { q: "Expecto Atonalisme: No hi ha cap ______!", a: "TONALITAT", options: ["RÍTMICA", "TONALITAT", "MELODIA"] },
+                    { q: "Electronica Sintetizus: So creat per ______!", a: "MÀQUINES", options: ["NATURA", "MÀQUINES", "VEUS"] },
+                    { q: "Dodecafonia Serialis: Sèries de ______ notes!", a: "DOTZE", options: ["SET", "DOTZE", "VUIT"] }
+                ]
+            }
+        };
+
+        // --- GAME STATE ---
+        let gameState = {
+            era: null,
+            playerHP: 100,
+            enemyHP: 100,
+            currentQuestion: null,
+            isCasting: false
+        };
+
+        // --- AUDIO ---
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+            if (bgMusic.paused) bgMusic.play().catch(e => console.log("Audio requires interaction"));
+        });
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'cast') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'hit') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'win') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554, now + 0.2);
+                osc.frequency.setValueAtTime(659, now + 0.4);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            }
+        }
+
+        // --- PARTICLES with Image ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let beamState = 'idle';
+        let particleImg = new Image();
+        particleImg.src = 'img/explosiones.png';
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.onresize = resizeCanvas;
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, multiplier = 1) {
+                this.x = x;
+                this.y = y;
+                this.speedX = (Math.random() - 0.5) * 10 * multiplier;
+                this.speedY = (Math.random() - 0.5) * 10 * multiplier;
+                this.life = 1.0;
+                this.size = Math.random() * 80 + 20; // Big boom
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = (Math.random() - 0.5) * 10;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= 0.04;
+                this.rotation += this.rotSpeed;
+                this.size *= 0.95;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                if (particleImg.complete && particleImg.naturalWidth > 0) {
+                    ctx.drawImage(particleImg, -this.size / 2, -this.size / 2, this.size, this.size);
+                }
+                ctx.restore();
+            }
+        }
+
+        function spawnParticles(x, y, count) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y));
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Beams
+            if (beamState !== 'idle') {
+                const midX = canvas.width / 2;
+                const midY = canvas.height / 2;
+
+                const playerImg = document.getElementById('player-img').getBoundingClientRect();
+                const enemyImg = document.getElementById('enemy-img').getBoundingClientRect();
+
+                // Approximate wand positions - Adjusted for new taller images
+                const playerX = playerImg.right - 80;
+                const playerY = playerImg.bottom - (playerImg.height * 0.6); // Higher up
+                const enemyX = enemyImg.left + 80;
+                const enemyY = enemyImg.bottom - (enemyImg.height * 0.6);
+
+                let clashX = (playerX + enemyX) / 2;
+                let clashY = (playerY + enemyY) / 2;
+
+                if (beamState === 'player-win') {
+                    clashX = enemyX - 20;
+                    clashY = enemyY;
+                }
+                if (beamState === 'enemy-win') {
+                    clashX = playerX + 20;
+                    clashY = playerY;
+                }
+
+                // Beam P (Green)
+                const gradP = ctx.createLinearGradient(playerX, playerY, clashX, clashY);
+                gradP.addColorStop(0, '#2ecc71');
+                gradP.addColorStop(1, '#fff');
+                ctx.strokeStyle = gradP;
+                ctx.lineWidth = 10 + Math.random() * 5;
+                ctx.beginPath();
+                ctx.moveTo(playerX, playerY);
+                ctx.lineTo(clashX, clashY);
+                ctx.stroke();
+
+                // Beam E (Red)
+                const gradE = ctx.createLinearGradient(enemyX, enemyY, clashX, clashY);
+                gradE.addColorStop(0, '#e74c3c');
+                gradE.addColorStop(1, '#fff');
+                ctx.strokeStyle = gradE;
+                ctx.lineWidth = 10 + Math.random() * 5;
+                ctx.beginPath();
+                ctx.moveTo(enemyX, enemyY);
+                ctx.lineTo(clashX, clashY);
+                ctx.stroke();
+
+                // Clash Sparks
+                spawnParticles(clashX, clashY, 1); // Continual spawn
+            }
+
+            // Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- GAME LOGIC ---
+
+        function initGame() {
+            renderEraGrid();
+
+            // Auto-play music if possible
+            document.body.addEventListener('click', () => {
+                if (bgMusic.paused) {
+                    bgMusic.play();
+                }
+            }, { once: true });
+        }
+
+        function renderEraGrid() {
+            const grid = document.getElementById('era-grid');
+            grid.innerHTML = '';
+
+            Object.values(ERAS_DATA).forEach(era => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-era';
+                btn.innerText = era.name;
+
+                // Check if completed
+                if (localStorage.getItem('hogwarts_completed_' + era.id)) {
+                    btn.classList.add('completed');
+                }
+
+                btn.onclick = () => startGame(era.id);
+                grid.appendChild(btn);
+            });
+        }
+
+        function showStartScreen() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('start-screen').classList.add('active');
+            renderEraGrid(); // Refresh green status
+        }
+
+        function startGame(eraId) {
+            gameState.era = ERAS_DATA[eraId];
+            gameState.playerHP = 100;
+            gameState.enemyHP = 100;
+
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const bs = document.getElementById('battle-screen');
+            bs.classList.add('active');
+
+            // Set Background
+            bs.style.backgroundImage = `url('${gameState.era.bg}')`;
+
+            // Set Enemy
+            document.getElementById('enemy-name').innerText = gameState.era.rivalName;
+            const enemyImg = document.getElementById('enemy-img');
+            enemyImg.style.opacity = '0'; // Blink fix
+            setTimeout(() => enemyImg.style.opacity = '1', 50);
+
+            enemyImg.src = gameState.era.rivalImg;
+            enemyImg.classList.remove('hit'); // Reset flash
+
+            const playerImg = document.getElementById('player-img');
+            playerImg.classList.remove('hit'); // Reset flash
+
+            // Update Bars
+            updateHP();
+
+            // Load Question
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            const questions = gameState.era.questions;
+            const q = questions[Math.floor(Math.random() * questions.length)];
+            gameState.currentQuestion = q;
+
+            // Render
+            const spellText = document.getElementById('spell-text');
+            spellText.innerHTML = q.q.replace('______', '<span class="missing-word">______</span>');
+
+            const optionsArea = document.getElementById('options-area');
+            optionsArea.innerHTML = '';
+
+            const opts = [...q.options].sort(() => Math.random() - 0.5);
+            opts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'spell-option';
+                btn.innerText = opt;
+                btn.onclick = () => castSpell(opt);
+                optionsArea.appendChild(btn);
+            });
+        }
+
+        function castSpell(answer) {
+            if (gameState.isCasting) return;
+            gameState.isCasting = true;
+            playSound('cast');
+
+            const isCorrect = answer === gameState.currentQuestion.a;
+            beamState = isCorrect ? 'player-win' : 'enemy-win';
+
+            // Disable buttons
+            document.querySelectorAll('.spell-option').forEach(b => b.style.pointerEvents = 'none');
+
+            setTimeout(() => {
+                playSound('hit');
+                beamState = 'idle';
+
+                if (isCorrect) {
+                    // 5 hits to win -> 100 / 5 = 20 damage
+                    gameState.enemyHP -= 20;
+
+                    const enemyImg = document.getElementById('enemy-img');
+                    spawnParticles(enemyImg.getBoundingClientRect().left + 200, window.innerHeight - 300, 10);
+                    // Add Hit Class for FLASH effect
+                    enemyImg.classList.add('hit');
+                    // Remove after short delay
+                    setTimeout(() => enemyImg.classList.remove('hit'), 500);
+
+                } else {
+                    gameState.playerHP -= 25; // 4 hits to lose still
+
+                    const playerImg = document.getElementById('player-img');
+                    spawnParticles(playerImg.getBoundingClientRect().left + 200, window.innerHeight - 300, 10);
+                    // Add Hit Class for FLASH effect
+                    playerImg.classList.add('hit');
+                    // Remove after short delay
+                    setTimeout(() => playerImg.classList.remove('hit'), 500);
+                }
+
+                updateHP();
+
+                setTimeout(() => {
+                    checkTurnResult();
+                    gameState.isCasting = false;
+                }, 600);
+
+            }, 1000);
+        }
+
+        function updateHP() {
+            document.getElementById('player-hp').style.width = Math.max(0, gameState.playerHP) + '%';
+            document.getElementById('enemy-hp').style.width = Math.max(0, gameState.enemyHP) + '%';
+        }
+
+        function checkTurnResult() {
+            if (gameState.enemyHP <= 0.1) { // Floating point safety
+                // Victory
+                playSound('win');
+                localStorage.setItem('hogwarts_completed_' + gameState.era.id, 'true'); // Save win
+                document.getElementById('battle-screen').classList.remove('active');
+                document.getElementById('victory-screen').classList.add('active');
+            } else if (gameState.playerHP <= 0.1) {
+                // Game Over
+                alert("T'han derrotat! Torna-ho a intentar.");
+                showStartScreen();
+            } else {
+                nextQuestion();
+            }
+        }
+
+        // Init
+        window.onload = initGame;
+
+    </script>
+</body>
+
+</html>

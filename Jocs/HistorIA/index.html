@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projecte: MUSA - Entrenament d'IA</title>
+    <!-- Premium Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Orbitron:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --cyber-cyan: #00f3ff;
+            --cyber-dim: rgba(0, 243, 255, 0.2);
+            --cyber-red: #ff0055;
+            --cyber-gold: #ffd700;
+            --glass-bg: rgba(10, 15, 20, 0.6);
+            --glass-border: rgba(0, 243, 255, 0.3);
+            --text-main: #e0e0e0;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Fira Code', monospace;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            /* Animated Grid Background */
+            background-image:
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: center center;
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 50px 50px;
+            }
+        }
+
+        /* SCANLINES & VIGNETTE */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: radial-gradient(circle, transparent 50%, #000 150%),
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 100%, 100% 4px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* UI CONTAINER (Holographic Panel) */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            position: absolute;
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeInScreen 0.5s ease-out;
+        }
+
+        @keyframes fadeInScreen {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+                filter: blur(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            color: var(--cyber-cyan);
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--cyber-dim), 0 0 10px var(--cyber-cyan);
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--cyber-cyan);
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            color: #b0c0c0;
+            text-align: center;
+            text-shadow: 0 0 2px #000;
+        }
+
+        /* BUTTONS (Cyberpunk Style) */
+        button {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--cyber-cyan);
+            color: var(--cyber-cyan);
+            padding: 15px 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            margin: 10px;
+            position: relative;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover {
+            background: var(--cyber-dim);
+            text-shadow: 0 0 10px var(--cyber-cyan);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        /* ERA GRID */
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            background: var(--glass-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .era-grid button {
+            width: 200px;
+            font-size: 1rem;
+        }
+
+        .era-grid button.completed {
+            border-color: #0f0;
+            box-shadow: 0 0 20px #0f0;
+            color: #0f0;
+        }
+
+        /* GAME UI */
+        #game-ui {
+            width: 80%;
+            max-width: 1000px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--cyber-cyan);
+            border-bottom: 4px solid var(--cyber-cyan);
+            padding: 40px;
+            position: relative;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+
+        /* PRECISION BAR */
+        #precision-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #111;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+        }
+
+        #precision-bar {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, var(--cyber-cyan), #00aaff);
+            box-shadow: 0 0 15px var(--cyber-cyan);
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+        }
+
+        #precision-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+            animation: shimmer 1s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        #precision-text {
+            position: absolute;
+            top: -25px;
+            right: 0;
+            color: var(--cyber-cyan);
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* TIMER BAR */
+        #timer-container {
+            width: 100%;
+            height: 5px;
+            background: #333;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background: #ff0055;
+            box-shadow: 0 0 10px #ff0055;
+            transition: width linear;
+        }
+
+        /* DATA DISPLAY (Typewriter) */
+        #data-display {
+            font-size: 2.2rem;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid #333;
+            background: rgba(0, 0, 0, 0.6);
+            margin-bottom: 40px;
+            padding: 30px;
+            color: #fff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            font-weight: bold;
+            position: relative;
+        }
+
+        #data-display::before {
+            content: "FLUX DE DADES ENTRANT...";
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 0.7rem;
+            color: #555;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .btn-import {
+            border-color: var(--cyber-cyan);
+            color: var(--cyber-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .btn-import:hover {
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 30px var(--cyber-dim);
+        }
+
+        .btn-purge {
+            border-color: var(--cyber-red);
+            color: var(--cyber-red);
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.1);
+        }
+
+        .btn-purge:hover {
+            background: rgba(255, 0, 85, 0.1);
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);
+        }
+
+        /* FEEDBACK OVERLAY */
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+        }
+
+        .feedback-success {
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.2) 0%, transparent 70%);
+            color: var(--cyber-cyan);
+            text-shadow: 0 0 30px var(--cyber-cyan);
+        }
+
+        .feedback-success::after {
+            content: "ACCEPTAT";
+        }
+
+        .feedback-fail {
+            background: radial-gradient(circle, rgba(255, 0, 85, 0.2) 0%, transparent 70%);
+            color: var(--cyber-red);
+            text-shadow: 0 0 30px var(--cyber-red);
+        }
+
+        .feedback-fail::after {
+            content: "REBUTJAT";
+        }
+
+        /* GLITCH ANIMATION */
+        .glitch-effect {
+            animation: glitch-anim 2s infinite;
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                text-shadow: 2px 0 red, -2px 0 blue;
+            }
+
+            5% {
+                text-shadow: 2px 0 red, -2px 0 blue;
+            }
+
+            6% {
+                text-shadow: none;
+            }
+
+            100% {
+                text-shadow: none;
+            }
+        }
+
+        /* VOLUME CONTROL */
+        #volume-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 10, 20, 0.8);
+            border: 1px solid var(--cyber-cyan);
+            padding: 10px 15px;
+            border-radius: 5px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        #volume-control input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 5px;
+            background: #111;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        #volume-control input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--cyber-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--cyber-cyan);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h1 class="glitch-effect">PROJECTE: MUSA</h1>
+        <p>ESTAT DEL SISTEMA: ERROR CRÍTIC<br>NUCLI D'IA CORRUPTE</p>
+        <p>MISSIÓ: Filtrar fluxos de dades històriques. Identificar artefactes vàlids. Purgar anomalies.</p>
+        <button onclick="showEraSelector()">INICIAR PROTOCOL</button>
+    </div>
+
+    <!-- ERA SELECTOR -->
+    <div id="era-screen" class="screen">
+        <h2>SELECCIONAR SECTOR DE DADES</h2>
+        <div class="era-grid">
+            <button onclick="startGame('medieval')">EDAT MITJANA</button>
+            <button onclick="startGame('renaixement')">RENAIXEMENT</button>
+            <button onclick="startGame('barroc')">BARROC</button>
+            <button onclick="startGame('classicisme')">CLASSICISME</button>
+            <button onclick="startGame('romanticisme')">ROMANTICISME</button>
+            <button onclick="startGame('segle_xx')">SEGLE XX</button>
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen">
+        <div id="precision-text">INTEGRITAT: 50%</div>
+        <div id="precision-bar-container">
+            <div id="precision-bar"></div>
+        </div>
+
+        <div id="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+
+        <div id="data-display">INICIANT...</div>
+
+        <div class="action-buttons">
+            <!-- Swapped order for better UX: Import Left, Purge Right or vice versa? Let's stick to standard flow -->
+            <button class="btn-import" onclick="processData(true)">VERIFICAR [VERITAT]</button>
+            <button class="btn-purge" onclick="processData(false)">PURGAR [FALS]</button>
+        </div>
+        <div id="feedback" class="feedback-overlay"></div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="screen">
+        <h1 id="end-title"></h1>
+        <p id="end-msg"></p>
+        <button onclick="returnToMenu()">TORNAR AL MENÚ</button>
+    </div>
+
+    <!-- AUDIO -->
+    <div id="volume-control">
+        <span style="font-size: 1.2rem;">🔊</span>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.5">
+    </div>
+    <audio id="bg-music" loop>
+        <source src="audio/Glitch In The Mainframe.m4a" type="audio/mpeg">
+    </audio>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATABASE ---
+        const AI_DB = {
+            medieval: {
+                true: [
+                    "Monodia", "Cant Gregorià", "Cantigas de Santa Maria", "Alfons X el Savi", "Guido d'Arezzo",
+                    "Trobadors", "Joglars", "Llatí", "Neumes", "Textura monòdica",
+                    "Música religiosa dominant", "Ars Antiqua", "Ars Nova", "Leonin", "Perotin",
+                    "Guillaume de Machaut", "Llaüt medieval", "Viola de roda", "Orgue portàtil", "Xirimia",
+                    "Sacabutx", "Ritme lliure", "Cant a cappella", "Monestirs", "Cistercencs",
+                    "Hildegard von Bingen", "Música profana", "Adam de la Halle", "Cant Sybilla", "Misteri d'Elx",
+                    "Llibre Vermell de Montserrat", "Dansa de la Mort", "Saltarello", "Estampida", "Flauta de tres forats",
+                    "Percussió medieval", "Saltiri", "Arpa medieval", "Rebec", "Organistrum"
+                ],
+                false: [
+                    "Piano de cua", "Òpera", "Orquestra Simfònica", "Mozart", "Beethoven",
+                    "Música Electrònica", "Violí Stradivarius", "Melodia Acompanyada", "Concerts públics", "Jazz",
+                    "Guitarra Elèctrica", "Saxòfon", "Baix Continu", "Clarinet", "Dodecafonisme",
+                    "Atonalitat", "Vals", "Lied", "Poema Simfònic", "Rock and Roll",
+                    "Sintetitzador", "Guitarró", "Ukelele", "Bateria", "Micròfon",
+                    "Altaveu", "Disc de Vinil", "MP3", "Spotify", "Autotune"
+                ]
+            },
+            renaixement: {
+                true: [
+                    "Polifonia", "Humanisme", "Impremta musical", "Ottaviano Petrucci", "Josquin des Prez",
+                    "Palestrina", "Tomás Luis de Victoria", "Orlando di Lasso", "Madrigal", "Motet",
+                    "Missa", "Viola da gamba", "Llaüt renaixentista", "Flauta de bec", "Cornetto",
+                    "Textura polifònica", "Imitació", "Reforma Protestant", "Coral luterà", "Contrareforma",
+                    "Concili de Trento", "Música a cappella", "Equilibri de veus", "Monteverdi (Madrigals)", "Ensalada",
+                    "Mateu Fletxa", "Juan del Encina", "Cançoner de Palau", "Villancico", "Pavana",
+                    "Gallarda", "Virginal", "Toccata", "Ricercare", "Canzona",
+                    "Escola francoflamenca", "Escola romana", "Escola veneciana", "Gabrieli", "Música cortesana"
+                ],
+                false: [
+                    "Baix continu", "Òpera", "Clarinet", "Piano", "Wagner",
+                    "Dodecafonisme", "Guitarra elèctrica", "Romanticisme", "Simfonia", "Atonalitat",
+                    "Orquestra Simfònica", "Jazz", "Rap", "Techno", "Sintetitzador",
+                    "Concert Solista", "Forma Sonata", "Lied", "Poema Simfònic", "Minimalisme",
+                    "Trampa", "Reggaeton", "Trap", "Heavy Metal", "Punk",
+                    "Disco", "Funk", "Soul", "R&B", "Hip Hop"
+                ]
+            },
+            barroc: {
+                true: [
+                    "Baix Continu", "Naixement de l'Òpera", "L'Orfeo", "Vivaldi", "Bach",
+                    "Händel", "Purcell", "Clavicèmbal", "Orgue d'església", "Violí barroc",
+                    "Concerto Grosso", "Solista vs Tutti", "Contrast dinàmic", "Ornamentació", "Mecenatge",
+                    "Castrats", "Teoria dels afectes", "Fuga", "Suite", "Sonata barroca",
+                    "Cantata", "Oratori", "Luthiers", "Stradivarius", "Guarneri",
+                    "Monteverdi (Òpera)", "Lully", "Rameau", "Scarlatti", "Telemann",
+                    "Pachelbel", "Corelli", "Albinoni", "Pergolesi", "Pasqua de Resurrecció",
+                    "Música aquàtica", "El Messies", "Les Quatre Estacions", "Art de la Fuga", "Clave ben temperat"
+                ],
+                false: [
+                    "Piano", "Clarinet", "Simfonia Clàssica", "Mozart", "Jazz",
+                    "Atonalitat", "Polifonia simple", "Absència de ritme", "Minimalisme", "Rock",
+                    "Guitarra Elèctrica", "Saxòfon", "Dodecafonisme", "Música Aleatòria", "Sintetitzador",
+                    "Lied", "Poema Simfònic", "Vals", "Impressionisme", "Neoclassicisme",
+                    "Sampler", "Loop", "Drum Machine", "Vocoder", "Theremin",
+                    "Ondes Martenot", "Moog", "Korg", "Roland", "Yamaha"
+                ]
+            },
+            classicisme: {
+                true: [
+                    "Equilibri", "Proporció", "Claredat", "Senzillesa", "Melodia Acompanyada",
+                    "Desaparició Baix Continu", "Pianoforte", "Clarinet", "Orquestra estandarditzada", "Forma Sonata",
+                    "Simfonia", "Quartet de Corda", "Concert solista", "Mozart", "Haydn",
+                    "Vicent Martín i Soler", "Gluck", "Viena", "Música elegant", "Fraseig regular",
+                    "Beethoven (Primer període)", "CPE Bach", "JC Bach", "Salieri", "Boccherini",
+                    "Clementi", "Sturm und Drang", "Escola de Mannheim", "Crescendo", "Diminuendo",
+                    "Minuet", "Rondo", "Tema i Variacions", "Òpera Buffa", "Singspiel",
+                    "La Flauta Màgica", "Les Noces de Fígaro", "La Creació", "Simfonia de les Joguines", "Música de cambra"
+                ],
+                false: [
+                    "Beethoven (Romàntic)", "Bach", "Clavicèmbal", "Exageració emocional", "Poema Simfònic",
+                    "Òpera Wagneriana", "Caos sonor", "Baix Continu", "Castrats", "Atonalitat",
+                    "Dodecafonisme", "Jazz", "Rock", "Sintetitzador", "Música Electrònica",
+                    "Llaüt", "Viola da gamba", "Cant Gregorià", "Polifonia complexa", "Minimalisme",
+                    "Organum", "Discantus", "Conductus", "Motet Medieval", "Missa de Notre Dame",
+                    "Ars Subtilior", "Trecento", "Quattrocento", "Monodia", "Neumes"
+                ]
+            },
+            romanticisme: {
+                true: [
+                    "Beethoven", "Schubert", "Chopin", "Wagner", "Verdi",
+                    "Brahms", "Liszt", "Expressió de sentiments", "Passió", "Individualisme",
+                    "Llibertat formal", "Gran Orquestra", "Virtuosisme", "Piano de gran cua", "Lied",
+                    "Òpera total", "Nacionalisme musical", "Poema Simfònic", "Música programàtica", "Matisos extrems",
+                    "Rubato", "Valsos", "Ballet", "Txaikovski", "Mendelssohn",
+                    "Schumann", "Berlioz", "Mahler", "Puccini", "Rossini",
+                    "Bizet", "Dvorak", "Grieg", "Sibelius", "Rimski-Kórsakov",
+                    "Mussorgski", "Albéniz", "Granados", "Sarasate", "Paganini"
+                ],
+                false: [
+                    "Haydn", "Equilibri i contenció", "Baix continu", "Clavicèmbal", "Monodia",
+                    "Música sense emocions", "Bach", "Mozart", "Viola da gamba", "Ars Nova",
+                    "Atonalitat", "Dodecafonisme", "Jazz", "Rock", "Sintetitzador",
+                    "Música Electrònica", "Cant Gregorià", "Llaüt", "Castrats", "Minimalisme",
+                    "Serialisme", "Música Concreta", "Música Electroacústica", "Música Espectral", "Nova Complexitat",
+                    "Sorollisme", "Futurisme", "Neoclassicisme", "Impressionisme", "Expressionisme"
+                ]
+            },
+            segle_xx: {
+                true: [
+                    "Trencament de normes", "Atonalitat", "Dodecafonisme", "Schönberg", "Stravinsky",
+                    "Debussy", "Ravel", "Música Aleatòria", "John Cage", "4'33\"",
+                    "Minimalisme", "Música Electrònica", "Sintetitzadors", "Jazz", "Rock",
+                    "Pop", "Noves grafies", "Sorollisme", "Musique Concrète", "Dissolució del ritme",
+                    "Steve Reich", "Philip Glass", "Gershwin", "Bernstein", "Boulez",
+                    "Stockhausen", "Xenakis", "Messiaen", "Britten", "Shostakovich",
+                    "Prokofiev", "Bartók", "Kodály", "Orff", "Copland",
+                    "Música de cinema", "Theremin", "Ondes Martenot", "Sampler", "MIDI"
+                ],
+                false: [
+                    "Retorn al Baix Continu", "Prohibició de la dissonància", "Mozart", "Estil Galant", "Viola da gamba",
+                    "Només música religiosa", "Bach", "Palestrina", "Castrats", "Llaüt",
+                    "Clavicèmbal", "Baix Continu", "Forma Sonata estricta", "Simfonia Clàssica", "Òpera Barroca",
+                    "Cant Gregorià", "Monodia", "Ars Antiqua", "Trobadors", "Joglars",
+                    "Tiorba", "Viola d'amore", "Corneta", "Sacabutx", "Xirimia",
+                    "Flauta de bec", "Orgue Portàtil", "Saltiri", "Rebec", "Organistrum"
+                ]
+            }
+        };
+
+        // --- GAME STATE ---
+        let gameState = {
+            era: null,
+            precision: 50,
+            currentPhrase: null,
+            isTrue: false,
+            isPlaying: false,
+            pool: []
+        };
+
+        let completedEras = new Set();
+        let timerInterval = null;
+        let timeLeft = 0;
+        const TIME_LIMIT = 5000; // 5 seconds
+
+        // --- AUDIO ---
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('vol-slider');
+
+        // Volume Slider Logic
+        bgMusic.volume = 0.5;
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        // Start Music on Interaction
+        document.body.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio play failed:", e));
+            }
+        }, { once: true });
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'type') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1200 + Math.random() * 200, now);
+                gain.gain.setValueAtTime(0.02, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                osc.start(now);
+                osc.stop(now + 0.03);
+            } else if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(2000, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'fail') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554, now + 0.2);
+                osc.frequency.setValueAtTime(659, now + 0.4);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function showEraSelector() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('end-screen').classList.remove('active');
+            document.getElementById('era-screen').classList.add('active');
+
+            // Update buttons based on completion
+            const buttons = document.querySelectorAll('.era-grid button');
+            buttons.forEach(btn => {
+                // Extract era from onclick attribute roughly, or better, add data-era to buttons in HTML.
+                // Since I cannot change HTML structure easily for all buttons without a huge replace, 
+                // I will assume standard match or just iterate.
+                // Actually, I can use a simpler way: Re-render the grid or check against the onclick string.
+                const eraCode = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+                if (completedEras.has(eraCode)) {
+                    btn.classList.add('completed');
+                    btn.innerText = btn.innerText.replace(" [COMPLETAT]", "") + " [COMPLETAT]";
+                }
+            });
+
+            playSound('success');
+        }
+
+        function returnToMenu() {
+            document.getElementById('game-screen').classList.remove('active');
+            showEraSelector();
+        }
+
+        function startGame(era) {
+            gameState.era = era;
+            gameState.precision = 50;
+            gameState.isPlaying = true;
+
+            const truePhrases = AI_DB[era].true.sort(() => Math.random() - 0.5).slice(0, 30).map(p => ({ text: p, isTrue: true }));
+            const falsePhrases = AI_DB[era].false.sort(() => Math.random() - 0.5).slice(0, 30).map(p => ({ text: p, isTrue: false }));
+
+            gameState.pool = [...truePhrases, ...falsePhrases].sort(() => Math.random() - 0.5);
+
+            document.getElementById('era-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+
+            updateUI();
+            nextPhrase();
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            const bar = document.getElementById('timer-bar');
+            let startTime = Date.now();
+
+            timerInterval = setInterval(() => {
+                if (!gameState.isPlaying) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+
+                let elapsed = Date.now() - startTime;
+                let pct = 100 - (elapsed / TIME_LIMIT * 100);
+
+                if (pct <= 0) {
+                    pct = 0;
+                    clearInterval(timerInterval);
+                    // Time out!
+                    timeOutPenalty();
+                }
+
+                bar.style.width = pct + '%';
+            }, 50);
+        }
+
+        function timeOutPenalty() {
+            gameState.precision -= 10;
+            playSound('fail');
+            showFeedback('fail');
+            checkWinCondition();
+            if (gameState.isPlaying) {
+                setTimeout(nextPhrase, 500);
+            }
+        }
+
+        function nextPhrase() {
+            if (gameState.pool.length === 0) {
+                const truePhrases = AI_DB[gameState.era].true.map(p => ({ text: p, isTrue: true }));
+                const falsePhrases = AI_DB[gameState.era].false.map(p => ({ text: p, isTrue: false }));
+                gameState.pool = [...truePhrases, ...falsePhrases].sort(() => Math.random() - 0.5);
+            }
+
+            const item = gameState.pool.pop();
+            gameState.currentPhrase = item.text;
+            gameState.isTrue = item.isTrue;
+
+            // Typewriter effect
+            const display = document.getElementById('data-display');
+            display.innerText = '';
+            let i = 0;
+            const text = item.text;
+
+            // Clear any old interval
+            if (window.typeInterval) clearInterval(window.typeInterval);
+
+            window.typeInterval = setInterval(() => {
+                display.innerText += text.charAt(i);
+                playSound('type');
+                i++;
+                if (i >= text.length) clearInterval(window.typeInterval);
+            }, 25);
+
+            startTimer();
+        }
+
+        function processData(importAction) {
+            if (!gameState.isPlaying) return;
+            // Clear timer
+            if (timerInterval) clearInterval(timerInterval);
+
+            // Clear typing if user acts fast
+            if (window.typeInterval) clearInterval(window.typeInterval);
+            document.getElementById('data-display').innerText = gameState.currentPhrase;
+
+            const isCorrect = (importAction === gameState.isTrue);
+
+            if (isCorrect) {
+                gameState.precision += 5;
+                playSound('success');
+                showFeedback('success');
+            } else {
+                gameState.precision -= 10;
+                playSound('fail');
+                showFeedback('fail');
+            }
+
+            if (gameState.precision > 100) gameState.precision = 100;
+            if (gameState.precision < 0) gameState.precision = 0;
+
+            updateUI();
+            checkWinCondition();
+
+            if (gameState.isPlaying) {
+                setTimeout(nextPhrase, 500); // Small delay for feedback visibility
+            }
+        }
+
+        function showFeedback(type) {
+            const el = document.getElementById('feedback');
+            el.className = `feedback-overlay feedback-${type}`;
+            el.style.opacity = 1;
+            setTimeout(() => el.style.opacity = 0, 400);
+        }
+
+        function updateUI() {
+            const bar = document.getElementById('precision-bar');
+            const text = document.getElementById('precision-text');
+
+            bar.style.width = gameState.precision + '%';
+            text.innerText = `INTEGRITAT: ${gameState.precision}%`;
+
+            if (gameState.precision > 80) bar.style.boxShadow = '0 0 15px #0f0';
+            else if (gameState.precision > 40) bar.style.boxShadow = '0 0 15px #ff0';
+            else bar.style.boxShadow = '0 0 15px #f00';
+        }
+
+        function checkWinCondition() {
+            if (gameState.precision >= 100) {
+                endGame(true);
+            } else if (gameState.precision <= 0) {
+                endGame(false);
+            }
+        }
+
+        function endGame(win) {
+            gameState.isPlaying = false;
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('end-screen').classList.add('active');
+
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if (win) {
+                completedEras.add(gameState.era);
+                title.innerText = "NUCLI SINCRONITZAT";
+                title.style.color = "#00f3ff";
+                msg.innerText = "Base de dades històrica restaurada. Protocol complet.";
+                playSound('win');
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard('historia_mix', 'Enginyer de Dades', 'Has restaurat la base de dades musical!', '../../img/card_historia.png');
+                }
+            } else {
+                title.innerText = "ERROR CRÍTIC";
+                title.style.color = "#ff0055";
+                msg.innerText = "Dades corruptes irrecuperables. Apagant sistema.";
+                playSound('fail');
+            }
+        }
+    </script>
+</body>
+
+</html>

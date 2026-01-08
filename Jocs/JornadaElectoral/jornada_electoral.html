@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada Electoral Temporal</title>
+    <style>
+        :root {
+            --bg-color: #f4e4bc;
+            --wood-color: #8b5a2b;
+            --wood-dark: #5c3a1b;
+            --paper-color: #fff9e6;
+            --text-color: #2c1810;
+            --urn-bg: rgba(255, 255, 255, 0.4);
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#d3c098 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            border-bottom: 3px double var(--text-color);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        #game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* URNA CENTRAL */
+        #active-urn-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            height: 280px;
+            /* Taller for visuals */
+            perspective: 1000px;
+        }
+
+        .urn {
+            background: var(--urn-bg);
+            border: 5px solid var(--wood-dark);
+            border-radius: 10px;
+            width: 300px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .urn::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 70%;
+            height: 12px;
+            background: #222;
+            border-radius: 6px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .urn-label {
+            background: var(--paper-color);
+            padding: 10px 20px;
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.5rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            transform: rotate(-1deg);
+            border: 1px solid #ccc;
+            width: 80%;
+            z-index: 2;
+        }
+
+        .urn.drag-over {
+            transform: scale(1.05) translateY(-5px);
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: #2ecc71;
+            /* Green hint */
+        }
+
+        .urn-progress {
+            position: absolute;
+            bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--wood-dark);
+        }
+
+        /* BALLOTS - Jumbled Pile */
+        #ballots-pool {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 15px;
+            width: 100%;
+            min-height: 200px;
+        }
+
+        .ballot {
+            background: var(--paper-color);
+            width: 170px;
+            padding: 8px;
+            border: 1px solid #c0b090;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+            cursor: grab;
+            transition: transform 0.2s, opacity 0.3s;
+            position: relative;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            /* Vertical now for image */
+            align-items: center;
+            gap: 5px;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        /* IMAGE STYLING */
+        .ballot img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #2c1810;
+            filter: sepia(0.3);
+            pointer-events: none;
+            /* Prevent dragging img itself */
+        }
+
+        .ballot:active {
+            cursor: grabbing;
+            z-index: 100;
+            transform: scale(1.1) !important;
+        }
+
+        /* AVANT-GARDE FILTERS FOR SXX */
+        img[src*="dodecafonia"] {
+            filter: hue-rotate(220deg) contrast(1.2) !important;
+        }
+
+        img[src*="sorolls"] {
+            filter: invert(1) grayscale(1) !important;
+        }
+
+        .ballot:hover {
+            transform: translateY(-5px) scale(1.05) !important;
+            box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 50;
+            background: #fff;
+            border-color: var(--wood-color);
+        }
+
+        .ballot-name {
+            font-weight: bold;
+            line-height: 1.2;
+            margin-top: 5px;
+        }
+
+        /* TOOLTIP FOR SLOGAN */
+        #slogan-tooltip {
+            position: absolute;
+            background: #222;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 0.9rem;
+            font-style: italic;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            max-width: 200px;
+            text-align: center;
+        }
+
+        /* Animations */
+        @keyframes slideOut {
+            to {
+                transform: translateX(-150%) rotate(-10deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(150%) rotate(10deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        .urn-slide-out {
+            animation: slideOut 0.6s ease-in forwards;
+        }
+
+        .urn-slide-in {
+            animation: slideIn 0.6s ease-out forwards;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        #message-area {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        #win-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: var(--paper-color);
+            padding: 50px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 600px;
+            border: 10px solid var(--wood-color);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes scaleUp {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .btn {
+            background: var(--wood-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 30px;
+            font-family: inherit;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--wood-dark);
+        }
+
+        /* VOLUME CONTROLS */
+        #volume-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(44, 24, 16, 0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--wood-color);
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+            accent-color: var(--success-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Jornada Electoral Temporal</h1>
+    <div class="subtitle">Assigna cada Candidat a l'urna de la seva època!</div>
+
+    <div id="game-info">
+        <span id="current-era-display">Època: Preparant...</span>
+        <span id="progress-display">Progrés: 0/6</span>
+    </div>
+
+    <div id="game-container">
+        <div id="active-urn-container">
+            <!-- La urna activa se renderiza aquí -->
+        </div>
+        <div id="ballots-pool">
+            <!-- Las 18 papeletas se generan aquí -->
+        </div>
+    </div>
+
+    <div id="message-area"></div>
+    <div id="slogan-tooltip"></div> <!-- TOOLTIP ELEMENT -->
+
+    <div id="win-modal">
+        <div class="modal-content">
+            <h1 style="font-size: 4rem; margin: 0;">🗳️</h1>
+            <h2>Escrutini Finalitzat!</h2>
+            <p>Has reconstruït el Senat Musical al complet.</p>
+            <p>Tots els vots han estat processats correctament.</p>
+            <button class="btn" onclick="location.reload()">Nova Elecció</button>
+        </div>
+    </div>
+    </div>
+
+    <!-- Audio Player -->
+    <audio id="bg-music" loop>
+        <source src="audio/Chamber Coffee Break.m4a" type="audio/mpeg">
+    </audio>
+    <div id="volume-controls">
+        <span style="font-size: 1.2rem;">🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <script>
+        const ERAS_DATA = [
+            {
+                id: "medieval",
+                name: "EDAT MITJANA",
+                senators: [
+                    { name: "Sr. Carles Monodia", img: "img/med_monodia.png", slogan: "Cantem com un sol home!" },
+                    { name: "Sra. Júlia Ritmelliure", img: "img/med_ritmelliure.png", slogan: "El ritme és del diable!" },
+                    { name: "Dr. Gregori Cantelli", img: "img/med_cantelli.png", slogan: "La veu és l'instrument de Déu!" }
+                ]
+            },
+            {
+                id: "renaixement",
+                name: "RENAIXEMENT",
+                senators: [
+                    { name: "Sra. Maria Polifonia", img: "img/ren_polifonia.png", slogan: "Quantes més veus, millor!" },
+                    { name: "Mestre Pere Acapella", img: "img/ren_acapella.png", slogan: "Qui necessita instruments?" },
+                    { name: "Sra. Laura Madrigal", img: "img/ren_madrigal.png", slogan: "Cantem en la nostra llengua!" }
+                ]
+            },
+            {
+                id: "barroc",
+                name: "BARROC",
+                senators: [
+                    { name: "Mestre Joan Baix Continu", img: "img/bar_baixcontinu.png", slogan: "La base ho és tot!" },
+                    { name: "Srta. Anna Ornamentació", img: "img/bar_ornamentacio.png", slogan: "Mai és massa decoració!" },
+                    { name: "Senador Marc Contrasto", img: "img/bar_contrasto.png", slogan: "Llum i foscor, fort i piano!" }
+                ]
+            },
+            {
+                id: "classicisme",
+                name: "CLASSICISME",
+                senators: [
+                    { name: "Sra. Sònia Sonata", img: "img/cla_sonata.png", slogan: "Estructura i claredat!" },
+                    { name: "Mestre Carles Acompanyada", img: "img/cla_acompanyada.png", slogan: "La melodia mana, la resta acompanya." },
+                    { name: "Sr. Alfred Regularfraseig", img: "img/cla_regular.png", slogan: "Tot ha de ser simètric!" }
+                ]
+            },
+            {
+                id: "romanticisme",
+                name: "ROMANTICISME",
+                senators: [
+                    { name: "Dr. Antoni Rubato", img: "img/rom_rubato.png", slogan: "El temps és relatiu!" },
+                    { name: "Sra. Clara Virtuosa", img: "img/rom_virtuosa.png", slogan: "Més ràpid, més fort, més difícil!" },
+                    { name: "Senador Daniel Cromàtic", img: "img/rom_cromatic.png", slogan: "Les emocions no tenen límits!" }
+                ]
+            },
+            {
+                id: "sxx",
+                name: "SEGLE XX",
+                senators: [
+                    { name: "Professor Robert Atonal", img: "img/sxx_atonal.png", slogan: "A baix la tirania de la tònica!" },
+                    { name: "Sra. Úrsula Dodecafonia", img: "img/sxx_dodecafonia.png", slogan: "12 notes, 12 vots, igualtat total!" },
+                    { name: "Senador Salvador Sorolls", img: "img/sxx_sorolls.png", slogan: "El soroll també és música!" }
+                ]
+            }
+        ];
+
+        let currentEraIndex = 0;
+        let currentEraVotes = 0;
+        const votesNeededPerEra = 3;
+
+        // Audio Context
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playTone(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSuccess() { playTone(880, 'sine', 0.1); }
+        function playEraComplete() {
+            playTone(440, 'triangle', 0.1);
+            setTimeout(() => playTone(554, 'triangle', 0.1), 100);
+            setTimeout(() => playTone(659, 'triangle', 0.3), 200);
+        }
+        function playError() {
+            playTone(150, 'sawtooth', 0.2, 0.2);
+            setTimeout(() => playTone(120, 'sawtooth', 0.3, 0.2), 100);
+        }
+
+        function showMessage(text, isError = false) {
+            const msgArea = document.getElementById('message-area');
+            msgArea.textContent = text;
+            msgArea.style.backgroundColor = isError ? 'rgba(200, 50, 50, 0.9)' : 'rgba(50, 200, 50, 0.9)';
+            msgArea.style.display = 'block';
+            if (isError && navigator.vibrate) navigator.vibrate(200);
+            setTimeout(() => { msgArea.style.display = 'none'; }, 2000);
+        }
+
+        function updateGameInfo() {
+            const currentEra = ERAS_DATA[currentEraIndex];
+            document.getElementById('current-era-display').textContent = `Època actual: ${currentEra.name}`;
+            document.getElementById('progress-display').textContent = `Progrés: ${currentEraIndex}/6 Etapes`;
+        }
+
+        function renderUrn() {
+            const container = document.getElementById('active-urn-container');
+            container.innerHTML = '';
+
+            if (currentEraIndex >= ERAS_DATA.length) return;
+
+            const eraData = ERAS_DATA[currentEraIndex];
+            const urn = document.createElement('div');
+            urn.classList.add('urn', 'urn-slide-in');
+            urn.id = 'current-urn';
+            urn.dataset.eraId = eraData.id;
+
+            const label = document.createElement('div');
+            label.classList.add('urn-label');
+            label.textContent = eraData.name;
+
+            const progress = document.createElement('div');
+            progress.classList.add('urn-progress');
+            progress.id = 'urn-progress-text';
+            progress.textContent = `Vots registrats: ${currentEraVotes}/${votesNeededPerEra}`;
+
+            urn.appendChild(label);
+            urn.appendChild(progress);
+
+            // DRAG EVENTS
+            urn.addEventListener('dragover', e => {
+                e.preventDefault(); // allow drop
+                urn.classList.add('drag-over');
+            });
+            urn.addEventListener('dragleave', () => {
+                urn.classList.remove('drag-over');
+            });
+            urn.addEventListener('drop', handleDrop);
+
+            container.appendChild(urn);
+        }
+
+        function initBallots() {
+            const pool = document.getElementById('ballots-pool');
+            let allBallots = [];
+
+            ERAS_DATA.forEach(era => {
+                era.senators.forEach(senobj => {
+                    allBallots.push({
+                        name: senobj.name,
+                        eraId: era.id,
+                        image: senobj.img, // Correctly access img from senator object
+                        slogan: senobj.slogan
+                    });
+                });
+            });
+
+            allBallots.sort(() => Math.random() - 0.5);
+
+            allBallots.forEach((b, index) => {
+                const el = document.createElement('div');
+                el.classList.add('ballot');
+                el.draggable = true;
+                el.dataset.eraId = b.eraId;
+                el.dataset.slogan = b.slogan;
+                el.id = `ballot-${index}`;
+
+                // Rotation for pile effect
+                const rot = (Math.random() * 6) - 3;
+                el.style.transform = `rotate(${rot}deg)`;
+
+                // HTML with IMAGE
+                el.innerHTML = `
+                    <img src="${b.image}" alt="Candidat">
+                    <span class="ballot-name">${b.name}</span>
+                `;
+
+                // DRAG LOGIC
+                el.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', b.eraId);
+                    e.dataTransfer.setData('elementId', el.id);
+                    el.style.opacity = '0.5';
+                });
+                el.addEventListener('dragend', () => {
+                    el.style.opacity = '1';
+                });
+
+                // --- TOOLTIP LOGIC ---
+                el.addEventListener('mousemove', e => {
+                    const tooltip = document.getElementById('slogan-tooltip');
+                    tooltip.textContent = `"${b.slogan}"`;
+                    tooltip.style.left = (e.pageX + 15) + 'px';
+                    tooltip.style.top = (e.pageY + 15) + 'px';
+                    tooltip.style.opacity = '1';
+                });
+                el.addEventListener('mouseleave', () => {
+                    document.getElementById('slogan-tooltip').style.opacity = '0';
+                });
+
+                pool.appendChild(el);
+            });
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const urn = e.currentTarget;
+            urn.classList.remove('drag-over');
+
+            const eraId = e.dataTransfer.getData('text/plain');
+            const elementId = e.dataTransfer.getData('elementId');
+
+            // Validation Logic
+            const currentEraId = ERAS_DATA[currentEraIndex].id;
+
+            // Safe Check
+            if (!eraId || !elementId) return;
+
+            const ballotElement = document.getElementById(elementId);
+            if (!ballotElement) return;
+
+            if (eraId === currentEraId) {
+                // SUCCESS
+                playSuccess();
+
+                // Visual Consume
+                ballotElement.style.transition = 'all 0.5s ease-in';
+                const urnRect = urn.getBoundingClientRect();
+                const ballotRect = ballotElement.getBoundingClientRect();
+
+                const transX = (urnRect.left + urnRect.width / 2) - (ballotRect.left + ballotRect.width / 2);
+                const transY = (urnRect.top + 20) - (ballotRect.top + ballotRect.height / 2);
+
+                ballotElement.style.transform = `translate(${transX}px, ${transY}px) scale(0.1)`;
+                ballotElement.style.opacity = '0';
+                ballotElement.style.pointerEvents = 'none'; // Prevent re-drag
+
+                document.getElementById('slogan-tooltip').style.opacity = '0'; // Hide tooltip
+
+                setTimeout(() => {
+                    if (ballotElement.parentNode) ballotElement.remove();
+                    registerVote();
+                }, 500);
+
+            } else {
+                // FAIL
+                playError();
+                showMessage("VOT NUL: Aquest senador no pertany a aquesta època!", true);
+                urn.classList.add('shake');
+                setTimeout(() => urn.classList.remove('shake'), 500);
+            }
+        }
+
+        function registerVote() {
+            currentEraVotes++;
+            document.getElementById('urn-progress-text').textContent = `Vots registrats: ${currentEraVotes}/${votesNeededPerEra}`;
+            if (currentEraVotes >= votesNeededPerEra) {
+                completeEra();
+            }
+        }
+
+        function completeEra() {
+            playEraComplete();
+            const urn = document.getElementById('current-urn');
+            setTimeout(() => {
+                urn.classList.remove('urn-slide-in');
+                urn.classList.add('urn-slide-out');
+                setTimeout(() => {
+                    currentEraIndex++;
+                    currentEraVotes = 0;
+                    if (currentEraIndex < ERAS_DATA.length) {
+                        updateGameInfo();
+                        renderUrn();
+                    } else {
+                        showWin();
+                    }
+                }, 600);
+            }, 500);
+        }
+
+        function showWin() {
+            document.getElementById('current-era-display').textContent = "Escrutini Completat";
+            document.getElementById('progress-display').textContent = "6/6";
+            setTimeout(() => {
+                const modal = document.getElementById('win-modal');
+                modal.style.display = 'flex';
+                playTone(523.25, 'triangle', 0.1);
+                setTimeout(() => playTone(659.25, 'triangle', 0.1), 150);
+                setTimeout(() => playTone(783.99, 'triangle', 0.1), 300);
+                setTimeout(() => playTone(1046.50, 'triangle', 0.6), 450);
+
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'jornada_electoral',
+                        'Analista Polític',
+                        'Has organitzat el Senat Musical perfectament!',
+                        '../../img/card_electoral.png'
+                    );
+                }
+            }, 500);
+        }
+
+        updateGameInfo();
+        renderUrn();
+        initBallots();
+
+        document.body.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Start BG Music on first interaction
+            const music = document.getElementById('bg-music');
+            if (music.paused) {
+                music.play().catch(e => console.log("Audio play failed:", e));
+            }
+        }, { once: true });
+
+        // Volume Slider Logic
+        const volumeSlider = document.getElementById('volume-slider');
+        const bgMusic = document.getElementById('bg-music');
+        bgMusic.volume = 0.5; // Default
+
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+    </script>
+</body>
+
+</html>

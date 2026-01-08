@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Impremta del Temps - Premium Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Courier+Prime&family=UnifrakturMaguntia&family=Tangerine:wght@700&family=Bodoni+Moda:wght@400;700&family=Cinzel+Decorative&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --paper-tone: #fdf5e6;
+            --sepia-dark: #3e2723;
+            --ink-black: #1a1a1a;
+            --newspaper-bg: #e0e0e0;
+            --highlight: #d4af37;
+            /* Gold */
+        }
+
+        body {
+            font-family: 'Playfair Display', serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #222;
+            color: var(--ink-black);
+            overflow: hidden;
+            /* Dynamic background applied via JS, default mostly covered */
+        }
+
+        #bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: sepia(0.4) contrast(1.1) brightness(0.6);
+            z-index: -1;
+        }
+
+        #game-interface {
+            width: 95%;
+            /* Wider interface */
+            max-width: 1400px;
+            height: 90vh;
+            background: url('img/paper_texture.png'), #fdf5e6;
+            /* Fallback color */
+            background-blend-mode: multiply;
+            border: 10px solid #2c1e1a;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            display: grid;
+            grid-template-columns: 350px 1fr 300px;
+            /* Sidebar, Workspace, Tools */
+            grid-template-rows: auto 1fr;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        /* HEADER */
+        header {
+            grid-column: 1 / -1;
+            background: #2c1e1a;
+            color: #d4af37;
+            padding: 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #d4af37;
+            font-family: 'Cinzel', serif;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 1.2rem;
+            align-items: center;
+        }
+
+        .heart-icon {
+            width: 45px;
+            /* LARGER HEARTS */
+            height: 45px;
+            vertical-align: middle;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+            transition: transform 0.2s;
+            margin: 0 2px;
+        }
+
+        .heart-icon:hover {
+            transform: scale(1.2);
+        }
+
+        #volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        input[type="range"] {
+            accent-color: #d4af37;
+        }
+
+        /* LEFT: CLIENT PANEL (NEWSPAPER COLUMN) */
+        #client-panel {
+            background: #f4e4bc;
+            border-right: 2px dashed #8d6e63;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .portrait-frame {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 8px solid #3e2723;
+            background: #cdb7b5;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .portrait-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: sepia(0.6) contrast(1.2);
+            /* Engraving look */
+        }
+
+        .client-info h2 {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 1.8rem;
+            margin: 5px 0;
+            color: #3e2723;
+            border-bottom: 2px solid #3e2723;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .request-box {
+            background: #fff;
+            padding: 15px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.95rem;
+            color: #333;
+            border: 1px solid #aaa;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            text-align: left;
+            position: relative;
+        }
+
+        .request-box::before {
+            content: "ORDER #189";
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: #3e2723;
+            color: white;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-family: sans-serif;
+            font-weight: bold;
+        }
+
+        /* CENTER: WORKSPACE (PREVIEW) */
+        #workspace {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #fffaf0 0%, #e0d5c0 100%);
+            position: relative;
+        }
+
+        #paper-preview {
+            width: 400px;
+            height: 550px;
+            /* A4ish ratio */
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 1.4rem;
+            position: relative;
+            transition: all 0.5s ease;
+            transform: rotate(-1deg);
+        }
+
+        #paper-preview::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('img/paper_texture.png');
+            /* Overlay texture if exists */
+            opacity: 0.3;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        /* RIGHT: TOOLS PANEL */
+        #tools-panel {
+            background: #d7ccc8;
+            border-left: 5px solid #5d4037;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            box-shadow: inset 10px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-group {
+            background: #efebe9;
+            padding: 10px;
+            border: 1px solid #a1887f;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .tool-icon {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            top: -25px;
+            left: -10px;
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+            z-index: 5;
+        }
+
+        .tool-label {
+            display: block;
+            text-align: right;
+            font-weight: bold;
+            color: #5d4037;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            padding-right: 5px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            font-family: 'Courier Prime', monospace;
+            background: #fff;
+            border: 2px solid #5d4037;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        #print-container {
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        #btn-print {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 220px;
+            /* INCREASED SIZE */
+            height: 220px;
+            /* INCREASED SIZE */
+            background-image: url('img/btn_print.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: transform 0.1s;
+        }
+
+        #btn-print:active {
+            transform: scale(0.9) rotate(2deg);
+        }
+
+        #btn-print:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* OVERLAYS */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 10, 5, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #f4e4bc;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .title-display {
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: 5rem;
+            color: #d4af37;
+            text-shadow: 0 0 20px #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .btn-start {
+            background: transparent;
+            color: #d4af37;
+            border: 3px solid #d4af37;
+            padding: 15px 40px;
+            font-size: 2rem;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .btn-start:hover {
+            background: #d4af37;
+            color: #1a1a1a;
+            box-shadow: 0 0 30px #d4af37;
+        }
+
+        /* CUSTOM POPUP (FEEDBACK) */
+        #feedback-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            padding: 30px;
+            background: #fff8e1;
+            /* Pale yellow/parchment */
+            border: 8px double #3e2723;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            z-index: 200;
+            display: none;
+            /* Hidden by default */
+            font-family: 'Playfair Display', serif;
+        }
+
+        #feedback-modal h3 {
+            margin-top: 0;
+            font-size: 2rem;
+            color: #3e2723;
+            text-transform: uppercase;
+            border-bottom: 2px solid #d4af37;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        #feedback-modal p {
+            font-size: 1.2rem;
+            color: #5d4037;
+            margin: 20px 0;
+        }
+
+        #feedback-modal button {
+            background: #3e2723;
+            color: #d4af37;
+            border: none;
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+        }
+
+        #feedback-modal button:hover {
+            background: #5d4037;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="bg-layer"></div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Letterpress Lullaby.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="game-interface">
+        <header>
+            <h1>Impremta del Temps</h1>
+            <div id="volume-container">
+                <span>🎵</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="stats">
+                <div>Comandes: <span id="counter">0</span>/12</div>
+                <div id="lives-container">Reputació: <span id="lives"></span></div>
+            </div>
+        </header>
+
+        <!-- Sidebar: Client -->
+        <div id="client-panel">
+            <div class="portrait-frame">
+                <img id="client-img" src="" alt="Client Portrait">
+            </div>
+            <div class="client-info">
+                <h2 id="client-name">Nom Client</h2>
+                <div id="client-era"
+                    style="font-family: 'Cinzel', serif; font-size: 0.9rem; color: #555; margin-bottom: 10px;">ERA</div>
+                <p id="client-desc" style="font-style: italic; font-size: 0.9rem;">Descripció...</p>
+            </div>
+            <div class="request-box">
+                <span style="font-size: 1.5rem; vertical-align: middle; margin-right: 5px;">❝</span>
+                <span id="client-req">Text petició...</span>
+                <span style="font-size: 1.5rem; vertical-align: middle; margin-left: 5px;">❞</span>
+            </div>
+        </div>
+
+        <!-- Center: Preview -->
+        <div id="workspace">
+            <div id="paper-preview">
+                El Text de Mostra
+            </div>
+        </div>
+
+        <!-- Right: Tools -->
+        <div id="tools-panel">
+            <div class="tool-group">
+                <img src="img/ui_typecase.png" class="tool-icon">
+                <label class="tool-label">Tipografia</label>
+                <select id="sel-typo" onchange="updatePreview()"></select>
+            </div>
+
+            <div class="tool-group">
+                <img src="img/ui_ink.png" class="tool-icon">
+                <label class="tool-label">Tinta / Estil</label>
+                <select id="sel-col" onchange="updatePreview()"></select>
+            </div>
+
+            <div class="tool-group">
+                <img src="img/ui_roller.png" class="tool-icon">
+                <label class="tool-label">Acabats</label>
+                <select id="sel-dec" onchange="updatePreview()"></select>
+            </div>
+
+            <div id="print-container">
+                <button id="btn-print" onclick="validate()" title="IMPRIMIR"></button>
+            </div>
+        </div>
+
+        <!-- Feedback Modal -->
+        <div id="feedback-modal">
+            <h3 id="fb-title">RESULTAT</h3>
+            <p id="fb-msg">Missatge de resultat...</p>
+            <button onclick="closeModal()">SEGÜENT</button>
+        </div>
+
+        <!-- Start/End Overlay -->
+        <div id="overlay">
+            <h1 class="title-display">L'Impremta</h1>
+            <p id="overlay-msg" style="font-size: 1.4rem; max-width: 700px; line-height: 1.6;">
+                <strong>INSTRUCCIONS:</strong><br><br>
+                1. 📖 <strong>Llegeix</strong> atentament la petició del client.<br>
+                2. ⚙️ <strong>Configura</strong> la màquina: tria la Tipografia, la Tinta i l'Acabat que encaixin millor
+                amb l'època i personalitat del client.<br>
+                3. 🖨️ <strong>Prem</strong> el botó Gegant per imprimir.<br><br>
+                *Si t'equivoques, perdràs reputació (cors). Ets capaç de satisfer els 12 clients històrics?*
+            </p>
+            <button class="btn-start" onclick="startGame()">OBRIR TALLER</button>
+        </div>
+    </div>
+
+    <script>
+        // DATA
+        const ASSETS = {
+            typography: [
+                { id: "typo_mitjana", label: "Gòtica Gregoriana", style: "font-family: 'UnifrakturMaguntia', cursive;" },
+                { id: "typo_renaix", label: "Serifa Humanista", style: "font-family: 'IM Fell English', serif;" },
+                { id: "typo_barroc", label: "Cursiva Ornamentada", style: "font-family: 'Tangerine', cursive; font-size: 2.5rem; line-height: 1.2;" },
+                { id: "typo_classic", label: "Bodoni Racional", style: "font-family: 'Bodoni Moda', serif;" },
+                { id: "typo_roman", label: "Script Turmentat", style: "font-family: 'Cinzel Decorative', cursive;" },
+                { id: "typo_sxx", label: "Moderna / Atonal", style: "font-family: 'Arial', sans-serif; font-weight: bold; letter-spacing: 1px;" }
+            ],
+            color: [
+                { id: "col_mitjana", label: "Tinta Monacal (Marró)", hex: "#4e342e" },
+                { id: "col_renaix", label: "Sèpia Clàssic", hex: "#5d4037" },
+                { id: "col_barroc", label: "Daurat Reial", hex: "#b8860b" }, // Goldenrod, visible on white
+                { id: "col_classic", label: "Negre Impol·lut", hex: "#000000" },
+                { id: "col_roman", label: "Vermell Sang", hex: "#8b0000" },
+                { id: "col_sxx", label: "Verd Neó / Àcid", hex: "#00c853" }
+            ],
+            decoration: [
+                { id: "dec_mitjana", label: "Marc Il·luminat", css: "border: 4px double #d4af37; background: #fff8e1;" },
+                { id: "dec_renaix", label: "Proporció Àuria", css: "padding: 40px; border: 1px solid #333; text-align: justify;" },
+                { id: "dec_barroc", label: "Exuberància", css: "border: 5px solid #b8860b; border-radius: 10px; background-image: radial-gradient(#fff 20%, transparent 20%); background-size: 10px 10px;" },
+                { id: "dec_classic", label: "Sobrietat", css: "background: white; border: none; text-align: center;" },
+                { id: "dec_roman", label: "Caos Emotiu", css: "transform: rotate(-1deg); box-shadow: 3px 3px 10px rgba(0,0,0,0.4);" },
+                { id: "dec_sxx", label: "Collage Dadaista", css: "border: 2px dashed red; transform: rotate(1deg); filter: contrast(1.2);" }
+            ]
+        };
+
+        const CLIENTS = [
+            {
+                id: "bernat", era: "Edat Mitjana", name: "Fra Bernat", img: "img/client_bernat.png",
+                desc: "Monjo copista de l'Abadia de Montserrat.",
+                req: "Necessito copiar aquest 'Kyrie'. Utilitza lletra gótica i tinta marró.",
+                sol: { t: "typo_mitjana", c: "col_mitjana", d: "dec_mitjana" }
+            },
+
+            {
+                id: "raimon", era: "Edat Mitjana", name: "Raimon Trobador", img: "img/client_raimon.png",
+                desc: "Músic itinerant amb un llaüt malmès.",
+                req: "Fes-me un cartell pel castell. Gòtic, tinta monacal i un marc il·luminat!",
+                sol: { t: "typo_mitjana", c: "col_mitjana", d: "dec_mitjana" }
+            },
+
+            {
+                id: "lorenzo", era: "Renaixement", name: "Lorenzo de Mèdici", img: "img/client_lorenzo.png",
+                desc: "El Magnífic, patró de les arts.",
+                req: "Vull imprimir uns sonets. Serifa elegant, to sípia i proporcions perfectes.",
+                sol: { t: "typo_renaix", c: "col_renaix", d: "dec_renaix" }
+            },
+
+            {
+                id: "josquin", era: "Renaixement", name: "Josquin des Prez", img: "img/client_josquin.png",
+                desc: "Mestre de la polifonia vocal.",
+                req: "Partitura neta. Serifa Humanista, color sèpia i molt ordre visual.",
+                sol: { t: "typo_renaix", c: "col_renaix", d: "dec_renaix" }
+            },
+
+            {
+                id: "soprano", era: "Barroc", name: "La Divina", img: "img/client_soprano.png",
+                desc: "Prima donna de l'òpera veneciana.",
+                req: "Vull DRAMA! Lletra ornamentada (cursiva), color daurat i molta decoració!",
+                sol: { t: "typo_barroc", c: "col_barroc", d: "dec_barroc" }
+            },
+
+            {
+                id: "lully", era: "Barroc", name: "Jean-Baptiste Lully", img: "img/client_lully.png",
+                desc: "Compositor de la Cort del Rei Sol.",
+                req: "Un decret reial. Cursiva ostentosa, or i exuberància. Ràpid!",
+                sol: { t: "typo_barroc", c: "col_barroc", d: "dec_barroc" }
+            },
+
+            {
+                id: "enciclopedia", era: "Classicisme", name: "L'Enciclopedista", img: "img/client_enciclopedia.png",
+                desc: "Filòsof de la Il·lustració.",
+                req: "La Raó ho és tot. Lletra Bodoni, tinta negra i sobrietat absoluta.",
+                sol: { t: "typo_classic", c: "col_classic", d: "dec_classic" }
+            },
+
+            {
+                id: "mozart", era: "Classicisme", name: "W.A. Mozart", img: "img/client_mozart.png",
+                desc: "Geni juvenil i trapella.",
+                req: "El meu concert! Bodoni (clar!), tinta negra i sense adorns inútils.",
+                sol: { t: "typo_classic", c: "col_classic", d: "dec_classic" }
+            },
+
+            {
+                id: "poeta", era: "Romanticisme", name: "El Poeta Maleït", img: "img/client_poeta.png",
+                desc: "Escriptor turmentat per la boira.",
+                req: "El meu cor sagna... Script turmentat, vermell sang i caos emotiu.",
+                sol: { t: "typo_roman", c: "col_roman", d: "dec_roman" }
+            },
+
+            {
+                id: "revolucionari", era: "Romanticisme", name: "El Revolucionari", img: "img/client_revolucionari.png",
+                desc: "Líder de les barricades de París.",
+                req: "LLIBERTAT! Lletra turmentada, color sang i passió desbordada!",
+                sol: { t: "typo_roman", c: "col_roman", d: "dec_roman" }
+            },
+
+            {
+                id: "dada", era: "Segle XX", name: "Artista Dadaista", img: "img/client_dada.png",
+                desc: "Anti-art, anti-tot.",
+                req: "Res té sentit. Tipografia moderna, color neó i un collage absurd.",
+                sol: { t: "typo_sxx", c: "col_sxx", d: "dec_sxx" }
+            },
+
+            {
+                id: "arnold", era: "Segle XX", name: "Arnold Schoenberg", img: "img/client_arnold.png",
+                desc: "Creador del Dodecafonisme.",
+                req: "L'ordre numèric. Tipografia moderna, color àcid, collage trencador.",
+                sol: { t: "typo_sxx", c: "col_sxx", d: "dec_sxx" }
+            }
+        ];
+
+        // LOGIC
+        let queue = [];
+        let index = 0;
+        let lives = 3;
+
+        // Audio
+        const audio = document.getElementById('bg-music');
+        document.getElementById('volume-slider').addEventListener('input', (e) => audio.volume = e.target.value);
+
+        function init() {
+            // Populate Selects
+            const sT = document.getElementById('sel-typo');
+            ASSETS.typography.forEach(x => sT.innerHTML += `<option value="${x.id}">${x.label}</option>`);
+
+            const sC = document.getElementById('sel-col');
+            ASSETS.color.forEach(x => sC.innerHTML += `<option value="${x.id}">${x.label}</option>`);
+
+            const sD = document.getElementById('sel-dec');
+            ASSETS.decoration.forEach(x => sD.innerHTML += `<option value="${x.id}">${x.label}</option>`);
+        }
+
+        function startGame() {
+            document.getElementById('overlay').classList.add('hidden');
+            audio.play().catch(e => console.log("Click required or file missing"));
+
+            queue = [...CLIENTS].sort(() => Math.random() - 0.5);
+            index = 0;
+            lives = 3;
+
+            updateStats();
+            loadClient();
+        }
+
+        function updateStats() {
+            document.getElementById('counter').innerText = index;
+            // Generate Hearts
+            const livesContainer = document.getElementById('lives');
+            livesContainer.innerHTML = "";
+            for (let i = 0; i < lives; i++) {
+                livesContainer.innerHTML += `<img src="img/cor.png" class="heart-icon">`;
+            }
+        }
+
+        function loadClient() {
+            if (index >= queue.length) {
+                showEnd(true);
+                return;
+            }
+            if (lives <= 0) {
+                showEnd(false);
+                return;
+            }
+
+            const c = queue[index];
+            document.getElementById('client-img').src = c.img;
+            document.getElementById('client-name').innerText = c.name;
+            document.getElementById('client-era').innerText = c.era.toUpperCase();
+            document.getElementById('client-desc').innerText = c.desc;
+            document.getElementById('client-req').innerText = c.req;
+
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('paper-preview');
+            const pt = document.getElementById('sel-typo').value;
+            const pc = document.getElementById('sel-col').value;
+            const pd = document.getElementById('sel-dec').value;
+
+            const tObj = ASSETS.typography.find(x => x.id === pt);
+            const cObj = ASSETS.color.find(x => x.id === pc);
+            const dObj = ASSETS.decoration.find(x => x.id === pd);
+
+            // Reset
+            preview.style = "";
+            preview.innerText = queue[index] ? "Lorem ipsum dolor sit amet..." : "Preview";
+            if (queue[index]) preview.innerText = queue[index].req; // Show req text as preview content
+
+            // Apply
+            if (tObj) preview.style.cssText += tObj.style;
+            if (cObj) preview.style.color = cObj.hex;
+            if (dObj) {
+                const rules = dObj.css.split(';');
+                rules.forEach(r => {
+                    const [k, v] = r.split(':');
+                    if (k && v) preview.style[k.trim()] = v.trim();
+                });
+            }
+        }
+
+        function validate() {
+            const c = queue[index];
+            const pt = document.getElementById('sel-typo').value;
+            const pc = document.getElementById('sel-col').value;
+            const pd = document.getElementById('sel-dec').value;
+
+            const modal = document.getElementById('feedback-modal');
+            const title = document.getElementById('fb-title');
+            const msg = document.getElementById('fb-msg');
+
+            if (pt === c.sol.t && pc === c.sol.c && pd === c.sol.d) {
+                title.innerText = "IMPRESSIÓ PERFECTA";
+                title.style.color = "#4caf50";
+                msg.innerText = "El client està satisfet amb la qualitat del teu treball.";
+                // Correct logic handled in close
+            } else {
+                title.innerText = "ERROR D'ESTIL";
+                title.style.color = "#ef5350";
+                msg.innerText = "No has captat l'essència de l'època. El client ha marxat enfadat.";
+                lives--;
+            }
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+            index++;
+            updateStats(); // updates lives visual
+            loadClient();  // loads next or shows end via updateStats check
+        }
+
+        function showEnd(win) {
+            const ov = document.getElementById('overlay');
+            ov.classList.remove('hidden');
+            const head = document.querySelector('#overlay h1');
+            const msg = document.querySelector('#overlay p');
+            const btn = document.querySelector('#overlay button');
+
+            if (win) {
+                head.innerText = "GRANDMASTER PRINTER";
+                head.style.color = "#4caf50";
+                msg.innerText = "Has servit a la història amb honor. La teva impremta és llegendària.";
+            } else {
+                head.innerText = "FALLIDA TÈCNICA";
+                head.style.color = "#ef5350";
+                msg.innerText = "La manca de qualitat ha enfonsat el negoci. Torna a intentar-ho.";
+            }
+            btn.innerText = "TORNAR A COMENÇAR";
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>

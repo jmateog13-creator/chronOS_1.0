@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immobiliària del Temps</title>
+    <style>
+        :root {
+            --navy: #0a192f;
+            --gold: #d4af37;
+            --white: #e6f1ff;
+            --red: #ff4d4d;
+            --green: #4caf50;
+            --glass: rgba(10, 25, 47, 0.85);
+            /* Darker glass for readability */
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: url('img/fons.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--white);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Dark overlay for readability */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            padding: 10px 30px;
+            background: var(--glass);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--gold);
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #commission-display {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--green);
+            text-shadow: 1px 1px 2px black;
+        }
+
+        #strikes-display {
+            font-size: 1.3rem;
+            color: var(--red);
+            text-shadow: 1px 1px 2px black;
+        }
+
+        /* CLIENT AREA (Larger again since catalog is smaller) */
+        #client-area {
+            flex: 1;
+            /* Takes available space */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            /* Align bottom of area */
+            width: 100%;
+            position: relative;
+            padding-bottom: 10px;
+            max-height: none;
+            /* Let it expand to fill space */
+        }
+
+        #client-avatar {
+            width: 250px;
+            height: 350px;
+            margin-bottom: -15px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+            transition: transform 0.3s;
+        }
+
+        #client-avatar img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .client-enter {
+            animation: slideIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .client-leave {
+            animation: slideOut 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-120%) rotate(-5deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(120%) rotate(5deg);
+                opacity: 0;
+            }
+        }
+
+        #speech-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 20px;
+            max-width: 700px;
+            font-size: 1.2rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -150%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            border: 3px solid var(--gold);
+            font-family: 'Georgia', serif;
+            z-index: 5;
+        }
+
+        #speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 20px 20px 0;
+            border-style: solid;
+            border-color: var(--gold) transparent transparent transparent;
+        }
+
+        /* CATALOG (Interface) - SHORTER HEIGHT */
+        #catalog {
+            width: 100%;
+            height: 32vh;
+            /* Reduced from 55vh to approx half */
+            padding: 15px;
+            background: rgba(17, 34, 64, 0.95);
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            box-sizing: border-box;
+            border-top: 3px solid var(--gold);
+            backdrop-filter: blur(10px);
+            z-index: 20;
+            overflow-y: hidden;
+        }
+
+        .property-card {
+            background: linear-gradient(145deg, #1a2f4c, #0d1b2e);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            /* 2 PIXELS GAP as requested */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            height: 100%;
+        }
+
+        .property-card:hover {
+            background: var(--gold);
+            color: var(--navy);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
+        }
+
+        .prop-icon {
+            width: 100%;
+            height: 110px;
+            /* Reduced height to fit shorter card */
+            object-fit: contain;
+            margin: 0;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--navy);
+            padding: 5px;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        .prop-name {
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 25, 47, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        button {
+            background: linear-gradient(to bottom, var(--gold), #b8962f);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #000;
+            font-weight: 900;
+            border-radius: 50px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            #catalog {
+                grid-template-columns: repeat(3, 1fr);
+                overflow-y: auto;
+                height: 40vh;
+                /* A bit more scroll space on tablets */
+            }
+
+            #client-avatar {
+                height: 250px;
+                width: 180px;
+            }
+
+            #speech-bubble {
+                font-size: 1rem;
+            }
+
+            .prop-icon {
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <h1>🏙️ Immobiliària del Temps</h1>
+            <!-- Volume Control -->
+            <div
+                style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;">
+                <span style="font-size: 1.2rem;">🔊</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                    style="width: 80px; cursor: pointer;">
+            </div>
+        </div>
+
+        <div style="display:flex; gap: 20px;">
+            <div id="strikes-display">❌ Errors: 0/3</div>
+            <div id="commission-display">💰 Comissió: 0€</div>
+        </div>
+    </header>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop>
+        <source src="audio/Closing the Deal.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="client-area">
+        <div id="speech-bubble">Esperant client...</div>
+        <div id="client-avatar">
+            <!-- IMG will go here -->
+        </div>
+    </div>
+
+    <!-- CATALOG: SHORTER, 2PX GAP -->
+    <div id="catalog">
+        <div class="property-card" onclick="sellProperty('medieval')">
+            <img src="img/cartell_mitjana.png" alt="Edat Mitjana" class="prop-icon">
+            <div class="prop-name">Edat Mitjana</div>
+        </div>
+        <div class="property-card" onclick="sellProperty('renaixement')">
+            <img src="img/cartell_renaixement.png" alt="Renaixement" class="prop-icon">
+            <div class="prop-name">Renaixement</div>
+        </div>
+        <div class="property-card" onclick="sellProperty('barroc')">
+            <img src="img/cartell_barroc.png" alt="Barroc" class="prop-icon">
+            <div class="prop-name">Barroc</div>
+        </div>
+        <div class="property-card" onclick="sellProperty('classicisme')">
+            <img src="img/cartell_classicisme.png" alt="Classicisme" class="prop-icon">
+            <div class="prop-name">Classicisme</div>
+        </div>
+        <div class="property-card" onclick="sellProperty('romanticisme')">
+            <img src="img/cartell_romanticisme.png" alt="Romanticisme" class="prop-icon">
+            <div class="prop-name">Romanticisme</div>
+        </div>
+        <div class="property-card" onclick="sellProperty('segle_xx')">
+            <img src="img/cartell_XX.png" alt="Segle XX" class="prop-icon">
+            <div class="prop-name">Segle XX</div>
+        </div>
+    </div>
+
+    <!-- SCREENS -->
+    <div id="start-screen" class="screen active">
+        <h1 style="font-size: 3.5rem; margin-bottom: 20px; color: var(--gold);">Immobiliària del Temps</h1>
+        <p style="font-size: 1.6rem; max-width: 700px; color: #ccc;">Benvingut a l'agència més prestigiosa de la
+            història.</p>
+        <p style="font-size: 1.3rem; max-width: 600px; margin-bottom: 30px;">
+            El teu objectiu: <strong>Arribar a 1.000.000€ de comissió</strong>.<br>
+            (Aprox. 10 clients satisfets)<br>
+            Troba la casa perfecta per a cada client segons els seus gustos musicals!
+        </p>
+        <button onclick="startGame()">OBRIR AGÈNCIA</button>
+    </div>
+
+    <div id="end-screen" class="screen">
+        <h1 id="end-title" style="font-size: 3rem;">FI DEL JOC</h1>
+        <p id="end-msg" style="font-size: 1.5rem; margin: 20px 0;"></p>
+        <button onclick="location.reload()">NOVA PARTIDA</button>
+    </div>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATABASE ---
+        const REAL_ESTATE_DB = {
+            medieval: [
+                "Busco un lloc alt i ressonant per pregar a Déu. M'agraden els murs de pedra i l'austeritat.",
+                "Vull sentir-me protegit, com en una fortalesa. M'agrada la monodia i la senzillesa.",
+                "Necessito un espai per a la contemplació, sense distraccions. Murs gruixuts i poca llum.",
+                "M'agrada la vida comunitària dels monestirs. Busco un lloc on ressoni el cant gregorià.",
+                "Vull una casa sòlida i antiga, que em recordi als temps dels trobadors i castells."
+            ],
+            renaixement: [
+                "Busco proporció i equilibri. L'home ha de ser la mesura de totes les coses.",
+                "Vull una casa on es respiri humanisme. Espais clars i polifonia visual.",
+                "M'agrada la simetria perfecta. Ni massa ornamentat ni massa auster.",
+                "Vull un palau urbà, elegant però racional. Que recordi a l'antiga Roma però modern.",
+                "Busco un espai on les veus (i les parets) s'entrellacin en perfecta harmonia."
+            ],
+            barroc: [
+                "Vull un palau ple d'or i miralls. M'agrada el contrast, el luxe exagerat i que tot sigui molt complex.",
+                "Busco drama i moviment! Murs corbats, decoració infinita i molta emoció.",
+                "Vull impressionar els meus súbdits. Necessito una casa que digui 'PODER ABSOLUT'.",
+                "M'agrada el baix continu: una base sòlida però amb molta ornamentació a sobre.",
+                "Vull un espai teatral, on cada habitació sigui una sorpresa. Més és més."
+            ],
+            classicisme: [
+                "Busco una casa ordenada, simètrica i senzilla. No vull ornaments exagerats, només equilibri i raó.",
+                "Vull claredat i elegància. Una estructura que s'entengui a la primera, com una forma sonata.",
+                "M'agrada la natura controlada i la raó. Res de drames innecessaris.",
+                "Busco un temple a la bellesa ideal. Columnes rectes, marbre blanc i molta llum.",
+                "Vull una melodia acompanyada: una casa principal clara amb un jardí que l'acompanyi suaument."
+            ],
+            romanticisme: [
+                "Busco un refugi fosc i tempestuós per les meves passions. M'agraden les ruïnes.",
+                "Vull una casa que expressi els meus sentiments més profunds. Caos, natura salvatge i misteri.",
+                "M'agrada la llibertat total. No vull regles ni simetria. Vull emoció pura.",
+                "Busco un castell aïllat a la muntanya, envoltat de boira. El lloc perfecte per patir per amor.",
+                "Vull una casa amb història, potser una mica fantasmagòrica. M'inspira la nit i la mort."
+            ],
+            segle_xx: [
+                "Vull trencar amb tot el passat. Busco acer, vidre i formes impossibles.",
+                "M'agrada el soroll de la ciutat. Vull un gratacels o una fàbrica reconvertida.",
+                "Busco funcionalitat o caos total. Dodecafonisme arquitectònic.",
+                "Vull experimentar. Una casa que no sembli una casa. Potser feta de plàstic o llum.",
+                "M'agrada la tecnologia i el futur. Neons, minimalisme extrem o brutalismo."
+            ]
+        };
+
+        const CLIENT_IMAGES = [
+            "img/cliente1.png",
+            "img/cliente2.png",
+            "img/cliente3.png",
+            "img/ciente4.png", // Typo fixed in code (or matching file)
+            "img/cliente5.png",
+            "img/cliente6.png",
+            "img/cliente7.png",
+            "img/cliente8.png",
+            "img/cliente9.png",
+            "img/cliente10.png"
+        ];
+
+        // --- GAME STATE ---
+        let gameState = {
+            money: 0,
+            sales: 0,
+            strikes: 0,
+            currentRequest: null,
+            isWaiting: false
+        };
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Music Logic
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+        bgMusic.volume = 0.5;
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'kaching') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(1800, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.frequency.setValueAtTime(2000, now + 0.1);
+                gain2.gain.setValueAtTime(0.2, now + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc2.start(now + 0.1); osc2.stop(now + 0.6);
+
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.4);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            bgMusic.play().catch(e => console.log("Play error", e));
+            nextClient();
+        }
+
+        function nextClient() {
+            gameState.isWaiting = true;
+
+            // Pick Random Era and Request
+            const eras = Object.keys(REAL_ESTATE_DB);
+            const randomEra = eras[Math.floor(Math.random() * eras.length)];
+            const requests = REAL_ESTATE_DB[randomEra];
+            const randomRequest = requests[Math.floor(Math.random() * requests.length)];
+
+            gameState.currentRequest = { era: randomEra, text: randomRequest };
+
+            // Visuals
+            const avatarContainer = document.getElementById('client-avatar');
+            // Random Client Image
+            const randomImage = CLIENT_IMAGES[Math.floor(Math.random() * CLIENT_IMAGES.length)];
+
+            // Render IMG tag
+            avatarContainer.innerHTML = `<img src="${randomImage}" alt="Client">`;
+
+            avatarContainer.classList.remove('client-leave');
+            avatarContainer.classList.add('client-enter');
+
+            document.getElementById('speech-bubble').innerText = randomRequest;
+            document.getElementById('speech-bubble').style.background = "rgba(255, 255, 255, 0.95)";
+        }
+
+        function sellProperty(selectedEra) {
+            if (!gameState.isWaiting) return;
+
+            const avatar = document.getElementById('client-avatar');
+
+            if (selectedEra === gameState.currentRequest.era) {
+                // Success
+                gameState.money += 100000;
+                gameState.sales++;
+                playSound('kaching');
+                document.getElementById('speech-bubble').innerText = "Gràcies! És la casa dels meus somnis! 🤩";
+                document.getElementById('speech-bubble').style.background = "#d4edda"; // Light green
+            } else {
+                // Fail
+                gameState.strikes++;
+                playSound('error');
+                document.getElementById('speech-bubble').innerText = "Això no té res a veure amb el que he demanat... 😡";
+                document.getElementById('speech-bubble').style.background = "#f8d7da"; // Light red
+            }
+
+            updateUI();
+            gameState.isWaiting = false;
+
+            // Check Win/Loss
+            if (gameState.sales >= 10) {
+                setTimeout(() => endGame(true), 1500);
+            } else if (gameState.strikes >= 3) {
+                setTimeout(() => endGame(false), 1500);
+            } else {
+                setTimeout(() => {
+                    avatar.classList.remove('client-enter');
+                    avatar.classList.add('client-leave');
+                    setTimeout(nextClient, 700);
+                }, 2000);
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('commission-display').innerText = `💰 Comissió: ${gameState.money.toLocaleString()}€`;
+            document.getElementById('strikes-display').innerText = `❌ Errors: ${gameState.strikes}/3`;
+        }
+
+        function endGame(win) {
+            document.getElementById('end-screen').classList.add('active');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if (win) {
+                title.innerText = "OBJECTIU ACONSEGUIT!";
+                title.style.color = "green";
+                msg.innerText = `Has guanyat ${gameState.money.toLocaleString()}€ i ets l'agent del mes!`;
+
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'inmobilaria_mix',
+                        'Agent Immobiliari',
+                        'Has venut la història al millor preu!',
+                        '../../img/card_inmobilaria.png'
+                    );
+                }
+            } else {
+                title.innerText = "ESTÀS ACOMIADAT!";
+                title.style.color = "red";
+                msg.innerText = "Has acumulat massa queixes. Torna a estudiar història de la música.";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

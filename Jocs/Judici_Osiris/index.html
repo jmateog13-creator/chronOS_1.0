@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Judici d'Osiris: Sala de la Veritat</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --lapis: #1e3d59;
+            --dark: #080808;
+            --sand: #f5e6c8;
+            --blood: #8a0303;
+            --glow-gold: 0 0 20px rgba(212, 175, 55, 0.6);
+            --glow-bad: 0 0 20px rgba(138, 3, 3, 0.6);
+        }
+
+        body {
+            margin: 0;
+            background: var(--dark);
+            color: var(--sand);
+            font-family: 'Cinzel', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #stage {
+            width: 1200px;
+            height: 800px;
+            position: relative;
+            background: radial-gradient(circle at bottom, #2a2a2a 0%, #000 80%);
+            border: 5px solid var(--gold);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+        }
+
+        /* --- BACKGROUND --- */
+        .bg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+            transition: opacity 1s, transform 5s ease-in-out;
+            z-index: 1;
+        }
+
+        #bg-court {
+            background-image: url('img/fons.jpg');
+        }
+
+        /* --- COLUMNS --- */
+        .column {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 150px;
+            background: linear-gradient(90deg, #111, #333, #111);
+            border-left: 2px solid var(--gold);
+            border-right: 2px solid var(--gold);
+            z-index: 10;
+        }
+
+        .col-left {
+            left: 50px;
+        }
+
+        .col-right {
+            right: 50px;
+        }
+
+        /* --- UI CONTROLS (Volume) --- */
+        #ui-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+        }
+
+        #volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 5px;
+            background: var(--sand);
+            outline: none;
+            opacity: 0.7;
+            transition: .2s;
+        }
+
+        #volume-slider:hover {
+            opacity: 1;
+        }
+
+        /* --- HEART METER --- */
+        #heart-meter-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #meter-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--gold);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        #heart-fill {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, var(--blood), var(--gold));
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 10px var(--gold);
+        }
+
+        #meter-scales {
+            position: absolute;
+            top: -10px;
+            width: 80px;
+            z-index: 101;
+            filter: drop-shadow(0 0 5px gold);
+        }
+
+        /* --- GOD STAGE --- */
+        #god-stage {
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .god-portrait {
+            max-height: 100%;
+            max-width: 100%;
+            transition: transform 0.5s, opacity 0.5s;
+            filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
+            opacity: 0;
+            transform: scale(0.9) translateY(50px);
+        }
+
+        .god-active {
+            opacity: 1;
+            transform: scale(1.3) translateY(0);
+        }
+
+        /* --- PLAYER SOUL --- */
+        #player-soul {
+            position: absolute;
+            bottom: 220px;
+            left: 150px;
+            width: 200px;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 20px cyan);
+            z-index: 15;
+            transition: transform 0.3s;
+        }
+
+        #player-soul img {
+            width: 100%;
+        }
+
+        /* --- DIALOGUE UI --- */
+        #dialogue-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.8));
+            border-top: 3px solid var(--gold);
+            z-index: 200;
+            padding: 20px 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #speaker-title {
+            color: var(--gold);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--gold);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #dialogue-content {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.5rem;
+            line-height: 1.5;
+            flex-grow: 1;
+            color: #fff;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        #choices-area {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .btn-choice {
+            background: rgba(30, 61, 89, 0.6);
+            border: 1px solid var(--gold);
+            color: var(--sand);
+            padding: 12px 30px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-choice:hover {
+            background: var(--gold);
+            color: black;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px var(--gold);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulseHeart {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulseHeart 1s infinite;
+        }
+
+        #gate-curtain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 300;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            opacity: 1;
+            pointer-events: none;
+            transition: opacity 1s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="stage">
+
+        <!-- Audio -->
+        <audio id="bg-music" loop>
+            <source src="audio/Hall of Scales and Silence.m4a" type="audio/mpeg">
+        </audio>
+
+        <!-- UI Controls -->
+        <div id="ui-controls">
+            <span style="font-size: 1.2rem;">🎵</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- Backgrounds -->
+        <div id="bg-court" class="bg-layer"></div>
+
+        <!-- Columns -->
+        <div class="column col-left"></div>
+        <div class="column col-right"></div>
+
+        <!-- Heart Meter -->
+        <div id="heart-meter-container">
+            <div id="meter-bg">
+                <div id="heart-fill"></div>
+            </div>
+            <img src="img/balanza.png" id="meter-scales" alt="Scale">
+        </div>
+
+        <!-- Characters -->
+        <div id="player-soul">
+            <img src="img/alma.png" alt="Soul">
+        </div>
+
+        <div id="god-stage">
+            <img id="god-visual" src="img/anubis.png" class="god-portrait" alt="God">
+        </div>
+
+        <!-- Curtain -->
+        <div id="gate-curtain">
+            <div style="text-align: center;">
+                <div style="font-size: 4rem; color: var(--gold); text-shadow: 0 0 20px var(--gold);">EL JUDICI D'OSIRIS
+                </div>
+                <div style="font-size: 1.5rem; margin-top:20px;">Carregant el Saló...</div>
+            </div>
+        </div>
+
+        <!-- Dialogue -->
+        <div id="dialogue-panel">
+            <div id="speaker-title">ANUBIS</div>
+            <div id="dialogue-content">...</div>
+            <div id="choices-area"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA ---
+
+        const NPCS = {
+            "anubis": { name: "Anubis", img: "img/anubis.png", color: "#d4af37" },
+            "osiris": { name: "Osiris", img: "img/osiris.png", color: "#2ecc71" },
+            "isis": { name: "Isis", img: "img/isis.png", color: "#9b59b6" },
+            "thoth": { name: "Thoth", img: "img/thoth.png", color: "#3498db" },
+            "ma'at": { name: "Ma'at", img: "img/maat.png", color: "#f1c40f" },
+            "hathor": { name: "Hathor", img: "img/hathor.png", color: "#e67e22" },
+            "sekhmet": { name: "Sekhmet", img: "img/sekhmet.png", color: "#c0392b" },
+            "horus": { name: "Horus", img: "img/horus.png", color: "#e74c3c" },
+            "ammit": { name: "Ammit", img: "img/ammit.png", color: "#8a0303" }
+        };
+
+        const QUIZ_DB = {
+            "isis": [
+                { q: "Com s'anomenava el cant litúrgic monofònic dels monjos de l'Edat Mitjana?", a: ["Cant Gregorià", "Cant Coral", "Rap Sacre"] },
+                { q: "Què significa que una textura musical sigui 'Monofònica'?", a: ["Una sola línia melòdica", "Moltes veus creuades", "Música sense veu"] },
+                { q: "Qui va inventar el sistema de noms de les notes (Ut, Re, Mi...)?", a: ["Guido d'Arezzo", "Lleonad de Vinci", "Adam de la Halle"] },
+                { q: "En quin idioma es cantaven oficialment els cants gregorians a l'església?", a: ["Llatí", "Grec", "Francès antic"] }
+            ],
+            "thoth": [
+                { q: "Quin invent del Renaixement va permetre difondre la música i les idees humanistes ràpidament?", a: ["La Impremta", "La Brúixola", "El Telescopi"] },
+                { q: "Palestrina va destacar en la música religiosa. Què buscava en la seva polifonia?", a: ["La claredat del text", "La velocitat extrema", "El desordre harmònic"] },
+                { q: "Quin és el gènere vocal profà més important del Renaixement d'estil polifònic?", a: ["Madrigal", "Cantata", "Simfonia"] },
+                { q: "Com es diu la figura que protegia i finançava els artistes al Renaixement?", a: ["Mecenes", "Vassall", "Escrivà"] }
+            ],
+            "hathor": [
+                { q: "L'any 1600 va néixer l'Òpera per recrear el drama antic. A quina ciutat va néixer?", a: ["Florència", "París", "Viena"] },
+                { q: "Quin instrument és l'esquelet del 'Basso Continuo' típic del Barroc?", a: ["Clavicèmbal", "Flauta travessera", "Saxofon"] },
+                { q: "Vivaldi és famós pel seu concert 'Les quatre estacions'. Quin instrument és el solista?", a: ["Violí", "Piano", "Trompeta"] },
+                { q: "Com s'anomena l'estil arquitectònic i musical carregat d'ornaments del segle XVII?", a: ["Barroc", "Gòtic", "Romànic"] }
+            ],
+            "ma'at": [
+                { q: "Al Classicisme es busca l'equilibri. Quin esquema de 3 parts s'imposa en la Sonata?", a: ["Exposició, Desenvolupament, Reexposició", "Inici, Nuc, Desenllaç", "Preludi, Fuga, Coral"] },
+                { q: "A quina ciutat europea es van reunir Mozart, Haydn i el jove Beethoven?", a: ["Viena", "Madrid", "Berlín"] },
+                { q: "Quina característica defineix millor l'estil de Ma'at al Classicisme?", a: ["Claredat i Proporció", "Soroll i Caos", "Foscor i Dramatisme"] },
+                { q: "Com es diu el conjunt de 4 instruments de corda que es va fer tan popular llavors?", a: ["Quartet de corda", "Orquestra simfònica", "Big Band"] }
+            ],
+            "sekhmet": [
+                { q: "El Romanticisme exalta els sentiments. Quin instrument va ser el rei dels salons?", a: ["Piano", "Arpa", "Llaüt"] },
+                { q: "Chopin és recordat pel seu sentiment nocturn. A quin país va néixer?", a: ["Polònia", "Egipte", "Rússia"] },
+                { q: "Wagner buscava l'Obra d'Art Total (Gesamtkunstwerk). En quin gènere?", a: ["Òpera", "Sonata", "Trio"] },
+                { q: "Com s'anomena el virtuós del violí que deien que tenia un pacte amb el diable?", a: ["Paganini", "Mozart", "Bach"] }
+            ],
+            "horus": [
+                { q: "Schönberg va trencar la tonalitat amb un sistema de 12 sons. Com es diu?", a: ["Dodecafonisme", "Rock and Roll", "Minimalisme"] },
+                { q: "El Jazz neix a EUA. Quina és la seva característica fonamental?", a: ["Improvisació", "Lectura estricta", "Absència de ritme"] },
+                { q: "Stravinsky va causar un escàndol a París amb quina obra rítmica?", a: ["La Consagració de la Primavera", "El Llac dels Cisnes", "Les Quatre Estacions"] },
+                { q: "Com es diu el moviment que buscava l'essència amb el mínim de material sonor possible?", a: ["Minimalisme", "Impressionisme", "Dadaisme"] }
+            ]
+        };
+
+        const STORY = [
+            {
+                id: "intro_1", speaker: "anubis",
+                text: "Les portes del Saló s'obren. Benvingut, mortal. Sóc Anubis, el guia de les ombres.",
+                choices: [{ text: "On sóc?", next: "intro_2" }, { text: "Tinc por.", next: "intro_2_scared" }]
+            },
+            {
+                id: "intro_2", speaker: "anubis",
+                text: "Aquest és el Saló del Judici. Aquí, la teva ànima serà pesada contra la veritat. Ammit, la Bèstia, espera a les ombres.",
+                next: "intro_3"
+            },
+            {
+                id: "intro_2_scared", speaker: "anubis",
+                text: "La por és natural. Però si el teu cor pesa per culpa de la ignorància, Ammit et devorarà.",
+                next: "intro_3"
+            },
+            {
+                id: "intro_3", speaker: "anubis",
+                text: "Tens dues oportunitats. Si falles massa, la teva ànima es perdrà... però et permetré tornar a intentar l'última prova si tens prou força.",
+                choices: [{ text: "Entès. Comencem.", action: "startGame" }]
+            },
+            // Gates will be dynamic
+            { id: "final_judgement", speaker: "osiris", text: "Porteu-me el cor de l'iniciat. La balança ha parlat.", choices: [{ text: "Estic llest pel veredicte.", action: "checkWin" }] },
+            { id: "win", speaker: "osiris", text: "EL TEU COR ÉS PUR. Has entès l'harmonia dels temps i has superat la prova. Benvingut a l'Aaru.", choices: [{ text: "Gràcies.", action: "reset" }] },
+            { id: "game_over", speaker: "ammit", text: "ROAAAR!! Has fallat massa. El teu cor m'alimentarà!", choices: [{ text: "Tornar-ho a provar", action: "retryCheckpoint" }] }
+        ];
+
+        // --- ENGINE ---
+
+        const GOD_KEYS = ["isis", "thoth", "hathor", "ma'at", "sekhmet", "horus"];
+        const LORE = {
+            "isis": "Sóc Isis. L'Edat Mitjana va ser un temps de recolliment. Els monjos buscaven la connexió divina a través del cant nu.",
+            "thoth": "Sóc Thoth. Al Renaixement, l'ésser humà va despertar. Redescobrim la bellesa i la proporció.",
+            "hathor": "Sóc Hathor! El Barroc és teatre, ornament i contrast! Tot el món és un escenari.",
+            "ma'at": "Sóc Ma'at. Al Classicisme busquem l'ordre i l'elegància racional. Res sobra, res falta.",
+            "sekhmet": "Sóc Sekhmet! El Romanticisme és sang i foc! La passió és l'única veritat de l'artista.",
+            "horus": "Sóc Horus. El Segle XX és el temps de la ruptura i la reconstrucció de l'horitzó."
+        };
+
+        let currentEraIndex = 0;
+        let lives = 2;
+        let currentGateQuestions = [];
+        let questionIdx = 0;
+
+        const godVisual = document.getElementById('god-visual');
+        const speakerTitle = document.getElementById('speaker-title');
+        const dialogueContent = document.getElementById('dialogue-content');
+        const choicesArea = document.getElementById('choices-area');
+        const heartFill = document.getElementById('heart-fill');
+        const curtain = document.getElementById('gate-curtain');
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        window.onload = () => {
+            volSlider.addEventListener('input', (e) => bgMusic.volume = e.target.value);
+            bgMusic.volume = 0.5;
+            setTimeout(() => {
+                curtain.style.opacity = 0;
+                bgMusic.play().catch(e => console.log("Audio requires interaction"));
+                setTimeout(() => loadNode("intro_1"), 1000);
+            }, 1000);
+        };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function loadNode(nodeId) {
+            const node = STORY.find(n => n.id === nodeId);
+            if (!node) return;
+            if (node.action && !node.text) { handleAction(node.action); return; }
+            if (node.speaker) updateSpeaker(node.speaker);
+            typeText(node.text, () => {
+                let choices = node.choices;
+                if (!choices && node.next) choices = [{ text: "Continuar", next: node.next }];
+                if (choices) renderChoices(choices);
+            });
+        }
+
+        function updateSpeaker(key) {
+            const npc = NPCS[key];
+            if (!npc) return;
+            speakerTitle.innerHTML = npc.name;
+            speakerTitle.style.color = npc.color;
+            speakerTitle.style.textShadow = `0 0 10px ${npc.color}`;
+            if (!godVisual.src.includes(npc.img)) {
+                godVisual.classList.remove('god-active');
+                setTimeout(() => {
+                    godVisual.src = npc.img;
+                    godVisual.style.filter = `drop-shadow(0 0 30px ${npc.color})`;
+                    godVisual.classList.add('god-active');
+                }, 300);
+            } else if (!godVisual.classList.contains('god-active')) {
+                godVisual.classList.add('god-active');
+            }
+        }
+
+        function typeText(text, cb) {
+            dialogueContent.innerHTML = "";
+            choicesArea.innerHTML = "";
+            let i = 0;
+            const speed = 10;
+            function step() {
+                dialogueContent.innerHTML += text.charAt(i);
+                i++;
+                if (i < text.length) setTimeout(step, speed);
+                else cb();
+            }
+            step();
+        }
+
+        function renderChoices(choices) {
+            choicesArea.innerHTML = "";
+            choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-choice';
+                btn.innerText = c.text;
+                btn.onclick = () => {
+                    if (c.correct !== undefined) handleAnswer(c.correct);
+                    if (lives <= 0 && c.correct === false) return;
+                    if (c.action) handleAction(c.action);
+                    else if (c.next) loadNode(c.next);
+                };
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect) {
+            if (!isCorrect) {
+                lives--;
+                updateLivesUI();
+                const mi = document.getElementById('meter-scales');
+                if (mi) mi.src = "img/cortrencat.png";
+                document.getElementById('stage').classList.add('pulse');
+                setTimeout(() => document.getElementById('stage').classList.remove('pulse'), 500);
+                if (lives <= 0) setTimeout(() => loadNode("game_over"), 1000);
+            }
+        }
+
+        function updateLivesUI() {
+            if (lives === 1) heartFill.style.background = "var(--blood)";
+        }
+
+        function handleAction(action) {
+            const god = GOD_KEYS[currentEraIndex];
+            if (action === "startGame") {
+                currentEraIndex = 0;
+                lives = 2;
+                startGate();
+            } else if (action === "nextGate") {
+                currentEraIndex++;
+                if (currentEraIndex < GOD_KEYS.length) startGate();
+                else loadNode("final_judgement");
+            } else if (action === "retryCheckpoint") {
+                lives = 2;
+                heartFill.style.background = "linear-gradient(90deg, var(--blood), var(--gold))";
+                const mi = document.getElementById('meter-scales');
+                if (mi) mi.src = "img/balanza.png";
+                startGate();
+            } else if (action === "checkWin") {
+                loadNode(lives > 0 ? "win" : "game_over");
+            } else if (action === "reset") {
+                location.reload();
+            } else if (action === "showLore") {
+                showLore(god);
+            } else if (action === "nextQuestion") {
+                nextQuestion();
+            }
+        }
+
+        function startGate() {
+            const god = GOD_KEYS[currentEraIndex];
+            updateSpeaker("anubis");
+            typeText(`Porta ${currentEraIndex + 1}: L'esperit de ${NPCS[god].name} t'espera.`, () => {
+                renderChoices([{ text: "Entrar", action: "showLore" }]);
+            });
+        }
+
+        function showLore(god) {
+            updateSpeaker(god);
+            typeText(LORE[god], () => {
+                // Prepare quiz
+                const pool = [...QUIZ_DB[god]];
+                shuffle(pool);
+                currentGateQuestions = pool.slice(0, 3); // Pick 3 out of 4
+                questionIdx = 0;
+                renderChoices([{ text: "Escultar la prova", next: null, action: "nextQuestion" }]);
+            });
+        }
+
+        function nextQuestion() {
+            if (questionIdx < currentGateQuestions.length) {
+                const qData = currentGateQuestions[questionIdx];
+                const god = GOD_KEYS[currentEraIndex];
+                updateSpeaker(god);
+
+                // Shuffle answers
+                const correctText = qData.a[0];
+                const shuffledAnswers = shuffle([...qData.a]);
+
+                const choices = shuffledAnswers.map(ans => ({
+                    text: ans,
+                    correct: (ans === correctText),
+                    action: "nextQuestion"
+                }));
+
+                questionIdx++;
+                typeText(qData.q, () => renderChoices(choices));
+            } else {
+                // Gate finished
+                if (lives > 0) {
+                    updateSpeaker("anubis");
+                    typeText("Has superat aquest déu. Seguim endavant?", () => {
+                        renderChoices([{ text: "Continuar", action: "nextGate" }]);
+                    });
+                }
+            }
+        }
+
+    </script>
+</body>
+
+</html>

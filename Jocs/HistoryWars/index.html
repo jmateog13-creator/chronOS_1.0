@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age of Music - Història de la Música</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #2c3e50;
+            --ui-bg: rgba(0, 0, 0, 0.8);
+            --accent: #f1c40f;
+            --text: #ecf0f1;
+            --health-good: #2ecc71;
+            --health-bad: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text);
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: #333;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* HUD Superior */
+        #top-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--ui-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 10;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .hud-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 150px;
+        }
+
+        .hud-label {
+            font-size: 12px;
+            color: #bdc3c7;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .hud-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent);
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .health-bar-container {
+            width: 200px;
+            height: 20px;
+            background: #34495e;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .health-bar {
+            height: 100%;
+            background: var(--health-good);
+            width: 100%;
+            transition: width 0.2s;
+        }
+
+        .health-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 1px black;
+        }
+
+        /* HUD Inferior - Controles */
+        #bottom-hud {
+            height: 140px;
+            background: var(--ui-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 10px;
+            border-top: 3px solid var(--accent);
+            z-index: 10;
+        }
+
+        .unit-btn,
+        .special-btn,
+        .evolve-btn {
+            width: 80px;
+            height: 80px;
+            background: #34495e;
+            border: 2px solid #7f8c8d;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unit-btn:hover,
+        .special-btn:hover,
+        .evolve-btn:hover {
+            background: #2c3e50;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .unit-btn:active,
+        .special-btn:active,
+        .evolve-btn:active {
+            transform: translateY(2px);
+        }
+
+        .unit-btn.disabled,
+        .special-btn.disabled,
+        .evolve-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+
+        .unit-icon-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .unit-icon-text {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .unit-cost {
+            font-size: 10px;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .unit-name {
+            font-size: 9px;
+            text-align: center;
+            color: #fff;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .special-btn {
+            border-color: #e74c3c;
+        }
+
+        .evolve-btn {
+            width: 100px;
+            border-color: #9b59b6;
+        }
+
+        .cooldown-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: rgba(0, 0, 0, 0.7);
+            transition: height 0.1s linear;
+            border-radius: 8px;
+        }
+
+        /* Controles de Juego */
+        #game-controls {
+            position: absolute;
+            top: 90px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+        }
+
+        .control-btn {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 1px solid white;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+        }
+
+        .control-btn.active {
+            background: var(--accent);
+            color: black;
+        }
+
+        /* Modal Fin de Juego */
+        #game-over-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        #game-over-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 40px;
+            color: var(--accent);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #game-over-msg {
+            font-size: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        #restart-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: var(--health-good);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        /* Notificaciones flotantes */
+        .floater {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 1px 1px 0 #000;
+            z-index: 50;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .diff-btn {
+            background: #34495e;
+            color: #bdc3c7;
+            border: 2px solid #7f8c8d;
+            padding: 10px 15px;
+            font-family: 'Press Start 2P';
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .diff-btn:hover {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .diff-btn.selected {
+            background: var(--accent);
+            color: black;
+            border-color: white;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .diff-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #222;
+            border-color: #444;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loading-screen">
+        <div>CARREGANT ASSETS...</div>
+        <div id="loading-progress" style="margin-top: 20px; color: var(--accent);">0%</div>
+    </div>
+
+    <div id="top-hud">
+        <div class="hud-section">
+            <div class="hud-label">La Teva Base</div>
+            <div class="health-bar-container">
+                <div id="player-health-bar" class="health-bar"></div>
+                <div id="player-health-text" class="health-text">1000/1000</div>
+            </div>
+        </div>
+
+        <div class="hud-section">
+            <div class="hud-label">Inspiració</div>
+            <div id="gold-display" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-section">
+            <div class="hud-label">Època</div>
+            <div id="era-display" class="hud-value" style="font-size: 14px; text-align: center;">EDAT MITJANA</div>
+        </div>
+
+        <div class="hud-section">
+            <div class="hud-label">XP Evolució</div>
+            <div id="xp-display" class="hud-value" style="font-size: 18px;">0 / 1000</div>
+        </div>
+
+        <div class="hud-section">
+            <div class="hud-label">Base Enemiga</div>
+            <div class="health-bar-container">
+                <div id="enemy-health-bar" class="health-bar" style="background: var(--health-bad);"></div>
+                <div id="enemy-health-text" class="health-text">1000/1000</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-controls">
+        <button class="control-btn" id="btn-pause">PAUSA</button>
+        <button class="control-btn active" id="btn-speed-1">x1</button>
+        <button class="control-btn" id="btn-speed-2">x2</button>
+    </div>
+
+    <div id="start-screen"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Press Start 2P', cursive;">
+        <h1 style="color: #f1c40f; margin-bottom: 20px; font-size: 30px;">HISTORY WARS</h1>
+
+        <div style="margin-bottom: 30px;">
+            <h3 style="color: #bdc3c7; font-size: 14px; margin-bottom: 25px;">PREPARA'T PER LA BATALLA!</h3>
+            <div style="display: none;"> <!-- Hidden Difficulty Selection -->
+                <button class="diff-btn" id="diff-0" onclick="selectDifficulty(0)">ASPIRANT</button>
+                <button class="diff-btn" id="diff-1" onclick="selectDifficulty(1)">MÚSIC</button>
+                <button class="diff-btn" id="diff-2" onclick="selectDifficulty(2)">MESTRE</button>
+                <button class="diff-btn" id="diff-3" onclick="selectDifficulty(3)">LLEGENDA</button>
+            </div>
+        </div>
+
+        <div
+            style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; max-width: 600px; margin-bottom: 20px; line-height: 1.6;">
+            <p style="font-size: 10px;">Benvingut a la batalla de les èpoques!</p>
+            <ul style="text-align: left; font-size: 10px; list-style-type: square; padding-left: 20px;">
+                <li>Genera or per reclutar unitats.</li>
+                <li>Destrueix la base enemiga per avançar d'era.</li>
+                <li>Usa atacs especials quan tinguis prou inspiració.</li>
+                <li>Evoluciona per desbloquejar noves unitats i poders!</li>
+            </ul>
+        </div>
+        <button id="start-btn" onclick="startGameWithDifficulty()"
+            style="padding: 15px 40px; font-size: 20px; font-family: 'Press Start 2P'; background: #2ecc71; border: none; color: white; cursor: pointer; border-radius: 10px; box-shadow: 0 5px 0 #27ae60;">COMENÇAR</button>
+    </div>
+
+    <div id="quiz-modal"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: 'Press Start 2P', cursive;">
+        <h2 style="color: #f1c40f; margin-bottom: 20px; text-align: center; font-size: 20px;">PREGUNTA BONUS!</h2>
+        <div id="quiz-question" style="margin-bottom: 30px; text-align: center; line-height: 1.5; max-width: 600px;">
+        </div>
+        <div id="quiz-options"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 90%; max-width: 600px;">
+            <!-- Options injected here -->
+        </div>
+    </div>
+
+    <div id="freeze-overlay"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(52, 152, 219, 0.3); z-index: 500; display: none; justify-content: center; align-items: center; pointer-events: none;">
+        <h1
+            style="font-family: 'Press Start 2P'; font-size: 50px; color: #3498db; text-shadow: 4px 4px 0 #fff; transform: rotate(-10deg);">
+            CONGELAT!</h1>
+    </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="game-over-modal">
+            <div id="game-over-title">VICTÒRIA!</div>
+            <div id="game-over-msg">Has destruït el Mur del Soroll.</div>
+            <button id="restart-btn">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <div id="bottom-hud">
+        <!-- Units will be injected here via JS -->
+        <div id="units-container" style="display: flex; gap: 10px;"></div>
+
+        <div style="width: 2px; height: 80px; background: #555; margin: 0 10px;"></div>
+
+        <div id="special-container">
+            <button class="special-btn" id="btn-special" onclick="game.useSpecial()">
+                <img src="img/img historywars/spell_note.png" class="unit-icon-img"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <div class="unit-icon-text" style="display:none">✨</div>
+                <div class="unit-cost" id="special-cost">500</div>
+                <div class="unit-name" id="special-name">Cant Gregorià</div>
+                <div class="cooldown-overlay" id="special-cooldown"></div>
+            </button>
+        </div>
+
+        <div style="width: 2px; height: 80px; background: #555; margin: 0 10px;"></div>
+
+        <button class="evolve-btn" id="btn-evolve" onclick="game.evolve()">
+            <div class="unit-icon-text">🧬</div>
+            <div class="unit-cost" id="evolve-cost">1000 XP</div>
+            <div class="unit-name">Evolucionar</div>
+        </button>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        /**
+         * AGE OF MUSIC
+         * Joc d'estratègia en HTML5 Canvas
+         */
+
+        // --- CONFIGURACIÓ I DADES ---
+
+        const CANVAS_WIDTH = 1200;
+        const CANVAS_HEIGHT = 600;
+        const GROUND_Y = 550; // Moved down
+        const BASE_OFFSET = 100;
+        const ENEMY_BASE_IMG = "img/img historywars/torreenemiga.png"; // New generic enemy tower
+
+        // Asset Manager
+        const assets = {
+            images: {},
+            loaded: 0,
+            total: 0,
+            // ... (keep existing load methods if needed, but here replacing relevant block)
+            load: function (sources, onComplete) {
+                this.total = Object.keys(sources).length;
+                this.loaded = 0;
+                if (this.total === 0) { onComplete(); return; }
+                for (let key in sources) {
+                    const img = new Image();
+                    img.src = sources[key];
+                    img.onload = () => { this.images[key] = img; this.loaded++; this.updateProgress(); if (this.loaded === this.total) onComplete(); };
+                    img.onerror = () => { console.warn(`Failed: ${sources[key]}`); this.images[key] = null; this.loaded++; this.updateProgress(); if (this.loaded === this.total) onComplete(); };
+                }
+            },
+            updateProgress: function () {
+                const pct = Math.floor((this.loaded / this.total) * 100);
+                const el = document.getElementById('loading-progress');
+                if (el) el.textContent = pct + "%";
+            },
+            get: function (key) { return this.images[key]; }
+        };
+
+        const ERAS = [
+            {
+                name: "EDAT MITJANA",
+                baseHp: 1000,
+                xpToNext: 200,
+                bgImage: "img/img historywars/fonsmedieval.jpg",
+                baseImage: "img/img historywars/torremitjana.png",
+                fallbackColor: "#87CEEB",
+                units: [
+                    { id: 0, name: "Monjo", image: "img/img historywars/unit_monk.png", cost: 15, hp: 60, dmg: 5, range: 150, speed: 1.5, cooldown: 2000, type: "ranged", projectile: "📜", color: "#bdc3c7" },
+                    { id: 1, name: "Trobador", image: "img/img historywars/unit_trobador.png", cost: 50, hp: 120, dmg: 15, range: 30, speed: 2, cooldown: 4000, type: "melee", color: "#e67e22" },
+                    { id: 2, name: "Cavaller", image: "img/img historywars/unit_knight.png", cost: 150, hp: 350, dmg: 30, range: 30, speed: 1, cooldown: 10000, type: "melee", color: "#7f8c8d" }
+                ],
+                special: { name: "Cant Gregorià", cost: 150, cooldown: 30000, effect: "heal" }
+            },
+            {
+                name: "RENAIXEMENT",
+                baseHp: 2500,
+                xpToNext: 500, // Balanced
+                bgImage: "img/img historywars/fonsreniaxement.jpg",
+                baseImage: "img/img historywars/torrereniaxement.png",
+                fallbackColor: "#A9CCE3",
+                units: [
+                    { id: 0, name: "Pintor", image: "img/img historywars/unit_painter.png", cost: 30, hp: 100, dmg: 10, range: 180, speed: 1.5, cooldown: 2000, type: "ranged", projectile: "🖌️", color: "#f1c40f" },
+                    { id: 1, name: "Cantant", image: "img/img historywars/unit_singer.png", cost: 80, hp: 180, dmg: 25, range: 200, speed: 1.8, cooldown: 4500, type: "ranged", projectile: "🎵", color: "#e74c3c" },
+                    { id: 2, name: "G. Suís", image: "img/img historywars/unit_guard.png", cost: 250, hp: 500, dmg: 50, range: 30, speed: 1.2, cooldown: 11000, type: "melee", color: "#f39c12" }
+                ],
+                special: { name: "Impremta", cost: 300, cooldown: 40000, effect: "gold_boost" }
+            },
+            {
+                name: "BARROC",
+                baseHp: 6000,
+                xpToNext: 1000, // Balanced
+                bgImage: "img/img historywars/onsbarroc.jpg",
+                baseImage: "img/img historywars/torrebarroc.png",
+                fallbackColor: "#5B2C6F",
+                units: [
+                    { id: 0, name: "Violinista", image: "img/img historywars/unit_vivaldi.png", cost: 60, hp: 200, dmg: 20, range: 40, speed: 2.5, cooldown: 1500, type: "melee", color: "#8e44ad" },
+                    { id: 1, name: "Clavicèmbal", image: "img/img historywars/unit_harpsichord.png", cost: 200, hp: 800, dmg: 40, range: 30, speed: 0.8, cooldown: 8000, type: "melee", color: "#2c3e50" },
+                    { id: 2, name: "Castrato", image: "img/img historywars/unit_castrato.png", cost: 500, hp: 400, dmg: 80, range: 250, speed: 1.5, cooldown: 12000, type: "ranged", projectile: "〰️", color: "#9b59b6" }
+                ],
+                special: { name: "Focs Reials", cost: 500, cooldown: 45000, effect: "rain_damage" }
+            },
+            {
+                name: "CLASSICISME",
+                baseHp: 12000,
+                xpToNext: 2500, // Reduced from 4000
+                bgImage: "img/img historywars/fonsclasic.jpg",
+                baseImage: "img/img historywars/torreclassicisme.png",
+                fallbackColor: "#D35400",
+                units: [
+                    { id: 0, name: "Soldat Plom", image: "img/img historywars/unit_soldier.png", cost: 100, hp: 350, dmg: 30, range: 30, speed: 1.5, cooldown: 2000, type: "melee", color: "#c0392b" },
+                    { id: 1, name: "Director", image: "img/img historywars/unit_conductor.png", cost: 400, hp: 600, dmg: 10, range: 100, speed: 1.5, cooldown: 10000, type: "support", color: "#2c3e50" },
+                    { id: 2, name: "Piano Forte", image: "img/img historywars/unit_piano.png", cost: 900, hp: 1500, dmg: 150, range: 40, speed: 1.0, cooldown: 15000, type: "melee", color: "#000000" }
+                ],
+                special: { name: "Ordre", cost: 1000, cooldown: 50000, effect: "freeze" }
+            },
+            {
+                name: "ROMANTICISME",
+                baseHp: 25000,
+                xpToNext: 5000, // Reduced from 10000
+                bgImage: "img/img historywars/fonsromantic.jpg",
+                baseImage: "img/img historywars/torreromanticisme.png",
+                fallbackColor: "#212F3C",
+                units: [
+                    { id: 0, name: "Fantasma", image: "img/img historywars/unit_ballerina.png", cost: 250, hp: 600, dmg: 60, range: 30, speed: 2.0, cooldown: 3000, type: "melee", color: "#ecf0f1" },
+                    { id: 1, name: "Ballarina", image: "img/img historywars/unit_liszt.png", cost: 600, hp: 1000, dmg: 80, range: 30, speed: 3.0, cooldown: 8000, type: "melee", color: "#e84393" },
+                    { id: 2, name: "Virtuós", image: "img/img historywars/unit_valkyrie.png", cost: 1500, hp: 2000, dmg: 300, range: 200, speed: 1.2, cooldown: 18000, type: "ranged", projectile: "🔥", color: "#c0392b" }
+                ],
+                special: { name: "Tempesta", cost: 2500, cooldown: 60000, effect: "mass_damage" }
+            },
+            {
+                name: "SEGLE XX",
+                baseHp: 60000,
+                xpToNext: Infinity,
+                bgImage: "img/img historywars/fonssegleXX.jpg",
+                baseImage: "img/img historywars/torre segle XX.png",
+                fallbackColor: "#17202A",
+                units: [
+                    { id: 0, name: "Jazzman", image: "img/img historywars/unit_jazz.png", cost: 500, hp: 1200, dmg: 100, range: 150, speed: 2.5, cooldown: 2500, type: "ranged", projectile: "🎷", color: "#f39c12" },
+                    { id: 1, name: "Rocker", image: "img/img historywars/unit_rocker.png", cost: 1200, hp: 2500, dmg: 250, range: 200, speed: 2.0, cooldown: 6000, type: "ranged", projectile: "⚡", color: "#e74c3c" },
+                    { id: 2, name: "Sintetitzador", image: "img/img historywars/unit_speaker.png", cost: 5000, hp: 8000, dmg: 1000, range: 50, speed: 0.8, cooldown: 20000, type: "melee", color: "#34495e" }
+                ],
+                special: { name: "Bomba Atòmica", cost: 5000, cooldown: 90000, effect: "nuke" }
+            }
+        ];
+
+        // --- CLASSES ---
+
+        class Entity {
+            constructor(x, y, team) {
+                this.x = x;
+                this.y = y;
+                this.team = team; // 'player' or 'enemy'
+                this.dead = false;
+                this.width = 60;
+                this.height = 80;
+            }
+
+            draw(ctx) { }
+            update(dt) { }
+        }
+
+        class Base extends Entity {
+            constructor(team, eraIndex) {
+                super(team === 'player' ? BASE_OFFSET : CANVAS_WIDTH - BASE_OFFSET, GROUND_Y - 50, team);
+                this.eraIndex = eraIndex;
+                this.maxHp = ERAS[eraIndex].baseHp;
+                this.hp = this.maxHp;
+                this.width = 220; // Much Larger
+                this.height = 280; // Much Larger
+                this.y = GROUND_Y - this.height;
+            }
+
+            takeDamage(amount) {
+                this.hp -= amount;
+                if (this.hp <= 0) {
+                    this.hp = 0;
+                    this.dead = true;
+                    game.endGame(this.team === 'enemy');
+                }
+            }
+
+            evolve(newEraIndex) {
+                this.eraIndex = newEraIndex;
+                const ratio = this.hp / this.maxHp;
+                this.maxHp = ERAS[newEraIndex].baseHp;
+                this.hp = this.maxHp * ratio;
+            }
+
+            draw(ctx) {
+                const era = ERAS[this.eraIndex];
+                // Determine image based on team
+                let imgSrc = era.baseImage;
+                if (this.team === 'enemy' && typeof ENEMY_BASE_IMG !== 'undefined') {
+                    imgSrc = ENEMY_BASE_IMG;
+                }
+
+                const img = assets.get(imgSrc);
+
+                ctx.save();
+                if (this.team === 'enemy') {
+                    // Always flip enemy to face left
+                    ctx.scale(-1, 1);
+                    ctx.translate(-this.x * 2 - (this.width), 0); // Correct flip position
+                    ctx.translate(this.width, 0); // Re-adjust
+                }
+
+                if (img) {
+                    ctx.drawImage(img, this.x - this.width / 2, this.y, this.width, this.height);
+                } else {
+                    // Fallback
+                    ctx.fillStyle = this.team === 'player' ? '#3498db' : '#e74c3c';
+                    ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
+
+                    // Roof
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - this.width / 2 - 10, this.y);
+                    ctx.lineTo(this.x + this.width / 2 + 10, this.y);
+                    ctx.lineTo(this.x, this.y - 40);
+                    ctx.closePath();
+                    ctx.fillStyle = this.team === 'player' ? '#2980b9' : '#c0392b';
+                    ctx.fill();
+                }
+
+                ctx.restore();
+
+                // Icona Base (Text overlay always useful)
+                if (!img) {
+                    ctx.font = "40px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "white";
+                    ctx.fillText(this.team === 'player' ? "🏰" : "🏯", this.x, this.y + 80);
+                }
+            }
+        }
+
+        class Unit extends Entity {
+            constructor(team, typeData, x) {
+                super(x, GROUND_Y, team);
+                this.name = typeData.name;
+                this.imagePath = typeData.image;
+                this.maxHp = typeData.hp;
+                this.hp = this.maxHp;
+                this.dmg = typeData.dmg;
+                this.range = typeData.range;
+                this.speed = typeData.speed;
+                this.type = typeData.type;
+                this.projectileIcon = typeData.projectile;
+                this.fallbackColor = typeData.color;
+
+                this.state = 'walk';
+                this.attackTimer = 0;
+                this.attackSpeed = 1000;
+                this.lastAttackTime = 0;
+
+                this.width = 75; // Increased from 50
+                this.height = 75; // Increased from 50
+                this.y = GROUND_Y - this.height;
+
+                if (this.type === 'building') {
+                    this.width = 60;
+                    this.height = 100;
+                    this.y = GROUND_Y - this.height;
+                }
+            }
+
+            update(dt, enemies, enemyBase) {
+                if (this.dead) return;
+
+                let target = null;
+                let minDist = Infinity;
+
+                for (const enemy of enemies) {
+                    if (enemy.dead) continue;
+                    const dist = Math.abs(enemy.x - this.x);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        target = enemy;
+                    }
+                }
+
+                if (!target) {
+                    const distToBase = Math.abs(enemyBase.x - this.x);
+                    if (distToBase < minDist) {
+                        minDist = distToBase;
+                        target = enemyBase;
+                    }
+                }
+
+                const distanceToTarget = target ? Math.abs(target.x - this.x) - (target.width / 2 + this.width / 2) : Infinity;
+
+                if (target && distanceToTarget <= this.range) {
+                    this.state = 'attack';
+                    if (game.now - this.lastAttackTime > this.attackSpeed) {
+                        this.attack(target);
+                        this.lastAttackTime = game.now;
+                    }
+                } else {
+                    this.state = 'walk';
+                    if (this.type !== 'building') { // Only move if not a building
+                        const dir = this.team === 'player' ? 1 : -1;
+                        this.x += this.speed * dir * (dt / 16);
+                    }
+                }
+            }
+
+            attack(target) {
+                game.addFloater(target.x, target.y - 40, `-${this.dmg}`, '#e74c3c');
+
+                if (this.type === 'ranged') {
+                    game.projectiles.push(new Projectile(this.x, this.y + 20, target, this.dmg, this.projectileIcon));
+                } else {
+                    target.takeDamage(this.dmg);
+                }
+            }
+
+            takeDamage(amount) {
+                this.hp -= amount;
+                if (this.hp <= 0) {
+                    this.hp = 0;
+                    this.dead = true;
+                    if (this.team === 'enemy') {
+                        game.addXp(this.maxHp / 2);
+                    } else {
+                        game.enemyAi.addXp(this.maxHp / 2);
+                    }
+                }
+            }
+
+            draw(ctx) {
+                if (this.dead) return;
+
+                ctx.save();
+
+                // Bounce effect
+                let bounce = 0;
+                if (this.state === 'walk') {
+                    bounce = Math.sin(game.now / 100) * 3;
+                }
+
+                if (this.type === 'building') {
+                    ctx.fillStyle = "#7f8c8d"; // Grey for building fallback
+                    ctx.fillRect(this.x - this.width / 2, this.y + bounce, this.width, this.height);
+                    ctx.font = "40px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "white";
+                    ctx.fillText("🛡️", this.x, this.y + 60 + bounce);
+                } else {
+                    const img = assets.get(this.imagePath);
+                    if (img) {
+                        // Flip for enemy
+                        if (this.team === 'enemy') {
+                            ctx.scale(-1, 1);
+                            ctx.translate(-this.x * 2, 0);
+                            // Tint enemy sprites red using composite operation
+                            // This is a bit complex for simple canvas, let's just draw normally for now
+                            // Or use a simple filter if supported
+                            ctx.filter = 'sepia(1) hue-rotate(-50deg) saturate(3)';
+                        }
+                        ctx.drawImage(img, this.x - this.width / 2, this.y + bounce, this.width, this.height);
+                        ctx.filter = 'none'; // Reset filter after drawing
+                    } else {
+                        // Fallback Rectangle
+                        ctx.fillStyle = this.fallbackColor;
+                        if (this.team === 'enemy') ctx.fillStyle = '#c0392b'; // Reddish for enemy fallback
+                        ctx.fillRect(this.x - this.width / 2, this.y + bounce, this.width, this.height);
+
+                        // Name
+                        ctx.fillStyle = "white";
+                        ctx.font = "10px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText(this.name.substring(0, 3), this.x, this.y + 20 + bounce);
+                    }
+                }
+                ctx.restore();
+
+                // Health Bar
+                const hpPct = this.hp / this.maxHp;
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x - 15, this.y - 10, 30, 4);
+                ctx.fillStyle = "#2ecc71";
+                ctx.fillRect(this.x - 15, this.y - 10, 30 * hpPct, 4);
+            }
+        }
+
+        class Projectile {
+            constructor(x, y, target, damage, icon) {
+                this.x = x;
+                this.y = y;
+                this.target = target;
+                this.damage = damage;
+                this.icon = icon;
+                this.speed = 5;
+                this.dead = false;
+            }
+
+            update() {
+                if (this.dead) return;
+
+                const dx = this.target.x - this.x;
+                const dy = (this.target.y + 20) - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 10 || this.target.dead) {
+                    if (!this.target.dead) this.target.takeDamage(this.damage);
+                    this.dead = true;
+                    return;
+                }
+
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+            }
+
+            draw(ctx) {
+                // Try to draw spell note image if available, else text
+                const img = assets.get('img/img historywars/spell_note.png');
+                if (img) {
+                    ctx.drawImage(img, this.x - 10, this.y - 10, 20, 20);
+                } else {
+                    ctx.font = "16px Arial";
+                    ctx.fillText(this.icon, this.x, this.y);
+                }
+            }
+        }
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+
+                this.lastTime = 0;
+                this.now = 0;
+                this.speedMultiplier = 1;
+                this.paused = false;
+                this.gameOver = false;
+
+                // Player State
+                this.playerEra = 0;
+                this.gold = 100;
+                this.xp = 0;
+                this.goldRate = 1;
+                this.lastGoldTime = 0;
+
+                // Enemy State
+                this.enemyEra = 0;
+                this.enemyGold = 100;
+                this.enemyXp = 0;
+
+                // Entities
+                this.playerBase = new Base('player', 0);
+                this.enemyBase = new Base('enemy', 0);
+                this.playerUnits = [];
+                this.enemyUnits = [];
+                this.projectiles = [];
+                this.floaters = [];
+
+                // Cooldowns
+                this.unitCooldowns = [0, 0, 0];
+                this.specialCooldown = 0;
+
+                // AI
+                this.enemyAi = {
+                    spawnTimer: 0,
+                    addXp: (amount) => {
+                        this.enemyXp += amount;
+                        if (this.enemyEra < ERAS.length - 1 && this.enemyXp >= ERAS[this.enemyEra].xpToNext) {
+                            this.enemyXp -= ERAS[this.enemyEra].xpToNext;
+                            this.enemyEra++;
+                            this.enemyBase.evolve(this.enemyEra);
+                        }
+                    }
+                };
+
+                // Bindings
+                this.setupControls();
+
+                // Load Assets
+                this.loadAssets();
+            }
+
+            loadAssets() {
+                const sources = {};
+
+                // Collect all image paths
+                ERAS.forEach(era => {
+                    if (era.bgImage) sources[era.bgImage] = era.bgImage;
+                    if (era.baseImage) sources[era.baseImage] = era.baseImage;
+                    era.units.forEach(u => {
+                        if (u.image) sources[u.image] = u.image;
+                    });
+                });
+                sources['img/img historywars/spell_note.png'] = 'img/img historywars/spell_note.png';
+                if (typeof ENEMY_BASE_IMG !== 'undefined') {
+                    sources[ENEMY_BASE_IMG] = ENEMY_BASE_IMG;
+                }
+
+                assets.load(sources, () => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    this.updateUi();
+                    this.updateUiButtons();
+                    // Draw once to show background
+                    this.draw();
+                });
+            }
+
+            start() {
+                if (!this.running) {
+                    this.running = true;
+                    requestAnimationFrame((t) => this.loop(t));
+                }
+            }
+
+            resize() {
+                this.canvas.width = CANVAS_WIDTH;
+                this.canvas.height = CANVAS_HEIGHT;
+            }
+
+            setupControls() {
+                document.getElementById('btn-pause').onclick = () => {
+                    this.paused = !this.paused;
+                    document.getElementById('btn-pause').textContent = this.paused ? "REPRENDRE" : "PAUSA";
+                    document.getElementById('btn-pause').classList.toggle('active');
+                };
+                document.getElementById('btn-speed-1').onclick = () => {
+                    this.speedMultiplier = 1;
+                    document.getElementById('btn-speed-1').classList.add('active');
+                    document.getElementById('btn-speed-2').classList.remove('active');
+                };
+                document.getElementById('btn-speed-2').onclick = () => {
+                    this.speedMultiplier = 2;
+                    document.getElementById('btn-speed-2').classList.add('active');
+                    document.getElementById('btn-speed-1').classList.remove('active');
+                };
+                document.getElementById('restart-btn').onclick = () => location.reload();
+            }
+
+            spawnBarricade() {
+                if (this.gold >= 100 && !this.frozen) {
+                    this.gold -= 100;
+                    // Barricade is a special unit: High HP, 0 Speed, 0 Dmg
+                    const barricade = new Unit(
+                        this.playerEra,
+                        { name: "Barricada", hp: 1000, dmg: 0, range: 0, speed: 0, cost: 100, image: "img/img historywars/barricade.png", type: "building" },
+                        true
+                    );
+                    // Place slightly ahead of base
+                    barricade.x = BASE_OFFSET + 150;
+                    this.playerUnits.push(barricade);
+                    this.addFloater(barricade.x, barricade.y, "🛡️", "#bdc3c7");
+                }
+            }
+
+            spawnUnit(unitIndex) {
+                const era = ERAS[this.playerEra];
+                const unitData = era.units[unitIndex];
+
+                if (this.gold >= unitData.cost && this.now > this.unitCooldowns[unitIndex]) {
+                    this.gold -= unitData.cost;
+                    this.playerUnits.push(new Unit('player', unitData, this.playerBase.x + 50));
+                    this.unitCooldowns[unitIndex] = this.now + unitData.cooldown;
+                    this.updateUi();
+                }
+            }
+
+            spawnEnemyUnit(unitIndex) {
+                const era = ERAS[this.enemyEra];
+                const unitData = era.units[unitIndex];
+                this.enemyUnits.push(new Unit('enemy', unitData, this.enemyBase.x - 50));
+            }
+
+            useSpecial() {
+                const era = ERAS[this.playerEra];
+                if (this.gold >= era.special.cost && this.now > this.specialCooldown) {
+                    this.gold -= era.special.cost;
+                    this.specialCooldown = this.now + era.special.cooldown;
+                    this.activateSpecialEffect(era.special.effect, 'player');
+                    this.updateUi();
+                }
+            }
+
+            activateSpecialEffect(effect, team) {
+                const isPlayer = team === 'player';
+                const units = isPlayer ? this.playerUnits : this.enemyUnits;
+                const enemies = isPlayer ? this.enemyUnits : this.playerUnits;
+
+                this.addFloater(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, `SPECIAL: ${effect.toUpperCase()}!`, '#f1c40f');
+
+                if (effect === 'heal') {
+                    units.forEach(u => u.hp = Math.min(u.hp + 100, u.maxHp));
+                    (isPlayer ? this.playerBase : this.enemyBase).hp += 200;
+                } else if (effect === 'gold_boost') {
+                    if (isPlayer) this.gold += 500; else this.enemyGold += 500;
+                } else if (effect === 'rain_damage') {
+                    enemies.forEach(u => u.takeDamage(100));
+                } else if (effect === 'freeze') {
+                    enemies.forEach(u => u.speed = 0);
+                    setTimeout(() => enemies.forEach(u => u.speed = ERAS[isPlayer ? this.enemyEra : this.playerEra].units.find(ud => ud.name === u.name).speed), 5000);
+                } else if (effect === 'mass_damage') {
+                    enemies.forEach(u => u.takeDamage(300));
+                } else if (effect === 'nuke') {
+                    enemies.forEach(u => u.takeDamage(1000));
+                }
+            }
+
+            evolve() {
+                const era = ERAS[this.playerEra];
+                if (this.playerEra < ERAS.length - 1 && this.xp >= era.xpToNext) {
+                    this.xp -= era.xpToNext;
+                    this.playerEra++;
+                    this.playerBase.evolve(this.playerEra);
+                    this.addFloater(this.playerBase.x, this.playerBase.y - 100, "NOVA ÈPOCA!", "#9b59b6");
+                    this.updateUiButtons();
+                }
+            }
+
+            addXp(amount) {
+                this.xp += amount;
+                this.addFloater(this.playerBase.x, this.playerBase.y - 80, `+${Math.floor(amount)} XP`, '#3498db');
+            }
+
+            addFloater(x, y, text, color) {
+                const el = document.createElement('div');
+                el.className = 'floater';
+                const rect = this.canvas.getBoundingClientRect();
+                el.style.left = (rect.left + x) + 'px';
+                el.style.top = (rect.top + y) + 'px';
+                el.textContent = text;
+                el.style.color = color;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1000);
+            }
+
+            updateUiButtons() {
+                const container = document.getElementById('units-container');
+                container.innerHTML = '';
+                const era = ERAS[this.playerEra];
+
+                era.units.forEach((u, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'unit-btn';
+                    btn.id = `btn-unit-${idx}`;
+
+                    // Try to show image in button, fallback to text
+                    const imgHtml = `<img src="${u.image}" class="unit-icon-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">`;
+                    const fallbackHtml = `<div class="unit-icon-text" style="display:none; color:${u.color}">●</div>`;
+
+                    btn.innerHTML = `
+                ${imgHtml}
+                ${fallbackHtml}
+                <div class="unit-cost">${u.cost}</div>
+                <div class="unit-name">${u.name}</div>
+                <div class="cooldown-overlay" id="cooldown-${idx}"></div>
+            `;
+                    btn.onclick = () => this.spawnUnit(idx);
+                    container.appendChild(btn);
+                });
+
+                document.getElementById('special-name').textContent = era.special.name;
+                document.getElementById('special-cost').textContent = era.special.cost;
+
+                const evolveBtn = document.getElementById('btn-evolve');
+                const evolveCost = document.getElementById('evolve-cost');
+                if (this.playerEra >= ERAS.length - 1) {
+                    evolveBtn.classList.add('disabled');
+                    evolveCost.textContent = "MAX";
+                } else {
+                    evolveBtn.classList.remove('disabled');
+                    evolveCost.textContent = `${era.xpToNext} XP`;
+                }
+            }
+
+            updateUi() {
+                document.getElementById('gold-display').textContent = Math.floor(this.gold);
+                document.getElementById('xp-display').textContent = this.playerEra < ERAS.length - 1 ? `${Math.floor(this.xp)} / ${ERAS[this.playerEra].xpToNext}` : "MAX";
+                document.getElementById('era-display').textContent = ERAS[this.playerEra].name;
+
+                const pHealthPct = (this.playerBase.hp / this.playerBase.maxHp) * 100;
+                document.getElementById('player-health-bar').style.width = `${pHealthPct}%`;
+                document.getElementById('player-health-text').textContent = `${Math.floor(this.playerBase.hp)}/${this.playerBase.maxHp}`;
+
+                const eHealthPct = (this.enemyBase.hp / this.enemyBase.maxHp) * 100;
+                document.getElementById('enemy-health-bar').style.width = `${eHealthPct}%`;
+                document.getElementById('enemy-health-text').textContent = `${Math.floor(this.enemyBase.hp)}/${this.enemyBase.maxHp}`;
+
+                ERAS[this.playerEra].units.forEach((u, idx) => {
+                    const overlay = document.getElementById(`cooldown-${idx}`);
+                    if (overlay) {
+                        const remaining = Math.max(0, this.unitCooldowns[idx] - this.now);
+                        const pct = (remaining / u.cooldown) * 100;
+                        overlay.style.height = `${pct}%`;
+
+                        const btn = document.getElementById(`btn-unit-${idx}`);
+                        if (this.gold < u.cost) {
+                            btn.style.opacity = 0.5;
+                        } else {
+                            btn.style.opacity = 1;
+                        }
+                    }
+                });
+
+                const specialOverlay = document.getElementById('special-cooldown');
+                const specialRemaining = Math.max(0, this.specialCooldown - this.now);
+                const specialPct = (specialRemaining / ERAS[this.playerEra].special.cooldown) * 100;
+                specialOverlay.style.height = `${specialPct}%`;
+
+                const evolveBtn = document.getElementById('btn-evolve');
+                if (this.playerEra < ERAS.length - 1 && this.xp >= ERAS[this.playerEra].xpToNext) {
+                    evolveBtn.style.borderColor = "#2ecc71";
+                    evolveBtn.classList.remove('disabled');
+                } else {
+                    evolveBtn.style.borderColor = "#9b59b6";
+                    if (this.playerEra < ERAS.length - 1) evolveBtn.classList.add('disabled');
+                }
+            }
+
+
+
+            loop(timestamp) {
+                if (this.gameOver) return;
+                if (this.paused) {
+                    requestAnimationFrame((t) => this.loop(t));
+                    return;
+                }
+
+                const dt = timestamp - this.lastTime;
+                this.lastTime = timestamp;
+                this.now = timestamp;
+
+                // Update
+                if (!this.frozen) {
+                    // Player Logic (Gold, Cooldowns)
+                    if (this.now - this.lastGoldTime > 1000) {
+                        this.gold += this.goldRate;
+                        this.lastGoldTime = this.now;
+                    }
+                    // Update Cooldowns UI
+                    this.updateUi();
+                }
+
+                // AI Logic (Always runs unless game paused)
+                if (this.now - this.enemyAi.spawnTimer > 1000) {
+                    this.updateAi();
+                    this.enemyAi.spawnTimer = this.now;
+                }
+
+                // Entities Update
+                // Units move/attack even if player is frozen? 
+                // "estas 7 segundos inmovilizado sin poder hacer nada, ni suben los puntos ni puedes mover nada"
+                // Usually implies units stop too? Or just player can't spawn/gain gold?
+                // "ni puedes mover nada" -> Units stop?
+                // Let's stop player units update if frozen.
+
+                this.playerUnits.forEach(u => {
+                    if (!this.frozen) u.update(dt, this.enemyUnits, this.enemyBase);
+                });
+                this.enemyUnits.forEach(u => u.update(dt, this.playerUnits, this.playerBase));
+
+                this.projectiles.forEach(p => p.update());
+
+                // Cleanup
+                this.playerUnits = this.playerUnits.filter(u => !u.dead);
+                this.enemyUnits = this.enemyUnits.filter(u => !u.dead);
+                this.projectiles = this.projectiles.filter(p => !p.dead);
+
+                // Draw
+                this.draw();
+
+                requestAnimationFrame((t) => this.loop(t));
+            }
+
+            draw() {
+                const bgImg = assets.get(era.bgImage);
+
+                if (bgImg) {
+                    this.ctx.drawImage(bgImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                } else {
+                    // Fallback Gradient
+                    const gradient = this.ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+                    gradient.addColorStop(0, era.fallbackColor);
+                    gradient.addColorStop(1, "#ecf0f1");
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                }
+
+                // Ground
+                this.ctx.fillStyle = "#27ae60";
+                this.ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y);
+                this.ctx.fillStyle = "#1e8449";
+                this.ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, 10);
+
+                // Bases
+                this.playerBase.draw(this.ctx);
+                this.enemyBase.draw(this.ctx);
+
+                // Units
+                this.playerUnits.forEach(u => u.draw(this.ctx));
+                this.enemyUnits.forEach(u => u.draw(this.ctx));
+
+                // Projectiles
+                this.projectiles.forEach(p => p.draw(this.ctx));
+            }
+
+            draw() {
+                // Clear
+                this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+                // Background
+                const era = ERAS[this.playerEra];
+                const bg = assets.get(era.bgImage);
+                if (bg) {
+                    this.ctx.drawImage(bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                } else {
+                    this.ctx.fillStyle = "#87CEEB";
+                    this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                }
+
+                // Ground - Green line REMOVED as requested. Relying on background or we can add Shadow.
+                // this.ctx.fillStyle = "#2ecc71";
+                // this.ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y);
+                // this.ctx.fillStyle = "#1e8449";
+                // this.ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, 10);
+
+                // Add a simple shadow gradient at bottom instead?
+                const g = this.ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_HEIGHT);
+                g.addColorStop(0, "rgba(0,0,0,0.5)");
+                g.addColorStop(1, "rgba(0,0,0,0.8)");
+                this.ctx.fillStyle = g;
+                this.ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y);
+
+                // Bases
+                this.playerBase.draw(this.ctx);
+                this.enemyBase.draw(this.ctx);
+
+                // Units
+                this.playerUnits.forEach(u => u.draw(this.ctx));
+                this.enemyUnits.forEach(u => u.draw(this.ctx));
+
+                // Projectiles
+                this.projectiles.forEach(p => p.draw(this.ctx));
+            }
+
+            setDifficulty(multiplier) {
+                this.difficultyMultiplier = multiplier;
+            }
+
+            freezePlayer() {
+                this.paused = false; // Unpause game loop
+                this.frozen = true; // Set frozen state
+                document.getElementById('freeze-overlay').style.display = 'flex';
+
+                setTimeout(() => {
+                    this.frozen = false;
+                    document.getElementById('freeze-overlay').style.display = 'none';
+                }, 7000);
+            }
+
+            updateAi() {
+                // Difficulty affects gold generation and spawn rate
+                // Lower multiplier = Easier (less gold/spawns for enemy)
+                // Wait, logic in plan: 
+                // Aspirant (0.5x) -> AI has 0.5x stats.
+                // So we multiply AI rates by difficultyMultiplier.
+
+                this.enemyGold += 0.03 * this.speedMultiplier * this.difficultyMultiplier;
+                if (Math.random() < 0.005 * this.speedMultiplier * this.difficultyMultiplier) {
+                    const era = ERAS[this.enemyEra];
+                    const affordableUnits = era.units.map((u, i) => ({ ...u, index: i })).filter(u => u.cost <= this.enemyGold);
+                    if (affordableUnits.length > 0) {
+                        const pick = affordableUnits[Math.floor(Math.random() * affordableUnits.length)];
+                        this.enemyGold -= pick.cost;
+                        this.spawnEnemyUnit(pick.index);
+                    }
+                }
+            }
+
+            endGame(playerWon) {
+                this.gameOver = true;
+                const modal = document.getElementById('game-over-modal');
+                const title = document.getElementById('game-over-title');
+                const msg = document.getElementById('game-over-msg');
+
+                modal.style.display = 'flex';
+                if (playerWon) {
+                    title.textContent = "VICTÒRIA!";
+                    title.style.color = "#f1c40f";
+                    msg.textContent = "Has destruït el Mur del Soroll i salvat la música!";
+
+                    // Unlock next difficulty
+                    if (currentDifficulty === unlockedDifficulty && currentDifficulty < 3) {
+                        unlockedDifficulty++;
+                        localStorage.setItem('hw_unlocked_diff', unlockedDifficulty);
+                        msg.textContent += " NOVA DIFICULTAT DESBLOQUEJADA!";
+                    }
+
+                    if (typeof Rewards !== 'undefined') {
+                        Rewards.unlockCard(
+                            'wars_mix',
+                            'General del Temps',
+                            'Has guanyat la guerra contra el silenci!',
+                            '../../img/card_wars.png'
+                        );
+                    }
+                } else {
+                    title.textContent = "DERROTA...";
+                    title.style.color = "#e74c3c";
+                    msg.textContent = "El silenci ha conquerit el món.";
+                }
+            }
+        }
+
+        // --- DIFFICULTY SYSTEM ---
+        const DIFFICULTIES = [
+            { name: "ASPIRANT", multiplier: 0.5 },
+            { name: "MÚSIC", multiplier: 1.0 },
+            { name: "MESTRE", multiplier: 1.5 },
+            { name: "LLEGENDA", multiplier: 2.0 }
+        ];
+
+        let currentDifficulty = 0;
+        let unlockedDifficulty = parseInt(localStorage.getItem('hw_unlocked_diff')) || 0;
+
+        function initDifficulty() {
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`diff-${i}`);
+                if (i > unlockedDifficulty) {
+                    btn.classList.add('locked');
+                    btn.disabled = true;
+                    btn.title = "Completa el nivell anterior per desbloquejar";
+                } else {
+                    btn.classList.remove('locked');
+                    btn.disabled = false;
+                }
+            }
+            selectDifficulty(currentDifficulty);
+        }
+
+        function selectDifficulty(diff) {
+            if (diff > unlockedDifficulty) return;
+            currentDifficulty = diff;
+
+            // UI Update
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`diff-${i}`);
+                if (i === diff) btn.classList.add('selected');
+                else btn.classList.remove('selected');
+            }
+        }
+
+        function startGameWithDifficulty() {
+            document.getElementById('start-screen').style.display = 'none';
+            game.setDifficulty(0.7); // Locked to 'Medium-Easy' balanced for completion
+            game.start();
+        }
+
+        // Init UI
+        initDifficulty();
+
+        // --- QUIZ SYSTEM ---
+        const QUIZ_QUESTIONS = [
+            { q: "Qui va compondre 'Les Quatre Estacions'?", options: ["Vivaldi", "Bach", "Mozart", "Beethoven"], correct: 0 },
+            { q: "Quin instrument és típic del Barroc?", options: ["Piano", "Clavicèmbal", "Saxofon", "Guitarra Elèctrica"], correct: 1 },
+            { q: "Quina obra és de Beethoven?", options: ["El Messies", "La Flauta Màgica", "9a Simfonia", "Trencanous"], correct: 2 },
+            { q: "El Cant Gregorià és...", options: ["Polifònic", "Monòdic", "Instrumental", "Rock"], correct: 1 },
+            { q: "Qui és el 'Rei del Rock'?", options: ["Elvis Presley", "Mozart", "Freddie Mercury", "Bach"], correct: 0 },
+            { q: "Quants moviments té una simfonia clàssica?", options: ["1", "3", "4", "2"], correct: 2 },
+            { q: "Quin compositor era sord?", options: ["Bach", "Händel", "Beethoven", "Vivaldi"], correct: 2 },
+            { q: "L'òpera va néixer al...", options: ["Renaixement", "Barroc", "Classicisme", "Edat Mitjana"], correct: 1 }
+        ];
+
+        function triggerQuiz() {
+            if (game.gameOver || game.paused) return;
+
+            game.paused = true;
+            const modal = document.getElementById('quiz-modal');
+            const qEl = document.getElementById('quiz-question');
+            const oEl = document.getElementById('quiz-options');
+
+            const q = QUIZ_QUESTIONS[Math.floor(Math.random() * QUIZ_QUESTIONS.length)];
+
+            qEl.textContent = q.q;
+            oEl.innerHTML = '';
+
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.textContent = opt;
+                btn.style.padding = "15px";
+                btn.style.fontFamily = "'Press Start 2P'";
+                btn.style.fontSize = "12px";
+                btn.style.cursor = "pointer";
+                btn.style.background = "#34495e";
+                btn.style.color = "white";
+                btn.style.border = "2px solid #fff";
+
+                btn.onclick = () => {
+                    modal.style.display = 'none';
+                    if (i === q.correct) {
+                        // Correct
+                        game.paused = false;
+                        game.gold += 200;
+                        game.addFloater(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, "+200 OR!", "#f1c40f");
+                    } else {
+                        // Wrong
+                        game.freezePlayer();
+                    }
+                };
+                oEl.appendChild(btn);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        // Start quiz timer loop
+        setInterval(() => {
+            if (game.running && !game.gameOver && !game.paused && Math.random() < 0.3) { // 30% chance every 45s check? No, let's just do fixed interval with random offset
+                triggerQuiz();
+            }
+        }, 45000); // Every 45 seconds
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

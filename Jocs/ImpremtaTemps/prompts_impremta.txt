@@ -1,0 +1,53 @@
+
+# IMPREMTA DEL TEMPS - PROMPTS NEWSPAPER STYLE
+
+**ESTIL GENERAL (STYLE GUIDE):**
+> "Vintage American Newspaper Illustration Style (Late 19th Century). Woodcut engraving, stippling, and cross-hatching textures. Monochrome (Black Ink on Aged Beige Paper) or Sepia tones. High contrast, intricate details, serious and historical feel. Isolated on white background (for PNGs)."
+
+---
+
+## 1. FONS D'ESCENARI (BACKGROUND)
+**Format:** 16:9 Landscape
+**Prompt:** `2d game background, interior of a busy vintage newspaper printing office (1900s). Engraving illustration style. Large mechanical rotary printing presses, stacks of newspapers, wooden desks with messy papers. Sepia tone, old paper texture. Detailed cross-hatching. --ar 16:9`
+*Filename Suggestion:* `bg_newspaper.jpg`
+
+---
+
+## 2. INTERFÍCIE (UI ELEMENTS)
+**Format:** Transparent PNG (Engraving Style)
+
+### Eines de Treball
+*   **[ui_ink_bottle.png]**: An engraved illustration of a classic glass ink bottle with a quill pen resting next to it.
+*   **[ui_type_case.png]**: A detailed woodcut drawing of a printer's type case (drawer with compartments).
+*   **[ui_roller.png]**: A hand-ink roller, drawn in a hatched engraving style.
+*   **[btn_print.png]**: A vintage "PRINT" button designed to look like a stamp or a press lever. Engraved texture.
+
+---
+
+## 3. RETRATS DE CLIENTS (12 TOTAL)
+**Format:** Portrait / Square
+**Prompt Prefix:** `vintage newspaper engraving portrait, woodcut style, circle frame, monochrome sepia`
+
+### EDAT MITJANA
+*   **[client_bernat.png]** (Fra Bernat): A severe medieval monk. Rendered with heavy cross-hatching shadow. Looks like an ancient manuscript illustration.
+*   **[client_raimon.png]** (Raimon el Trobador): A minstrel with a lute. Stylized like an old woodcut print.
+
+### RENAIXEMENT
+*   **[client_lorenzo.png]** (Llorenç de Mèdici): A noble profile portrait, reminiscent of detailed currency engravings (like on a dollar bill). Velvet robes textured with lines.
+*   **[client_josquin.png]** (Josquin des Prez): A composer with a hat. Fine stippling details on his face. Serious expression.
+
+### BARROC
+*   **[client_soprano.png]** (La Divina): An incredibly detailed engraving of an opera singer with a massive wig. Every curl of hair is a distinct line. Theatrical lighting via hatching.
+*   **[client_lully.png]** (Jean-Baptiste Lully): A stern man with a large wig and staff. Heavy, dramatic contrast in the engraving.
+
+### CLASSICISME
+*   **[client_enciclopedia.png]** (L'Enciclopedista): An intellectual with a wig and glasses. Looks like a scientific illustration from an old encyclopedia. Precise lines.
+*   **[client_mozart.png]** (Wolfgang Amadeus): A young Mozart. Delicate line work, lighter tones to show elegance.
+
+### ROMANTICISME
+*   **[client_poeta.png]** (El Poeta Maleït): A moody, dark engraving. Lots of black ink usage (heavy shadows) to show his tormented soul. Messy hair.
+*   **[client_revolucionari.png]** (El Revolucionari): A dynamic sketch-like engraving. Shouting, hair blowing in wind. Looks like a political cartoon from the 1800s.
+
+### SEGLE XX
+*   **[client_dada.png]** (Artista Dadaista): A weird, surreal collage-style engraving. A man wearing a urinal as a hat, drawn with disjointed lines.
+*   **[client_arnold.png]** (Arnold el Dodecafònic): A rigid, geometric portrait. The lines of the engraving form a perfect grid over his face. Cold and mathematical.
