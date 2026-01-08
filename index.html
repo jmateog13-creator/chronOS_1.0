@@ -872,7 +872,7 @@
                 </div>
 
                 <!-- Theory Archive Widget -->
-                <div onclick="window.location.href='./biblioteca_historia_musica-main/index.html'" style="
+                <div onclick="window.open('./biblioteca_historia_musica-main/index.html', '_blank')" style="
                     width: 100%; margin-top: 15px; margin-bottom: 25px;
                     background: linear-gradient(135deg, #667eea, #764ba2);
                     border-radius: 20px; padding: 15px 20px;
@@ -964,8 +964,19 @@
             }
 
             setTimeout(() => {
-                if (name.startsWith("http")) window.location.href = name;
-                else window.location.href = `./Jocs/${name}/index.html`;
+                let url = name.startsWith("http") ? name : `./Jocs/${name}/index.html`;
+                window.open(url, '_blank');
+
+                // Reset animation so dashboard stays usable
+                setTimeout(() => {
+                    if (element) {
+                        const icon = element.querySelector('.icon');
+                        if (icon) {
+                            icon.style.transform = "";
+                            icon.style.opacity = "";
+                        }
+                    }
+                }, 1000);
             }, 300); // Wait for animation start
         }
 
