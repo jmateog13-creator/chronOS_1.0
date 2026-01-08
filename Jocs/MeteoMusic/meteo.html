@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeteoMusic Premium: El Temps Cultural</title>
+    <!-- Modern Font for TV aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #1e293b;
+            --accent-blue: #0ea5e9;
+            --accent-dark: #0284c7;
+            --accent-red: #ef4444;
+            --accent-yellow: #fbbf24;
+            --tv-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #000;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ------------------------------------------------------------- 
+           GAME CONTAINER - TV SCREEN ASPECT
+        ------------------------------------------------------------- */
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: black;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ------------------------------------------------------------- 
+           MAP AREA (BACKGROUND)
+        ------------------------------------------------------------- */
+        #map-area {
+            flex-grow: 1;
+            position: relative;
+            /* New Background Image */
+            background: url('img/fons.jpg') no-repeat center center;
+            background-size: cover;
+            transition: filter 0.5s ease;
+        }
+
+        /* Overlay for visual effects (storms, sun, etc) */
+        #map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            transition: all 1s;
+            mix-blend-mode: overlay;
+        }
+
+        /* ------------------------------------------------------------- 
+           SIDEBAR (TOOLS)
+        ------------------------------------------------------------- */
+        #sidebar {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            bottom: 240px;
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            gap: 5px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 0;
+            max-height: calc(100vh - 260px);
+        }
+
+        .weather-icon {
+            width: 55px;
+            height: 55px;
+            flex-shrink: 0;
+            cursor: grab;
+            transition: transform 0.2s, filter 0.2s;
+            user-select: none;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        .weather-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            /* Drag the div, not the img implicitly */
+        }
+
+        .weather-icon:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .weather-icon:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px white);
+        }
+
+        /* Tooltip style */
+        .weather-icon::after {
+            content: attr(data-title);
+            position: absolute;
+            right: 90px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .weather-icon:hover::after {
+            opacity: 1;
+        }
+
+        /* ------------------------------------------------------------- 
+           DROP ZONE
+        ------------------------------------------------------------- */
+        #drop-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        /* ------------------------------------------------------------- 
+           BOTTOM PANEL (NEWS DESK)
+        ------------------------------------------------------------- */
+        #forecast-panel {
+            height: 220px;
+            background: linear-gradient(180deg, #e2e8f0 0%, #ffffff 100%);
+            border-top: 5px solid var(--accent-blue);
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 30;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Presenter Container */
+        #presenter-container {
+            position: relative;
+            width: 550px;
+            /* Much larger */
+            height: 700px;
+            /* Tall to overlap map */
+            margin-top: -350px;
+            /* Significant overlap */
+            margin-right: -100px;
+            /* Allow extending out right */
+            flex-shrink: 0;
+            z-index: 40;
+            pointer-events: none;
+        }
+
+        #presenter-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: bottom center;
+            filter: drop-shadow(0 5px 25px rgba(0, 0, 0, 0.5));
+            transition: transform 0.3s;
+        }
+
+        /* Text Area */
+        .forecast-text-area {
+            flex-grow: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid var(--accent-blue);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            color: var(--accent-dark);
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-badge {
+            background: var(--accent-red);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            animation: blink 2s infinite;
+        }
+
+        #forecast-text {
+            font-size: 1.4rem;
+            font-weight: 500;
+            line-height: 1.5;
+            color: var(--text-color);
+        }
+
+        /* ------------------------------------------------------------- 
+           SCORE & UI ELEMENTS
+        ------------------------------------------------------------- */
+        #score-corner {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+            font-weight: 700;
+            font-size: 1.2rem;
+            z-index: 50;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #audio-control {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            /* In panel */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* ------------------------------------------------------------- 
+           OVERLAYS
+        ------------------------------------------------------------- */
+        .overlay-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            transition: opacity 0.5s;
+        }
+
+        .overlay-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .overlay-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .overlay-text {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        button.start-btn {
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px var(--accent-blue);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button.start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--accent-blue);
+        }
+
+        /* Feedback Modal Specifics */
+        .fb-content {
+            background: white;
+            color: black;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .overlay-screen.active .fb-content {
+            transform: scale(1);
+        }
+
+        .fb-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        /* ------------------------------------------------------------- 
+           ATMOSPHERE EFFECTS
+        ------------------------------------------------------------- */
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes chaos {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(5deg) scale(1.1);
+            }
+
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+        }
+
+        .fx-sun {
+            background-color: rgba(255, 200, 0, 0.2) !important;
+            box-shadow: inset 0 0 100px #fbbf24;
+        }
+
+        .fx-fog {
+            backdrop-filter: blur(8px) grayscale(0.8);
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .fx-storm {
+            background-color: rgba(20, 0, 50, 0.6) !important;
+            animation: lightning 5s infinite;
+        }
+
+        .fx-tornado {
+            animation: chaos 0.5s infinite;
+            filter: hue-rotate(90deg);
+        }
+
+        .fx-clouds {
+            background-color: rgba(100, 100, 100, 0.4) !important;
+        }
+
+        .fx-clear {
+            background-color: rgba(14, 165, 233, 0.1) !important;
+        }
+
+        @keyframes lightning {
+            95% {
+                opacity: 0.8;
+                filter: brightness(1);
+                background-color: rgba(20, 0, 50, 0.6);
+            }
+
+            96% {
+                opacity: 1;
+                filter: brightness(2);
+                background-color: white;
+            }
+
+            97% {
+                opacity: 0.8;
+                filter: brightness(1);
+                background-color: rgba(20, 0, 50, 0.6);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Clear Skies Network Theme.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="overlay-screen">
+        <div class="overlay-title">METEO MUSIC</div>
+        <div class="overlay-text">
+            Benvingut al Canal del Temps Històric.<br>
+            La teva missió és escoltar la previsió del presentador i assignar la icona del temps correcta per a cada
+            època musical.<br>
+            <br>
+            Objectiu: <b>10 Encerts</b> per guanyar.
+        </div>
+        <button class="start-btn" onclick="startGame()">COMENÇAR</button>
+    </div>
+
+    <!-- FEEDBACK SCREEN -->
+    <div id="feedback-screen" class="overlay-screen hidden">
+        <div class="fb-content">
+            <span class="fb-icon" id="fb-icon">🎉</span>
+            <h2 id="fb-title" style="color:black; margin-top:0;">RESULTAT</h2>
+            <p id="fb-msg" style="font-size: 1.2rem; color: #555;">Missatge</p>
+            <button class="start-btn" onclick="nextRound()"
+                style="font-size: 1rem; padding: 10px 30px;">CONTINUAR</button>
+        </div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="game-over-screen" class="overlay-screen hidden">
+        <div class="overlay-title">EMISSIÓ FINALITZADA</div>
+        <div class="overlay-text">
+            Enhorabona! Has completat la previsió meteorològica de la història de la música amb èxit.
+        </div>
+        <button class="start-btn" onclick="location.reload()">NOVA EMISSIÓ</button>
+    </div>
+
+    <!-- MAIN UI -->
+    <div id="game-container">
+
+        <div id="score-corner">
+            ENCERTS: <span id="score-val">0</span> / 10
+        </div>
+
+        <!-- Map Area -->
+        <div id="map-area">
+            <div id="map-overlay"></div>
+            <!-- Invisible Drop Zone over entire map -->
+            <div id="drop-zone" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+
+            <!-- Sidebar with 3D Icons -->
+            <div id="sidebar">
+                <!-- Using PNG icons now -->
+                <div class="weather-icon" draggable="true" ondragstart="drag(event)" data-type="fog"
+                    data-title="Boira (Misteri)">
+                    <img src="img/iconmitjana.png" alt="Boira">
+                </div>
+                <div class="weather-icon" draggable="true" ondragstart="drag(event)" data-type="breeze"
+                    data-title="Sol i Núvol (Equilibri)">
+                    <img src="img/iconreniaxement.png" alt="Brisa">
+                </div>
+                <div class="weather-icon" draggable="true" ondragstart="drag(event)" data-type="cloud"
+                    data-title="Núvol (Densitat)">
+                    <img src="img/iconbarroc.png" alt="Núvol">
+                </div>
+                <div class="weather-icon" draggable="true" ondragstart="drag(event)" data-type="sun"
+                    data-title="Sol (Claredat)">
+                    <img src="img/iconclassicisme.png" alt="Sol">
+                </div>
+                <div class="weather-icon" draggable="true" ondragstart="drag(event)" data-type="storm"
+                    data-title="Tempesta (Passió)">
+                    <img src="img/iconromanticisme.png" alt="Tempesta">
+                </div>
+                <div class="weather-icon" draggable="true" ondragstart="drag(event)" data-type="tornado"
+                    data-title="Tornado (Ruptura)">
+                    <img src="img/iconsegleXX.png" alt="Tornado">
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel -->
+        <div id="forecast-panel">
+            <div id="presenter-container">
+                <!-- Dynamic Presenter Image -->
+                <img id="presenter-img" src="" alt="Presentador">
+            </div>
+
+            <div class="forecast-text-area">
+                <h2 id="forecast-title"><span class="live-badge">DIRECTE</span> <span id="era-title">EDAT MITJANA</span>
+                </h2>
+                <div id="forecast-text">Connectant amb el satèl·lit cronològic...</div>
+            </div>
+
+            <div id="audio-control">
+                <span>VOLUM</span>
+                <input type="range" min="0" max="1" step="0.1" value="0.3" oninput="setVolume(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATABASE ---
+        const FORECAST_DB = [
+            {
+                era: "EDAT MITJANA",
+                forecast: "Ambient tancat, misteriós i espiritual. La música surt del silenci dels monestirs.",
+                icon: "fog",
+                effect: "fx-fog",
+                explanation: "Correcte. La BOIRA simbolitza el misteri i l'espiritualitat difusa del cant gregorià.",
+                avatar: "img/mitjana.png"
+            },
+            {
+                era: "RENAIXEMENT",
+                forecast: "Cel variable però agradable. L'home busca l'equilibri amb la natura.",
+                icon: "breeze",
+                effect: "fx-clear",
+                explanation: "Exacte. El SOL I NÚVOL representen l'equilibri perfecte i l'harmonia humana.",
+                avatar: "img/renaixement.png"
+            },
+            {
+                era: "BARROC",
+                forecast: "Front molt carregat de núvols. Ornamentació excessiva i ambient espès.",
+                icon: "cloud",
+                effect: "fx-clouds",
+                explanation: "Molt bé. Els NÚVOLS DENSOS representen l'excés d'ornamentació i la textura complexa.",
+                avatar: "img/barroc.png"
+            },
+            {
+                era: "CLASSICISME",
+                forecast: "Cel completament serè. La raó s'imposa i busquem claredat total.",
+                icon: "sun",
+                effect: "fx-sun",
+                explanation: "Correcte! El SOL radiant és la metàfora de la Il·lustració i la forma clara.",
+                avatar: "img/classicisme.png"
+            },
+            {
+                era: "ROMANTICISME",
+                forecast: "Alerta per tempesta elèctrica! Passions descontrolades i llamps de geni.",
+                icon: "storm",
+                effect: "fx-storm",
+                explanation: "Sí! La TEMPESTA és el símbol perfecte per al 'Sturm und Drang' i l'emoció romàntica.",
+                avatar: "img/romanticisme.png"
+            },
+            {
+                era: "SEGLE XX",
+                forecast: "Avís d'huracà! Canvi climàtic radical, les estructures es trenquen.",
+                icon: "tornado",
+                effect: "fx-tornado",
+                explanation: "Exacte. El TORNADO arrasa amb la tonalitat i les normes del passat.",
+                avatar: "img/sigloXX.png"
+            }
+        ];
+
+        // --- STATE ---
+        let currentRound = 0;
+        const GOAL_WINS = 10;
+        let score = 0;
+        let currentData = null;
+        let gameQueue = [];
+
+        // --- DOM ---
+        const domMapOverlay = document.getElementById('map-overlay');
+        const domEraTitle = document.getElementById('era-title');
+        const domText = document.getElementById('forecast-text');
+        const domScore = document.getElementById('score-val');
+        const domPresenter = document.getElementById('presenter-img');
+
+        // --- AUDIO ---
+        function setVolume(val) {
+            const aud = document.getElementById('bg-music');
+            if (aud) aud.volume = val;
+        }
+
+        // --- INIT ---
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            const aud = document.getElementById('bg-music');
+            aud.volume = 0.3;
+            aud.play().catch(e => console.log("Audio play blocked"));
+
+            score = 0;
+            updateScoreUI();
+
+            // Create a queue of rounds. Since we need 10 wins and have 6 Eras, we repeat/shuffle.
+            generateQueue();
+
+            loadRound();
+        }
+
+        function generateQueue() {
+            gameQueue = [];
+            // Add 2 sets of eras = 12 items.
+            let pool = [...FORECAST_DB, ...FORECAST_DB];
+            // Shuffle
+            pool.sort(() => Math.random() - 0.5);
+            // Take first 10? Or just play through.
+            gameQueue = pool;
+            currentRound = 0;
+        }
+
+        function loadRound() {
+            if (score >= GOAL_WINS) {
+                document.getElementById('game-over-screen').classList.remove('hidden');
+                document.getElementById('game-over-screen').classList.add('active');
+                return;
+            }
+
+            // Loop if queue runs out? Or just generate more.
+            if (currentRound >= gameQueue.length) {
+                let extra = [...FORECAST_DB];
+                extra.sort(() => Math.random() - 0.5);
+                gameQueue = gameQueue.concat(extra);
+            }
+
+            currentData = gameQueue[currentRound];
+
+            // Update UI
+            domEraTitle.textContent = currentData.era;
+            domText.textContent = currentData.forecast;
+            domPresenter.src = currentData.avatar;
+            domPresenter.onerror = function () { this.src = 'https://ui-avatars.com/api/?name=Error'; };
+
+            // Reset Effect
+            domMapOverlay.className = '';
+        }
+
+        // --- DRAG ---
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev) {
+            // Send the type data
+            const type = ev.target.closest('.weather-icon').dataset.type;
+            ev.dataTransfer.setData("type", type);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const type = ev.dataTransfer.getData("type");
+            checkAnswer(type);
+        }
+
+        function checkAnswer(userType) {
+            const correctType = currentData.icon;
+            const screen = document.getElementById('feedback-screen');
+            const icon = document.getElementById('fb-icon');
+            const title = document.getElementById('fb-title');
+            const msg = document.getElementById('fb-msg');
+
+            screen.classList.remove('hidden');
+            // Trigger animation
+            setTimeout(() => screen.classList.add('active'), 10);
+
+            if (userType === correctType) {
+                // Correct
+                score++;
+                updateScoreUI();
+                icon.textContent = "🌤️";
+                title.textContent = "PREVISIÓ CORRECTA";
+                title.style.color = "var(--accent-blue)";
+                msg.textContent = currentData.explanation;
+
+                // Show effect on map briefly
+                domMapOverlay.className = currentData.effect;
+            } else {
+                // Incorrect
+                icon.textContent = "⛈️";
+                title.textContent = "ERROR DE PREVISIÓ";
+                title.style.color = "var(--accent-red)";
+                msg.textContent = "Aquesta condició no lliga amb l'època. Torna-ho a intentar a la següent ronda.";
+                // Don't score up, but move to next round? Or retry?
+                // Logic says "nextRound" button is there. We move on.
+            }
+        }
+
+        function nextRound() {
+            const screen = document.getElementById('feedback-screen');
+            screen.classList.remove('active');
+            screen.classList.add('hidden');
+
+            currentRound++;
+            loadRound();
+        }
+
+        function updateScoreUI() {
+            domScore.textContent = score;
+        }
+
+    </script>
+</body>
+
+</html>

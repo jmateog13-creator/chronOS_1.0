@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Mod del Xat - Twitch Simulator</title>
+    <style>
+        :root {
+            --bg-color: #0e0e10;
+            --chat-bg: #18181b;
+            --text-color: #efeff1;
+            --primary: #9147ff;
+            --secondary: #adadb8;
+            --hover-bg: #26262c;
+            --danger: #ff4757;
+            --success: #2ed573;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Main Video Area */
+        .video-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            position: relative;
+        }
+
+        .stream-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            /* Info at bottom */
+            align-items: flex-start;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        .stream-overlay-gradient {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* STREAMER AVATAR OVERLAY */
+        .streamer-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 85%;
+            /* Adjust height to fit nicely */
+            width: auto;
+            max-width: 80%;
+            object-fit: contain;
+            object-position: bottom center;
+            z-index: 0;
+            /* Behind info, on top of bg */
+            pointer-events: none;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+        }
+
+        .stream-info {
+            padding: 30px;
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+
+        .stream-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .stream-tags {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            backdrop-filter: blur(4px);
+        }
+
+        .live-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #e91916;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .viewers {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+            color: #ff4757;
+            z-index: 10;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Chat Sidebar */
+        .chat-sidebar {
+            width: 340px;
+            background: var(--chat-bg);
+            border-left: 1px solid #2d2d31;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #2d2d31;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+            color: var(--secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow: hidden;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .message {
+            padding: 6px 10px;
+            font-size: 13px;
+            line-height: 1.4;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.1s;
+            animation: slideIn 0.2s ease-out;
+        }
+
+        .message.banned {
+            opacity: 0.5;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .message:hover {
+            background: var(--hover-bg);
+        }
+
+        .username {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .message-text {
+            color: var(--text-color);
+            word-break: break-word;
+        }
+
+        .ban-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .message:hover .ban-btn {
+            display: block;
+        }
+
+        .banned-msg {
+            color: #777;
+            font-style: italic;
+        }
+
+        /* HUD */
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 20;
+            align-items: flex-end;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .strike-icon {
+            opacity: 0.3;
+        }
+
+        .strike-icon.active {
+            opacity: 1;
+            color: var(--danger);
+        }
+
+        .ban-count {
+            color: var(--success);
+        }
+
+        /* Volume Slider */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type=range] {
+            width: 80px;
+            accent-color: var(--primary);
+        }
+
+        /* Menu Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(14, 14, 16, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .menu-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .menu-subtitle {
+            color: var(--secondary);
+            margin-bottom: 40px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .era-btn {
+            background: #26262c;
+            border: 2px solid #333;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 160px;
+        }
+
+        .era-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(145, 71, 255, 0.2);
+        }
+
+        .era-btn.completed {
+            border-color: var(--success);
+            background: rgba(46, 213, 115, 0.1);
+        }
+
+        .era-btn.completed::after {
+            content: "✓ COMPLETAT";
+            font-size: 0.7rem;
+            color: var(--success);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .era-icon {
+            font-size: 2rem;
+        }
+
+        .modal-result {
+            text-align: center;
+            max-width: 400px;
+            padding: 40px;
+            background: #18181b;
+            border: 2px solid #333;
+            border-radius: 12px;
+        }
+
+        .btn-restart {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .btn-restart:hover {
+            background: #772ce8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Audio -->
+    <audio id="bg-music" src="audio/Stream On Repeat.m4a" loop></audio>
+
+    <!-- Main Menu -->
+    <div id="main-menu" class="overlay">
+        <div class="menu-title">👾 MOD DEL XAT</div>
+        <div class="menu-subtitle">
+            Ets el moderador. Elimina els TROLLS (comentaris anacrònics).<br>
+            Baneja <strong>10 Trolls</strong> per guanyar.<br>
+            Si fas 5 errors, estàs fora.
+        </div>
+        <div class="era-grid" id="era-grid">
+            <!-- Buttons injected by JS -->
+        </div>
+    </div>
+
+    <!-- Feedback Overlay -->
+    <div id="feedback-modal" class="overlay hidden">
+        <div class="modal-result">
+            <h1 id="fb-title" style="margin:0 0 10px 0;">TITOL</h1>
+            <p id="fb-msg" style="color:#aaa;">Missatge</p>
+            <button class="btn-restart" onclick="game.showMenu()">Tornar al Menú</button>
+        </div>
+    </div>
+
+    <!-- Game UI -->
+    <div class="video-container">
+        <!-- Background Image Set via JS -->
+        <div class="stream-placeholder" id="stream-bg">
+            <!-- AVATAR INJECTED HERE -->
+            <div class="stream-overlay-gradient"></div>
+            <div class="stream-info">
+                <div class="stream-title" id="stream-title">Títol del Stream</div>
+                <div class="stream-tags" id="stream-tags">
+                    <!-- tags -->
+                </div>
+            </div>
+        </div>
+
+        <div class="live-badge">🔴 EN DIRECTE</div>
+        <div class="viewers">👤 <span id="viewers-count">14.5k</span></div>
+
+        <div class="game-ui">
+            <div class="panel volume-control">
+                <span>🔉</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.3">
+            </div>
+
+            <div class="panel">
+                <span>STRIKES:</span>
+                <span class="strike-icon" id="strike-1">⚠️</span>
+                <span class="strike-icon" id="strike-2">⚠️</span>
+                <span class="strike-icon" id="strike-3">⚠️</span>
+                <span class="strike-icon" id="strike-4">⚠️</span>
+                <span class="strike-icon" id="strike-5">⚠️</span>
+            </div>
+
+            <div class="panel">
+                <span>BANS:</span>
+                <span class="ban-count" id="ban-score">0</span>/10
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-sidebar">
+        <div class="chat-header">
+            <span>XAT DEL STREAM</span>
+            <span style="font-size: 0.8rem; opacity: 0.5;">v2.0</span>
+        </div>
+        <div class="chat-messages" id="chat-box">
+            <!-- Messages -->
+        </div>
+    </div>
+
+    <script>
+        const ERA_CONFIG = {
+            "edat_mitjana": {
+                title: "Cant Gregorià Chill Stream 🏰",
+                img: "img/edatmitjana.jpg",
+                avatar: "img/streammitjana.png",
+                tags: ["Relax", "Llatí", "Monjos", "NoBackseating"]
+            },
+            "renaixement": {
+                title: "Inauguració Galeria d'Art 🎨",
+                img: "img/renaixement.jpg",
+                avatar: "img/streamreniaxement.png",
+                tags: ["Humanisme", "Impremta", "Acapella", "Mecenes"]
+            },
+            "barroc": {
+                title: "Concert Reial a Versalles 🎻",
+                img: "img/barroc.jpg",
+                avatar: "img/streambarroc.png",
+                tags: ["Ornaments", "Perruques", "BaixContinu", "Luxe"]
+            },
+            "classicisme": {
+                title: "Estrena Simfonia nº41 🏛️",
+                img: "img/classicisme.jpg",
+                avatar: "img/streamclassic.png",
+                tags: ["Equilibri", "Viena", "Sonata", "Il·lustració"]
+            },
+            "romanticisme": {
+                title: "Recital de Piano Nocturn 🌹",
+                img: "img/romanticisme.jpg",
+                avatar: "img/streamromanticisme.png",
+                tags: ["Passió", "Virtuosisme", "Drama", "Tempesta"]
+            },
+            "segle_xx": {
+                title: "Radio Jazz & Rock 🎸",
+                img: "img/segleXX.jpg",
+                avatar: "img/streamsegleXX.png",
+                tags: ["Avantguarda", "Jazz", "Electrònica", "Rebel·lia"]
+            }
+        };
+
+        const CHAT_DATA = {
+            "edat_mitjana": [
+                { user: "Monjo_Loco", text: "Ora et Labora gent!! 🙏", troll: false },
+                { user: "GuidoArezzo", text: "Ut Re Mi Fa Sol La... temacle!", troll: false },
+                { user: "Troll_SXX", text: "Poseu una mica de Techno!!", troll: true },
+                { user: "Anonim1", text: "M'encanta el Cant Gregorià, quina pau.", troll: false },
+                { user: "GuitarHero", text: "On és la guitarra elèctrica??", troll: true },
+                { user: "Abadessa_Maria", text: "Silenci al xat, estem resant.", troll: false },
+                { user: "Beethoven_Lover", text: "Toqueu la 9a Simfonia!", troll: true },
+                { user: "Poble_Pla", text: "No entenc el llatí :(", troll: false },
+                { user: "TimeTraveler", text: "Volem pianos ja!", troll: true },
+                { user: "Gregori_Fan", text: "Uníson forever.", troll: false },
+                { user: "Hater_Maxim", text: "Això és massa avorrit, poseu Jazz.", troll: true },
+                { user: "Rei_Pere", text: "Bona música per al banquet.", troll: false },
+                { user: "DJ_Futur", text: "Drop the bass!", troll: true },
+                { user: "Copista_Lent", text: "M'he deixat tinta al pergamí.", troll: false },
+                { user: "Mozart_Fan", text: "Això necessita més notes.", troll: true }
+            ],
+            // Simplified lists for brevity in file write, assume full lists existed similarly or expand dynamically?
+            // Since we overwrite, I must ensure full lists are present or user loses data.
+            // I will use the lists I read earlier but condensed slightly for this tool call limit if need but I should preserve them.
+            // I'll replicate the logic with generic filler if I run out of space, but I have space.
+            "renaixement": [
+                { user: "Palestrina_God", text: "Quina polifonia més neta ✨", troll: false },
+                { user: "Humanista33", text: "L'home és el centre de tot!", troll: false },
+                { user: "Rocker_77", text: "On són els amplificadors?", troll: true },
+                { user: "Madrigal_Boy", text: "Fa la la la la 🎵", troll: false },
+                { user: "Trap_King", text: "Tireu-li una base de Trap", troll: true },
+                { user: "DaVinci_Code", text: "Això és art i equilibri.", troll: false },
+                { user: "Wagner_Fan", text: "Volem òperes de 4 hores!", troll: true },
+                { user: "Josquin_DesPrez", text: "El cànon és brutal.", troll: false },
+                { user: "Synth_Wave", text: "On està el teclat Yamaha?", troll: true },
+                { user: "Luter_Protest", text: "Cantem en alemany!", troll: false },
+                { user: "Beatles_Fan", text: "Yeah Yeah Yeah!", troll: true },
+                { user: "Heavy_Metal", text: "Més distorsió!", troll: true },
+                { user: "Auto_Tune", text: "Afina la veu amb el PC.", troll: true },
+                { user: "Monteverdi_Fan", text: "Això ja sona a Barroc...", troll: false }
+            ],
+            "barroc": [
+                { user: "Bach_Official", text: "Soli Deo Gloria!", troll: false },
+                { user: "Perruca_Style", text: "Massa ornaments... m'encanta!", troll: false },
+                { user: "Minimalist", text: "Massa notes, feu-ho senzill.", troll: true },
+                { user: "Cembalo_Player", text: "El baix continu no para.", troll: false },
+                { user: "Sax_Man", text: "Un solo de saxo ara quedaria bé.", troll: true },
+                { user: "Castrato_King", text: "Quins aguts!!", troll: false },
+                { user: "Mozart_Dad", text: "Això està antiquat, volem Classicisme.", troll: true },
+                { user: "Händel_UK", text: "Aleluyaaa!", troll: false },
+                { user: "Beatles_Fan", text: "Yeah Yeah Yeah!", troll: true },
+                { user: "Piano_Lover", text: "El clavecí sona a llauna, vull piano.", troll: true },
+                { user: "Opera_Seria", text: "Més drama si us plau.", troll: false },
+                { user: "Jazz_Cat", text: "Swing it!", troll: true },
+                { user: "Techno_Boy", text: "Pum pum pum!", troll: true },
+                { user: "Rap_God", text: "Yoyoyo!", troll: true }
+            ],
+            "classicisme": [
+                { user: "Wolfie_Amadeus", text: "Sóc el millor i ho sabeu.", troll: false },
+                { user: "Equilibri_Total", text: "Quina claredat, tot molt ordenat.", troll: false },
+                { user: "Chaos_Lord", text: "Trenqueu les normes! Caos!", troll: true },
+                { user: "Piano_Forte", text: "M'encanta com sona el piano nou.", troll: false },
+                { user: "Barroc_Back", text: "Torneu a posar el Baix Continu!", troll: true },
+                { user: "Opera_Buffa", text: "Jajaja quina gràcia el Fígaro.", troll: false },
+                { user: "Heavy_Metal", text: "Això necessita distorsió.", troll: true },
+                { user: "Symphony_40", text: "Tururú tururú!", troll: false },
+                { user: "Autotune_User", text: "El cantant desafina, posa autotune.", troll: true },
+                { user: "Sonata_Form", text: "Exposició, Desenvolupament, Reexposició.", troll: false },
+                { user: "Synth_Pop", text: "On són els teclats?", troll: true },
+                { user: "Gregorian_Monk", text: "Massa instruments!", troll: true },
+                { user: "Rock_Star", text: "Trenca la guitarra!", troll: true }
+            ],
+            "romanticisme": [
+                { user: "Emo_Boy", text: "Quina tristor... m'encanta 😭", troll: false },
+                { user: "Wagner_Army", text: "Aquesta òpera dura poquíssim!", troll: false },
+                { user: "Bach_Lover", text: "Això no té estructura, quin desordre.", troll: true },
+                { user: "Paganini_Devil", text: "Ha venut l'ànima al diable!", troll: false },
+                { user: "Techno_Viking", text: "Pum pum pum, volem techno.", troll: true },
+                { user: "Verdi_Viva", text: "V.E.R.D.I.!!!", troll: false },
+                { user: "Rational_Man", text: "Massa sentiment, penseu amb el cap.", troll: true },
+                { user: "Orquestra_Gran", text: "Més trompes! Més volum!", troll: false },
+                { user: "Medieval_Fan", text: "Torneu al llatí si us plau.", troll: true },
+                { user: "Electric_Guitar", text: "Fes un solo elèctric!", troll: true },
+                { user: "Virtuos_Total", text: "Més ràpid! Més notes!", troll: false },
+                { user: "Trap_Beat", text: "Skrrt skrrt!", troll: true },
+                { user: "Classic_Purist", text: "On és l'equilibri?", troll: true }
+            ],
+            "segle_xx": [
+                { user: "Stravinsky_Fan", text: "La Consagració és brutal!", troll: false },
+                { user: "Jazz_Cat", text: "Swing it baby!", troll: false },
+                { user: "Mozart_Ultra", text: "Això és soroll, on és la melodia?", troll: true },
+                { user: "Lute_Player", text: "Vull tocar el llaüt aquí.", troll: true },
+                { user: "Beatle_Maniac", text: "Help! I need somebody!", troll: false },
+                { user: "Barroc_Rules", text: "Poseu-vos perruques!", troll: true },
+                { user: "Electronic", text: "Visca els sintetitzadors.", troll: false },
+                { user: "Castrato_Fan", text: "Volem Castratos!", troll: true },
+                { user: "Rock_Roll", text: "Elvis és el rei!", troll: false },
+                { user: "Gregorian_Chant", text: "Això no és música sacra.", troll: true },
+                { user: "Harpsichord", text: "El clavecí ha tornat?", troll: true },
+                { user: "Medieval_Guy", text: "On són els monjos?", troll: true }
+            ]
+        };
+
+        const COLORS = ["#ff4757", "#2ed573", "#1e90ff", "#ffa502", "#bf94ff", "#00d2d3"];
+
+        class Game {
+            constructor() {
+                this.strikes = 0;
+                this.bans = 0;
+                this.isPlaying = false;
+                this.chatBox = document.getElementById('chat-box');
+                this.messageQueue = [];
+                this.speed = 2000;
+                this.completedEras = new Set();
+                this.music = document.getElementById('bg-music');
+
+                this.initVolume();
+                this.renderMenu();
+            }
+
+            initVolume() {
+                const slider = document.getElementById('volume-slider');
+                this.music.volume = slider.value;
+                slider.addEventListener('input', (e) => {
+                    this.music.volume = e.target.value;
+                });
+            }
+
+            renderMenu() {
+                const grid = document.getElementById('era-grid');
+                grid.innerHTML = '';
+
+                Object.keys(ERA_CONFIG).forEach(key => {
+                    const data = ERA_CONFIG[key];
+                    const isCompleted = this.completedEras.has(key);
+
+                    const btn = document.createElement('div');
+                    btn.className = `era-btn ${isCompleted ? 'completed' : ''}`;
+                    btn.onclick = () => this.start(key);
+
+                    const icon = document.createElement('div');
+                    icon.className = 'era-icon';
+                    icon.textContent = data.title.split(' ').pop(); // Emoji trick
+
+                    const text = document.createElement('div');
+                    text.textContent = key.replace('_', ' ').toUpperCase();
+
+                    btn.appendChild(icon);
+                    btn.appendChild(text);
+                    grid.appendChild(btn);
+                });
+            }
+
+            start(era) {
+                this.currentEra = era;
+                this.strikes = 0;
+                this.bans = 0;
+                this.speed = 2000;
+                this.isPlaying = true;
+                this.messageQueue = [...CHAT_DATA[era]].sort(() => Math.random() - 0.5);
+
+                const config = ERA_CONFIG[era];
+
+                // UI Setup
+                document.getElementById('stream-title').textContent = config.title;
+                document.getElementById('stream-bg').style.backgroundImage = `url('${config.img}')`;
+
+                // Set Avatar
+                const avatarEl = document.getElementById('stream-avatar-img');
+                if (avatarEl) {
+                    avatarEl.src = config.avatar;
+                } else {
+                    // Create if not exists
+                    const newAvatar = document.createElement('img');
+                    newAvatar.id = 'stream-avatar-img';
+                    newAvatar.src = config.avatar;
+                    newAvatar.className = 'streamer-overlay';
+                    const container = document.getElementById('stream-bg');
+                    // Insert before the info container
+                    container.insertBefore(newAvatar, container.querySelector('.stream-overlay-gradient'));
+                }
+
+                const tagsContainer = document.getElementById('stream-tags');
+                tagsContainer.innerHTML = '';
+                config.tags.forEach(t => {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.textContent = '#' + t;
+                    tagsContainer.appendChild(tag);
+                });
+
+                // Reset Counters
+                document.getElementById('ban-score').textContent = '0';
+                for (let i = 1; i <= 5; i++) document.getElementById(`strike-${i}`).classList.remove('active');
+
+                document.getElementById('main-menu').classList.add('hidden');
+                document.getElementById('chat-box').innerHTML = '';
+
+                // Audio
+                this.music.play().catch(e => console.log("Audio play blocked", e));
+
+                this.gameLoop();
+            }
+
+            gameLoop() {
+                if (!this.isPlaying) return;
+
+                this.addMessage();
+
+                // Difficulty Curve
+                if (this.speed > 800) this.speed -= 20;
+
+                this.interval = setTimeout(() => this.gameLoop(), this.speed);
+            }
+
+            addMessage() {
+                if (this.messageQueue.length === 0) {
+                    this.messageQueue = [...CHAT_DATA[this.currentEra]].sort(() => Math.random() - 0.5);
+                }
+
+                const msgData = this.messageQueue.pop();
+                const msgEl = document.createElement('div');
+                msgEl.className = 'message';
+                msgEl.dataset.troll = msgData.troll;
+
+                const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+                msgEl.innerHTML = `
+                    <span class="username" style="color:${color}">${msgData.user}:</span>
+                    <span class="message-text">${msgData.text}</span>
+                    <button class="ban-btn" onclick="game.banMessage(this, event)">🚫 BAN</button>
+                `;
+
+                this.chatBox.appendChild(msgEl);
+                this.chatBox.scrollTop = this.chatBox.scrollHeight;
+
+                if (this.chatBox.children.length > 12) {
+                    const removed = this.chatBox.children[0];
+                    if (removed.dataset.troll === 'true' && !removed.classList.contains('banned')) {
+                        // Missed troll! But only strikes on bad bans? 
+                        // Prompt didn't specify missed troll penalty, but usually yes.
+                        // "haz lo de siempre, que tengas que hacer 10 bans"
+                        // imply focus on banning action. Let's not punish missing for now to keep it easier, or just add strike?
+                        // Let's add strike to force attention.
+                        this.addStrike();
+                    }
+                    removed.remove();
+                }
+            }
+
+            banMessage(btn, e) {
+                e.stopPropagation();
+                if (!this.isPlaying) return;
+
+                const msgEl = btn.parentElement;
+
+                if (msgEl.classList.contains('banned')) return; // Already banned
+
+                const isTroll = msgEl.dataset.troll === 'true';
+
+                if (isTroll) {
+                    msgEl.classList.add('banned');
+                    msgEl.innerHTML = `<span class="banned-msg">🚫 Usuari bloquejat (Troll eliminat)</span>`;
+                    this.bans++;
+                    document.getElementById('ban-score').textContent = this.bans;
+
+                    if (this.bans >= 10) {
+                        this.winLevel();
+                    }
+                } else {
+                    this.addStrike();
+                    msgEl.style.background = "#330000";
+                    setTimeout(() => msgEl.style.background = "transparent", 500);
+                }
+            }
+
+            addStrike() {
+                this.strikes++;
+                const icon = document.getElementById(`strike-${this.strikes}`);
+                if (icon) icon.classList.add('active');
+
+                if (this.strikes >= 5) {
+                    this.finishGame(false);
+                }
+            }
+
+            winLevel() {
+                this.completedEras.add(this.currentEra);
+                this.finishGame(true);
+            }
+
+            finishGame(win) {
+                this.isPlaying = false;
+                clearTimeout(this.interval);
+                this.music.pause();
+                this.music.currentTime = 0;
+
+                const modal = document.getElementById('feedback-modal');
+                const title = document.getElementById('fb-title');
+                const msg = document.getElementById('fb-msg');
+
+                modal.classList.remove('hidden');
+
+                if (win) {
+                    title.textContent = "NIVELL COMPLETAT! 🎉";
+                    title.style.color = "var(--success)";
+                    msg.textContent = "Has netejat el xat de trolls. La història està fora de perill.";
+                } else {
+                    title.textContent = "ACOMIADAT! 🚫";
+                    title.style.color = "var(--danger)";
+                    msg.textContent = "Has deixat passar massa trolls o has banejat innocents.";
+                }
+            }
+
+            showMenu() {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                document.getElementById('main-menu').classList.remove('hidden');
+                this.renderMenu();
+            }
+        }
+
+        const game = new Game();
+    </script>
+</body>
+
+</html>

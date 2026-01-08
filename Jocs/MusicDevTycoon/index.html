@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Music Dev Tycoon: System Restore</title>
+    <style>
+        :root {
+            /* Mario Maker Palette */
+            --mm-yellow: #FBD000;
+            --mm-red: #E52521;
+            --mm-bg: #F0F0F0;
+            --mm-dark: #333;
+            --mm-ui-bg: #FFFCE0;
+            --mm-border: 4px solid #333;
+            --mm-shadow: 4px 4px 0px #333;
+            --font-main: 'Verdana', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--mm-yellow);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.2) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 2px, transparent 2px);
+            background-size: 40px 40px;
+            font-family: var(--font-main);
+            color: var(--mm-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- Audio Controls --- */
+        #audio-controls {
+            position: absolute;
+            top: 80px;
+            /* Below header */
+            right: 20px;
+            z-index: 90;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        input[type=range] {
+            width: 80px;
+            accent-color: var(--mm-red);
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--mm-yellow);
+            padding: 10px 20px;
+            border-bottom: var(--mm-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .level-info {
+            background: white;
+            padding: 5px 20px;
+            border-radius: 30px;
+            border: 2px solid #333;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 3px 3px 0 #333;
+        }
+
+        .integrity-meter {
+            display: flex;
+            gap: 5px;
+        }
+
+        .life-icon {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .life-icon.lost {
+            filter: grayscale(1) opacity(0.5);
+        }
+
+        /* --- Main Game Area --- */
+        #game-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 40px;
+            position: relative;
+        }
+
+        /* Steps Indicator */
+        .steps-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #ccc;
+            box-shadow: 2px 2px 0 #333;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--mm-yellow);
+            color: #333;
+            transform: scale(1.2);
+            border-color: black;
+        }
+
+        .step-dot.done {
+            background: #00FF41;
+            color: #005500;
+            border-color: #005500;
+        }
+
+        /* Instruction Banner */
+        .instruction-banner {
+            background: var(--mm-dark);
+            color: var(--mm-yellow);
+            padding: 10px 40px;
+            border-radius: 10px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border: 4px solid white;
+            box-shadow: var(--mm-shadow);
+            text-transform: uppercase;
+            animation: popIn 0.5s;
+        }
+
+        /* --- Asset Grid --- */
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            width: 80%;
+            max-width: 900px;
+        }
+
+        .card {
+            background: white;
+            border: 4px solid #333;
+            border-radius: 15px;
+            aspect-ratio: 0.8;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) rotate(-2deg);
+            border-color: var(--mm-red);
+            z-index: 10;
+        }
+
+        /* TOOLTIP */
+        .card .tooltip {
+            visibility: hidden;
+            width: 220px;
+            background-color: rgba(0, 0, 0, 0.95);
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+            bottom: 105%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            pointer-events: none;
+            border: 2px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .card:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .card .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: black transparent transparent transparent;
+        }
+
+        .card:active {
+            transform: scale(0.95);
+        }
+
+        .card img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            image-rendering: auto;
+            /* Allow smoother scaling if needed, or pixelated */
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.3));
+        }
+
+        .card-name {
+            font-size: 1rem;
+            font-weight: bold;
+            line-height: 1.2;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .card-type {
+            font-size: 0.7rem;
+            color: white;
+            background: #333;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        /* States */
+        .card.correct {
+            background: #ccffcc;
+            border-color: #00cc00;
+            pointer-events: none;
+            animation: bounce 0.5s;
+        }
+
+        .card.wrong {
+            background: #ffcccc;
+            border-color: red;
+            animation: shake 0.4s;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* --- Footer --- */
+        footer {
+            margin-top: auto;
+            height: 60px;
+            background: #333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.9rem;
+        }
+
+        .footer-btn {
+            background: var(--mm-yellow);
+            color: #333;
+            border: 2px solid white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-btn img {
+            height: 20px;
+        }
+
+        .footer-btn:hover {
+            background: white;
+        }
+
+        /* --- Overlays --- */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            backdrop-filter: blur(5px);
+        }
+
+        .msg-box {
+            background: white;
+            border: 8px solid var(--mm-yellow);
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            max-width: 700px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .msg-box h1 {
+            margin: 0 0 20px 0;
+            font-size: 3rem;
+            color: var(--mm-red);
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0 #333;
+        }
+
+        .instruction-list {
+            text-align: left;
+            margin-bottom: 30px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed #ccc;
+        }
+
+        .instruction-list div {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .btn-big {
+            background: var(--mm-yellow);
+            color: #333;
+            border: 4px solid #333;
+            padding: 15px 50px;
+            font-size: 1.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 6px 6px 0 #000;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-big img {
+            height: 40px;
+        }
+
+        .btn-big:hover {
+            transform: scale(1.05) translateY(-5px);
+            background: white;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px) rotate(-10deg);
+            }
+
+            50% {
+                transform: translateX(10px) rotate(10deg);
+            }
+
+            75% {
+                transform: translateX(-10px) rotate(-10deg);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Pixel Hardhat Hustle.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="audio-controls">
+        <span>🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="overlay">
+        <div class="msg-box">
+            <h1>Music Dev Tycoon</h1>
+            <p>Benvingut al Sistema de Restauració Musical v1.0.</p>
+
+            <div class="instruction-list">
+                <div>👾 <b>Objectiu:</b> Repara les 6 èpoques musicals corruptes.</div>
+                <div>🛠 <b>Com:</b> Selecciona l'element correcte pas a pas.</div>
+                <div>❤ <b>Compte:</b> Si t'equivoques, perds integritat (vides).</div>
+                <div>ℹ <b>Ajuda:</b> Passa el ratolí per sobre les targetes per veure pistes!</div>
+            </div>
+
+            <button class="btn-big" onclick="startGame()">
+                <img src="img/play.png" alt="Play"> START SYSTEM
+            </button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="level-info">
+            <span>💾 SYSTEM RESTORE</span>
+        </div>
+
+        <div class="level-info" id="version-display"
+            style="background:#E0F7FA; min-width: 250px; justify-content: center;">
+            VERSION...
+        </div>
+
+        <div class="level-info">
+            <span>INTEGRITY:</span>
+            <div class="integrity-meter" id="lives-container">
+            </div>
+        </div>
+    </header>
+
+    <!-- GAMEPLAY AREA -->
+    <div id="game-area">
+        <div class="steps-container">
+            <div class="step-dot active" id="dot-0">1</div>
+            <div class="step-dot" id="dot-1">2</div>
+            <div class="step-dot" id="dot-2">3</div>
+            <div class="step-dot" id="dot-3">4</div>
+            <div class="step-dot" id="dot-4">5</div>
+        </div>
+
+        <div class="instruction-banner" id="current-instruction">
+            LOADING...
+        </div>
+
+        <div id="grid">
+            <!-- Cards go here -->
+        </div>
+    </div>
+
+    <!-- RESULT OVERLAY -->
+    <div id="msg-overlay" class="overlay" style="display: none;">
+        <div class="msg-box">
+            <h1 id="msg-title">VERSION FIXED!</h1>
+            <p id="msg-text">System compiled successfully.</p>
+            <button class="btn-big" id="msg-btn" onclick="nextLevel()">NEXT VERSION</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-btn" onclick="location.reload()">
+            <img src="img/martell.png" alt="Reset"> REBOOT
+        </div>
+        Music Dev Tycoon v1.0 - System Restore Module
+    </footer>
+
+    <script>
+        // --- DATASET MAPPED TO FILES ---
+        const ASSET_TYPES = ["Biome", "Minion", "Boss", "Skill", "Ultimate"];
+
+        const GAME_DATA = [
+            {
+                id: "v1.0",
+                era: "EDAT MITJANA (Alpha)",
+                assets: [
+                    { name: "Monòlit de Pedra", type: "Biome", img: "biomamitjana.png", desc: "Un bloc de pedra antic amb runes i molsa. Sembla molt primitiu." },
+                    { name: "Dron Monòton", type: "Minion", img: "miniommitjana.png", desc: "Un giny de fusta que canta una sola nota constant." },
+                    { name: "Papa Firewall", type: "Boss", img: "bossmitjana.png", desc: "La màxima autoritat eclesiàstica amb un escut digital." },
+                    { name: "Script Neumàtic", type: "Skill", img: "skillmitjana.png", desc: "Un pergamí vell amb notació musical quadrada." },
+                    { name: "Reverb Gregorià", type: "Ultimate", img: "ultimatemitjana.png", desc: "L'eco sagrat d'una catedral de pedra." }
+                ]
+            },
+            {
+                id: "v2.0",
+                era: "RENAIXEMENT (Beta)",
+                assets: [
+                    { name: "Reixeta de Perspectiva", type: "Biome", img: "biomarenaixement.png", desc: "Un terra amb línies perfectes que simulen profunditat 3D." },
+                    { name: "El Clon", type: "Minion", img: "miniomrenaixement.png", desc: "Figures idèntiques que es mouen en perfecta imitació." },
+                    { name: "Premsa Gutenberg MK-II", type: "Boss", img: "bossrenaixement.png", desc: "Una màquina capaç d'imprimir milers de còpies per minut." },
+                    { name: "Sincronització Harmònica", type: "Skill", img: "skillrenaixement.png", desc: "Un diapasó daurat vibrant en perfecta harmonia." },
+                    { name: "Buff Humanista", type: "Ultimate", img: "ultimaterenaixement.png", desc: "L'home com a centre de totes les coses i mesures." }
+                ]
+            },
+            {
+                id: "v3.0",
+                era: "BARROC (Gold)",
+                assets: [
+                    { name: "Servidor Versalles", type: "Biome", img: "biomabarroc.png", desc: "Un servidor ple d'ornaments daurats i detalls recarregats." },
+                    { name: "Spammer de Trinats", type: "Minion", img: "miniombarroc.png", desc: "Una nota musical que no para de moure's ràpidament." },
+                    { name: "Mecha-Clavecí", type: "Boss", img: "bossbarroc.png", desc: "Un robot de fusta amb tecles que semblen dents." },
+                    { name: "Shader de Contrast", type: "Skill", img: "skillbarroc.png", desc: "Una màscara que juga amb la llum i la foscor extrema." },
+                    { name: "Drama Operístic", type: "Ultimate", img: "ultibarroc.png", desc: "Una emoció exagerada que et farà plorar o riure." }
+                ]
+            },
+            {
+                id: "v4.0",
+                era: "CLASSICISME (Stable)",
+                assets: [
+                    { name: "Geometria Neta", type: "Biome", img: "biomaclassic.png", desc: "Formes pures, blanques i equilibrades. Sense excessos." },
+                    { name: "Bot Metrònom", type: "Minion", img: "miniomclassic.png", desc: "Un robot que marca el temps amb precisió matemàtica." },
+                    { name: "Arquitecte Sonata", type: "Boss", img: "bossclassic.png", desc: "Té un plànol perfecte: Exposició, Desenvolupament i Reexposició." },
+                    { name: "Clarificador Melòdic", type: "Skill", img: "skillclassic.png", desc: "Una lupa que fa que la melodia sigui neta i clara." },
+                    { name: "Tutti Orquestral", type: "Ultimate", img: "ulticlassic.png", desc: "Tots els instruments tocant alhora amb potència controlada." }
+                ]
+            },
+            {
+                id: "v5.0",
+                era: "ROMANTICISME (Emotional)",
+                assets: [
+                    { name: "Glitch Tempestuós", type: "Biome", img: "biomaromantic.jpg", desc: "Un paisatge fosc, amb trons, pluja i sentiments intensos." },
+                    { name: "Hacker Virtuós", type: "Minion", img: "minimromantic.png", desc: "Toca el teclat a una velocitat impossible, despentinat." },
+                    { name: "Tità del Destí", type: "Boss", img: "bossromantic.png", desc: "Una ombra gegant que representa un destí inevitable." },
+                    { name: "Slider Rubato", type: "Skill", img: "skillromantic.png", desc: "Un control per accelerar i frenar el temps segons l'emoció." },
+                    { name: "Overdrive de Passió", type: "Ultimate", img: "ultiromantic.png", desc: "Un cor en flames que crema amb intensitat." }
+                ]
+            },
+            {
+                id: "v6.0",
+                era: "SEGLE XX (Experimental)",
+                assets: [
+                    { name: "Buit Abstracte", type: "Biome", img: "biomasegleXX.jpg", desc: "Un espai blanc, buit, o potser ple de soroll estàtic." },
+                    { name: "Glitch de Soroll", type: "Minion", img: "miniomsegleXX.png", desc: "Una criatura feta de caos i distorsió visual." },
+                    { name: "Mainframe Sintetitzador", type: "Boss", img: "bosssegleXX.png", desc: "Una màquina modular plena de cables i llums estranys." },
+                    { name: "Matriu Dodecafònica", type: "Skill", img: "skillsegleXX.png", desc: "Una graella numèrica de 12x12 sense cap ordre aparent." },
+                    { name: "Trencar 4a Paret", type: "Ultimate", img: "ultisegleXX.png", desc: "Algú trencant la pantalla i sortint del joc." }
+                ]
+            }
+        ];
+
+        // --- AUDIO ---
+        const audio = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        // Default Volume 50%
+        audio.volume = 0.5;
+
+        volSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        // --- STATE ---
+        let currentLevelIdx = 0;
+        let currentStepIdx = 0;
+        let currentLives = 3;
+
+        // --- ELEMENTS ---
+        const grid = document.getElementById('grid');
+        const versionDisplay = document.getElementById('version-display');
+        const livesContainer = document.getElementById('lives-container');
+        const startScreen = document.getElementById('start-screen');
+        const msgOverlay = document.getElementById('msg-overlay');
+        const msgTitle = document.getElementById('msg-title');
+        const msgText = document.getElementById('msg-text');
+        const msgBtn = document.getElementById('msg-btn');
+        const instructionBanner = document.getElementById('current-instruction');
+
+        function startGame() {
+            startScreen.style.display = 'none';
+
+            // Try play audio (browser policy might block if not triggered by event, but click is an event)
+            audio.play().catch(e => console.log("Audio requires interaction", e));
+
+            currentLevelIdx = 0;
+            currentLives = 3;
+            initLevel(0);
+        }
+
+        function initLevel(idx) {
+            if (idx >= GAME_DATA.length) {
+                gameWin();
+                return;
+            }
+
+            currentLevelIdx = idx;
+            currentStepIdx = 0;
+            updateUI();
+            loadStep(0);
+        }
+
+        function loadStep(stepIdx) {
+            currentStepIdx = stepIdx;
+            const targetType = ASSET_TYPES[stepIdx];
+
+            // Update Dots
+            for (let i = 0; i < 5; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                dot.className = 'step-dot';
+                if (i < stepIdx) dot.classList.add('done');
+                if (i === stepIdx) dot.classList.add('active');
+            }
+
+            instructionBanner.textContent = `SELECT THE: ${targetType}`;
+
+            const correctAsset = GAME_DATA[currentLevelIdx].assets.find(a => a.type === targetType);
+            correctAsset.isCorrect = true;
+
+            let potentialDistractors = [];
+            GAME_DATA.forEach((level, i) => {
+                if (i !== currentLevelIdx) {
+                    const item = level.assets.find(a => a.type === targetType);
+                    if (item) potentialDistractors.push(item);
+                }
+            });
+
+            potentialDistractors.sort(() => 0.5 - Math.random());
+            const distractors = potentialDistractors.slice(0, 3);
+            distractors.forEach(a => a.isCorrect = false);
+
+            const pool = [correctAsset, ...distractors].sort(() => 0.5 - Math.random());
+
+            grid.innerHTML = '';
+            pool.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                card.innerHTML = `
+                <img src="img/${item.img}" onerror="this.src='img/play.png'">
+                <div class="card-name">${item.name}</div>
+                <div class="card-type">${item.type}</div>
+                <div class="tooltip">${item.desc || 'No data'}</div>
+            `;
+
+                card.onclick = () => handleCardClick(card, item);
+                grid.appendChild(card);
+            });
+        }
+
+        function handleCardClick(cardElement, item) {
+            if (cardElement.classList.contains('correct') || cardElement.classList.contains('wrong')) return;
+
+            if (item.isCorrect) {
+                cardElement.classList.add('correct');
+                setTimeout(() => {
+                    if (currentStepIdx < 4) {
+                        loadStep(currentStepIdx + 1);
+                    } else {
+                        levelComplete();
+                    }
+                }, 600);
+            } else {
+                cardElement.classList.add('wrong');
+                currentLives--;
+                updateUI();
+
+                const area = document.getElementById('game-area');
+                area.style.animation = 'shake 0.3s';
+                setTimeout(() => area.style.animation = '', 300);
+
+                if (currentLives <= 0) {
+                    gameOver();
+                }
+            }
+        }
+
+        function updateUI() {
+            const data = GAME_DATA[currentLevelIdx];
+            versionDisplay.textContent = `${data.id}: ${data.era.split(':')[1] || data.era}`;
+
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const img = document.createElement('img');
+                img.src = "img/vida.png";
+                img.className = 'life-icon ' + (i < currentLives ? '' : 'lost');
+                livesContainer.appendChild(img);
+            }
+        }
+
+        function levelComplete() {
+            msgOverlay.style.display = 'flex';
+            msgTitle.textContent = "VERSION FIXED!";
+            msgTitle.style.color = 'var(--mm-dark)';
+            msgText.innerHTML = `Version ${GAME_DATA[currentLevelIdx].id} restored.<br>Bug fixes applied.`;
+            msgBtn.innerHTML = "NEXT VERSION >>";
+            msgBtn.onclick = nextLevel;
+        }
+
+        function nextLevel() {
+            msgOverlay.style.display = 'none';
+            initLevel(currentLevelIdx + 1);
+        }
+
+        function gameOver() {
+            msgOverlay.style.display = 'flex';
+            msgTitle.textContent = "SYSTEM CRASH";
+            msgTitle.style.color = 'red';
+            msgText.textContent = "Integrity compromised. Restore failed.";
+            msgBtn.innerHTML = "<img src='img/martell.png'> REBOOT SYSTEM";
+            msgBtn.style.background = 'white';
+            msgBtn.onclick = () => location.reload();
+        }
+
+        function gameWin() {
+            msgOverlay.style.display = 'flex';
+            msgTitle.textContent = "ALL SYSTEMS ONLINE";
+            msgTitle.style.color = "#00AA00";
+            msgText.innerHTML = "History restored successfully.<br>Music is safe.";
+            msgBtn.textContent = "EXIT TO DESKTOP";
+            msgBtn.onclick = () => alert("Game Over. Thanks for playing!");
+        }
+
+    </script>
+</body>
+
+</html>

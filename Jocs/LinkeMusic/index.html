@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedMusic - El Headhunter Històric</title>
+    <style>
+        :root {
+            --primary: #0077b5;
+            --bg-color: #f3f2ef;
+            --card-bg: #ffffff;
+            --text-main: #000000;
+            --text-sub: #666666;
+            --border: #e0e0e0;
+            --success: #057642;
+            --error: #cc1016;
+            --font-stack: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: var(--font-stack);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--card-bg);
+            height: 70px;
+            /* Taller header */
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            border-bottom: 2px solid var(--border);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            justify-content: space-between;
+        }
+
+        .logo {
+            color: var(--primary);
+            font-size: 32px;
+            /* Bigger logo */
+            font-weight: bold;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            background: var(--primary);
+            color: white;
+            padding: 0 5px;
+            border-radius: 4px;
+        }
+
+        .search-bar {
+            background-color: #eef3f8;
+            border-radius: 4px;
+            padding: 12px 20px;
+            width: 350px;
+            color: var(--text-sub);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Volume Control */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        /* Main Layout */
+        .main-container {
+            margin-top: 90px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .game-area {
+            width: 100%;
+            max-width: 700px;
+            /* Wider container */
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Offer Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .offer-header {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .company-logo {
+            width: 80px;
+            /* Bigger logo */
+            height: 80px;
+            background: #eee;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+        }
+
+        .company-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .offer-details h2 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            /* Bigger text */
+            color: var(--text-main);
+        }
+
+        .offer-details p {
+            margin: 0;
+            font-size: 18px;
+            color: var(--text-sub);
+        }
+
+        .offer-desc {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .req-badge {
+            background: #eef3f8;
+            color: var(--text-sub);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        /* Candidates Section */
+        .candidates-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin: 15px 0;
+        }
+
+        .candidate-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            /* More padding */
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 15px;
+            height: 110px;
+            /* Fixed height for consistency */
+        }
+
+        .candidate-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .candidate-img {
+            width: 80px;
+            /* Bigger avatars */
+            height: 80px;
+            border-radius: 50%;
+            background: #ddd;
+            border: 3px solid #eee;
+            flex-shrink: 0;
+        }
+
+        .candidate-info {
+            flex: 1;
+        }
+
+        .candidate-name {
+            font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .candidate-headline {
+            font-size: 16px;
+            color: var(--text-sub);
+        }
+
+        .hire-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 10px 24px;
+            border-radius: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .hire-btn:hover {
+            background: #eef3f8;
+            box-shadow: inset 0 0 0 2px var(--primary);
+        }
+
+        /* Feedback States */
+        .candidate-card.correct {
+            border-color: var(--success);
+            background-color: #e6f4ea;
+        }
+
+        .candidate-card.correct .hire-btn {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+            content: "CONTRACTAT";
+        }
+
+        .candidate-card.incorrect {
+            border-color: var(--error);
+            background-color: #fce8e6;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .candidate-card.incorrect .hire-btn {
+            background: var(--error);
+            color: white;
+            border-color: var(--error);
+            content: "REBUTJAT";
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 25px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Start Screen & Modal */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            /* Darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+        }
+
+        .start-logo {
+            font-size: 60px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: block;
+            font-weight: bold;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            font-size: 32px;
+            color: var(--text-main);
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            font-size: 18px;
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .level-badge {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0;
+            display: block;
+        }
+
+        .modal-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 20px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #006097;
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo"><span>in</span> LinkedMusic</div>
+        <div class="search-bar">
+            <span>🔍</span> Buscar Talent Musical Històric...
+        </div>
+        <div class="volume-control">
+            <span>🔊</span>
+            <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.1" value="0.3">
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="game-area" id="game-area">
+            <div class="progress-container">
+                <div class="progress-text">
+                    <span>Progrés de Contractació</span>
+                    <span id="progress-count">1/10</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Offer Card -->
+            <div class="card" id="offer-card">
+                <div class="offer-header">
+                    <div class="company-logo" id="company-logo"></div>
+                    <div class="offer-details">
+                        <h2 id="offer-title">Títol de l'Oferta</h2>
+                        <p id="company-name">Nom de l'Empresa</p>
+                    </div>
+                </div>
+                <div class="offer-desc">
+                    <p id="offer-req">Descripció dels requisits...</p>
+                </div>
+                <span class="req-badge" id="req-badge">Requisit Clau</span>
+            </div>
+
+            <div class="candidates-title">Candidats Suggerits per a tu</div>
+
+            <!-- Candidates -->
+            <div id="candidates-list">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="overlay">
+        <div class="modal">
+            <span class="start-logo">in</span>
+            <h2>Benvingut a LinkedMusic</h2>
+            <p>Ets el Headhunter més prestigiós de la història de la música.<br>
+                La teva missió és trobar el candidat ideal per a cada oferta de treball.</p>
+            <p>Llegeix els requisits i selecciona el compositor que millor encaixa amb el perfil.<br>
+                Aconsegueix 10 encerts per desbloquejar el badge d'Expert!</p>
+            <button class="modal-btn" onclick="game.startGame()">Començar a Contractar</button>
+        </div>
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div id="modal-overlay" class="overlay hidden">
+        <div class="modal">
+            <h2>Resultats de Contractació</h2>
+            <p>Has completat el procés de selecció.</p>
+            <span class="level-badge" id="final-level">Nivell: Becari</span>
+            <p id="final-score" style="font-size: 24px; font-weight: bold;">Puntuació: 0/10</p>
+            <button class="modal-btn" onclick="location.reload()">Nova Sessió</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Soft Edges, Clear Minds.m4a" type="audio/mpeg">
+    </audio>
+
+    <script src="../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const OFFERS_DB = [
+            // EDAT MITJANA
+            {
+                era: "Edat Mitjana",
+                title: "Monjo Cantor",
+                company: "Monestir de Silos",
+                logo: "img/monestir.jpg",
+                req: "Busquem algú amb humilitat, capaç de cantar en llatí i sense instruments.",
+                badge: "Cant Gregorià",
+                correct: { name: "Monjo Anònim", headline: "Expert en Ora et Labora", era: "Edat Mitjana", img: "monjo.jpg" }
+            },
+            {
+                era: "Edat Mitjana",
+                title: "Trobadors i Joglars",
+                company: "Cort d'Elionor d'Aquitània",
+                logo: "img/elionor.jpg",
+                req: "Es requereix música profana, temes d'amor cortès i habilitat amb el llaüt.",
+                badge: "Música Profana",
+                correct: { name: "Bernart de Ventadorn", headline: "Trobador de renom", era: "Edat Mitjana", img: "bernat.jpg" }
+            },
+            // RENAIXEMENT
+            {
+                era: "Renaixement",
+                title: "Mestre de Capella",
+                company: "El Vaticà",
+                logo: "img/vatica.jpg",
+                req: "Necessitem polifonia clara, veus equilibrades i textos entenedors.",
+                badge: "Polifonia Sacra",
+                correct: { name: "G.P. da Palestrina", headline: "Salvador de la Polifonia", era: "Renaixement", img: "palestrina.jpg" }
+            },
+            {
+                era: "Renaixement",
+                title: "Editor de Partitures",
+                company: "Impremta Veneciana",
+                logo: "img/imprempta.jpg",
+                req: "Busquem innovació tecnològica per a la difusió massiva de madrigals.",
+                badge: "Impremta Musical",
+                correct: { name: "Ottaviano Petrucci", headline: "Pioner de la impressió musical", era: "Renaixement", img: "petrucci.jpg" }
+            },
+            // BARROC
+            {
+                era: "Barroc",
+                title: "Músic de Cambra",
+                company: "Palau de Versalles",
+                logo: "img/versailles.jpg",
+                req: "Imprescindible obediència, portar lliurea i tocar música de fons pel sopar del Rei.",
+                badge: "Música de Cort",
+                correct: { name: "J.B. Lully", headline: "Superintendent de la Música Reial", era: "Barroc", img: "lully.jpg" }
+            },
+            {
+                era: "Barroc",
+                title: "Constructor de Violins",
+                company: "Taller de Cremona",
+                logo: "img/cremona.jpg",
+                req: "Es busca artesania de luxe, coneixement de vernissos secrets i màxima precisió.",
+                badge: "Luthier",
+                correct: { name: "Antonio Stradivari", headline: "Mestre Luthier", era: "Barroc", img: "stradivari.jpg" }
+            },
+            // CLASSICISME
+            {
+                era: "Classicisme",
+                title: "Nen Prodigi",
+                company: "Gira Europea de Corts",
+                logo: "img/giraeuropea.jpg",
+                req: "Ha de tocar amb els ulls embenats, divertir a reis i estar disposat a viatjar molt.",
+                badge: "Virtuosisme Precoç",
+                correct: { name: "W.A. Mozart (Jove)", headline: "Geni musical de 6 anys", era: "Classicisme", img: "mozart.jpg" }
+            },
+            {
+                era: "Classicisme",
+                title: "Pare de la Simfonia",
+                company: "Palau Esterházy",
+                logo: "img/esterhazy.jpg",
+                req: "Busquem estructura perfecta, domini de la forma sonata i sentit de l'humor musical.",
+                badge: "Compositor Resident",
+                correct: { name: "Joseph Haydn", headline: "Mestre de Capella Esterházy", era: "Classicisme", img: "haydn.jpg" }
+            },
+            // ROMANTICISME
+            {
+                era: "Romanticisme",
+                title: "Virtuós del Piano",
+                company: "Sales de Concert de París",
+                logo: "img/concertsaparis.jpg",
+                req: "Es valora passió desmesurada, capacitat de trencar tecles i cabells llargs.",
+                badge: "Rockstar del XIX",
+                correct: { name: "Franz Liszt", headline: "Pianista Virtuós", era: "Romanticisme", img: "listz.jpg" }
+            },
+            {
+                era: "Romanticisme",
+                title: "Compositor d'Òpera Total",
+                company: "Festival de Bayreuth",
+                logo: "img/bayreuth.jpg",
+                req: "Projectes d'obres de 4 hores, temàtica mitològica i orquestra gegant.",
+                badge: "Gesamtkunstwerk",
+                correct: { name: "Richard Wagner", headline: "Visionari de l'Art Total", era: "Romanticisme", img: "wagner.jpg" }
+            },
+            // SEGLE XX
+            {
+                era: "Segle XX",
+                title: "Innovador Atonal",
+                company: "Escola de Viena",
+                logo: "img/escolaviena.jpg",
+                req: "Requisit: Odiar la melodia fàcil. Coneixements de dodecafonisme i matemàtiques.",
+                badge: "Avantguarda",
+                correct: { name: "Arnold Schönberg", headline: "Creador del Dodecafonisme", era: "Segle XX", img: "schoemberg.jpg" }
+            },
+            {
+                era: "Segle XX",
+                title: "Estrella del Rock",
+                company: "Estadi de Wembley",
+                logo: "img/wembley.jpg",
+                req: "Imprescindible guitarres elèctriques, amplificadors i capacitat de moure masses.",
+                badge: "Rock & Roll",
+                correct: { name: "Freddie Mercury", headline: "Llegenda del Rock", era: "Segle XX", img: "freddy.jpg" }
+            }
+        ];
+
+        const DISTRACTORS = [
+            { name: "Guido d'Arezzo", headline: "Inventor del solfeig", era: "Edat Mitjana", img: "guido1.jpg" },
+            { name: "Josquin des Prez", headline: "Mestre de la Polifonia", era: "Renaixement", img: "josquin.jpg" },
+            { name: "Claudio Monteverdi", headline: "Pare de l'Òpera", era: "Barroc", img: "monteverdi.jpg" },
+            { name: "J.S. Bach", headline: "Cantor de Leipzig", era: "Barroc", img: "bach.jpg" },
+            { name: "L.V. Beethoven", headline: "Compositor Sord", era: "Classicisme", img: "beethoven.jpg" },
+            { name: "F. Chopin", headline: "Poeta del Piano", era: "Romanticisme", img: "chopin.jpg" },
+            { name: "G. Verdi", headline: "Rei de l'Òpera Italiana", era: "Romanticisme", img: "verdi.jpg" },
+            { name: "Igor Stravinsky", headline: "Revolucionari del Ritme", era: "Segle XX", img: "stravinsky.jpg" },
+            { name: "John Cage", headline: "Filòsof del Silenci", era: "Segle XX", img: "cage.jpg" },
+            { name: "Elvis Presley", headline: "Rei del Rock", era: "Segle XX", img: "elvis.jpg" }
+        ];
+
+        // --- GAME ENGINE ---
+        class Game {
+            constructor() {
+                this.round = 0;
+                this.score = 0;
+                this.totalRounds = 10;
+                this.offers = [];
+                this.isProcessing = false;
+
+                // Audio
+                this.bgMusic = document.getElementById('bg-music');
+                this.bgMusic.volume = 0.3;
+
+                // Volume Slider
+                const volSlider = document.getElementById('volume-slider');
+                if (volSlider) {
+                    volSlider.addEventListener('input', (e) => {
+                        this.bgMusic.volume = e.target.value;
+                    });
+                }
+            }
+
+            startGame() {
+                document.getElementById('start-screen').classList.add('hidden');
+
+                // Play music on start
+                if (this.bgMusic.paused) this.bgMusic.play().catch(e => console.log(e));
+
+                this.initGame();
+            }
+
+            initGame() {
+                // Shuffle and select 10 offers
+                this.offers = [...OFFERS_DB].sort(() => Math.random() - 0.5).slice(0, this.totalRounds);
+                this.loadRound();
+            }
+
+            loadRound() {
+                if (this.round >= this.totalRounds) {
+                    this.endGame();
+                    return;
+                }
+
+                this.isProcessing = false;
+                const offer = this.offers[this.round];
+
+                // UI Updates
+                document.getElementById('progress-count').textContent = `${this.round + 1}/${this.totalRounds}`;
+                document.getElementById('progress-fill').style.width = `${((this.round) / this.totalRounds) * 100}%`;
+
+                // Update company logo with image
+                document.getElementById('company-logo').innerHTML = `<img src="${offer.logo}" alt="${offer.company}">`;
+
+                document.getElementById('offer-title').textContent = offer.title;
+                document.getElementById('company-name').textContent = offer.company;
+                document.getElementById('offer-req').textContent = offer.req;
+                document.getElementById('req-badge').textContent = offer.badge;
+
+                // Prepare Candidates
+                const candidates = [offer.correct];
+
+                // Add 2 distractors from DIFFERENT eras
+                const potentialDistractors = DISTRACTORS.filter(d => d.era !== offer.era);
+                const selectedDistractors = potentialDistractors.sort(() => Math.random() - 0.5).slice(0, 2);
+
+                candidates.push(...selectedDistractors);
+                candidates.sort(() => Math.random() - 0.5);
+
+                this.renderCandidates(candidates, offer.correct.name);
+            }
+
+            renderCandidates(candidates, correctName) {
+                const container = document.getElementById('candidates-list');
+                container.innerHTML = '';
+
+                candidates.forEach(c => {
+                    const el = document.createElement('div');
+                    el.className = 'candidate-card';
+                    el.innerHTML = `
+                        <div class="candidate-img" style="background-image: url('img/${c.img}'); background-size: cover; background-position: center; border: 2px solid #ddd;"></div>
+                        <div class="candidate-info">
+                            <div class="candidate-name">${c.name}</div>
+                            <div class="candidate-headline">${c.headline}</div>
+                        </div>
+                        <button class="hire-btn">CONTRACTAR</button>
+                    `;
+
+                    el.onclick = () => this.handleSelection(el, c.name === correctName);
+                    container.appendChild(el);
+                });
+            }
+
+            handleSelection(el, isCorrect) {
+                if (this.isProcessing) return;
+                this.isProcessing = true;
+
+                if (isCorrect) {
+                    el.classList.add('correct');
+                    this.score++;
+                } else {
+                    el.classList.add('incorrect');
+                    // Highlight correct one
+                    // In a real app we might want to show which was correct, but for now just show error
+                }
+
+                document.getElementById('progress-fill').style.width = `${((this.round + 1) / this.totalRounds) * 100}%`;
+
+                setTimeout(() => {
+                    this.round++;
+                    this.loadRound();
+                }, 1500);
+            }
+
+            endGame() {
+                let level = "Becari";
+                if (this.score >= 9) level = "Expert en Talent";
+                else if (this.score >= 7) level = "Headhunter Sènior";
+                else if (this.score >= 5) level = "Recruiter Júnior";
+
+                document.getElementById('final-level').textContent = `Nivell: ${level}`;
+                document.getElementById('final-score').textContent = `Puntuació: ${this.score}/${this.totalRounds}`;
+                document.getElementById('modal-overlay').classList.remove('hidden');
+
+                if (this.score === 10 && typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'linkemusic_badge',
+                        'Expert en Talent',
+                        'Has demostrat tenir un ull clínic per al talent històric!',
+                        '../../img/card_linkemusic.png'
+                    );
+                }
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

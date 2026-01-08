@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Menú del Xef Històric</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fdfaf5;
+            --text-color: #2c3e50;
+            --gold-accent: #c5a059;
+            --dark-accent: #1a1a1a;
+            --paper-texture: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmZmZmIi8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmMmYwZTgiLz4KPC9zdmc+');
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            background-image: var(--paper-texture);
+            font-family: 'Lato', sans-serif;
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* AUDIO CONTROL */
+        #audio-control {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* CLIENT SIDEBAR */
+        #client-area {
+            width: 30%;
+            background: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        #client-frame {
+            width: 220px;
+            height: 220px;
+            border: 6px double var(--gold-accent);
+            border-radius: 50%;
+            margin-bottom: 30px;
+            overflow: hidden;
+            background: #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        #client-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #dialogue-box {
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 4px;
+            position: relative;
+            max-width: 80%;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            line-height: 1.4;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #dialogue-box::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px 10px;
+            border-style: solid;
+            border-color: transparent transparent #fff transparent;
+        }
+
+        #score-display {
+            margin-top: 40px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--gold-accent);
+            padding-bottom: 5px;
+        }
+
+        /* MAIN GAME AREA */
+        #game-area {
+            flex-grow: 1;
+            display: flex;
+            position: relative;
+        }
+
+        /* PANTRY (LEFT OF GAME AREA) */
+        #pantry {
+            width: 320px;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: inset -5px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .pantry-category {
+            margin-bottom: 30px;
+        }
+
+        .pantry-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--gold-accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .dish-item {
+            background: #fdfaf5;
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all 0.2s;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .dish-item:hover {
+            transform: translateX(5px);
+            border-left-color: var(--gold-accent);
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* TOOLTOP */
+        .dish-item:hover::after {
+            content: attr(data-desc);
+            position: absolute;
+            left: 105%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            width: 200px;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            font-style: italic;
+        }
+
+        .dish-item:active {
+            cursor: grabbing;
+        }
+
+        /* CENTER MENU CARD */
+        #menu-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(#d7ccc8 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        #menu-card {
+            width: 450px;
+            height: 600px;
+            background: #fff;
+            padding: 50px;
+            box-sizing: border-box;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid #e0e0e0;
+        }
+
+        #menu-card::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid var(--gold-accent);
+            pointer-events: none;
+        }
+
+        #menu-card h1 {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            font-size: 2.5rem;
+            margin: 0 0 40px 0;
+            letter-spacing: 3px;
+            color: var(--dark-accent);
+        }
+
+        .course-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.9rem;
+            color: var(--gold-accent);
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .course-slot {
+            height: 60px;
+            border-bottom: 1px dotted #ccc;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .course-slot.drag-over {
+            background: rgba(197, 160, 89, 0.1);
+        }
+
+        .course-slot.filled {
+            color: var(--dark-accent);
+            font-size: 1.2rem;
+            font-style: normal;
+            border-bottom: 1px solid var(--dark-accent);
+        }
+
+        #serve-btn {
+            margin-top: 20px;
+            padding: 15px 50px;
+            background: var(--dark-accent);
+            color: #fff;
+            border: none;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #serve-btn:hover {
+            background: var(--gold-accent);
+            color: #000;
+        }
+
+        /* OVERLAYS */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+        }
+
+        .overlay h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--gold-accent);
+            margin-bottom: 20px;
+        }
+
+        .overlay p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .overlay button {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Playfair Display', serif;
+            background: var(--gold-accent);
+            border: none;
+            cursor: pointer;
+            color: #000;
+            transition: transform 0.2s;
+        }
+
+        .overlay button:hover {
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* FEEDBACK POPUP */
+        #feedback-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border: 2px solid var(--gold-accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            z-index: 500;
+            text-align: center;
+            width: 300px;
+        }
+
+        #feedback-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        #feedback-text {
+            color: #333;
+            font-family: 'Playfair Display';
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Background Bossa for Breadsticks.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="audio-control">
+        <span>🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.3" oninput="setVolume(this.value)">
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="overlay">
+        <h2>El Menú del Xef Històric</h2>
+        <p>Benvingut a la cuina més exigent de la història. <br>
+            Els nostres clients aristocràtics només volen plats de la seva època. <br>
+            Passa el ratolí per sobre dels plats per saber-ne més.</p>
+        <p style="color: #ccc; font-size: 1rem;">Serviu 6 menús perfectes per guanyar l'Estrella Michelin Històrica.</p>
+        <button onclick="initGame()">ENTRAR A CUINA</button>
+    </div>
+
+    <!-- GAME OVER SCREEN (WIN) -->
+    <div id="game-over-screen" class="overlay hidden">
+        <h2 id="go-title">Felicitats!</h2>
+        <p id="go-message">Has completat el torn de servei amb èxit.</p>
+        <button onclick="location.reload()">NOU TORN</button>
+    </div>
+
+    <!-- FEEDBACK POPUP -->
+    <div id="feedback-modal" class="hidden">
+        <span id="feedback-icon">🤔</span>
+        <p id="feedback-text">...</p>
+        <button id="feedback-btn" onclick="closeFeedback()">D'acord</button>
+    </div>
+
+    <div id="client-area">
+        <div id="client-frame">
+            <img id="client-img" src=""
+                onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRleHQgeT0iMjAiIGZvbnQtc2l6ZT0iMjAiPvCfpJ08L3RleHQ+PC9zdmc+'">
+        </div>
+        <div id="dialogue-box">
+            "Bona nit. Desitjaria degustar un menú del <b id="target-era" style="color: #c5a059;">BARROC</b>, si us
+            plau."
+        </div>
+        <div id="score-display">
+            SERVEIS: <span id="current-score">0</span> / 6
+        </div>
+    </div>
+
+    <div id="game-area">
+        <div id="pantry">
+            <!-- Filled specifically by JS -->
+            <div class="pantry-category">
+                <div class="pantry-title">Primer Plat</div>
+                <div id="list-starter"></div>
+            </div>
+            <div class="pantry-category">
+                <div class="pantry-title">Segon Plat</div>
+                <div id="list-main"></div>
+            </div>
+            <div class="pantry-category">
+                <div class="pantry-title">Postres</div>
+                <div id="list-dessert"></div>
+            </div>
+        </div>
+
+        <div id="menu-wrapper">
+            <div id="menu-card">
+                <h1>MENU</h1>
+
+                <div class="course-label">PRIMER PLAT</div>
+                <div class="course-slot" id="slot-starter">Arrossega aquí...</div>
+
+                <div class="course-label">SEGON PLAT</div>
+                <div class="course-slot" id="slot-main">Arrossega aquí...</div>
+
+                <div class="course-label">POSTRES</div>
+                <div class="course-slot" id="slot-dessert">Arrossega aquí...</div>
+            </div>
+            <button id="serve-btn" onclick="serve()">SERVIR AL CLIENT</button>
+        </div>
+    </div>
+
+    <script src="../../js/rewards.js"></script>
+    <script>
+        // Updated DB with descriptions (tooltips)
+        const DB = {
+            "EDAT MITJANA": {
+                starter: { name: "Brou Gregorià", desc: "Sopa monàstica, senzilla i espiritual." },
+                main: { name: "Monodia al Forn", desc: "Una sola veu, sense acompanyament." },
+                dessert: { name: "Fruita Trobadoresca", desc: "Dolç típic de la cort, cantat en occità." },
+                img: "img/mitjana.png"
+            },
+            "RENAIXEMENT": {
+                starter: { name: "Canapès d'Imitació", desc: "Polifonia complexa, les veus s'imiten." },
+                main: { name: "Pollastre A Capella", desc: "Carn pura, sense instruments (salses)." },
+                dessert: { name: "Sorbet d'Humanisme", desc: "L'home és el centre d'aquestes postres." },
+                img: "img/renaixement.png"
+            },
+            "BARROC": {
+                starter: { name: "Crema de Contrast", desc: "Fort i fluix, llum i ombra." },
+                main: { name: "Fuga de Vedella", desc: "Plat complex amb molta ornamentació." },
+                dessert: { name: "Mousse d'Ornamentació", desc: "Molt decorat, quasi excessiu." },
+                img: "img/barroc.png"
+            },
+            "CLASSICISME": {
+                starter: { name: "Amanida Simètrica", desc: "Equilibri perfecte, res sobra." },
+                main: { name: "Sonata Wellington", desc: "Estructura clara: Exposició, Desenvolupament..." },
+                dessert: { name: "Fruita Equilibrada", desc: "Elegància i proporció en cada mos." },
+                img: "img/classicisme.png"
+            },
+            "ROMANTICISME": {
+                starter: { name: "Gaspatxo Apassionat", desc: "Ple d'emoció i sentiment individual." },
+                main: { name: "Lied d'Ànec", desc: "Poesia i música unides en un plat íntim." },
+                dessert: { name: "Volcà Virtuós", desc: "Explosió de tècnica i passió desbordada." },
+                img: "img/romanticixme.png"
+            },
+            "SEGLE XX": {
+                starter: { name: "Espuma de Soroll", desc: "Trenquem les normes, tot val." },
+                main: { name: "Sushi Dodecafònic", desc: "12 sabors tractats amb igualtat." },
+                dessert: { name: "Gelatina Electrònica", desc: "Nous sons sintètics i textures." },
+                img: "img/segleXX.png"
+            }
+        };
+        const ERAS = Object.keys(DB);
+
+        let targetEra = "";
+        let selection = { starter: null, main: null, dessert: null };
+        let score = 0;
+        const TARGET_WIN = 6;
+        let isFeedBackOpen = false;
+
+        function setVolume(val) {
+            const music = document.getElementById('bg-music');
+            if (music) music.volume = val;
+        }
+
+        function initGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+
+            const music = document.getElementById('bg-music');
+            music.volume = 0.3;
+            music.play().catch(e => console.log("Click to play audio"));
+
+            score = 0;
+            updateScore();
+            startRound();
+        }
+
+        function startRound() {
+            // Pick random era
+            targetEra = ERAS[Math.floor(Math.random() * ERAS.length)];
+            const eraSpan = document.getElementById('target-era');
+            eraSpan.textContent = targetEra;
+
+            // Set Avatar
+            const avatarPath = DB[targetEra].img;
+            document.getElementById('client-img').src = avatarPath;
+
+            // Clear Pantry Lists
+            document.getElementById('list-starter').innerHTML = '';
+            document.getElementById('list-main').innerHTML = '';
+            document.getElementById('list-dessert').innerHTML = '';
+
+            // Aggregate all dishes
+            let allDishes = [];
+            ERAS.forEach(era => {
+                allDishes.push({ ...DB[era].starter, type: 'starter', era });
+                allDishes.push({ ...DB[era].main, type: 'main', era });
+                allDishes.push({ ...DB[era].dessert, type: 'dessert', era });
+            });
+
+            // Shuffle
+            allDishes.sort(() => Math.random() - 0.5);
+
+            // Distribute to categories
+            allDishes.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'dish-item';
+                el.textContent = d.name;
+                el.setAttribute('data-desc', d.desc); // Tooltip text
+                el.draggable = true;
+                el.ondragstart = (e) => {
+                    e.dataTransfer.setData('text', JSON.stringify(d));
+                    el.style.opacity = '0.5';
+                };
+                el.ondragend = () => {
+                    el.style.opacity = '1';
+                };
+
+                // Append to correct list
+                document.getElementById('list-' + d.type).appendChild(el);
+            });
+
+            // Reset Slots
+            document.querySelectorAll('.course-slot').forEach(s => {
+                s.innerHTML = "Arrossega aquí...";
+                s.classList.remove('filled');
+            });
+            selection = { starter: null, main: null, dessert: null };
+        }
+
+        // Drop Logic
+        ['starter', 'main', 'dessert'].forEach(type => {
+            const slot = document.getElementById('slot-' + type);
+
+            slot.ondragover = e => {
+                e.preventDefault(); // Allow drop
+                slot.classList.add('drag-over');
+            };
+
+            slot.ondragleave = () => {
+                slot.classList.remove('drag-over');
+            };
+
+            slot.ondrop = e => {
+                e.preventDefault();
+                slot.classList.remove('drag-over');
+
+                try {
+                    const data = JSON.parse(e.dataTransfer.getData('text'));
+
+                    if (data.type === type) {
+                        selection[type] = data;
+                        slot.textContent = data.name;
+                        slot.classList.add('filled');
+                    } else {
+                        // Wrong category feedback
+                        showFeedback(false, `Això és un ${data.type === 'starter' ? 'Primer' : (data.type === 'main' ? 'Segon' : 'Postre')}! No va aquí.`);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+        });
+
+        function serve() {
+            if (!selection.starter || !selection.main || !selection.dessert) {
+                showFeedback(false, "El menú no està complet. Sisplau, omple tots els plats abans de servir.", true);
+                return;
+            }
+
+            if (selection.starter.era === targetEra && selection.main.era === targetEra && selection.dessert.era === targetEra) {
+                // WIN ROUND
+                score++;
+                updateScore();
+
+                if (score >= TARGET_WIN) {
+                    endGame(true);
+                } else {
+                    showFeedback(true, "Excel·lent elecció! El comensal ha gaudit molt del menú.");
+                }
+            } else {
+                // FAIL ROUND
+                showFeedback(false, "Oh no! Has barrejat èpoques i el client està ofès. Torna-ho a intentar.");
+            }
+        }
+
+        function showFeedback(success, text, isWarning = false) {
+            const modal = document.getElementById('feedback-modal');
+            const icon = document.getElementById('feedback-icon');
+            const txt = document.getElementById('feedback-text');
+            const btn = document.getElementById('feedback-btn');
+
+            modal.classList.remove('hidden');
+
+            if (isWarning) {
+                icon.textContent = "⚠️";
+                btn.onclick = closeFeedback; // Just close
+            } else if (success) {
+                icon.textContent = "👨‍🍳";
+                // On success close, start new round
+                btn.onclick = () => {
+                    closeFeedback();
+                    startRound(); // New round
+                };
+            } else {
+                icon.textContent = "🤢";
+                // On fail close, reset current round (try again)
+                btn.onclick = () => {
+                    closeFeedback();
+                    startRound(); // Reset round to try again (same era? Random? Logic implies 'new menu' if failed usually, let's just startRound to be simple)
+                };
+            }
+
+            txt.textContent = text;
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedback-modal').classList.add('hidden');
+        }
+
+        function updateScore() {
+            document.getElementById('current-score').textContent = score;
+        }
+
+        function endGame(win) {
+            const screen = document.getElementById('game-over-screen');
+            const title = document.getElementById('go-title');
+            const msg = document.getElementById('go-message');
+
+            screen.classList.remove('hidden');
+            if (win) {
+                title.textContent = "ENHORABONA! 👨‍🍳";
+                msg.innerHTML = "Has completat 6 menús perfectes.<br>Has demostrat ser un Xef Històric de primera categoria!";
+
+                // Unlock Reward
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'chef_master',
+                        'Xef Estrella Michelin',
+                        'Has servit 6 menús històrics perfectes!',
+                        '../../img/card_chef.png'
+                    );
+                }
+            }
+        }
+
+    </script>
+</body>
+
+</html>

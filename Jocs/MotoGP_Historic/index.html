@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoGP Històric: El Gran Premi del Temps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --carbon-fiber: #1a1a1a;
+            --neon-green: #76ff03;
+            --neon-red: #ff3d00;
+            --neon-cyan: #00bcd4;
+            --neon-gold: #ffd600;
+            --text-color: #e0e0e0;
+            --panel-bg: rgba(30, 30, 30, 0.95);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image:
+                linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000),
+                linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            color: var(--text-color);
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            background: linear-gradient(90deg, #000, var(--carbon-fiber), #000);
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 188, 212, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .header-title-group {
+            text-align: center;
+        }
+
+        h1 {
+            color: #fff;
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-style: italic;
+            text-shadow: 2px 2px 0 var(--neon-red);
+        }
+
+        .hud-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--neon-green);
+            padding: 8px 15px;
+            border-radius: 4px;
+            color: var(--neon-green);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* VOLUME SLIDER */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type=range] {
+            accent-color: var(--neon-cyan);
+            height: 5px;
+        }
+
+        /* TRACK BRIEFING */
+        #briefing-card {
+            background: var(--panel-bg);
+            border-left: 5px solid var(--neon-cyan);
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto 10px auto;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media(min-width: 768px) {
+            #briefing-card {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        #briefing-content {
+            flex: 1;
+        }
+
+        #briefing-card h2 {
+            color: var(--neon-cyan);
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        #briefing-text {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        /* CIRCUIT IMAGE */
+        #circuit-img-container {
+            flex: 1;
+            max-width: 400px;
+            height: 250px;
+            background: #000;
+            border: 2px solid #333;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+
+        #circuit-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.8) contrast(1.2);
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* GARAGE */
+        #garage-area {
+            width: 90%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        @media(min-width: 900px) {
+            #garage-area {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .bike-card {
+            background: rgba(40, 40, 40, 0.95);
+            border: 2px solid #444;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .bike-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px var(--neon-cyan);
+            border-color: #fff;
+        }
+
+        .bike-img-container {
+            width: 100%;
+            height: 140px;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bike-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 5px;
+            box-sizing: border-box;
+            transition: opacity 0.3s;
+        }
+
+        .hover-stats {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            padding: 10px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .bike-card:hover .hover-stats {
+            opacity: 1;
+        }
+
+        .hover-stats p {
+            color: var(--neon-green);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .bike-info {
+            padding: 10px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+
+        .bike-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .bike-card p {
+            font-size: 0.7rem;
+            color: #aaa;
+            margin: 0;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .start-content {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(20, 20, 20, 0.9);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 188, 212, 0.2);
+            position: relative;
+        }
+
+        .mechanic-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid var(--neon-cyan);
+            object-fit: cover;
+            margin: 0 auto 20px auto;
+            display: block;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .btn-start {
+            background: var(--neon-red);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-family: inherit;
+            font-size: 24px;
+            font-weight: 900;
+            font-style: italic;
+            cursor: pointer;
+            text-transform: uppercase;
+            clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .anim-shake {
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Throttle to the Horizon.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="modal-overlay show">
+        <div class="start-content">
+            <img src="img/mecanic.png" alt="Cap de Mecànics" class="mechanic-avatar">
+            <h1 style="font-size:32px; color:var(--neon-cyan); margin-bottom:10px;">BENVINGUT AL PADDOCK</h1>
+            <p style="font-size:18px; line-height:1.6; color:#ddd;">
+                Sóc el teu Cap de Mecànics. Ens espera una temporada històrica.
+                <br><br>
+                A cada <strong>Gran Premi</strong>, analitzarem el traçat. Hauràs de <strong>triar la moto
+                    adequada</strong>
+                per a l'època i estil del circuit. Si t'equivoques, no acabarem la cursa.
+            </p>
+            <button class="btn-start" onclick="startGame()">COMENÇAR TEMPORADA</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="hud-panel">GP: <span id="current-gp">1</span> / 12</div>
+        <div class="header-title-group">
+            <h1>MOTOGP HISTÒRIC</h1>
+            <div style="font-size:12px; color:#aaa; letter-spacing:1px;">CLASSE PREMIER</div>
+        </div>
+        <div class="volume-control">
+            <span style="font-size:12px;">🎵</span>
+            <input type="range" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+        </div>
+    </header>
+
+    <!-- BRIEFING & CIRCUIT -->
+    <div id="briefing-card">
+        <div id="briefing-content">
+            <h2>TELEMETRIA DE PISTA <span>/// BRIEFING</span></h2>
+            <p id="briefing-text">Carregant dades del circuit...</p>
+        </div>
+        <div id="circuit-img-container">
+            <div class="scan-line"></div>
+            <img id="circuit-img" src="" alt="Circuit Map">
+        </div>
+    </div>
+
+    <!-- GARAGE -->
+    <h3 style="color:#888; text-align:center; margin-top:20px; font-weight:400; letter-spacing:1px;">SELECCIONA EL SETUP
+        (MOTO)</h3>
+    <div id="garage-area">
+        <!-- Bikes rendered by JS -->
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div id="race-modal" class="modal-overlay">
+        <div class="start-content" style="border-color:var(--neon-green)">
+            <h2 id="modal-title" style="font-size:48px; font-style:italic; margin:0;">VICTÒRIA</h2>
+            <p id="modal-msg" style="font-size:20px; margin:20px 0;">Setup Correcte.</p>
+            <button class="btn-start" id="modal-btn" onclick="nextLevel()">SEGÜENT GP</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        const BIKES = [
+            { id: "mitjana", name: "Moto Monodia", desc: "S. XI - XIV", features: "Simple i robusta.<br>Un sol cilindre.", color: "#8d6e63", img: "img/motomitjana.png" },
+            { id: "renaix", name: "Poly-Bike 400", desc: "S. XV - XVI", features: "Equilibri perfecte.<br>4 cilindres en harmonia.", color: "#ffd700", img: "img/motorenaixement.png" },
+            { id: "barroc", name: "Gold Wing C.", desc: "S. XVII - mid XVIII", features: "Pesada i recarregada.<br>Base potent.", color: "#9c27b0", img: "img/motobarroc.png" },
+            { id: "classic", name: "Sonata Racing", desc: "mid XVIII - XIX", features: "Aerodinàmica racional.<br>Estructura simètrica.", color: "#00bcd4", img: "img/motoclassicisme.png" },
+            { id: "roman", name: "Storm V4", desc: "S. XIX", features: "Motor inestable.<br>Passional i dramàtic.", color: "#f44336", img: "img/motoromanticisme.png" },
+            { id: "sxx", name: "Cyber-Noise Z", desc: "S. XX - XXI", features: "Electrònica experimental.<br>Trencadora.", color: "#76ff03", img: "img/motosegleXX.png" }
+        ];
+
+        const CIRCUITS = [
+            // EDAT MITJANA
+            { name: "Circuit del Monestir", img: "img/circuitdelmonestir.jpg", correct_bike: "mitjana", briefing: "L'asfalt és fred i de pedra. Aquí només se sent el ressò d'una sola línia. Correm en silenci i per a Déu." },
+            { name: "Gregorian Ring", img: "img/gregorianring.jpg", correct_bike: "mitjana", briefing: "Un traçat antic sense ornaments. Tot es transmet de memòria. La velocitat és espiritual, una sola veu." },
+
+            // RENAIXEMENT
+            { name: "Humanist Park", img: "img/humanismpark.jpg", correct_bike: "renaix", briefing: "Un circuit a escala humana. Les corbes s'entrellacen amb suavitat (Polifonia) buscant la bellesa ideal." },
+            { name: "Impremta Speedway", img: "img/imprempta.jpg", correct_bike: "renaix", briefing: "Gràcies a la nova tecnologia, aquest traçat és conegut arreu. Busquem l'equilibri perfecte entre les veus." },
+
+            // BARROC
+            { name: "Versalles GP", img: "img/versallesgp.jpg", correct_bike: "barroc", briefing: "Atenció pilots: circuit ple d'ornaments. No deixeu espais buits (Horror Vacui) o perdreu adherència." },
+            { name: "Basso Continuo Ring", img: "img/bassocontinuo.jpg", correct_bike: "barroc", briefing: "Necessiteu una base sòlida i constant al darrere (Baix Continu) mentre feu filigranes al davant." },
+
+            // CLASSICISME
+            { name: "Viena Rational Circuit", img: "img/vienarational.jpg", correct_bike: "classic", briefing: "Un traçat lògic i previsible. Estructura clara. Res de sorpreses ni emocions fortes, volem ordre." },
+            { name: "Mozartodrom", img: "img/mozartdrom.jpg", correct_bike: "classic", briefing: "La simetria és la clau. Melodia clara al davant i acompanyament suau. Elegància sobre potència bruta." },
+
+            // ROMANTICISME
+            { name: "Sturm und Drang Pass", img: "img/sturmundrag.jpg", correct_bike: "roman", briefing: "Condicions extremes: Boira i dramatisme. La pista és subjectiva i canvia segons el teu estat d'ànim." },
+            { name: "Virtuoso Track", img: "img/virtuosotrack.jpg", correct_bike: "roman", briefing: "Només per a genis solitaris. Un traçat impossible, tècnicament diabòlic i ple de passió desbordada." },
+
+            // SEGLE XX
+            { name: "Atonal City Circuit", img: "img/atonalcity.jpg", correct_bike: "sxx", briefing: "Oblideu les normes. Aquí no hi ha centre de gravetat. Dissonància i tensió a cada revolt." },
+            { name: "Electric Avenue", img: "img/electricavenue.jpg", correct_bike: "sxx", briefing: "Asfalt sintètic, sons industrials i electrònica. Trenquem amb tot el passat!" }
+        ];
+
+        // --- GAME STATE ---
+        let currentLevelIndex = 0;
+        let playOrder = [];
+        let isGameActive = false;
+        const totalLevels = CIRCUITS.length;
+        const audio = document.getElementById('bg-music');
+        audio.volume = 0.5;
+
+        // --- FUNCTIONS ---
+
+        function setVolume(val) {
+            audio.volume = val;
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('show');
+
+            // Randomize Level Order
+            playOrder = shuffle([...CIRCUITS]);
+
+            isGameActive = true;
+            loadLevel(0); // This calls renderGarage implicitly
+
+            // Play Audio
+            audio.play().catch(e => console.log("Audio autoplay block"));
+        }
+
+        function renderGarage() {
+            const container = document.getElementById('garage-area');
+            container.innerHTML = '';
+
+            // Shuffle bikes for random layout each time
+            const shuffledBikes = shuffle([...BIKES]);
+
+            shuffledBikes.forEach(bike => {
+                const card = document.createElement('div');
+                card.className = 'bike-card';
+                card.style.borderColor = bike.color; // border hint
+                card.onclick = () => selectBike(bike.id);
+
+                card.innerHTML = `
+                    <div class="bike-img-container" style="border-bottom: 2px solid ${bike.color}">
+                        <img src="${bike.img}" alt="${bike.name}">
+                        <div class="hover-stats">
+                            <p>${bike.features}</p>
+                        </div>
+                    </div>
+                    <div class="bike-info">
+                        <h3>${bike.name}</h3>
+                        <p>${bike.desc}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function loadLevel(index) {
+            currentLevelIndex = index;
+            const level = playOrder[index];
+
+            document.getElementById('current-gp').innerText = index + 1;
+
+            // Re-shuffle garage
+            renderGarage();
+
+            // Update Text
+            const briefHTML = `
+                <strong style="color:var(--neon-green); font-size:1.3em;">${level.name}</strong><br><br>
+                ${level.briefing}
+            `;
+            document.getElementById('briefing-text').innerHTML = briefHTML;
+
+            // Update Image
+            const img = document.getElementById('circuit-img');
+            img.style.opacity = 0;
+            setTimeout(() => {
+                img.src = level.img;
+                img.onload = () => { img.style.opacity = 1; };
+            }, 200);
+        }
+
+        function selectBike(bikeId) {
+            if (!isGameActive) return;
+
+            const currentLevel = playOrder[currentLevelIndex];
+
+            if (bikeId === currentLevel.correct_bike) {
+                // WIN
+                showModal('win');
+            } else {
+                // LOSE
+                document.getElementById('briefing-card').classList.add('anim-shake');
+                setTimeout(() => document.getElementById('briefing-card').classList.remove('anim-shake'), 400);
+                showModal('fail');
+            }
+        }
+
+        function showModal(type) {
+            const modal = document.getElementById('race-modal');
+            const title = document.getElementById('modal-title');
+            const msg = document.getElementById('modal-msg');
+            const btn = document.getElementById('modal-btn');
+            const content = modal.querySelector('.start-content');
+
+            modal.classList.add('show');
+
+            if (type === 'win') {
+                content.style.borderColor = "var(--neon-green)";
+                content.style.boxShadow = "0 0 50px rgba(118, 255, 3, 0.2)";
+                title.innerText = "VICTÒRIA!";
+                title.style.color = "var(--neon-green)";
+                msg.innerText = "Setup correcte. Volta ràpida aconseguida.";
+
+                btn.innerText = "SEGÜENT GP";
+                btn.style.background = "var(--neon-green)";
+                btn.style.color = "black";
+                btn.onclick = nextLevel;
+            } else {
+                content.style.borderColor = "var(--neon-red)";
+                content.style.boxShadow = "0 0 50px rgba(255, 61, 0, 0.2)";
+                title.innerText = "Trencament!";
+                title.style.color = "var(--neon-red)";
+                msg.innerText = "Aquesta moto no s'adapta al circuit. Motor gripat.";
+
+                btn.innerText = "REPARAR";
+                btn.style.background = "var(--neon-red)";
+                btn.style.color = "white";
+                btn.onclick = () => modal.classList.remove('show');
+            }
+        }
+
+        function nextLevel() {
+            document.getElementById('race-modal').classList.remove('show');
+            if (currentLevelIndex + 1 < totalLevels) {
+                loadLevel(currentLevelIndex + 1);
+            } else {
+                // CHAMPIONSHIP WON
+                const modal = document.getElementById('race-modal');
+                const title = document.getElementById('modal-title');
+                const msg = document.getElementById('modal-msg');
+                const btn = document.getElementById('modal-btn');
+
+                modal.classList.add('show');
+                title.innerText = "CAMPIÓ DEL MÓN!";
+                title.style.color = "var(--neon-gold)";
+                title.style.textShadow = "0 0 20px gold";
+                msg.innerText = "Has dominat totes les eres de la història.";
+                btn.innerText = "NOVA TEMPORADA";
+                btn.onclick = () => location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Línia del Temps: Compositors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Carter+One&family=Nunito:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498DB;
+            --secondary: #F1C40F;
+            --dark: #2C3E50;
+            --light: #ECF0F1;
+            --success: #2ECC71;
+            --error: #E74C3C;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: var(--dark);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 1rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-family: 'Carter One', cursive;
+            margin: 0;
+            color: var(--secondary);
+        }
+
+        /* Timeline Container */
+        .timeline-wrapper {
+            flex: 1;
+            overflow-x: auto;
+            display: flex;
+            align-items: center;
+            padding: 2rem;
+            background: linear-gradient(to bottom, #34495e 0%, #2c3e50 100%);
+        }
+
+        .timeline {
+            display: flex;
+            position: relative;
+            padding-top: 50px;
+        }
+
+        /* The Line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 250px;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: white;
+            z-index: 0;
+        }
+
+        .era-zone {
+            flex: 1;
+            /* Distribute space equally */
+            height: 450px;
+            position: relative;
+            border-left: 2px dashed rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 0.5rem;
+            /* Reduced padding */
+            transition: background 0.3s;
+            cursor: pointer;
+            min-width: 0;
+            /* Allow shrinking */
+        }
+
+        .era-zone:last-child {
+            border-right: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .era-zone:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .era-zone.highlight {
+            background: rgba(52, 152, 219, 0.2);
+            border: 2px solid var(--primary);
+        }
+
+        .era-zone.drag-over {
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid var(--success);
+            transform: scale(1.02);
+        }
+
+        .era-drawing {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+
+        .era-label {
+            font-family: 'Carter One', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: var(--secondary);
+            color: var(--dark);
+            padding: 0.2rem 1rem;
+            border-radius: 20px;
+            z-index: 1;
+        }
+
+        .era-content {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            align-content: start;
+            margin-top: 20px;
+        }
+
+        /* Composers Deck */
+        .deck {
+            height: 180px;
+            background: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            overflow-x: auto;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        .composer-token {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-color: white;
+            /* Ensure white bg for transparent images if any */
+            border: 3px solid white;
+            /* Sticker border effect */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .composer-token:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .composer-token.selected {
+            border-color: var(--secondary);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--secondary);
+        }
+
+        .composer-name {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        /* Success Token Style */
+        .era-content .composer-token {
+            width: 70px;
+            height: 70px;
+            border-color: white;
+            cursor: default;
+        }
+
+        .era-content .composer-name {
+            font-size: 0.6rem;
+            bottom: -20px;
+        }
+
+        /* Events Container */
+        .events-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .event-marker {
+            font-size: 2rem;
+            cursor: help;
+            transition: transform 0.2s;
+            position: relative;
+            z-index: 5;
+        }
+
+        .event-marker:hover {
+            transform: scale(1.3);
+        }
+
+        /* Popup */
+        .popup {
+            position: fixed;
+            background: white;
+            color: var(--dark);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            max-width: 250px;
+            pointer-events: none;
+            border: 2px solid var(--secondary);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .popup.visible {
+            opacity: 1;
+        }
+
+        .popup h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary);
+            font-family: 'Carter One', cursive;
+        }
+
+        .popup p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Feedback Toast */
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        #toast.success {
+            background: var(--success);
+        }
+
+        #toast.error {
+            background: var(--error);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Línia del Temps: Compositors</h1>
+        <p>Selecciona un compositor i fes clic a la seva època correcta!</p>
+    </header>
+
+    <div id="start-screen"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; font-family: 'Nunito', sans-serif;">
+        <h1 style="font-family: 'Carter One', cursive; color: #F1C40F; margin-bottom: 20px; font-size: 3rem;">Línia del
+            Temps</h1>
+        <div
+            style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; max-width: 600px; margin-bottom: 30px; line-height: 1.6;">
+            <p style="font-size: 1.2rem;">Benvingut al viatge musical a través de la història!</p>
+            <ul style="text-align: left; font-size: 1rem; list-style-type: none; padding: 0; margin-top: 20px;">
+                <li style="margin-bottom: 10px;">🎵 <strong>Arrossega</strong> els compositors a la seva època correcta.
+                </li>
+                <li style="margin-bottom: 10px;">ℹ️ <strong>Fes clic</strong> a les icones d'esdeveniments per aprendre
+                    història.</li>
+                <li style="margin-bottom: 10px;">🏆 Completa tota la línia del temps per guanyar!</li>
+            </ul>
+        </div>
+        <button onclick="document.getElementById('start-screen').style.display='none'"
+            style="padding: 15px 40px; font-size: 1.5rem; font-family: 'Carter One', cursive; background: #2ECC71; border: none; color: white; cursor: pointer; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.2s;">COMENÇAR</button>
+    </div>
+
+    <div class="timeline-wrapper">
+        <div class="timeline">
+            <div class="era-zone" data-era="medieval">
+                <div class="era-drawing">🏰</div>
+                <div class="era-label">Edat Mitjana</div>
+                <div class="era-content"></div>
+            </div>
+            <div class="era-zone" data-era="renacimiento">
+                <div class="era-drawing">🎨</div>
+                <div class="era-label">Renaixement</div>
+                <div class="era-content"></div>
+            </div>
+            <div class="era-zone" data-era="barroco">
+                <div class="era-drawing">🎻</div>
+                <div class="era-label">Barroc</div>
+                <div class="era-content"></div>
+            </div>
+            <div class="era-zone" data-era="clasicismo">
+                <div class="era-drawing">🏛️</div>
+                <div class="era-label">Classicisme</div>
+                <div class="era-content"></div>
+            </div>
+            <div class="era-zone" data-era="romanticismo">
+                <div class="era-drawing">💔</div>
+                <div class="era-label">Romanticisme</div>
+                <div class="era-content"></div>
+            </div>
+            <div class="era-zone" data-era="siglo20">
+                <div class="era-drawing">🚀</div>
+                <div class="era-label">Segle XX</div>
+                <div class="era-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="deck" id="deck">
+        <!-- Tokens injected here -->
+    </div>
+
+    <div id="popup" class="popup">
+        <h3 id="popup-title"></h3>
+        <p id="popup-desc"></p>
+    </div>
+
+    <!-- WIN MODAL -->
+    <div id="win-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center;">
+        <h1 style="font-family:'Carter One', cursive; font-size:4rem; color:#2ECC71; margin-bottom:20px;">ENHORABONA! 🏆
+        </h1>
+        <p style="font-size:1.5rem; margin-bottom:40px;">Has completat la Línia del Temps Musical!</p>
+        <div style="font-size:5rem; margin-bottom:40px;">🎉🎼🎻</div>
+        <button onclick="location.reload()"
+            style="padding:15px 40px; font-size:1.5rem; background:#F1C40F; border:none; border-radius:50px; cursor:pointer; font-weight:bold; color:#2C3E50;">Tornar
+            a Jugar</button>
+    </div>
+
+    <div id="toast">Missatge</div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        const COMPOSERS = [
+            { id: "guido", name: "Guido d'Arezzo", era: "medieval", img: "img/guido.jpg" },
+            { id: "hildegard", name: "Hildegard von Bingen", era: "medieval", img: "img/hildegard.png" },
+            { id: "josquin", name: "Josquin des Prez", era: "renacimiento", img: "img/josquin.png" },
+            { id: "palestrina", name: "Palestrina", era: "renacimiento", img: "img/palestrina.png" },
+            { id: "vivaldi", name: "Vivaldi", era: "barroco", img: "img/vivaldi.png" },
+            { id: "bach", name: "Bach", era: "barroco", img: "img/bach.png" },
+            { id: "haydn", name: "Haydn", era: "clasicismo", img: "img/haydn.jpg" },
+            { id: "mozart", name: "Mozart", era: "clasicismo", img: "img/mozart.png" },
+            { id: "beethoven", name: "Beethoven", era: "romanticismo", img: "img/beethoven.png" },
+            { id: "chopin", name: "Chopin", era: "romanticismo", img: "img/chopin.png" },
+            { id: "wagner", name: "Wagner", era: "romanticismo", img: "img/wagner.png" },
+            { id: "debussy", name: "Debussy", era: "siglo20", img: "img/debussy.png" },
+            { id: "schoenberg", name: "Schoenberg", era: "siglo20", img: "img/schoemberg.jpg" },
+            { id: "cage", name: "John Cage", era: "siglo20", img: "img/cage.jpg" }
+        ];
+
+
+
+        const EVENTS = [
+            // Medieval
+            { era: "medieval", title: "Caiguda de Roma", desc: "476 d.C. Inici de l'Edat Mitjana.", icon: "⚔️" },
+            { era: "medieval", title: "Invasió Musulmana", desc: "711. Inici d'Al-Andalus.", icon: "☪️" },
+            { era: "medieval", title: "Carlemany", desc: "800. Imperi Carolingi.", icon: "👑" },
+            { era: "medieval", title: "Feudalisme", desc: "Sistema social de senyors i vassalls.", icon: "🏰" },
+            { era: "medieval", title: "Les Croades", desc: "1095-1291. Guerres religioses.", icon: "🛡️" },
+            { era: "medieval", title: "Pesta Negra", desc: "1348. Una pandèmia devasta Europa.", icon: "💀" },
+
+            // Renaixement
+            { era: "renacimiento", title: "Impremta", desc: "1440. Gutenberg revoluciona la cultura.", icon: "📚" },
+            { era: "renacimiento", title: "Descobriment d'Amèrica", desc: "1492. Colom arriba al Nou Món.", icon: "🌎" },
+            { era: "renacimiento", title: "Humanisme", desc: "L'ésser humà com a centre.", icon: "🧠" },
+            { era: "renacimiento", title: "Reforma Protestant", desc: "1517. Luter i les 95 tesis.", icon: "⛪" },
+            { era: "renacimiento", title: "Copèrnic", desc: "1543. Teoria heliocèntrica.", icon: "☀️" },
+            { era: "renacimiento", title: "Concili de Trento", desc: "1545. La Contrareforma.", icon: "✝️" },
+
+            // Barroc
+            { era: "barroco", title: "Guerra dels 30 Anys", desc: "1618-1648. Conflicte religiós i polític.", icon: "🔥" },
+            { era: "barroco", title: "Galileo Galilei", desc: "1633. 'Eppur si muove'.", icon: "🔭" },
+            { era: "barroco", title: "Lluís XIV", desc: "El Rei Sol i Versalles.", icon: "🌞" },
+            { era: "barroco", title: "Velázquez", desc: "1656. Las Meninas.", icon: "🎨" },
+            { era: "barroco", title: "Llei de la Gravetat", desc: "1687. Newton publica els Principia.", icon: "🍎" },
+            { era: "barroco", title: "Naixement Vivaldi", desc: "1678. El Prete Rosso.", icon: "🎻" },
+
+            // Classicisme
+            { era: "clasicismo", title: "Enciclopèdia", desc: "1751. Diderot i D'Alembert.", icon: "📖" },
+            { era: "clasicismo", title: "Màquina de Vapor", desc: "1769. Inici de la Revolució Industrial.", icon: "🚂" },
+            { era: "clasicismo", title: "Independència EUA", desc: "1776. Declaració d'Independència.", icon: "🇺🇸" },
+            { era: "clasicismo", title: "Revolució Francesa", desc: "1789. Llibertat, Igualtat, Fraternitat.", icon: "🇫🇷" },
+            { era: "clasicismo", title: "Vacuna", desc: "1796. Jenner descobreix la vacuna.", icon: "💉" },
+            { era: "clasicismo", title: "Mozart a Viena", desc: "1781. Esplendor musical.", icon: "🎼" },
+
+            // Romanticisme
+            { era: "romanticismo", title: "Guerres Napoleòniques", desc: "1803-1815. Napoleó domina Europa.", icon: "💂" },
+            { era: "romanticismo", title: "Revolucions de 1848", desc: "La Primavera dels Pobles.", icon: "🚩" },
+            { era: "romanticismo", title: "Darwin", desc: "1859. L'Origen de les Espècies.", icon: "🐒" },
+            { era: "romanticismo", title: "Unificació Itàlia/Alemanya", desc: "1871. Nous estats nació.", icon: "🗺️" },
+            { era: "romanticismo", title: "Invenció del Telèfon", desc: "1876. Bell patenta el telèfon.", icon: "📞" },
+            { era: "romanticismo", title: "Marxisme", desc: "1848. Manifest Comunista.", icon: "☭" },
+
+            // Segle XX
+            { era: "siglo20", title: "Primera Guerra Mundial", desc: "1914-1918. La Gran Guerra.", icon: "💣" },
+            { era: "siglo20", title: "Drets Civils", desc: "Lluita per la igualtat.", icon: "✊" },
+            { era: "siglo20", title: "Segona Guerra Mundial", desc: "1939-1945. Conflicte global.", icon: "☠️" },
+            { era: "siglo20", title: "Arribada a la Lluna", desc: "1969. Un petit pas per a l'home.", icon: "🌕" },
+            { era: "siglo20", title: "Internet", desc: "Revolució digital.", icon: "💻" },
+            { era: "siglo20", title: "Caiguda Mur Berlín", desc: "1989. Fi de la Guerra Freda.", icon: "🧱" }
+        ];
+
+        const deck = document.getElementById('deck');
+        const zones = document.querySelectorAll('.era-zone');
+        const popup = document.getElementById('popup');
+        const popupTitle = document.getElementById('popup-title');
+        const popupDesc = document.getElementById('popup-desc');
+        const toast = document.getElementById('toast');
+
+        let selectedToken = null;
+
+        function init() {
+            // Shuffle Composers
+            const shuffled = [...COMPOSERS].sort(() => 0.5 - Math.random());
+
+            shuffled.forEach(c => {
+                const token = document.createElement('div');
+                token.className = 'composer-token';
+                token.style.backgroundImage = `url('${c.img}')`;
+                token.dataset.id = c.id;
+                token.dataset.era = c.era;
+                token.dataset.name = c.name;
+
+                const label = document.createElement('div');
+                label.className = 'composer-name';
+                label.innerText = c.name;
+                token.appendChild(label);
+
+                // Click to Select
+                token.onclick = (e) => {
+                    e.stopPropagation();
+                    selectToken(token);
+                };
+
+                // Drag Events
+                token.draggable = true;
+                token.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', c.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                    setTimeout(() => token.style.opacity = '0.5', 0);
+                    selectToken(token); // Select it for visual feedback
+                });
+
+                token.addEventListener('dragend', () => {
+                    token.style.opacity = '1';
+                    zones.forEach(z => z.classList.remove('drag-over'));
+                    // Keep highlight if not dropped successfully? 
+                    // attemptDrop removes highlight on success.
+                });
+
+                deck.appendChild(token);
+            });
+
+            setupZones();
+            setupEvents();
+        }
+
+        function selectToken(token) {
+            if (selectedToken) {
+                selectedToken.classList.remove('selected');
+            }
+            selectedToken = token;
+            token.classList.add('selected');
+
+            // Highlight zones
+            zones.forEach(z => z.classList.add('highlight'));
+        }
+
+        function setupZones() {
+            zones.forEach(zone => {
+                // Click
+                zone.onclick = () => {
+                    if (selectedToken) {
+                        attemptDrop(zone);
+                    }
+                };
+
+                // Drag & Drop
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    zone.classList.add('drag-over');
+                });
+
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('drag-over');
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    if (selectedToken) {
+                        attemptDrop(zone);
+                    }
+                });
+            });
+        }
+
+        function attemptDrop(zone) {
+            if (!selectedToken) return;
+
+            if (selectedToken.dataset.era === zone.dataset.era) {
+                // Success
+                showToast("Correcte! 🎉", "success");
+                zone.querySelector('.era-content').appendChild(selectedToken);
+
+                selectedToken.classList.remove('selected');
+                selectedToken.onclick = null; // Disable click
+                selectedToken.style.cursor = 'default';
+                selectedToken = null;
+
+                zones.forEach(z => z.classList.remove('highlight'));
+
+                // Check Win
+                if (deck.children.length === 0) {
+                    setTimeout(() => {
+                        winModal.style.display = 'flex'; // Show Win Modal
+
+                        // Unlock Reward
+                        if (typeof Rewards !== 'undefined') {
+                            Rewards.unlockCard(
+                                'timeline_mix',
+                                'Mestre del Temps',
+                                'Has ordenat correctament la història de la música!',
+                                '../../img/card_timeline.png'
+                            );
+                        }
+                    }, 1000);
+                }
+            } else {
+                // Fail
+                showToast("Incorrecte! Prova una altra època. ❌", "error");
+                zones.forEach(z => z.classList.remove('highlight'));
+                setTimeout(() => {
+                    if (selectedToken) zones.forEach(z => z.classList.add('highlight'));
+                }, 200); // Blink effect
+            }
+        }
+
+        function setupEvents() {
+            zones.forEach(zone => {
+                const era = zone.dataset.era;
+                const eraEvents = EVENTS.filter(e => e.era === era);
+
+                const eventsContainer = document.createElement('div');
+                eventsContainer.className = 'events-container';
+
+                eraEvents.forEach(ev => {
+                    const marker = document.createElement('div');
+                    marker.className = 'event-marker';
+                    marker.innerText = ev.icon;
+
+                    marker.addEventListener('mouseenter', (e) => showPopup(ev, e.target));
+                    marker.addEventListener('mouseleave', hidePopup);
+                    // Mobile touch support for popup
+                    marker.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showPopup(ev, e.target);
+                    });
+
+                    eventsContainer.appendChild(marker);
+                });
+
+                zone.insertBefore(eventsContainer, zone.querySelector('.era-content'));
+            });
+
+            // Close popup on body click
+            document.body.onclick = () => hidePopup();
+        }
+
+        function showPopup(ev, target) {
+            popupTitle.innerText = ev.title;
+            popupDesc.innerText = ev.desc;
+            popup.classList.add('visible');
+
+            const rect = target.getBoundingClientRect();
+            // Position above the marker
+            popup.style.top = `${rect.top - 100}px`;
+            popup.style.left = `${rect.left - 20}px`;
+        }
+
+        function hidePopup() {
+            popup.classList.remove('visible');
+        }
+
+        function showToast(msg, type) {
+            toast.innerText = msg;
+            toast.className = type;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

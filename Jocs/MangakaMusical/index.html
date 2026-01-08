@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Mangaka Musical</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1a1a1a;
+            --paper: #f4f4f0;
+            --tone: #cccccc;
+            --accent: #bc2e2e;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Neue', cursive;
+            background-color: var(--paper);
+            color: var(--ink);
+            background-image: radial-gradient(var(--tone) 20%, transparent 20%);
+            background-size: 10px 10px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background: var(--ink);
+            color: white;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid black;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+
+        .header-title {
+            text-align: left;
+        }
+
+        h1 {
+            font-family: 'Bangers', cursive;
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0 var(--accent);
+            line-height: 1;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Bangers';
+            font-size: 1.2rem;
+        }
+
+        input[type=range] {
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        /* MAIN LAYOUT */
+        .game-container {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* LEFT: MANGA PANEL (The Scenario) */
+        .manga-page {
+            flex: 2;
+            background: white;
+            border: 5px solid black;
+            box-shadow: 10px 10px 0 black;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .panel-header {
+            padding: 10px 20px;
+            border-bottom: 4px solid black;
+            background: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Bangers';
+            font-size: 1.5rem;
+            z-index: 10;
+        }
+
+        .panel-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        /* Screentone Overlay for Backgrounds */
+        .panel-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, white 21%, white 100%);
+            background-size: 4px 4px;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .speech-bubble {
+            background: white;
+            border: 4px solid black;
+            border-radius: 20px;
+            padding: 25px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            position: relative;
+            max-width: 85%;
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2);
+            z-index: 5;
+            margin-top: 20px;
+            color: black;
+            font-style: italic;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            border-width: 20px 20px 0;
+            border-style: solid;
+            border-color: black transparent;
+            display: block;
+            width: 0;
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -14px;
+            left: 50%;
+            border-width: 17px 17px 0;
+            border-style: solid;
+            border-color: white transparent;
+            display: block;
+            width: 0;
+            z-index: 1;
+        }
+
+        .drop-zone {
+            width: 220px;
+            height: 220px;
+            border: 5px dashed black;
+            margin-bottom: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s;
+            position: relative;
+            z-index: 5;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .drop-zone.drag-over {
+            background: var(--accent);
+            transform: scale(1.1) rotate(5deg);
+            border-style: solid;
+            border-color: white;
+            color: white;
+            box-shadow: 0 0 30px var(--accent);
+        }
+
+        .drop-zone::before {
+            content: '?';
+            font-family: 'Bangers', cursive;
+            font-size: 6rem;
+            color: #ccc;
+        }
+
+        .drop-zone.filled::before {
+            content: '';
+        }
+
+        /* RIGHT: PALETTE (Composers) */
+        .palette {
+            flex: 1;
+            background: white;
+            border: 5px solid black;
+            box-shadow: 10px 10px 0 black;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        .character-sticker {
+            width: 100px;
+            height: 100px;
+            border: 4px solid black;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-color: white;
+            cursor: grab;
+            transition: transform 0.2s;
+            filter: grayscale(100%) contrast(1.2);
+            /* Manga style initially */
+            position: relative;
+        }
+
+        .character-sticker:hover {
+            transform: scale(1.15) rotate(-5deg);
+            filter: grayscale(0%);
+            /* Color on hover */
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.4);
+            z-index: 50;
+            border-color: var(--accent);
+        }
+
+        /* Tooltip for Name */
+        .character-sticker::after {
+            content: attr(title);
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: black;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-family: 'Comic Neue', sans-serif;
+            font-weight: bold;
+            font-size: 1.4rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
+            border: 2px solid white;
+        }
+
+        .character-sticker:hover::after {
+            opacity: 1;
+        }
+
+        .character-sticker.dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+
+        /* FX OVERLAYS */
+        .sfx {
+            position: absolute;
+            font-family: 'Bangers', cursive;
+            font-size: 8rem;
+            color: black;
+            text-shadow: 5px 5px 0 white;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            left: 50%;
+            top: 50%;
+        }
+
+        .sfx.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.5) rotate(-10deg);
+        }
+
+        .speed-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-conic-gradient(from 0deg, transparent 0deg 10deg, rgba(0, 0, 0, 0.1) 10deg 20deg);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 4;
+            transition: opacity 0.5s;
+        }
+
+        .speed-lines.active {
+            opacity: 1;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-size: 5rem;
+            color: var(--accent);
+            text-shadow: 5px 5px 0 white;
+            transform: rotate(-3deg);
+            margin-bottom: 20px;
+        }
+
+        .instructions-box {
+            background: white;
+            color: black;
+            padding: 30px;
+            border: 5px solid black;
+            max-width: 600px;
+            font-size: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 10px 10px 0 var(--accent);
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            background: var(--accent);
+            color: white;
+            border: 4px solid white;
+            padding: 15px 50px;
+            font-family: 'Bangers';
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 0 20px rgba(188, 46, 46, 0.6);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* WIN SCREEN */
+        #win-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .manga-btn {
+            background: white;
+            color: black;
+            border: 4px solid black;
+            font-family: 'Bangers';
+            font-size: 2rem;
+            padding: 10px 30px;
+            cursor: pointer;
+            box-shadow: 5px 5px 0 #bc2e2e;
+            transition: transform 0.1s;
+        }
+
+        .manga-btn:active {
+            transform: translate(5px, 5px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-title">
+            <h1>EL MANGAKA MUSICAL</h1>
+            <div class="subtitle">Assigna el compositor correcte a cada vinyeta!</div>
+        </div>
+        <div class="header-controls">
+            <div class="volume-control">
+                <span>🔊 VOLUM</span>
+                <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>EL MANGAKA MUSICAL</h1>
+            <div class="instructions-box">
+                <p>Benvingut a l'estudi de manga!</p>
+                <p>Tenim 10 vinyetes sense acabar. Llegeix el diàleg i <strong>arrossega</strong> el compositor històric
+                    correcte per completar la pàgina.</p>
+                <p>Estigues atent als detalls!</p>
+            </div>
+            <button class="start-btn" onclick="startGame()">COMENÇAR A DIBUIXAR</button>
+        </div>
+
+        <!-- Manga Page -->
+        <div class="manga-page" id="manga-panel">
+            <div class="speed-lines" id="speed-lines"></div>
+            <div class="sfx" id="sfx-text">DON!</div>
+
+            <div class="panel-header">
+                <span id="scenario-number">Vinyeta 1/10</span>
+                <span id="scenario-era">Edat Mitjana</span>
+            </div>
+
+            <div class="panel-content" id="panel-bg">
+                <div class="speech-bubble" id="scenario-text">
+                    "..."
+                </div>
+
+                <div class="drop-zone" id="drop-zone"></div>
+            </div>
+        </div>
+
+        <!-- Palette -->
+        <div class="palette" id="palette">
+            <!-- Stickers injected by JS -->
+        </div>
+    </div>
+
+    <!-- Win Screen -->
+    <div id="win-screen">
+        <h1 style="font-size: 6rem; color: #bc2e2e; text-shadow: 5px 5px white; margin-bottom: 20px;">OMEDETOU! 🎉</h1>
+        <p style="font-size: 2.5rem; margin-bottom: 40px;">Has completat el teu Manga Musical!</p>
+        <button class="manga-btn" onclick="location.reload()">NOU MANGA</button>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Quantum Reckoning.m4a" type="audio/mpeg">
+    </audio>
+
+    <script src="../../js/rewards.js"></script>
+    <script>
+        // Data with local asset paths
+        const COMPOSERS = [
+            { id: "guido", name: "Guido d'Arezzo", img: "img/guido.png" },
+            { id: "hildegard", name: "Hildegard", img: "img/hildegarda.png" },
+            { id: "palestrina", name: "Palestrina", img: "img/palestrina.png" },
+            { id: "vivaldi", name: "Vivaldi", img: "img/vivaldi.png" },
+            { id: "bach", name: "Bach", img: "img/bach.png" },
+            { id: "haydn", name: "Haydn", img: "img/haydn.png" },
+            { id: "mozart", name: "Mozart", img: "img/mozart.png" },
+            { id: "beethoven", name: "Beethoven", img: "img/beethoven.png" },
+            { id: "chopin", name: "Chopin", img: "img/chopin.png" },
+            { id: "cage", name: "John Cage", img: "img/cage.png" }
+        ];
+
+        const SCENARIOS = [
+            {
+                id: 1,
+                era: "Edat Mitjana",
+                text: "Els meus monjos tenen memòria de peix... Inventaré un sistema per llegir notes usant la d'una Mà!",
+                targetId: "guido",
+                sfx: "DO-RE-MI!",
+                bgImage: "img/monasterio.jpg"
+            },
+            {
+                id: 2,
+                era: "Edat Mitjana",
+                text: "Tinc visions místiques enviades per Déu... Les escriuré en càntics monofònics preciosos.",
+                targetId: "hildegard",
+                sfx: "LUX!!",
+                bgImage: "img/celdamistica.jpg"
+            },
+            {
+                id: 3,
+                era: "Renaixement",
+                text: "El Papa vol prohibir la polifonia... He de compondre una missa perfecta per salvar-la!",
+                targetId: "palestrina",
+                sfx: "GLORIA!",
+                bgImage: "img/catedral.jpg"
+            },
+            {
+                id: 4,
+                era: "Barroc",
+                text: "Sóc el 'Prete Rosso'. Ensenyo violí a les noies de l'orfenat i faig que les estacions sonin!",
+                targetId: "vivaldi",
+                sfx: "VIVALDI!",
+                bgImage: "img/orfanato.jpg"
+            },
+            {
+                id: 5,
+                era: "Barroc",
+                text: "Necessito escriure una fuga matemàticament perfecta per a l'orgue. A Déu li agrada l'ordre.",
+                targetId: "bach",
+                sfx: "TOCCATA!",
+                bgImage: "img/organo.jpg"
+            },
+            {
+                id: 6,
+                era: "Classicisme",
+                text: "Tinc 5 anys i ja toco davant de reis amb els ulls tapats. Sóc un nen prodigi!",
+                targetId: "mozart",
+                sfx: "AMADEUS!",
+                bgImage: "img/palaciorococo.jpg"
+            },
+            {
+                id: 7,
+                era: "Classicisme",
+                text: "Em diuen 'Papa'. He escrit més de 100 simfonies i he ensenyat a un tal Beethoven...",
+                targetId: "haydn",
+                sfx: "PAPA!",
+                bgImage: "img/salasimfonia.jpg"
+            },
+            {
+                id: 8,
+                era: "Romanticisme",
+                text: "NO HI SENTO RES! Però la música sona dins el meu cap... una oda a l'alegria!",
+                targetId: "beethoven",
+                sfx: "DESTÍ!",
+                bgImage: "img/estuidocaotico.jpg"
+            },
+            {
+                id: 9,
+                era: "Romanticisme",
+                text: "El piano és la meva ànima. Toco nocturns plens de malenconia als salons de París.",
+                targetId: "chopin",
+                sfx: "DRAMA!",
+                bgImage: "img/salon.jpg"
+            },
+            {
+                id: 10,
+                era: "Segle XX",
+                text: "Què passa si poso cargols i gomes dins el piano? El so canvia completament!",
+                targetId: "cage",
+                sfx: "CLONK!",
+                bgImage: "img/piano.jpg"
+            }
+        ];
+
+        let gameScenarios = [];
+        let currentScenarioIndex = 0;
+
+        const contentArea = document.querySelector('.panel-content');
+        const scenarioText = document.getElementById('scenario-text');
+        const scenarioEra = document.getElementById('scenario-era');
+        const scenarioNum = document.getElementById('scenario-number');
+        const dropZone = document.getElementById('drop-zone');
+        const palette = document.getElementById('palette');
+        const sfxElement = document.getElementById('sfx-text');
+        const speedLines = document.getElementById('speed-lines');
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('vol-slider');
+
+        // Volume Control
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            // Play audio
+            bgMusic.play().catch(e => console.log("Audio requires interaction"));
+
+            initGame();
+        }
+
+        function initGame() {
+            // Shuffle scenarios
+            gameScenarios = [...SCENARIOS].sort(() => Math.random() - 0.5);
+            currentScenarioIndex = 0;
+
+            renderPalette();
+            loadScenario(0);
+        }
+
+        function renderPalette() {
+            palette.innerHTML = '';
+            // Shuffle assets
+            const shuffled = [...COMPOSERS].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'character-sticker';
+                el.style.backgroundImage = `url('${c.img}')`;
+                el.draggable = true;
+                el.title = c.name;
+                el.dataset.id = c.id;
+
+                el.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', c.id);
+                    el.classList.add('dragging');
+                });
+
+                el.addEventListener('dragend', () => {
+                    el.classList.remove('dragging');
+                });
+
+                palette.appendChild(el);
+            });
+        }
+
+        function loadScenario(index) {
+            currentScenarioIndex = index;
+            const scene = gameScenarios[index];
+
+            scenarioEra.textContent = scene.era;
+            scenarioNum.textContent = `Vinyeta ${index + 1}/${gameScenarios.length}`;
+            scenarioText.textContent = `"${scene.text}"`;
+
+            // Set Background
+            document.getElementById('panel-bg').style.backgroundImage = `url('${scene.bgImage}')`;
+
+            // Reset Drop Zone
+            dropZone.innerHTML = '';
+            dropZone.className = 'drop-zone';
+            dropZone.style.backgroundImage = 'none';
+        }
+
+        // Logic
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+
+            const charId = e.dataTransfer.getData('text/plain');
+            checkAnswer(charId);
+        });
+
+        function checkAnswer(charId) {
+            const currentScene = gameScenarios[currentScenarioIndex];
+
+            if (charId === currentScene.targetId) {
+                // CORRECT
+                handleCorrect(currentScene);
+            } else {
+                // WRONG
+                handleWrong();
+            }
+        }
+
+        function handleCorrect(scene) {
+            // Visuals
+            const composer = COMPOSERS.find(c => c.id === scene.targetId);
+            dropZone.innerHTML = '';
+            dropZone.classList.add('filled');
+            dropZone.style.backgroundImage = `url('${composer.img}')`;
+            dropZone.style.backgroundSize = 'cover';
+            dropZone.style.backgroundPosition = 'center';
+            dropZone.style.filter = 'grayscale(0%)'; // Color!
+
+            // SFX & Lines
+            sfxElement.textContent = scene.sfx;
+            sfxElement.classList.add('show');
+            speedLines.classList.add('active');
+
+            setTimeout(() => {
+                sfxElement.classList.remove('show');
+                speedLines.classList.remove('active');
+                nextScenario();
+            }, 2500);
+        }
+
+        function handleWrong() {
+            // Shake effect
+            dropZone.style.transform = "translateX(10px) rotate(5deg)";
+            setTimeout(() => dropZone.style.transform = "translateX(-10px) rotate(-5deg)", 100);
+            setTimeout(() => dropZone.style.transform = "translateX(0) rotate(0)", 200);
+        }
+
+        function nextScenario() {
+            if (currentScenarioIndex < gameScenarios.length - 1) {
+                loadScenario(currentScenarioIndex + 1);
+            } else {
+                showWin();
+            }
+        }
+
+        function showWin() {
+            document.getElementById('win-screen').style.display = 'flex';
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'mangaka_badge',
+                    'Mestre Mangaka',
+                    'Has dibuixat la història de la música!',
+                    '../../img/card_mangaka.png'
+                );
+            }
+        }
+    </script>
+</body>
+
+</html>

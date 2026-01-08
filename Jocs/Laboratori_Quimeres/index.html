@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Frankenstein's Musical Chimera</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Roboto+Condensed:wght@400;700&display=swap');
+
+        :root {
+            --primary-bg: #1a1a1a;
+            --accent-green: #ccff00;
+            --accent-green: #ccff00;
+            --accent-purple: #9d00ff;
+            --text-color: #f0f0f0;
+            --container-bg: #2a2a2a;
+            --jar-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        /* HIDE SCROLLBARS */
+        * {
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        *::-webkit-scrollbar {
+            display: none;
+            /* Chrome/Safari */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Roboto Condensed', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Keep body as column to stack header and game-container */
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #2a2a2a 0%, #000 100%);
+            transition: background 0.5s;
+        }
+
+        /* DYNAMIC ACCENT COLORS PER ERA */
+        body.era-mitjana {
+            --accent-green: #ccff00;
+        }
+
+        /* Toxic Green */
+        body.era-renaix {
+            --accent-green: #00ffff;
+        }
+
+        /* Cyan/Blue (Normal) */
+        body.era-barroc {
+            --accent-green: #ffd700;
+        }
+
+        /* Gold */
+        body.era-classic {
+            --accent-green: #ffccff;
+        }
+
+        /* Pink/Pastel */
+        body.era-roman {
+            --accent-green: #ff4500;
+        }
+
+        /* Red/Fire */
+        body.era-sxx {
+            --accent-green: #00ff99;
+        }
+
+        /* Cyber Green */
+
+        h1,
+        h2 {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 0;
+            text-shadow: 0 0 10px var(--accent-green);
+        }
+
+        /* HEADER - Adjusted for side layout? Or keep top? */
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        /* MAIN LAYOUT SPLIT */
+        #game-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            padding-top: 70px;
+            /* Space for absolute header */
+            box-sizing: border-box;
+        }
+
+        /* LEFT PANEL: INVENTORY */
+        #inventory-panel {
+            width: 40%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 2px solid #444;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Category Tabs */
+        #category-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cat-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            padding: 8px 12px;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .cat-btn:hover {
+            background: #444;
+        }
+
+        .cat-btn.active {
+            background: var(--accent-green);
+            color: #000;
+            box-shadow: 0 0 10px var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        /* Active Shelf Area */
+        #active-shelf {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        /* RIGHT PANEL: LAB */
+        #lab-panel {
+            width: 60%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #create-monster-btn {
+            background: var(--accent-green);
+            color: #000;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--accent-green);
+            text-transform: uppercase;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #create-monster-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--accent-green);
+        }
+
+        /* INVENTORY SHELVES (Left & Right) */
+        /* These styles are now replaced by #inventory-panel and #active-shelf */
+        .shelves-container {
+            display: none;
+        }
+
+        .shelf {
+            display: none;
+        }
+
+        /* DRAGGABLE ITEM (Jar/Card) */
+        .part-card {
+            width: 140px;
+            /* Increased from 85px */
+            height: 160px;
+            /* Increased from 95px */
+            background: var(--jar-bg);
+            border: 1px solid #666;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            /* Space out img and label */
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+            padding: 8px;
+            margin: 10px;
+            /* More margin */
+        }
+
+        .part-card:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .part-card .icon {
+            width: 100%;
+            height: 110px;
+            /* Larger image area */
+            object-fit: contain;
+        }
+
+        .part-card .label {
+            font-size: 0.9rem;
+            /* Larger font */
+            line-height: 1.2;
+            font-weight: bold;
+            color: #fff;
+            background: transparent;
+            text-shadow: 0 1px 3px #000;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 4px;
+        }
+
+        /* CREATION TANK (Center) */
+        #lab-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="%23222"><rect width="5" height="5"/></g></svg>') repeat;
+            border: 2px solid #444;
+            border-radius: 15px;
+            position: relative;
+            box-shadow: inset 0 0 30px #000;
+            width: 100%;
+            /* Ensure it takes full width of lab-panel */
+        }
+
+        #tank-display {
+            width: 90%;
+            max-width: 500px;
+            height: 500px;
+            /* Fixed height for tank logic */
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 4px solid var(--accent-green);
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 50px rgba(0, 50, 0, 0.2);
+            /* Grid layout for zones */
+            display: grid;
+            /* Let's keep the user's previous visual logic or just absolute positioning for freedom?
+               Grid is safer for layout.
+               Rows: Brain (top), Mouth/Heart (mid), Body (mid-low), Legs (bot)
+            */
+            grid-template-areas:
+                "brain brain"
+                "mouth heart"
+                "body  body"
+                "legs  legs";
+            gap: 10px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Specific Grid Assignments */
+        #zone-brain {
+            grid-area: brain;
+            justify-self: center;
+        }
+
+        #zone-mouth {
+            grid-area: mouth;
+            justify-self: center;
+        }
+
+        #zone-heart {
+            grid-area: heart;
+            justify-self: center;
+        }
+
+        #zone-body {
+            grid-area: body;
+            justify-self: center;
+        }
+
+        #zone-legs {
+            grid-area: legs;
+            justify-self: center;
+        }
+
+        /* DROP ZONES ON MONSTER */
+        .drop-zone {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #555;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .drop-zone.hover {
+            background: rgba(204, 255, 0, 0.1);
+            border-color: var(--accent-green);
+        }
+
+        .drop-zone.filled {
+            border-style: solid;
+            background: rgba(204, 255, 0, 0.2);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px var(--accent-green);
+        }
+
+        .drop-zone .icon {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .drop-zone .label {
+            display: none;
+            /* Hide label in tank */
+        }
+
+        .drop-label {
+            position: absolute;
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            pointer-events: none;
+            /* Allow clicks/drops to pass through */
+        }
+
+        .drop-zone.filled .drop-label {
+            display: none;
+            /* Hide label when filled */
+        }
+
+        #target-era-display {
+            font-size: 2rem;
+            color: var(--accent-green);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* MODAL */
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        #modal h2 {
+            font-size: 4rem;
+            font-family: 'Roboto Condensed', sans-serif;
+            color: var(--accent-green);
+            animation: pulse 1s infinite alternate;
+        }
+
+        #modal p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        #next-btn,
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            border-radius: 5px;
+            transition: transform 0.2s;
+            text-transform: uppercase;
+        }
+
+        #next-btn:hover,
+        #start-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        #start-screen h1 {
+            font-size: 4rem;
+            color: var(--accent-green);
+            margin-bottom: 20px;
+        }
+
+        #start-screen p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+
+        @keyframes pulse {
+            from {
+                text-shadow: 0 0 10px var(--accent-green);
+            }
+
+            to {
+                text-shadow: 0 0 30px var(--accent-green), 0 0 10px white;
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            50% {
+                transform: translateX(10px);
+            }
+
+            75% {
+                transform: translateX(-10px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            #game-container {
+                flex-direction: column;
+                overflow-y: auto;
+                padding-top: 60px;
+            }
+
+            #inventory-panel {
+                width: 100%;
+                height: auto;
+                min-height: 200px;
+                border-right: none;
+                border-bottom: 2px solid #444;
+            }
+
+            #lab-panel {
+                width: 100%;
+                height: auto;
+                min-height: 50vh;
+            }
+
+            #tank-display {
+                width: 95%;
+                height: 400px;
+                padding: 10px;
+            }
+
+            #category-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                justify-content: flex-start;
+            }
+
+            .cat-btn {
+                flex-shrink: 0;
+            }
+
+            #active-shelf {
+                gap: 8px;
+                padding: 5px;
+            }
+
+            .part-card {
+                width: 70px;
+                height: 80px;
+            }
+
+            .part-card .icon {
+                height: 50px;
+            }
+
+            .part-card .label {
+                font-size: 0.6rem;
+            }
+
+            #create-monster-btn {
+                padding: 15px 30px;
+                font-size: 1.2rem;
+            }
+
+            #target-era-display {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+        }
+
+
+
+        /* TOOLTIP */
+        #game-tooltip {
+            position: fixed;
+            background: rgba(0, 20, 0, 0.95);
+            border: 2px solid var(--accent-green);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
+            display: none;
+            z-index: 2000;
+            max-width: 200px;
+            font-size: 0.9rem;
+            box-shadow: 0 0 10px var(--accent-green);
+            text-align: center;
+        }
+
+        #game-tooltip strong {
+            display: block;
+            color: var(--accent-green);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-family: 'Roboto Condensed', sans-serif;
+            /* Clean font */
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--accent-green);
+            padding-bottom: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Laboratori de Quimeres</h1>
+        <div id="controls" style="display:flex; align-items:center; gap:10px;">
+            <label for="vol-control" style="font-size:0.8rem;">VOL:</label>
+            <input type="range" id="vol-control" min="0" max="1" step="0.1" value="0.5" style="width:80px;">
+            <div id="score">Monstres: <span id="current-stage">1</span>/6</div>
+        </div>
+    </header>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1>BENVINGUTS AL LABORATORI</h1>
+        <p>Ets un ajudant del Dr. Frankenstein Musical.<br>
+            La teva missió és crear la Quimera perfecta per a cada època històrica.<br><br>
+            1. Mira l'Època Objectiu al tanc central.<br>
+            2. Arrossega les parts correctes (Cervell, Cor, Boca, Cos, Cames) de les prestatgeries.<br>
+            3. Prem "CREAR MONSTRE" per donar vida a la teva creació.</p>
+        <button id="start-btn" onclick="startGame()">COMENÇAR (AMB MÚSICA)</button>
+    </div>
+
+    <div id="game-tooltip"></div>
+
+    <div id="game-container">
+        <!-- LEFT PANEL: INVENTORY & TABS -->
+        <div id="inventory-panel">
+            <div id="category-tabs">
+                <button class="cat-btn active" onclick="selectCategory('brain')">CERVELL</button>
+                <button class="cat-btn" onclick="selectCategory('mouth')">BOCA</button>
+                <button class="cat-btn" onclick="selectCategory('heart')">COR</button>
+                <button class="cat-btn" onclick="selectCategory('body')">COS</button>
+                <button class="cat-btn" onclick="selectCategory('legs')">CAMES</button>
+            </div>
+
+            <div id="active-shelf">
+                <!-- Dynamic Items Go Here -->
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: LAB & CREATE -->
+        <div id="lab-panel">
+            <h2 id="target-era-display">ERA OBJECTIU</h2>
+
+            <div id="tank-display">
+                <div class="drop-zone" data-type="brain" id="zone-brain">
+                    <span class="drop-label">Cervell</span>
+                </div>
+                <div class="drop-zone" data-type="mouth" id="zone-mouth">
+                    <span class="drop-label">Boca</span>
+                </div>
+                <div class="drop-zone" data-type="heart" id="zone-heart">
+                    <span class="drop-label">Cor</span>
+                </div>
+                <div class="drop-zone" data-type="body" id="zone-body">
+                    <span class="drop-label">Cos</span>
+                </div>
+                <div class="drop-zone" data-type="legs" id="zone-legs">
+                    <span class="drop-label">Cames</span>
+                </div>
+            </div>
+
+            <div id="create-btn-container" style="margin-top:20px;">
+                <button id="create-monster-btn" onclick="checkCreation()">CREAR MONSTRE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal">
+        <h2>IT'S ALIVE!</h2>
+        <p id="modal-text">La criatura perfecta ha nascut!</p>
+        <button id="next-btn" onclick="nextLevel()">Següent Criatura</button>
+    </div>
+
+    <!-- Audio Placeholders -->
+    <audio id="bg-music" loop src="audio/Dexter’s Lab Day Shift.m4a"></audio>
+    <audio id="sfx-bubble"
+        src="data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA=="></audio>
+    <audio id="sfx-zap"
+        src="data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA=="></audio>
+    <audio id="sfx-thunder"
+        src="data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA=="></audio>
+
+    <script>
+        /* -------------------------------------------------------------------------- */
+        /*                                 GAME DATA                                  */
+        /* -------------------------------------------------------------------------- */
+        const MONSTER_DATA = [
+            {
+                id: "mitjana",
+                era: "EDAT MITJANA (El Gólem)",
+                fullImg: "img/monstremitjana.png",
+                parts: [
+                    { type: "brain", label: "Menta-litat Teocèntrica", img: "img/cervellmitjana.png", hint: "Tot gira entorn de Déu." },
+                    { type: "heart", label: "Cor Gregorià", img: "img/cormitjana.png", hint: "Un sol cor de monjos." },
+                    { type: "mouth", label: "Mono-boca", img: "img/bocamitjana.png", hint: "Monodia: una sola veu." },
+                    { type: "body", label: "Pla-natomia", img: "img/cosmitjana.png", hint: "Cant Pla: sense ritme marcat." },
+                    { type: "legs", label: "Peus de Llatí", img: "img/camesmitjana.png", hint: "L'idioma de l'església." }
+                ]
+            },
+            {
+                id: "renaix",
+                era: "RENAIXEMENT (L'Homuncle)",
+                fullImg: "img/monstrerenaixement.png",
+                parts: [
+                    { type: "brain", label: "Huma-ment", img: "img/cervellrenaixement.png", hint: "Humanisme: l'home al centre." },
+                    { type: "heart", label: "Cor-al Polifònic", img: "img/correnaixement.png", hint: "Moltes veus bategant juntes." },
+                    { type: "mouth", label: "Llengua Vernacle", img: "img/bocarenaixement.png", hint: "L'idioma del poble." },
+                    { type: "body", label: "Impremta Vertebral", img: "img/cosrenaixement.png", hint: "La impremta sosté la difusió." },
+                    { type: "legs", label: "Poli-cames", img: "img/camesrenaixement.png", hint: "Polifonia: caminen diverses melodies." }
+                ]
+            },
+            {
+                id: "barroc",
+                era: "BARROC (L'Autòmata)",
+                fullImg: "img/monstrebarroc.png",
+                parts: [
+                    { type: "brain", label: "Contra-punt", img: "img/cervellbarroc.png", hint: "Notes teixides punt contra punt." },
+                    { type: "heart", label: "Batec Continu", img: "img/corbarroc.png", hint: "Baix Continu: el ritme constant." },
+                    { type: "mouth", label: "Boca d'Ò-pera", img: "img/bocabarroc.png", hint: "Neix el teatre cantat." },
+                    { type: "body", label: "Or-nament", img: "img/cosbarroc.png", hint: "Molta decoració i luxe." },
+                    { type: "legs", label: "Peus de Contrast", img: "img/camesbarroc.png", hint: "Dinàmica terrassa: Fort/Fluix." }
+                ]
+            },
+            {
+                id: "classic",
+                era: "CLASSICISME (La Nina)",
+                fullImg: "img/monstreclassic.png",
+                parts: [
+                    { type: "brain", label: "Il·lustra-closc", img: "img/cervellclassic.png", hint: "La Raó i la Il·lustració." },
+                    { type: "heart", label: "Metrò-cor", img: "img/corclassic.png", hint: "Pulsació regular i ordenada." },
+                    { type: "mouth", label: "Melodia A-companyada", img: "img/bocaclassic.png", hint: "Melodia clara amb acompanyament." },
+                    { type: "body", label: "Forma Son-nata", img: "img/cosclassic.png", hint: "Estructura perfecta (A-B-A)." },
+                    { type: "legs", label: "Cames Simètriques", img: "img/camesclassic.png", hint: "Equilibri i proporció 8+8." }
+                ]
+            },
+            {
+                id: "roman",
+                era: "ROMANTICISME (La Bèstia)",
+                fullImg: "img/monstreromanticisme.png",
+                parts: [
+                    { type: "brain", label: "Geni-alitat", img: "img/cervellromantic.png", hint: "El culte al geni creador." },
+                    { type: "heart", label: "Cor-atge", img: "img/cororomantic.png", hint: "Sentiment i passió desbordada." },
+                    { type: "mouth", label: "Lied-gola", img: "img/bocaromantic.png", hint: "Cançó i poesia (Lied)." },
+                    { type: "body", label: "Natura Viva", img: "img/cosromantic.png", hint: "Inspiració en la natura salvatge." },
+                    { type: "legs", label: "Peus Lliures", img: "img/camesromantic.png", hint: "Rubato: velocitat flexible." }
+                ]
+            },
+            {
+                id: "sxx",
+                era: "SEGLE XX (El Ciborg)",
+                fullImg: "img/monstresegleXX.png",
+                parts: [
+                    { type: "brain", label: "Dodeca-ment", img: "img/cervellsegleXX.png", hint: "Dodecafonisme: 12 tons." },
+                    { type: "heart", label: "Electro-cor", img: "img/corsegleXX.png", hint: "Música electrònica." },
+                    { type: "mouth", label: "Crit Dissonant", img: "img/bocasegleXX.png", hint: "Ús de la dissonància." },
+                    { type: "body", label: "Trenca-ment", img: "img/cossegleXX.png", hint: "Trencament amb el passat." },
+                    { type: "legs", label: "Cames Aleatòries", img: "img/camesegleXX.png", hint: "Música aleatòria/atzar." }
+                ]
+            }
+        ];
+
+        /* -------------------------------------------------------------------------- */
+        /*                                 GAME LOGIC                                 */
+        /* -------------------------------------------------------------------------- */
+        let currentLevelIndex = 0;
+        let placedParts = 0;
+
+        // Setup Tooltip
+        const tooltip = document.getElementById('game-tooltip');
+
+        // Setup Audio
+        const sfxBubble = document.getElementById('sfx-bubble'); // Just placeholders for now
+        const sfxZap = document.getElementById('sfx-zap');
+        const sfxThunder = document.getElementById('sfx-thunder');
+
+        function initGame() {
+            // Wait for start button
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            // Start Music
+            const music = document.getElementById('bg-music');
+            music.volume = 0.5;
+            music.play().catch(e => console.log("Audio play failed:", e));
+
+            // Volume Control
+            document.getElementById('vol-control').addEventListener('input', (e) => {
+                music.volume = e.target.value;
+            });
+
+            loadLevel(0);
+        }
+
+        function loadLevel(index) {
+            if (index >= MONSTER_DATA.length) {
+                // Game Finished logic (optional)
+                index = 0; // Loop or End screen
+            }
+            currentLevelIndex = index;
+            document.getElementById('current-stage').textContent = index + 1;
+            document.getElementById('modal').style.display = 'none';
+            // Clear victory img if exists
+            const vImg = document.getElementById('victory-img');
+            if (vImg) vImg.style.display = 'none';
+
+            const data = MONSTER_DATA[index];
+            document.getElementById('target-era-display').textContent = data.era;
+
+            // DYNAMIC THEME COLOR
+            // Remove old classes
+            document.body.className = '';
+            // Add new class based on era ID (mitjana, renaix, etc)
+            document.body.classList.add('era-' + data.id);
+
+            // Clear Zones
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                // Determine Catalan label
+                let labelText = "Peça";
+                if (zone.dataset.type === 'brain') labelText = "Cervell";
+                if (zone.dataset.type === 'mouth') labelText = "Boca";
+                if (zone.dataset.type === 'heart') labelText = "Cor";
+                if (zone.dataset.type === 'body') labelText = "Cos";
+                if (zone.dataset.type === 'legs') labelText = "Cames";
+
+                zone.innerHTML = `<span class="drop-label">${labelText}</span>`;
+                zone.classList.remove('filled', 'correct', 'error');
+                zone.style.border = ""; // Reset border
+                zone.style.boxShadow = ""; // Reset shadow
+                zone.dataset.filled = "false";
+                zone.dataset.isCorrect = "false";
+            });
+
+            // Start with Brains
+            selectCategory('brain');
+        }
+
+        let currentCategory = 'brain';
+
+        function selectCategory(type) {
+            currentCategory = type;
+
+            // Visual Update Tabs
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(getDataTypeLabel(type).toLowerCase())) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const shelf = document.getElementById('active-shelf');
+            shelf.innerHTML = '';
+
+            // 1. Collect all parts first
+            let partsToDisplay = [];
+            MONSTER_DATA.forEach(data => {
+                const part = data.parts.find(p => p.type === type);
+                if (part) {
+                    const isCorrectForCurrentLevel = MONSTER_DATA[currentLevelIndex].parts.some(p => p.label === part.label);
+                    partsToDisplay.push({ part, isCorrect: isCorrectForCurrentLevel });
+                }
+            });
+
+            // 2. Shuffle array
+            partsToDisplay.sort(() => Math.random() - 0.5);
+
+            // 3. Render
+            partsToDisplay.forEach(item => {
+                const card = createDraggableCard(item.part, item.isCorrect);
+                shelf.appendChild(card);
+            });
+        }
+
+        function getDataTypeLabel(type) {
+            if (type === 'brain') return "CERVELL";
+            if (type === 'mouth') return "BOCA";
+            if (type === 'heart') return "COR";
+            if (type === 'body') return "COS";
+            if (type === 'legs') return "CAMES";
+            return type;
+        }
+
+        function createDraggableCard(part, isCorrect) {
+            const el = document.createElement('div');
+            el.classList.add('part-card');
+            el.draggable = true;
+            el.dataset.type = part.type;
+            el.dataset.label = part.label; // Store label for correctness check
+            el.dataset.correct = isCorrect;
+
+            el.innerHTML = `
+            <img src="${part.img}" class="icon" draggable="false">
+            <div class="label" title="${part.label}">${part.label}</div>
+            `;
+
+            // Hover Tooltip logic
+            el.addEventListener('mouseenter', (e) => showTooltip(e, part));
+            el.addEventListener('mouseleave', hideTooltip);
+            el.addEventListener('mousemove', moveTooltip);
+
+            // Drag Events
+            el.addEventListener('dragstart', dragStart);
+            el.addEventListener('touchstart', touchStart);
+
+            return el;
+        }
+
+        /* ------------------------- TOOLTIP LOGIC ------------------------- */
+        function showTooltip(e, part) {
+            tooltip.innerHTML = `<strong>${part.label}</strong>${part.hint}`;
+            tooltip.style.display = 'block';
+            moveTooltip(e);
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        function moveTooltip(e) {
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+        }
+
+        /* ---------------------------- DRAG & DROP LOGIC --------------------------- */
+        let draggedItem = null;
+
+        function dragStart(e) {
+            draggedItem = this;
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                type: this.dataset.type,
+                correct: this.dataset.correct === 'true',
+                html: this.innerHTML
+            }));
+        }
+
+        // Touch Support Wrapper
+        function touchStart(e) {
+            draggedItem = this;
+            // Simple implementation: highlight zones?
+            // True Drag&Drop on mobile usually needs custom move handler
+            // For simplicity in this prompt, we rely on click-to-equip fallback?
+            // Or implement touch move. Let's do a simple "Tap to Select, Tap Zone to Drop" for mobile if D&D is hard.
+            // Actually, let's try standard touch-drag logic.
+        }
+
+        // Zone Events
+        const zones = document.querySelectorAll('.drop-zone');
+        zones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault(); // Allow drop
+                zone.classList.add('hover');
+            });
+            zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
+            zone.addEventListener('drop', handleDrop);
+        });
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('hover');
+
+            const dataInfo = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+            // 1. Check Type Match
+            if (this.dataset.type !== dataInfo.type) return;
+
+            // 2. Place Item (No Validation Yet)
+            this.innerHTML = dataInfo.html;
+            this.classList.add('filled');
+            this.dataset.filled = "true";
+            this.dataset.isCorrect = dataInfo.correct; // Store for validation
+
+            // Animation effect
+            // playBubble();
+        }
+
+        /* --------------------------- VALIDATION LOGIC --------------------------- */
+        function checkCreation() {
+            // Check if all zones are filled
+            const allZones = document.querySelectorAll('.drop-zone');
+            let allFilled = true;
+            let allCorrect = true;
+
+            allZones.forEach(zone => {
+                if (zone.dataset.filled !== "true") {
+                    allFilled = false;
+                    return; // break loop
+                }
+            });
+
+            if (!allFilled) {
+                alert("Completa el monstre primer! Has d'omplir tots els espais.");
+                return;
+            }
+
+            // Check correctness
+            allZones.forEach(zone => {
+                if (zone.dataset.isCorrect === "true") {
+                    zone.classList.add('correct');
+                    zone.classList.remove('error');
+                    zone.style.border = "2px solid #0f0";
+                    zone.style.boxShadow = "0 0 10px #0f0";
+                } else {
+                    zone.classList.add('error');
+                    zone.classList.remove('correct');
+                    zone.classList.add('shake');
+                    setTimeout(() => zone.classList.remove('shake'), 500);
+                    zone.style.border = "2px solid #f00";
+                    zone.style.boxShadow = "0 0 10px #f00";
+                    allCorrect = false;
+                }
+            });
+
+            if (allCorrect) {
+                levelComplete();
+            } else {
+                playZap(); // Error sound
+            }
+        }
+
+        function playZap() {
+            // sfxZap.play();
+            console.log("Error in creation!");
+        }
+
+        function levelComplete() {
+            // sfxThunder.play();
+            const currentData = MONSTER_DATA[currentLevelIndex];
+            document.getElementById('modal-text').innerHTML = `Has creat la bèstia perfecta del <strong>${currentData.era}</strong>!`;
+
+            // Show Full Image
+            let img = document.getElementById('victory-img');
+            if (!img) {
+                img = document.createElement('img');
+                img.id = 'victory-img';
+                img.style.maxWidth = '300px';
+                img.style.maxHeight = '300px';
+                img.style.margin = '20px auto';
+                img.style.border = '4px solid var(--accent-green)';
+                img.style.borderRadius = '10px';
+                document.getElementById('modal-text').after(img);
+            }
+            img.style.display = 'block';
+            img.src = currentData.fullImg;
+
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function nextLevel() {
+            loadLevel(currentLevelIndex + 1);
+        }
+
+        // Init
+        // initGame(); // Called by start button logic
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Lladre de Guant Blanc</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Special+Elite&display=swap');
+
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e0e0e0;
+            --accent-gold: #c5a059;
+            --font-display: 'Playfair Display', serif;
+            --font-mono: 'Special Elite', monospace;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            overflow: hidden;
+            height: 100vh;
+            cursor: none;
+            /* Custom cursor handling */
+        }
+
+        #museum {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* Background Image Layer */
+        #museum-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            filter: grayscale(100%) contrast(120%);
+            z-index: 1;
+        }
+
+        /* Flashlight Effect */
+        #flashlight-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, transparent 100px, rgba(0, 0, 0, 0.95) 300px);
+            pointer-events: none;
+            z-index: 50;
+            mix-blend-mode: multiply;
+            /* Better blending for light */
+        }
+
+        /* Custom Cursor (Glove) */
+        #cursor-follower {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            pointer-events: none;
+            transform: translate(-30%, -30%);
+            /* Offset for hand realistic feel */
+            z-index: 60;
+            background-image: url('img/mano.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 20px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 2px solid var(--accent-gold);
+            z-index: 70;
+            font-family: var(--font-mono);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            max-width: 300px;
+            cursor: auto;
+            /* Allow interaction with slider */
+        }
+
+        #hud h3 {
+            margin: 0 0 10px 0;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+
+        .hud-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 1rem;
+            align-items: center;
+        }
+
+        /* Volume Control */
+        .volume-control {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            accent-color: var(--accent-gold);
+            cursor: pointer;
+        }
+
+        /* Thief Bag */
+        #thief-bag {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 180px;
+            height: 180px;
+            background: url('img/bolso.png') no-repeat center bottom;
+            background-size: contain;
+            /* No border needed if image is good, but keep outline just in case */
+            /* border: 2px dashed rgba(197, 160, 89, 0.3); */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 55;
+            color: var(--accent-gold);
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 2px 4px black;
+        }
+
+        /* Artifacts */
+        .artifact {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+            cursor: none;
+            /* Hide default cursor */
+            transition: transform 0.2s;
+        }
+
+        .artifact img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+        }
+
+        /* Tooltip Name Tag */
+        .name-tag {
+            position: absolute;
+            top: -30px;
+            /* Above item */
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #000;
+            padding: 4px 10px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: bold;
+            white-space: nowrap;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 101;
+            text-transform: uppercase;
+        }
+
+        .artifact:hover {
+            opacity: 1 !important;
+            transform: scale(1.1);
+            z-index: 100;
+        }
+
+        .artifact:hover .name-tag {
+            opacity: 1;
+        }
+
+        /* Screens */
+        #start-screen,
+        #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.98);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-size: 1.3rem;
+            max-width: 700px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            color: #ccc;
+        }
+
+        button.btn-noir {
+            background: transparent;
+            color: var(--accent-gold);
+            border: 2px solid var(--accent-gold);
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            font-family: var(--font-display);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button.btn-noir:hover {
+            background: var(--accent-gold);
+            color: #000;
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
+        }
+
+        /* Alarm Effect */
+        .alarm-active #flashlight-overlay {
+            background: radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.2) 150px, rgba(50, 0, 0, 0.98) 350px);
+        }
+
+        .alarm-active #museum-bg {
+            filter: grayscale(0%) sepia(100%) hue-rotate(-50deg) saturate(300%);
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+            animation-iteration-count: infinite;
+        }
+    </style>
+    <title>El Lladre de la Història</title>
+</head>
+
+<body>
+    <div id="museum">
+        <div id="museum-bg"></div>
+        <div id="flashlight-overlay"></div>
+        <div id="cursor-follower"></div>
+
+        <div id="hud" onmouseenter="document.body.style.cursor='auto'" onmouseleave="document.body.style.cursor='none'">
+            <h3>Pla de Robatori</h3>
+            <div class="hud-item"><span>Objectiu:</span> <span id="era-target"
+                    style="color:var(--accent-gold)">---</span></div>
+            <div class="hud-item"><span>Botí:</span> <span id="loot-val">0</span>/6</div>
+            <div class="hud-item"><span>Alertes:</span> <span id="alarms-val">0</span>/3</div>
+            <div class="hud-item"
+                style="border-top:1px solid #444; margin-top:5px; padding-top:5px; color:#aaa; font-size:0.8rem;">
+                <span>Robatoris Totals:</span> <span id="total-wins-val" style="color:#fff">0</span>
+            </div>
+
+            <div class="volume-control">
+                <span>🔊</span>
+                <input type="range" id="vol-slider" class="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+        </div>
+
+        <div id="artifacts-layer"></div>
+
+        <div id="thief-bag">
+            <!-- Bag Image is background -->
+        </div>
+    </div>
+
+    <div id="start-screen">
+        <h1>EL LLADRE DE LA HISTÒRIA</h1>
+        <p>Ets un lladre de guant blanc viatjant pel temps.</p>
+        <p>Busca 6 objectes de <strong>l'època correcta</strong> arrossegant-los a la teva bossa. Evita els anacronismes
+            o saltarà l'alarma.</p>
+        <button class="btn-noir" onclick="startGame()">COMENÇAR EL COP</button>
+    </div>
+
+    <div id="game-over-screen" style="display: none;">
+        <h1 id="end-title"></h1>
+        <p id="end-msg"></p>
+        <button class="btn-noir" onclick="startGame()">NOU CAS</button>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Smoke & Streetlamps.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Database with Measured Image filenames
+        const DB = {
+            "EDAT MITJANA": {
+                good: [
+                    { n: "Manuscrit", img: "manuscrit.png" },
+                    { n: "Llaüt", img: "llaut.png" },
+                    { n: "Ploma", img: "ploma.png" },
+                    { n: "Pergamí", img: "pergami.png" }
+                ],
+                bad: [
+                    { n: "Violí", img: "violibarroc.png" },
+                    { n: "Piano", img: "piano.png" },
+                    { n: "Sintetitzador", img: "sintetitzador.png" },
+                    { n: "Batuta", img: "batuta.png" }
+                ]
+            },
+            "RENAIXEMENT": {
+                good: [
+                    { n: "Madrigal", img: "madrigal.png" },
+                    { n: "Viola Gamba", img: "violagamba.png" },
+                    { n: "Partitura", img: "partitura.png" }
+                ],
+                bad: [
+                    { n: "Basso Continuo", img: "baixcontinu.png" },
+                    { n: "Clarinet", img: "clarinet.png" },
+                    { n: "Metrònom", img: "metronom.png" }
+                ]
+            },
+            "BARROC": {
+                good: [
+                    { n: "Clavicèmbal", img: "clave.png" },
+                    { n: "Violí Barroc", img: "violibarroc.png" },
+                    { n: "Perruca", img: "perruca.png" },
+                    { n: "Basso Continuo", img: "baixcontinu.png" }
+                ],
+                bad: [
+                    { n: "Piano Cua", img: "piano.png" },
+                    { n: "Guitarra", img: "guitarra.png" },
+                    { n: "Saxòfon", img: "saxo.png" }
+                ]
+            },
+            "CLASSICISME": {
+                good: [
+                    { n: "Metrònom", img: "metronom.png" },
+                    { n: "Clarinet", img: "clarinet.png" },
+                    { n: "Sonata", img: "sonata.png" }
+                ],
+                bad: [
+                    { n: "Clavicèmbal", img: "clave.png" },
+                    { n: "Sintetitzador", img: "sintetitzador.png" },
+                    { n: "Llaüt", img: "llaut.png" }
+                ]
+            },
+            "ROMANTICISME": {
+                good: [
+                    { n: "Batuta", img: "batuta.png" },
+                    { n: "Piano Mini", img: "minipiano.png" },
+                    { n: "Arpa", img: "arpa.png" },
+                    { n: "Piano Cua", img: "piano.png" }
+                ],
+                bad: [
+                    { n: "Viola Gamba", img: "violagamba.png" },
+                    { n: "Ordinador", img: "ordinador.png" },
+                    { n: "Llaüt", img: "llaut.png" }
+                ]
+            },
+            "SEGLE XX": {
+                good: [
+                    { n: "Ràdio", img: "radio.png" },
+                    { n: "Sintetitzador", img: "sintetitzador.png" },
+                    { n: "Vinil", img: "vinil.png" },
+                    { n: "Saxòfon", img: "saxo.png" },
+                    { n: "Guitarra", img: "guitarra.png" }
+                ],
+                bad: [
+                    { n: "Perruca", img: "perruca.png" },
+                    { n: "Llaüt", img: "llaut.png" },
+                    { n: "Clavicèmbal", img: "clave.png" }
+                ]
+            }
+        };
+
+        // --- AUDIO SETUP ---
+        // Background Music
+        const audioFile = "audio/Smoke & Streetlamps.m4a";
+
+        // SFX Context
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                // "Titlin" - High pitch bling
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'fail') {
+                // "Error" - Low buzz/siren
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        let targetEra = "", loot = 0, alarms = 0, dragItem = null;
+        let diffX = 0, diffY = 0;
+        let totalWins = 0;
+        const WIN_TARGET = 6; // Updated to 6
+
+        const museum = document.getElementById('museum');
+        const flashlight = document.getElementById('flashlight-overlay');
+        const cursorInfo = document.getElementById('cursor-follower');
+        const bgMusic = document.getElementById('bg-music');
+
+        // Volume
+        document.getElementById('vol-slider').addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        // Mouse Logic
+        document.addEventListener('mousemove', e => {
+            // Only move if not over HUD interactively
+            const x = e.clientX;
+            const y = e.clientY;
+
+            flashlight.style.background = `radial-gradient(circle at ${x}px ${y}px, transparent 100px, rgba(0, 0, 0, 0.4) 150px, rgba(0, 0, 0, 0.98) 350px)`;
+
+            cursorInfo.style.left = x + 'px';
+            cursorInfo.style.top = y + 'px';
+
+            if (dragItem) {
+                dragItem.style.left = (x - diffX) + 'px';
+                dragItem.style.top = (y - diffY) + 'px';
+            }
+        });
+
+        function startGame() {
+            // Find audio file if not set
+            if (bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio autoplay blocked"));
+            }
+
+            loot = 0;
+            alarms = 0;
+            museum.classList.remove('alarm-active', 'shake');
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+
+            targetEra = Object.keys(DB)[Math.floor(Math.random() * 6)];
+            updateHUD();
+
+            const al = document.getElementById('artifacts-layer');
+            al.innerHTML = '';
+
+            const era = DB[targetEra];
+            const allItems = [];
+
+            // --- GOOD ITEMS ---
+            // Pick ALL good items from the current era (usually 3-5)
+            // If we need 6 to win, we might need to duplicate if there aren't enough unique ones,
+            // OR ensure the DB has enough. The DB has ~3-5 per era. 
+            // To reach 6, we might need to recycle some or just put all available.
+            // Let's put ALL unique good items available first.
+            let availableGood = [...era.good];
+
+            // If we need more good items than available to reach target 6, we might not reach it.
+            // Let's ensure we spawn enough good items (allow duplicates if needed, but prefer unique).
+            // Actually user wants "no repeats" for bad items. For good items, duplicates might be necessary if DB is small.
+            // But let's verify DB size. Most eras have 3-4 good items. 
+            // User wants 6 steals. We MUST spawn at least 6 good items.
+
+            while (allItems.length < WIN_TARGET + 1) { // Spawn slightly more than needed
+                if (availableGood.length > 0) {
+                    const idx = Math.floor(Math.random() * availableGood.length);
+                    allItems.push({ ...availableGood[idx], g: true });
+                    availableGood.splice(idx, 1);
+                } else {
+                    // Refill if ran out (duplicates unavoidable if DB small)
+                    availableGood = [...era.good];
+                }
+            }
+
+            // --- BAD ITEMS (Anachronisms) ---
+            // User requested: "que los que no son de la epoca, no se repitan" (no repeats).
+            // We will gather ALL items from OTHER eras to serve as distractors.
+            let potentialDistractors = [];
+            Object.keys(DB).forEach(key => {
+                if (key !== targetEra) {
+                    // Add both 'good' and 'bad' listed items from other eras as potential distractors
+                    potentialDistractors.push(...DB[key].good);
+                    // We can also use DB[key].bad but those might be generic music items already covered.
+                    // The 'good' items of other eras are definitely valid items with images.
+                }
+            });
+
+            // Filter duplicates by name in potentialDistractors just in case
+            potentialDistractors = potentialDistractors.filter((v, i, a) => a.findIndex(t => (t.n === v.n)) === i);
+
+            // Shuffle and pick 7 unique distractors
+            potentialDistractors.sort(() => Math.random() - 0.5);
+            const selectedDistractors = potentialDistractors.slice(0, 7);
+
+            selectedDistractors.forEach(d => {
+                allItems.push({ ...d, g: false });
+            });
+
+            // Shuffle all for placement
+            allItems.sort(() => Math.random() - 0.5);
+
+            allItems.forEach(it => {
+                const el = document.createElement('div');
+                el.className = 'artifact';
+
+                // Image or text fallback
+                if (it.img) {
+                    el.innerHTML = `<img src="img/${it.img}" alt="${it.n}" onerror="this.style.display='none'; this.parentElement.innerText='${it.n}'">`;
+                } else {
+                    el.textContent = it.n;
+                }
+
+                const tag = document.createElement('div');
+                tag.className = 'name-tag';
+                tag.textContent = it.n;
+                el.appendChild(tag);
+
+                el.style.left = Math.random() * (window.innerWidth - 100) + 50 + 'px';
+                el.style.top = Math.random() * (window.innerHeight - 200) + 50 + 'px';
+
+                el.onmousedown = e => {
+                    e.preventDefault();
+                    if (!it.g) {
+                        triggerAlarm();
+                        el.style.border = '2px solid red';
+                        setTimeout(() => el.style.border = 'none', 500);
+                    } else {
+                        dragItem = el;
+                        const rect = el.getBoundingClientRect();
+                        diffX = e.clientX - rect.left;
+                        diffY = e.clientY - rect.top;
+
+                        el.style.zIndex = 1000;
+                        // Visual grab
+                        cursorInfo.style.transform = "translate(-30%, -30%) scale(0.9)";
+                    }
+                }
+
+                al.appendChild(el);
+            });
+
+            document.onmouseup = () => {
+                if (dragItem) {
+                    const r = dragItem.getBoundingClientRect();
+                    const b = document.getElementById('thief-bag').getBoundingClientRect();
+
+                    if (r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top) {
+                        // Success drop
+                        dragItem.remove();
+                        loot++;
+                        playSound('success'); // SFX
+                        updateHUD();
+                        // Check Win
+                        if (loot >= WIN_TARGET) endGame(true);
+                    } else {
+                        dragItem.style.zIndex = 40;
+                    }
+                    dragItem = null;
+                    cursorInfo.style.transform = "translate(-30%, -30%) scale(1)";
+                }
+            };
+        }
+
+        function triggerAlarm() {
+            alarms++;
+            playSound('fail'); // SFX
+            updateHUD();
+            museum.classList.add('alarm-active', 'shake');
+
+            setTimeout(() => {
+                museum.classList.remove('alarm-active', 'shake');
+            }, 800);
+
+            if (alarms >= 3) endGame(false);
+        }
+
+        function updateHUD() {
+            document.getElementById('loot-val').textContent = loot;
+            document.getElementById('alarms-val').textContent = alarms;
+            document.getElementById('era-target').textContent = targetEra;
+            document.getElementById('total-wins-val').textContent = totalWins;
+        }
+
+        function endGame(w) {
+            const s = document.getElementById('game-over-screen');
+            s.style.display = 'flex';
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if (w) {
+                totalWins++;
+                title.textContent = "ROBATORI COMPLET";
+                title.style.color = "var(--accent-gold)";
+                msg.textContent = "Has netejat el museu sense deixar rastre. Ets una llegenda.";
+            } else {
+                title.textContent = "ENXAMPAT!";
+                title.style.color = "#d32f2f";
+                msg.textContent = "La policia t'ha rodejat. S'ha acabat la teva carrera.";
+            }
+            updateHUD();
+        }
+    </script>
+</body>
+
+</html>

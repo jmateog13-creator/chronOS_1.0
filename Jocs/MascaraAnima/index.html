@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Màscara de l'Ànima</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --wood-dark: #3e2723;
+            --wood-light: #5d4037;
+            --gold: #d4af37;
+            --shadow: rgba(0, 0, 0, 0.8);
+            --candle-glow: rgba(255, 160, 0, 0.1);
+            --text-color: #e0e0e0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            color: var(--text-color);
+            font-family: 'Noto Serif JP', serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image:
+                radial-gradient(circle at 50% 50%, var(--candle-glow) 0%, transparent 60%),
+                repeating-linear-gradient(90deg, #1a1a1a 0, #1a1a1a 2px, #050505 2px, #050505 40px);
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px #000;
+        }
+
+        /* --- STAGE (The Butai) --- */
+        #stage {
+            flex: 2;
+            position: relative;
+            background:
+                linear-gradient(to bottom, transparent 60%, black 100%),
+                url('img/fons.jpg') center/cover no-repeat;
+            background-color: #1a0f0a;
+            border-bottom: 20px solid var(--wood-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 50px;
+            overflow: hidden;
+        }
+
+        /* Candle Effect */
+        #stage::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 70%, rgba(255, 100, 0, 0.1), transparent 70%);
+            animation: flicker 4s infinite alternate;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+
+            100% {
+                opacity: 0.9;
+            }
+        }
+
+        /* Custom Tooltip Style (Uses data-desc instead of title to avoid double popup) */
+        .mask[data-desc]:hover::after {
+            content: attr(data-desc);
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            background: rgba(10, 5, 0, 0.95);
+            color: #fff;
+            padding: 15px;
+            border: 1px solid var(--gold);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            z-index: 1000;
+            pointer-events: none;
+            white-space: normal;
+            box-shadow: 0 5px 20px black;
+            text-align: center;
+        }
+
+        /* Actor Silhouette */
+        .actor {
+            width: 350px;
+            /* Bigger Actor */
+            height: 550px;
+            /* Changed to use Image */
+            background-image: url('img/actor.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            position: relative;
+            filter: drop-shadow(0 0 30px black);
+            transition: all 1s;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 80px;
+            /* Push face zone down slightly */
+            z-index: 2;
+        }
+
+        .actor.faded {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+        }
+
+        .actor-face-zone {
+            width: 140px;
+            height: 190px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 70px 70px 50px 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px black;
+            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.3);
+            /* Slightly darker to see prompt */
+        }
+
+        .actor-face-zone.highlight {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 30px var(--gold);
+        }
+
+        /* Dialogue Box */
+        #dialogue-box {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid var(--wood-light);
+            padding: 25px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        #actor-name {
+            color: var(--gold);
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        #actor-text {
+            font-style: italic;
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        /* --- DRESSING ROOM (Inventory) --- */
+        #dressing-room {
+            flex: 1;
+            background: #0a0a0a;
+            border-top: 5px solid var(--wood-dark);
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            /* Add spacing between masks */
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .mask-container {
+            width: 180px;
+            /* Increased Size */
+            height: 240px;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .mask-container:hover {
+            transform: translateY(-15px) scale(1.05);
+            z-index: 50;
+        }
+
+        .mask {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            position: relative;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            overflow: visible;
+            border: none;
+        }
+
+        .mask img {
+            width: 100%;
+            height: 85%;
+            /* Make image fill more space */
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.6));
+            transition: filter 0.2s;
+        }
+
+        .mask:hover img {
+            filter: drop-shadow(0 15px 30px rgba(212, 175, 55, 0.3));
+            /* Gold glow on hover */
+        }
+
+        .mask:active {
+            cursor: grabbing;
+        }
+
+        .mask-label {
+            position: absolute;
+            bottom: -10px;
+            width: 120%;
+            /* Wider label */
+            text-align: center;
+            font-size: 0.9rem;
+            color: #ddd;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .stat {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .life-pip {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--gold);
+        }
+
+        .life-pip.lost {
+            background: #222;
+            border: 1px solid #555;
+            box-shadow: none;
+        }
+
+        /* Volume Control */
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        input[type=range] {
+            accent-color: var(--gold);
+            cursor: pointer;
+        }
+
+        /* SCREENS */
+        #start-screen,
+        #end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        p {
+            font-size: 1.3rem;
+            max-width: 700px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .btn {
+            margin-top: 40px;
+            padding: 15px 50px;
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn:hover {
+            background: var(--gold);
+            color: black;
+            box-shadow: 0 0 30px var(--gold);
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- BACKGROUND AUDIO -->
+        <audio id="bg-music" loop>
+            <source src="audio/Ma Between Footsteps.m4a" type="audio/mp3">
+        </audio>
+
+        <!-- START SCREEN -->
+        <div id="start-screen">
+            <h1>LA MÀSCARA DE L'ÀNIMA</h1>
+            <p>Ets un <b>Omote-shi</b>, un mestre de màscares.</p>
+            <p>Els esperits dels actors busquen la seva identitat musical.<br>Escolta les seves paraules (Pista en el
+                diàleg) i atorga'ls la màscara correcta per alliberar la seva ànima.</p>
+            <button class="btn" onclick="startGame()">ENTRAR AL CAMERINO</button>
+        </div>
+
+        <!-- END SCREEN -->
+        <div id="end-screen" class="hidden">
+            <h1 id="end-title">FINAL</h1>
+            <p id="end-msg">...</p>
+            <button class="btn" onclick="location.reload()">NOVA FUNCIÓ</button>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div class="stat">ACTORS: <span id="score">0</span> / 18</div>
+            <div class="stat" id="lives-container">
+                <!-- Pips injected here -->
+            </div>
+            <div id="volume-control">
+                <label for="vol">MÚSICA:</label>
+                <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+            </div>
+        </div>
+
+        <!-- MAIN STAGE -->
+        <div id="stage">
+            <div id="actor" class="actor">
+                <div class="actor-face-zone" id="face-zone">
+                    ARROSSEGA<br>MÀSCARA
+                </div>
+            </div>
+
+            <div id="dialogue-box">
+                <div id="actor-name">???</div>
+                <div id="actor-text">...</div>
+            </div>
+        </div>
+
+        <!-- MASKS -->
+        <div id="dressing-room">
+            <!-- Masks injected here -->
+        </div>
+    </div>
+
+    <script>
+        // --- MASK LIBRARY (Info for Tooltips & Asset Mapping) ---
+        // PISTA: Added "Pista" to help user link concept to mask
+        const MASK_INFO = {
+            "Okina": { desc: "El Vell. Símbol de Ritual i Pau. (Pista: Cant Gregorià o Monodia)", img: "monodia-removebg-preview.png" },
+            "Semimaru": { desc: "El Cec. Un príncep exiliat i humil. (Pista: Obres Anònimes)", img: "anonimo.png" },
+            "Ko-omote": { desc: "La Jove. Bellesa pura i simetria. (Pista: Polifonia perfecta)", img: "polifonia.png" },
+            "Chujo": { desc: "El Noble. Elegància i proporció humana. (Pista: Humanisme)", img: "humanismo.png" },
+            "Waka": { desc: "El Jove Guerrer. Amor i naturalesa. (Pista: Madrigal)", img: "madrigal.png" },
+            "Shishiguchi": { desc: "Boca de Lleó. Força i base sòlida. (Pista: Baix Continu)", img: "bassocontinuo.png" },
+            "Kumadori": { desc: "Kabuki Aragoto. Passió extrema i drama. (Pista: Òpera)", img: "opera.png" },
+            "Kuro": { desc: "Barba Negra. Contrast i poder fosc. (Pista: Contrast Barroc)", img: "contrast.png" },
+            "Zo-onna": { desc: "Dona Divina. Ordre i estructura clara. (Pista: Sonata Clàssica)", img: "sonata.png" },
+            "Kantan": { desc: "El Somiador. Racional i senzill. (Pista: Racionalisme)", img: "rationalism.png" },
+            "Douji": { desc: "El Nen Prodigi. Perfecció tècnica i joc. (Pista: Mozart/Prodigi)", img: "prodigy.png" },
+            "Hannya": { desc: "La Gelosa. Fúria i tempesta emocional. (Pista: Romanticisme)", img: "storm.png" },
+            "Yase": { desc: "L'Home Prim. Solitud i mort. (Pista: Lied Romàntic)", img: "lied.png" },
+            "Tengu": { desc: "El Goblin. Poder sobrenatural i tècnica. (Pista: Virtuosisme)", img: "poewr:virtuosity.png" },
+            "Hyottoko": { desc: "El Bufó. Trenca les regles i deforma. (Pista: Atonalisme)", img: "atonal.png" },
+            "Kitsune": { desc: "La Guineu. Màgia tecnològica. (Pista: Música Electrònica)", img: "electronica.png" },
+            "Namazu": { desc: "El Peix Gat. Caos i soroll pur. (Pista: Sorollisme)", img: "noise.png" }
+        };
+
+        function getMaskData(fullString) {
+            const realNameKey = fullString.split(' - ')[0].trim().split(' ')[0];
+            let cleanKey = realNameKey;
+
+            if (fullString.includes("Okina")) cleanKey = "Okina";
+            if (fullString.includes("Semimaru")) cleanKey = "Semimaru";
+            if (fullString.includes("Ko-omote")) cleanKey = "Ko-omote";
+            if (fullString.includes("Chujo")) cleanKey = "Chujo";
+            if (fullString.includes("Waka")) cleanKey = "Waka";
+            if (fullString.includes("Shishiguchi")) cleanKey = "Shishiguchi";
+            if (fullString.includes("Kumadori")) cleanKey = "Kumadori";
+            if (fullString.includes("Kuro")) cleanKey = "Kuro";
+            if (fullString.includes("Zo-onna")) cleanKey = "Zo-onna";
+            if (fullString.includes("Kantan")) cleanKey = "Kantan";
+            if (fullString.includes("Douji")) cleanKey = "Douji";
+            if (fullString.includes("Hannya")) cleanKey = "Hannya";
+            if (fullString.includes("Yase")) cleanKey = "Yase";
+            if (fullString.includes("Tengu")) cleanKey = "Tengu";
+            if (fullString.includes("Hyottoko")) cleanKey = "Hyottoko";
+            if (fullString.includes("Kitsune")) cleanKey = "Kitsune";
+            if (fullString.includes("Namazu")) cleanKey = "Namazu";
+
+            return MASK_INFO[cleanKey] || { desc: "Màscara tradicional", img: "" };
+        }
+
+        const GAME_DATA = {
+            actors: [
+                { id: "m1", name: "L'Esperit Gregorià", era: "mitjana", dialogue: "Sóc la veu de l'origen. Canto sol, sense instruments, per parlar amb Déu.", correct_mask: { name: "Okina - Gregorià" }, wrong_masks: ["Hannya - Gelosia", "Hyottoko - Bufó"] },
+                { id: "m2", name: "Germà Monodia", era: "mitjana", dialogue: "Una sola línia, un sol camí. La meva ànima no té distraccions.", correct_mask: { name: "Okina - Monodia" }, wrong_masks: ["Kitsune - Astúcia", "Tengu - Poder"] },
+                { id: "m3", name: "Cantor Anònim", era: "mitjana", dialogue: "No importa el meu nom, només importa el text sagrat que recito.", correct_mask: { name: "Semimaru - Anònim" }, wrong_masks: ["Kuro - Passió", "Hannya - Ira"] },
+                { id: "r1", name: "Dama Polifonía", era: "renaix", dialogue: "Les meves veus s'entrellacen amb perfecció. Busco la bellesa ideal.", correct_mask: { name: "Ko-omote - Polifonia" }, wrong_masks: ["Okina - Ritual", "Hannya - Gelosia"] },
+                { id: "r2", name: "Mestre Humanista", era: "renaix", dialogue: "L'home és la mesura de totes les coses. Tot ha de ser proporcionat.", correct_mask: { name: "Chujo - Humanisme" }, wrong_masks: ["Tengu - Poder", "Hyottoko - Bufó"] },
+                { id: "r3", name: "Senyor Madrigal", era: "renaix", dialogue: "Canto a l'amor humà i a la natura, amb elegància i refinament.", correct_mask: { name: "Waka - Madrigal" }, wrong_masks: ["Kuro - Ira", "Okina - Ritual"] },
+                { id: "b1", name: "Rei del Baix Continu", era: "barroc", dialogue: "Necessito una base sòlida i pesada per sostenir tot aquest luxe.", correct_mask: { name: "Shishiguchi - Baix Continu" }, wrong_masks: ["Ko-omote - Bellesa", "Waka - Joventut"] },
+                { id: "b2", name: "Dama Òpera", era: "barroc", dialogue: "Vull plorar, cridar i morir d'amor a l'escenari! Més és més!", correct_mask: { name: "Kumadori - Òpera" }, wrong_masks: ["Okina - Ritual", "Semimaru - Humilitat"] },
+                { id: "b3", name: "Duc del Contrast", era: "barroc", dialogue: "Llum i foscor. Fort i fluix. La meva ànima és una lluita constant.", correct_mask: { name: "Kuro - Contrast" }, wrong_masks: ["Ko-omote - Bellesa", "Chujo - Noblesa"] },
+                { id: "c1", name: "Senyora Sonata", era: "classic", dialogue: "La meva ment és clara. Estructura A-B-A. Res de sorpreses desagradables.", correct_mask: { name: "Zo-onna - Sonata" }, wrong_masks: ["Hannya - Gelosia", "Kumadori - Passió"] },
+                { id: "c2", name: "Arquitecte Racional", era: "classic", dialogue: "Busco la senzillesa. Una melodia clara sobre un acompanyament discret.", correct_mask: { name: "Kantan - Racionalisme" }, wrong_masks: ["Shishiguchi - Força", "Tengu - Poder"] },
+                { id: "c3", name: "Petit Prodigi", era: "classic", dialogue: "Jugo amb la música com si fos una joguina perfecta i simètrica.", correct_mask: { name: "Douji - Prodigi" }, wrong_masks: ["Okina - Ritual", "Kuro - Ira"] },
+                { id: "rom1", name: "Esperit de la Tempesta", era: "roman", dialogue: "Sento una fúria interna! Els llamps i els trons són la meva orquestra.", correct_mask: { name: "Hannya - Tempesta" }, wrong_masks: ["Ko-omote - Bellesa", "Zo-onna - Serenitat"] },
+                { id: "rom2", name: "Caminant Solitari", era: "roman", dialogue: "Vago sol per la boira i les ruïnes. La mort m'atrau.", correct_mask: { name: "Yase - Lied" }, wrong_masks: ["Okina - Ritual", "Douji - Eternitat"] },
+                { id: "rom3", name: "Genio Virtuós", era: "roman", dialogue: "Toco més ràpid que ningú! Sóc gairebé diabòlic!", correct_mask: { name: "Tengu - Virtuosisme" }, wrong_masks: ["Kantan - Simplicitat", "Semimaru - Humilitat"] },
+                { id: "xx1", name: "Dr. Atonal", era: "sxx", dialogue: "La bellesa és avorrida. Vull deformar la realitat i crear tensió.", correct_mask: { name: "Hyottoko - Atonalisme" }, wrong_masks: ["Ko-omote - Bellesa", "Zo-onna - Serenitat"] },
+                { id: "xx2", name: "Dama Electrònica", era: "sxx", dialogue: "No sóc humana. Sóc una màquina que produeix sorolls nous.", correct_mask: { name: "Kitsune - Electrònica" }, wrong_masks: ["Okina - Ritual", "Waka - Joventut"] },
+                { id: "xx3", name: "Senyor del Soroll", era: "sxx", dialogue: "Trenco totes les regles! El crit és millor que el cant.", correct_mask: { name: "Namazu - Sorollisme" }, wrong_masks: ["Chujo - Noblesa", "Douji - Eternitat"] }
+            ]
+        };
+
+        // --- GAME STATE ---
+        let currentActorIndex = 0;
+        let actorsQueue = [];
+        let lives = 5;
+        let score = 0;
+        let isTransitioning = false;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bgMusic = document.getElementById('bg-music');
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            if (type === 'gong') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(80, now + 1.5);
+                gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 2.5);
+                osc.start(now); osc.stop(now + 2.5);
+            } else if (type === 'wood') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(10, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            }
+        }
+
+        function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            score = 0; lives = 5;
+            actorsQueue = shuffle([...GAME_DATA.actors]);
+            currentActorIndex = 0;
+            updateHUD();
+            loadActor();
+
+            // Start Music
+            bgMusic.volume = document.getElementById('vol').value;
+            bgMusic.play().catch(e => console.log("Audio play failed (user interaction needed first):", e));
+        }
+
+        function updateHUD() {
+            document.getElementById('score').innerText = score;
+            const container = document.getElementById('lives-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const pip = document.createElement('div'); pip.className = 'life-pip';
+                if (i >= lives) pip.classList.add('lost'); container.appendChild(pip);
+            }
+        }
+        function loadActor() {
+            if (currentActorIndex >= actorsQueue.length) { endGame(true); return; }
+            const actorData = actorsQueue[currentActorIndex];
+            const actorEl = document.getElementById('actor');
+            actorEl.classList.add('faded');
+            document.getElementById('face-zone').innerHTML = 'ARROSSEGA<br>MÀSCARA';
+            document.getElementById('face-zone').style.backgroundImage = 'none';
+            document.getElementById('face-zone').style.border = '2px dashed rgba(255, 255, 255, 0.2)';
+
+            setTimeout(() => {
+                document.getElementById('actor-name').innerText = actorData.name;
+                document.getElementById('actor-text').innerText = `"${actorData.dialogue}"`;
+                actorEl.classList.remove('faded');
+                loadMasks(actorData);
+                isTransitioning = false;
+            }, 1000);
+        }
+
+        function loadMasks(actorData) {
+            const container = document.getElementById('dressing-room');
+            container.innerHTML = '';
+            let optionNames = [actorData.correct_mask.name, ...actorData.wrong_masks];
+            optionNames = shuffle(optionNames);
+            optionNames.forEach(maskName => {
+                const card = document.createElement('div');
+                card.className = 'mask-container';
+
+                const maskInfo = getMaskData(maskName);
+                const imgSrc = `img/${maskInfo.img}`;
+
+                card.innerHTML = `
+                    <div class="mask" draggable="true" data-name="${maskName}" data-desc="${maskInfo.desc}">
+                        <img src="${imgSrc}" draggable="false" alt="${maskName}">
+                        <div class="mask-label">${maskName}</div>
+                    </div>
+                `;
+
+                // Drag Events
+                const maskEl = card.querySelector('.mask');
+                maskEl.addEventListener('dragstart', (e) => {
+                    if (isTransitioning) { e.preventDefault(); return; }
+                    e.dataTransfer.setData('text/plain', maskName);
+                });
+
+                // Touch
+                maskEl.addEventListener('touchstart', handleTouchStart, { passive: false });
+                maskEl.addEventListener('touchmove', handleTouchMove, { passive: false });
+                maskEl.addEventListener('touchend', handleTouchEnd);
+                container.appendChild(card);
+            });
+        }
+
+        // Drop Zone
+        const dropZone = document.getElementById('face-zone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('highlight'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('highlight'); });
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('highlight'); const maskName = e.dataTransfer.getData('text/plain'); checkAnswer(maskName); });
+
+        function checkAnswer(maskName) {
+            if (isTransitioning) return;
+            const currentActor = actorsQueue[currentActorIndex];
+            if (maskName === currentActor.correct_mask.name) {
+                isTransitioning = true; playSound('gong'); score++;
+
+                // Show final mask on face
+                const maskInfo = getMaskData(maskName);
+                dropZone.innerHTML = '';
+                dropZone.style.backgroundImage = `url('img/${maskInfo.img}')`;
+                dropZone.style.backgroundSize = 'contain';
+                dropZone.style.backgroundRepeat = 'no-repeat';
+                dropZone.style.backgroundPosition = 'center';
+                dropZone.style.backgroundColor = 'transparent';
+                dropZone.style.border = 'none';
+
+                setTimeout(() => { currentActorIndex++; updateHUD(); loadActor(); }, 2500);
+            } else {
+                playSound('wood'); lives--; updateHUD();
+                const actorEl = document.getElementById('actor');
+                actorEl.style.transform = "translateX(20px)";
+                setTimeout(() => actorEl.style.transform = "translateX(-20px)", 100);
+                setTimeout(() => actorEl.style.transform = "translateX(20px)", 200);
+                setTimeout(() => actorEl.style.transform = "translateX(0)", 300);
+                if (lives <= 0) endGame(false);
+            }
+        }
+
+        function endGame(win) {
+            document.getElementById('end-screen').classList.remove('hidden');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+            if (win) { title.innerText = "MESTRE OMOTE-SHI"; title.style.color = "var(--gold)"; msg.innerText = "Has completat la col·lecció d'ànimes. El teatre és etern."; }
+            else { title.innerText = "TELÓ FINAL"; title.style.color = "#a33"; msg.innerText = "Els esperits han rebutjat les teves màscares."; }
+        }
+
+        let touchClone = null;
+        function handleTouchStart(e) {
+            e.preventDefault(); const touch = e.touches[0]; const original = e.currentTarget; const rect = original.getBoundingClientRect();
+            touchClone = original.cloneNode(true); touchClone.style.position = 'fixed'; touchClone.style.width = rect.width + 'px'; touchClone.style.height = rect.height + 'px'; touchClone.style.zIndex = 1000; touchClone.style.opacity = 0.8; touchClone.style.left = (touch.clientX - rect.width / 2) + 'px'; touchClone.style.top = (touch.clientY - rect.height / 2) + 'px';
+            document.body.appendChild(touchClone); touchClone.dataset.name = original.dataset.name;
+        }
+        function handleTouchMove(e) { e.preventDefault(); if (touchClone) { const touch = e.touches[0]; touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px'; touchClone.style.top = (touch.clientY - touchClone.offsetHeight / 2) + 'px'; } }
+        function handleTouchEnd(e) { if (touchClone) { const touch = e.changedTouches[0]; const zoneRect = dropZone.getBoundingClientRect(); if (touch.clientX >= zoneRect.left && touch.clientX <= zoneRect.right && touch.clientY >= zoneRect.top && touch.clientY <= zoneRect.bottom) { checkAnswer(touchClone.dataset.name); } touchClone.remove(); touchClone = null; } }
+    </script>
+</body>
+
+</html>

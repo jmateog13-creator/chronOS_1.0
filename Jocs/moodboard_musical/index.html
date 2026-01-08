@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moodboard Musical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e60023;
+            --bg: #fff;
+            --text: #111;
+            --success: #008751;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            background: white;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 24px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        select {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid #ddd;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:hover {
+            border-color: #bbb;
+        }
+
+        .progress-indicator {
+            font-weight: bold;
+            background: #111;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* GRID */
+        .grid-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .masonry {
+            column-count: 5;
+            column-gap: 20px;
+        }
+
+        @media (max-width: 1400px) {
+            .masonry {
+                column-count: 4;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .masonry {
+                column-count: 3;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .masonry {
+                column-count: 2;
+            }
+        }
+
+        .card {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: #f5f5f5;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* CARD CONTENT (Placeholder / Image) */
+        .card-visual {
+            width: 100%;
+            background-color: #eee;
+            position: relative;
+            line-height: 0;
+        }
+
+        .card-visual img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-desc {
+            padding: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* HOVER DESCRIPTION OVERLAY */
+        .hover-info {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 18px;
+            font-weight: bold;
+            pointer-events: none;
+            /* Let clicks pass through */
+        }
+
+        .card:hover .hover-info {
+            opacity: 1;
+        }
+
+        /* STATES */
+        .card.found {
+            border: 4px solid var(--success);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .card.found::after {
+            content: "✅";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            background: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card.error {
+            animation: shake 0.4s;
+            border: 4px solid var(--primary);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background: #ad001a;
+        }
+
+        /* STATUS IN SELECT */
+        option.completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">P</div>
+            Moodboard Musical
+        </div>
+        <div class="controls">
+            <!-- Audio Control -->
+            <div
+                style="display:flex; align-items:center; gap:5px; background:#f0f0f0; padding:5px 15px; border-radius:20px;">
+                <span style="font-size:14px;">🎵</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                    style="width:60px; cursor:pointer;" oninput="game.setVolume(this.value)">
+            </div>
+
+            <select id="era-select" onchange="game.changeEra()">
+                <option value="Edat Mitjana">Edat Mitjana</option>
+                <option value="Renaixement">Renaixement</option>
+                <option value="Barroc">Barroc</option>
+                <option value="Classicisme">Classicisme</option>
+                <option value="Romanticisme">Romanticisme</option>
+                <option value="Segle XX">Segle XX</option>
+            </select>
+            <div class="progress-indicator" id="counter">0/5 Trobats</div>
+        </div>
+    </header>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Pins & Wishes.m4a" type="audio/mp3">
+    </audio>
+
+    <div class="grid-container">
+        <div class="masonry" id="grid">
+            <!-- Items injected via JS -->
+        </div>
+    </div>
+
+    <!-- ERA SELECTOR TEAM -->
+    <!-- SPLIT INTO TWO MODALS: LANDING (Instructions) -> SELECTOR (Eras) -->
+
+    <!-- 1. LANDING SCREEN -->
+    <div id="landing-screen" class="modal-overlay visible">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="logo" style="justify-content:center; margin-bottom:20px; font-size:48px;">
+                <div class="logo-icon" style="width:60px; height:60px; font-size:32px;">P</div>
+                PinterMúsic
+            </div>
+            <p style="font-size: 20px; color: #555; margin-bottom: 30px;">
+                Benvingut a la teva xarxa d'inspiració històrica.
+            </p>
+            <div style="text-align:left; background:#f9f9f9; padding:25px; border-radius:12px; margin-bottom:30px;">
+                <h3 style="margin-top:0; color:var(--primary);">Com funciona?</h3>
+                <ul style="font-size: 18px; line-height: 1.6; padding-left: 20px;">
+                    <li>🎯 <strong>Objectiu:</strong> Crea el tauler perfecte per a cada època.</li>
+                    <li>👆 <strong>Selecciona:</strong> Clica només les imatges que corresponen a l'època activa.</li>
+                    <li>🚫 <strong>Evita errors:</strong> Si t'equivoques, el tauler tremolarà!</li>
+                </ul>
+            </div>
+            <button class="btn-primary" onclick="game.showEraSelector()">COMENÇAR A PINEJAR</button>
+        </div>
+    </div>
+
+    <!-- 2. ERA SELECTOR -->
+    <div id="era-screen" class="modal-overlay">
+        <div class="modal-card" style="max-width: 900px; background: #fafafa;">
+            <div class="logo" style="justify-content:center; margin-bottom:10px; font-size:36px;">
+                <div class="logo-icon" style="width:40px; height:40px; font-size:24px;">P</div>
+                Tria el teu Tauler
+            </div>
+
+            <div class="era-grid">
+                <div class="era-card" onclick="game.selectEra('Edat Mitjana')">
+                    <div class="era-icon" style="background:#8B4513;">🏰</div>
+                    <div class="era-name">Edat Mitjana</div>
+                    <div class="era-check" id="check-Edat Mitjana">✅</div>
+                </div>
+                <div class="era-card" onclick="game.selectEra('Renaixement')">
+                    <div class="era-icon" style="background:#CD5C5C;">🎨</div>
+                    <div class="era-name">Renaixement</div>
+                    <div class="era-check" id="check-Renaixement">✅</div>
+                </div>
+                <div class="era-card" onclick="game.selectEra('Barroc')">
+                    <div class="era-icon" style="background:#FFD700;">👑</div>
+                    <div class="era-name">Barroc</div>
+                    <div class="era-check" id="check-Barroc">✅</div>
+                </div>
+                <div class="era-card" onclick="game.selectEra('Classicisme')">
+                    <div class="era-icon" style="background:#87CEEB;">🏛️</div>
+                    <div class="era-name">Classicisme</div>
+                    <div class="era-check" id="check-Classicisme">✅</div>
+                </div>
+                <div class="era-card" onclick="game.selectEra('Romanticisme')">
+                    <div class="era-icon" style="background:#2F4F4F;">🌫️</div>
+                    <div class="era-name">Romanticisme</div>
+                    <div class="era-check" id="check-Romanticisme">✅</div>
+                </div>
+                <div class="era-card" onclick="game.selectEra('Segle XX')">
+                    <div class="era-icon" style="background:#778899;">🏙️</div>
+                    <div class="era-name">Segle XX</div>
+                    <div class="era-check" id="check-Segle XX">✅</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEVEL COMPLETE MODAL -->
+    <div id="level-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title">Tauler Completat! ✨</div>
+            <p id="level-msg">Has trobat tota la inspiració necessària.</p>
+            <button class="btn-primary" onclick="game.returnToMenu()">Tornar a la Galeria</button>
+        </div>
+    </div>
+
+    <style>
+        /* Extra styles for Era Grid */
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media(max-width: 700px) {
+            .era-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .era-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .era-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .era-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            color: white;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 10px auto;
+        }
+
+        .era-name {
+            font-weight: 800;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .era-check {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            display: none;
+        }
+
+        .era-card.done .era-check {
+            display: block;
+        }
+
+        .era-card.done {
+            background-color: #f0fff4;
+            border-color: #008751;
+        }
+    </style>
+
+    <script>
+        const DB = [
+            // Edat Mitjana
+            { id: 1, era: "Edat Mitjana", desc: "Monestir de Pedra", longDesc: "Arquitectura romànica sòbria i espiritual.", img: "img/monestir.jpg" },
+            { id: 2, era: "Edat Mitjana", desc: "Cant Gregorià", longDesc: "Monjos cantant monodia religiosa.", img: "img/mojoscantant.jpg" },
+            { id: 3, era: "Edat Mitjana", desc: "Partitura de Neumes", longDesc: "Antiga notació musical quadrada.", img: "img/neumes.jpg" },
+            { id: 4, era: "Edat Mitjana", desc: "Llaüt Medieval", longDesc: "Instrument de corda polsada típic.", img: "img/llautmedieval.jpg" },
+            { id: 5, era: "Edat Mitjana", desc: "Vitrall Gòtic", longDesc: "Llum divina a través de colors.", img: "img/vitrinagotiva.jpg" },
+
+            // Renaixement
+            { id: 6, era: "Renaixement", desc: "Cúpula de Florència", longDesc: "L'enginyeria de Brunelleschi.", img: "img/cupulaflorencia.jpg" },
+            { id: 7, era: "Renaixement", desc: "Naixement de Venus", longDesc: "Pintura mitològica de Botticelli.", img: "img/boticelli.jpg" },
+            { id: 8, era: "Renaixement", desc: "Viola da Gamba", longDesc: "Instrument refinat de corda fregada.", img: "img/violadegamba.jpg" },
+            { id: 9, era: "Renaixement", desc: "Impremta Musical", longDesc: "Difusió massiva de partitures.", img: "img/impremtpa.jpg" },
+            { id: 10, era: "Renaixement", desc: "Madrigal", longDesc: "Polifonia vocal profana i expressiva.", img: "img/madrigal.jpg" },
+
+            // Barroc
+            { id: 11, era: "Barroc", desc: "Palau de Versalles", longDesc: "Luxe absolut i poder reial.", img: "img/versalles.jpg" },
+            { id: 12, era: "Barroc", desc: "Perruca Empolsada", longDesc: "Moda excessiva i artificial.", img: "img/peluca.jpg" },
+            { id: 13, era: "Barroc", desc: "Clavicèmbal", longDesc: "El rei dels instruments de teclat.", img: "img/clave.jpg" },
+            { id: 14, era: "Barroc", desc: "Vestit Rococó", longDesc: "Sedes, encaixos i volums exagerats.", img: "img/vestitdeseda.jpg" },
+            { id: 15, era: "Barroc", desc: "Violí Stradivarius", longDesc: "La perfecció de la lutheria.", img: "img/violistradivarius.jpg" },
+
+            // Classicisme
+            { id: 16, era: "Classicisme", desc: "Panteó de París", longDesc: "Retorn a la senzillesa clàssica.", img: "img/panteo.jpg" },
+            { id: 17, era: "Classicisme", desc: "Jardí Francès", longDesc: "Ordre, simetria i raó sobre natura.", img: "img/jardisimetric.jpg" },
+            { id: 18, era: "Classicisme", desc: "Pianoforte", longDesc: "L'antecessor dinàmic del piano.", img: "img/pianoforte.jpg" },
+            { id: 19, era: "Classicisme", desc: "Quartet de Corda", longDesc: "La formació de cambra perfecta.", img: "img/quartetdecorda.jpg" },
+            { id: 20, era: "Classicisme", desc: "Mozart", longDesc: "El geni de Salzburg.", img: "img/mozart.jpg" },
+
+            // Romanticisme
+            { id: 21, era: "Romanticisme", desc: "Viatger sobre boira", longDesc: "L'individu davant la natura sublim.", img: "img/boira.jpg" },
+            { id: 22, era: "Romanticisme", desc: "Ruïnes Gòtiques", longDesc: "Nostàlgia pel passat misteriós.", img: "img/cementiri.jpg" },
+            { id: 23, era: "Romanticisme", desc: "Piano de Gran Cua", longDesc: "La màquina d'expressar emocions.", img: "img/pianodecua.jpg" },
+            { id: 24, era: "Romanticisme", desc: "Orquestra Simfònica", longDesc: "Milers de colors sonors.", img: "img/orquestragegant.jpg" },
+            { id: 25, era: "Romanticisme", desc: "Moda Victoriana", longDesc: "Cotilles i dramatisme fosc.", img: "img/damavictoriana.jpg" },
+
+            // Segle XX
+            { id: 26, era: "Segle XX", desc: "Gratacels", longDesc: "La modernitat i l'acer.", img: "img/gratacels.jpg" },
+            { id: 27, era: "Segle XX", desc: "Ràdio de Vàlvules", longDesc: "La música arriba a totes les llars.", img: "img/radio.jpg" },
+            { id: 28, era: "Segle XX", desc: "Disc de Vinil", longDesc: "L'era de la gravació i el pop.", img: "img/vinil.jpg" },
+            { id: 29, era: "Segle XX", desc: "Saxòfon", longDesc: "L'ànima del Jazz i el Blues.", img: "img/saxofon.jpg" },
+            { id: 30, era: "Segle XX", desc: "Guitarra Elèctrica", longDesc: "La revolució del Rock.", img: "img/guitarrelectrica.jpg" }
+        ];
+
+        class Game {
+            constructor() {
+                this.items = [];
+                this.currentEra = "Edat Mitjana";
+                this.completedEras = [];
+                this.foundInEra = 0;
+                this.targetPerEra = 5;
+
+                this.init();
+            }
+
+            init() {
+                this.items = [...DB].sort(() => Math.random() - 0.5);
+                this.updateMenuUI();
+
+                // Audio init
+                this.audio = document.getElementById('bg-music');
+                this.audio.volume = 0.5;
+            }
+
+            setVolume(val) {
+                if (this.audio) this.audio.volume = val;
+            }
+
+            showEraSelector() {
+                document.getElementById('landing-screen').classList.remove('visible');
+                document.getElementById('era-screen').classList.add('visible');
+            }
+
+            // Called when choosing from Era Screen
+            selectEra(eraName) {
+                this.currentEra = eraName;
+                this.foundInEra = 0;
+
+                // Start Audio if not playing
+                if (this.audio.paused) {
+                    this.audio.play().catch(e => console.log("Audio autoplay prevented"));
+                }
+
+                // Hide inputs, show game
+                document.getElementById('era-screen').classList.remove('visible');
+
+                // Update dropdown to match
+                document.getElementById('era-select').value = eraName;
+
+                this.renderGrid();
+                this.updateCounter();
+
+                // If it was already done
+                if (this.completedEras.includes(this.currentEra)) {
+                    this.foundInEra = 5;
+                    this.updateCounter();
+                    this.refreshCardStyles();
+                }
+            }
+
+            // Called when changing dropdown mid-game
+            changeEra() {
+                const val = document.getElementById('era-select').value;
+                this.selectEra(val);
+            }
+
+            returnToMenu() {
+                document.getElementById('level-modal').classList.remove('visible');
+                document.getElementById('era-screen').classList.add('visible');
+                this.updateMenuUI();
+            }
+
+            renderGrid() {
+                const grid = document.getElementById('grid');
+                grid.innerHTML = '';
+
+                this.items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.id = item.id;
+                    card.dataset.era = item.era;
+
+                    const height = item.height;
+                    const color = item.color;
+
+                    card.innerHTML = `
+                        <div class="card-visual">
+                            <img src="${item.img}" alt="${item.desc}" loading="lazy">
+                            <div class="hover-info">
+                                <div>${item.longDesc}</div>
+                            </div>
+                        </div>
+                        <div class="card-desc">${item.desc}</div>
+                    `;
+
+
+                    card.addEventListener('click', (e) => this.handleCardClick(card, item));
+                    grid.appendChild(card);
+                });
+
+                this.refreshCardStyles(); // Apply found states
+            }
+
+            handleCardClick(card, item) {
+                if (this.completedEras.includes(this.currentEra)) return;
+                if (card.classList.contains('found')) return;
+
+                if (item.era === this.currentEra) {
+                    card.classList.add('found');
+                    this.foundInEra++;
+                    this.updateCounter();
+
+                    if (this.foundInEra >= this.targetPerEra) {
+                        this.completeEra();
+                    }
+                } else {
+                    card.classList.add('error');
+                    setTimeout(() => card.classList.remove('error'), 500);
+                }
+            }
+
+            completeEra() {
+                if (!this.completedEras.includes(this.currentEra)) {
+                    this.completedEras.push(this.currentEra);
+                }
+                setTimeout(() => {
+                    document.getElementById('level-modal').classList.add('visible');
+                }, 500);
+            }
+
+            updateCounter() {
+                document.getElementById('counter').textContent = `${this.foundInEra}/${this.targetPerEra} Trobats`;
+            }
+
+            refreshCardStyles() {
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(c => {
+                    const itemEra = c.dataset.era;
+                    if (this.completedEras.includes(itemEra)) {
+                        c.classList.add('found');
+                    } else {
+                        c.classList.remove('found');
+                    }
+                });
+            }
+
+            updateMenuUI() {
+                // Update checks on the start screen cards
+                const cards = document.querySelectorAll('.era-card');
+                cards.forEach(c => {
+                    const name = c.querySelector('.era-name').innerText;
+                    if (this.completedEras.includes(name)) {
+                        c.classList.add('done');
+                    } else {
+                        c.classList.remove('done');
+                    }
+                });
+
+                // Update dropdown colors
+                const select = document.getElementById('era-select');
+                Array.from(select.options).forEach(opt => {
+                    if (this.completedEras.includes(opt.value)) {
+                        opt.classList.add('completed');
+                        if (!opt.text.includes('✅')) opt.text = "✅ " + opt.text;
+                    } else {
+                        opt.classList.remove('completed');
+                        opt.text = opt.text.replace('✅ ', ''); // Remove checkmark if no longer completed
+                    }
+                });
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

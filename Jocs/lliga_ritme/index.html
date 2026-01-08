@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Lliga del Ritme</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --hero-blue: #0277bd;
+            --hero-red: #d32f2f;
+            --hero-yellow: #ffeb3b;
+            --villain-purple: #4a148c;
+            --villain-green: #64dd17;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 95vw;
+            height: 90vh;
+            position: relative;
+            background: #000;
+            border: 5px solid #333;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 15px;
+        }
+
+        /* Dynamic Blurred Background */
+        #bg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(4px) brightness(0.6);
+            transform: scale(1.05);
+            /* Remove white edges from blur */
+            z-index: 1;
+            transition: background-image 0.5s ease;
+        }
+
+        /* --- UI Layers (z-index > 1) --- */
+
+        /* Start Screen (Selector) */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            /* Dark overlay */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            text-align: center;
+            color: var(--hero-yellow);
+        }
+
+        h1 {
+            font-family: 'Bangers', cursive;
+            font-size: 5rem;
+            margin-bottom: 30px;
+            text-shadow: 4px 4px 0 var(--hero-red);
+            letter-spacing: 3px;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+            max-width: 900px;
+        }
+
+        .btn-era {
+            background: #333;
+            border: 4px solid #555;
+            color: #fff;
+            padding: 25px 30px;
+            font-size: 1.5rem;
+            font-family: 'Bangers', cursive;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-era:hover:not(:disabled) {
+            transform: scale(1.05);
+            background: var(--hero-blue);
+            border-color: #fff;
+        }
+
+        .btn-era.completed {
+            background: var(--villain-green);
+            border-color: #fff;
+            color: #000;
+        }
+
+        .btn-era.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Battle Scene */
+        #battle-scene {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            z-index: 10;
+            /* Above BG */
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid var(--hero-blue);
+            color: white;
+            font-family: 'Bangers', cursive;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 15;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            margin-left: 20px;
+            border-left: 1px solid #666;
+            padding-left: 20px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        /* Characters */
+        #villain-area {
+            height: 35vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #hero-area {
+            height: 30vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 20px;
+        }
+
+        .char-img {
+            height: 100%;
+            max-height: 250px;
+            width: auto;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+            transition: transform 0.2s;
+        }
+
+        #villain-img {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Projectile */
+        #projectile {
+            position: absolute;
+            top: 250px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+            /* Start small */
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--villain-green), var(--villain-purple));
+            border-radius: 50%;
+            border: 4px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            box-sizing: border-box;
+            font-family: 'Bangers', cursive;
+            font-size: 1.8rem;
+            line-height: 1.2;
+            color: white;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 12;
+            opacity: 0;
+            box-shadow: 0 0 30px var(--villain-purple);
+        }
+
+        /* Controls */
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 30px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        }
+
+        .btn-action {
+            width: 250px;
+            padding: 25px;
+            font-family: 'Bangers', cursive;
+            font-size: 2rem;
+            border: 4px solid #fff;
+            border-radius: 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            color: white;
+            text-shadow: 2px 2px 0 #000;
+            transition: transform 0.1s, filter 0.2s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-5px);
+            filter: brightness(1.2);
+        }
+
+        .btn-action:active {
+            transform: translateY(2px);
+        }
+
+        #btn-block {
+            background: var(--hero-red);
+        }
+
+        #btn-absorb {
+            background: var(--hero-blue);
+        }
+
+        /* Feedback */
+        #pow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0) rotate(-15deg);
+            font-family: 'Bangers', cursive;
+            font-size: 8rem;
+            text-shadow: 5px 5px 0 #000;
+            z-index: 100;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .pow-active {
+            transform: translate(-50%, -50%) scale(1) rotate(-15deg) !important;
+        }
+
+        /* Overlays */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+            color: white;
+            font-family: 'Bangers', cursive;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px);
+            }
+
+            10% {
+                transform: translate(-1px, -2px);
+            }
+
+            20% {
+                transform: translate(-3px, 0px);
+            }
+
+            30% {
+                transform: translate(3px, 2px);
+            }
+
+            40% {
+                transform: translate(1px, -1px);
+            }
+
+            50% {
+                transform: translate(-1px, 2px);
+            }
+
+            60% {
+                transform: translate(-3px, 1px);
+            }
+
+            70% {
+                transform: translate(3px, 1px);
+            }
+
+            80% {
+                transform: translate(-1px, -1px);
+            }
+
+            90% {
+                transform: translate(1px, 2px);
+            }
+
+            100% {
+                transform: translate(1px, -2px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Blurred Background Layer -->
+        <div id="bg-layer"></div>
+
+        <!-- Start Screen / Hub -->
+        <div id="start-screen">
+            <h1>LA LLIGA DEL RITME</h1>
+            <p style="font-size: 1.5rem; color:#ddd; margin-bottom: 20px;">Tria una època i aconsegueix 10 encerts per
+                salvar-la!</p>
+            <div class="era-grid">
+                <button class="btn-era" id="btn-edat_mitjana" onclick="selectEra('edat_mitjana')">Edat Mitjana</button>
+                <button class="btn-era" id="btn-renaixement" onclick="selectEra('renaixement')">Renaixement</button>
+                <button class="btn-era" id="btn-barroc" onclick="selectEra('barroc')">Barroc</button>
+                <button class="btn-era" id="btn-classicisme" onclick="selectEra('classicisme')">Classicisme</button>
+                <button class="btn-era" id="btn-romanticisme" onclick="selectEra('romanticisme')">Romanticisme</button>
+                <button class="btn-era" id="btn-segle_xx" onclick="selectEra('segle_xx')">Segle XX</button>
+            </div>
+            <div style="margin-top: 40px; color: #888;">Progrés guardat per sessió</div>
+        </div>
+
+        <!-- game-scene -->
+        <div id="battle-scene" style="display: none;">
+            <div id="hud">
+                <div class="hud-item"><span>🎯 ENCERTS:</span> <span id="hits-counter"
+                        style="color:var(--hero-yellow)">0</span>/10</div>
+                <div class="hud-item"><span>❤️ VIDES:</span> <span id="lives">3</span></div>
+
+                <div class="volume-control">
+                    <span>🔊</span>
+                    <input type="range" id="vol-slider" class="volume-slider" min="0" max="1" step="0.1" value="0.5">
+                </div>
+            </div>
+
+            <div id="villain-area">
+                <img src="img/villano.png" id="villain-img" class="char-img" alt="Villain">
+            </div>
+
+            <div id="projectile">?</div>
+            <div id="pow">POW!</div>
+
+            <div id="hero-area">
+                <img src="img/heroe.png" id="hero-img" class="char-img" alt="Hero">
+            </div>
+
+            <div id="controls">
+                <button id="btn-block" class="btn-action">🛡️ BLOQUEJAR<br><small
+                        style="font-size:1rem; opacity:0.8">(Si és Fals)</small></button>
+                <button id="btn-absorb" class="btn-action">🔋 ABSORBIR<br><small style="font-size:1rem; opacity:0.8">(Si
+                        és Correcte)</small></button>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="end-title" style="font-size: 4rem; margin-bottom: 10px;">TITOL</h2>
+            <p id="end-msg" style="font-size: 1.5rem; margin-bottom: 30px;">Missatge</p>
+            <button class="btn-era" onclick="returnToHub()">TORNAR AL MENU</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Quantum Reckoning.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: {
+                correct: ["Cant Gregorià", "Monodia", "Neumes", "Trobador", "Guido d'Arezzo", "Viola de Roda", "Ars Nova", "Leonin", "Perotin", "Missa", "Llatí", "Monestir", "Cant Pla", "Organum", "Motet Medieval", "Alfons X", "Cantigas", "Llibre Vermell", "Adam de la Halle", "Saltiri"],
+                incorrect: ["Piano", "Mozart", "Simfonia", "Jazz", "Òpera", "Violí", "Orquestra", "Beethoven", "Bach", "Saxòfon", "Guitarra Elèctrica", "Atonalitat", "Romanticisme", "Verdi", "Wagner", "Lied", "Clarinet", "Tuba", "Sintetitzador", "Rock"]
+            },
+            renaixement: {
+                correct: ["Polifonia", "Humanisme", "Impremta", "Madrigal", "Palestrina", "Josquin", "Viola da Gamba", "Llaüt", "Coral", "Ensalada", "Victoria", "Monteverdi", "Lasso", "Byrd", "Tallis", "Gabrieli", "Sacabutx", "Virginal", "Chanson", "Villancico"],
+                incorrect: ["Cant Gregorià", "Monodia", "Neumes", "Bach", "Vivaldi", "Òpera", "Piano", "Simfonia", "Mozart", "Beethoven", "Wagner", "Jazz", "Stravinsky", "Cage", "Electrònica", "Trobador", "Guido d'Arezzo", "Ars Nova", "Leonin", "Perotin"]
+            },
+            barroc: {
+                correct: ["Baix Continu", "Clavicèmbal", "Bach", "Vivaldi", "Händel", "Òpera", "Fuga", "Contrast", "Ornament", "Castrato", "Purcell", "Telemann", "Lully", "Monteverdi (Final)", "Concerto Grosso", "Suite", "Sonata Barroca", "Oratori", "Cantata", "Stradivarius"],
+                incorrect: ["Piano", "Mozart", "Simfonia", "Beethoven", "Clarinet", "Jazz", "Stravinsky", "Cant Gregorià", "Palestrina", "Madrigal", "Wagner", "Verdi", "Lied", "Poema Simfònic", "Impressionisme", "Atonalitat", "Dodecafonisme", "Minimalisme", "Rock", "Pop"]
+            },
+            classicisme: {
+                correct: ["Mozart", "Haydn", "Beethoven", "Sonata", "Equilibri", "Clarinet", "Piano", "Simfonia", "Quartet", "Senzillesa", "Gluck", "C.P.E. Bach", "Boccherini", "Salieri", "Clementi", "Forma Sonata", "Minuet", "Rondo", "Concert Clàssic", "Òpera Buffa"],
+                incorrect: ["Baix Continu", "Clavicèmbal", "Bach", "Vivaldi", "Fuga", "Wagner", "Chopin", "Lied", "Poema Simfònic", "Jazz", "Stravinsky", "Cant Gregorià", "Polifonia", "Madrigal", "Palestrina", "Atonalitat", "Sintetitzador", "Viola da Gamba", "Llaüt", "Castrato"]
+            },
+            romanticisme: {
+                correct: ["Wagner", "Chopin", "Verdi", "Lied", "Rubato", "Passió", "Poema Simfònic", "Virtuosisme", "Tuba", "Nacionalisme", "Schubert", "Schumann", "Brahms", "Liszt", "Mendelssohn", "Berlioz", "Txaikovski", "Puccini", "Mahler", "Strauss"],
+                incorrect: ["Mozart", "Haydn", "Equilibri", "Clavicèmbal", "Baix Continu", "Bach", "Vivaldi", "Cant Gregorià", "Palestrina", "Jazz", "Stravinsky", "Atonalitat", "Dodecafonisme", "Cage", "Minimalisme", "Viola da Gamba", "Llaüt", "Monodia", "Neumes", "Ars Nova"]
+            },
+            segle_xx: {
+                correct: ["Atonalitat", "Dodecafonisme", "Stravinsky", "Cage", "Sintetitzador", "Jazz", "Minimalisme", "Soroll", "Aleatòria", "Electrònica", "Schoenberg", "Berg", "Webern", "Gershwin", "Debussy", "Ravel", "Bartók", "Messiaen", "Stockhausen", "Reich"],
+                incorrect: ["Mozart", "Haydn", "Beethoven", "Bach", "Vivaldi", "Händel", "Wagner", "Verdi", "Chopin", "Lied", "Simfonia Clàssica", "Baix Continu", "Clavicèmbal", "Cant Gregorià", "Polifonia", "Madrigal", "Palestrina", "Viola da Gamba", "Llaüt", "Castrato"]
+            }
+        };
+
+        const bgFiles = {
+            edat_mitjana: "fonsmitjana.jpg",
+            renaixement: "fonsrenaixement.jpg",
+            barroc: "fonsbarroc.jpg",
+            classicisme: "fonsclassicisme.jpg",
+            romanticisme: "fonsromanticisme.jpg",
+            segle_xx: "fonssegleXX.jpg"
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let hits = 0;
+        let lives = 3;
+        let gameActive = false;
+        let currentConcept = null;
+        let isCorrect = false;
+        let projectileInterval;
+        let projectileSpeed = 4000; // 4 seconds (Slowed down from 2000)
+        let flightTimeout;
+        const TARGET_HITS = 10;
+        let completedEras = [];
+
+        // --- AUDIO ---
+        const bgMusic = document.getElementById('bg-music');
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        document.getElementById('vol-slider').addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'throw') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.5);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'hit') {
+                // Happy high chime
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'damage') {
+                // Low crash
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.4);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        // --- LOGIC ---
+
+        function selectEra(era) {
+            currentEra = era;
+
+            // Set Background
+            const bgUrl = `img/${bgFiles[era]}`;
+            document.getElementById('bg-layer').style.backgroundImage = `url('${bgUrl}')`;
+
+            startGame();
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('battle-scene').style.display = 'flex';
+            document.getElementById('feedback-overlay').style.display = 'none';
+
+            if (bgMusic.paused) bgMusic.play().catch(e => console.log("Audio needed user gesture"));
+
+            resetLevel();
+            startRound();
+        }
+
+        function resetLevel() {
+            hits = 0;
+            lives = 3;
+            gameActive = true;
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('hits-counter').textContent = hits;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function startRound() {
+            if (!gameActive) return;
+
+            // Check win
+            if (hits >= TARGET_HITS) {
+                endGame(true);
+                return;
+            }
+
+            // Decide Concept
+            isCorrect = Math.random() > 0.5;
+            const data = DB[currentEra];
+            currentConcept = isCorrect
+                ? data.correct[Math.floor(Math.random() * data.correct.length)]
+                : data.incorrect[Math.floor(Math.random() * data.incorrect.length)];
+
+            // Reset Projectile
+            const proj = document.getElementById('projectile');
+            proj.textContent = currentConcept;
+            proj.style.transition = 'none';
+            proj.style.top = '250px'; // Start pos
+            proj.style.opacity = 1;
+            proj.style.transform = "translateX(-50%) scale(0.5)";
+
+            // Force Reflow
+            void proj.offsetWidth;
+
+            playSound('throw');
+
+            // Launch Animation
+            proj.style.transition = `top ${projectileSpeed}ms linear, transform ${projectileSpeed}ms linear`;
+            proj.style.top = '70%'; // Near hero
+            proj.style.transform = "translateX(-50%) scale(1.2)";
+
+            // Timeout for Damage (Miss)
+            flightTimeout = setTimeout(() => {
+                // If time runs out, it hits the hero
+                takeDamage("MISS");
+            }, projectileSpeed);
+        }
+
+        // --- CONTROLS ---
+        document.getElementById('btn-block').addEventListener('click', () => handleAction('block'));
+        document.getElementById('btn-absorb').addEventListener('click', () => handleAction('absorb'));
+
+        function handleAction(action) {
+            if (!gameActive) return;
+
+            // Stop Projectile in mid-air
+            const proj = document.getElementById('projectile');
+            const currentTop = proj.offsetTop;
+            const currentScale = getComputedStyle(proj).transform;
+            proj.style.transition = 'none';
+            proj.style.top = currentTop + 'px';
+            proj.style.transform = currentScale;
+
+            clearTimeout(flightTimeout);
+
+            let success = false;
+            // Logic: 
+            // Correct (It IS from Era) -> ABSORB
+            // Incorrect (NOT from Era) -> BLOCK
+
+            if (action === 'absorb' && isCorrect) success = true;
+            if (action === 'block' && !isCorrect) success = true;
+
+            if (success) {
+                hits++;
+                updateHUD();
+                playSound('hit');
+                showFeedback("BÉ!", "green");
+
+                // Visual success
+                proj.style.transform += " scale(0)";
+                proj.style.opacity = 0;
+
+                // Next round with gap
+                setTimeout(startRound, 2000);
+            } else {
+                takeDamage("WRONG");
+            }
+        }
+
+        function takeDamage(reason) {
+            lives--;
+            updateHUD();
+            playSound('damage');
+            showFeedback("OUCH!", "red");
+
+            const container = document.getElementById('game-container');
+            container.classList.add('shake');
+            setTimeout(() => container.classList.remove('shake'), 500);
+
+            const proj = document.getElementById('projectile');
+            proj.style.opacity = 0;
+
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                setTimeout(startRound, 2000);
+            }
+        }
+
+        // --- FEEDBACK ---
+        function showFeedback(text, color) {
+            const el = document.getElementById('pow');
+            el.textContent = text;
+            el.style.color = color === "green" ? "var(--hero-yellow)" : "#ff3333";
+            el.classList.add('pow-active');
+            setTimeout(() => el.classList.remove('pow-active'), 800);
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            document.getElementById('battle-scene').style.display = 'none';
+            const overlay = document.getElementById('feedback-overlay');
+            overlay.style.display = 'flex';
+
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if (win) {
+                title.textContent = "ÈPOCA SALVADA!";
+                title.style.color = "var(--villain-green)";
+                msg.textContent = "Has completat el % al 100%.";
+
+                // Mark Era as Completed
+                if (!completedEras.includes(currentEra)) completedEras.push(currentEra);
+            } else {
+                title.textContent = "DERROTAT...";
+                title.style.color = "red";
+                msg.textContent = "El Dr. Caos t'ha vençut. Torna-ho a provar.";
+            }
+        }
+
+        function returnToHub() {
+            document.getElementById('feedback-overlay').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+
+            // Visual Update for Completed Eras
+            completedEras.forEach(era => {
+                const btn = document.getElementById(`btn-${era}`);
+                if (btn) btn.classList.add('completed');
+            });
+
+            // Reset Background to neutral or keep last? 
+            // Let's keep last for cool effect or reset. User didn't specify. 
+            // Keeping last blurry bg is nice.
+        }
+
+    </script>
+</body>
+
+</html>

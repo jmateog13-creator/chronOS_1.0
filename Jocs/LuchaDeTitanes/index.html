@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucha de Titanes: Era Bosses</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&display=swap');
+
+        :root {
+            --mestre-color: #00f3ff;
+            --ignorant-color: #ff00ff;
+            --bg-dark: #0a0a0c;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-yellow: #f1c40f;
+            --ladder-bg: #111;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: white;
+            font-family: 'Permanent Marker', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 98vw;
+            height: 95vh;
+            max-width: 1150px;
+            max-height: 720px;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 8px solid #222;
+            position: relative;
+            display: flex;
+            padding: 15px;
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        /* LADDER / PROGRESSION */
+        #ladder-area {
+            width: 180px;
+            flex-shrink: 0;
+            background: rgba(10, 10, 12, 0.95);
+            border-right: 3px solid var(--neon-blue);
+            display: flex;
+            flex-direction: column-reverse;
+            padding: 10px;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .ladder-step {
+            flex: 1;
+            min-height: 40px;
+            background: #1a1a1c;
+            border: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.4rem;
+            color: #888;
+            transition: 0.3s;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .ladder-step.active {
+            background: rgba(255, 0, 255, 0.2);
+            color: white;
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            transform: scale(1.05);
+            z-index: 5;
+        }
+
+        .ladder-step.completed {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            border-color: #00ff00;
+        }
+
+        .boss-progress {
+            margin-top: 3px;
+            font-size: 0.45rem;
+            color: var(--neon-yellow);
+        }
+
+        /* MAIN FIGHT AREA */
+        #main-fight {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-width: 0;
+            /* Allow shrinking */
+        }
+
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            flex-shrink: 0;
+        }
+
+        .fighter-stat {
+            width: 45%;
+        }
+
+        .health-bar-bg {
+            height: 25px;
+            background: #000;
+            border: 2px solid #fff;
+            position: relative;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #mestre-hp {
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        #ignorant-hp {
+            background: linear-gradient(to left, #ff00cc, #3333ff);
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .name-label {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #battle-arena {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            position: relative;
+            padding: 0 20px 20px 20px;
+            min-height: 0;
+        }
+
+        .fighter {
+            height: 55%;
+            /* Use percentage height relative to arena */
+            max-height: 350px;
+            width: auto;
+            position: relative;
+            transition: transform 0.2s, opacity 0.3s;
+            filter: drop-shadow(0 0 25px rgba(0, 0, 0, 0.9));
+        }
+
+        /* Shadow under characters */
+        .fighter::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            filter: blur(4px);
+            z-index: -1;
+        }
+
+        .fighter img {
+            height: 100%;
+            width: auto;
+            display: block;
+        }
+
+        /* Hit effect flash */
+        .hit-flash {
+            filter: brightness(0.4) sepia(1) hue-rotate(-50deg) saturate(20) drop-shadow(0 0 30px red) !important;
+            transition: filter 0.1s;
+        }
+
+        #quiz-section {
+            background: rgba(10, 10, 15, 0.98);
+            border: 3px solid #444;
+            padding: 15px 25px;
+            position: relative;
+            margin-top: 5px;
+            animation: popIn 0.5s ease-out;
+            min-height: 220px;
+            border-radius: 12px;
+            box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.6);
+            flex-shrink: 0;
+        }
+
+        #timer-bar-container {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 10px;
+            background: #111;
+            border: 2px solid #444;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #timer-bar {
+            height: 100%;
+            background: var(--neon-yellow);
+            box-shadow: 0 0 15px var(--neon-yellow);
+            width: 100%;
+        }
+
+        #question-text {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 25px;
+            min-height: 80px;
+            color: #fff;
+            text-shadow: 3px 3px 0 #000;
+            line-height: 1.3;
+        }
+
+        #options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: #1a1a1c;
+            color: white;
+            border: 3px solid #333;
+            padding: 15px 20px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Permanent Marker', cursive;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .option-btn:hover {
+            background: var(--neon-blue);
+            color: black;
+            border-color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px var(--neon-blue);
+        }
+
+        #message-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .btn-main {
+            background: var(--neon-pink);
+            color: white;
+            border: 4px solid #fff;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-top: 20px;
+            text-transform: uppercase;
+            font-family: 'Press Start 2P', cursive;
+            transition: 0.3s;
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            background: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-2px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(4px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-8px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(8px, 0, 0);
+            }
+        }
+
+        .player-attack {
+            animation: playerAttackAnim 0.4s ease-in-out;
+        }
+
+        @keyframes playerAttackAnim {
+            0% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(80px) scale(1.1);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .enemy-attack {
+            animation: enemyAttackAnim 0.4s ease-in-out;
+        }
+
+        @keyframes enemyAttackAnim {
+            0% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(-80px) scale(1.1);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .damage-flash-mestre {
+            box-shadow: inset 0 0 30px rgba(0, 243, 255, 0.3);
+        }
+
+        .damage-flash-ignorant {
+            box-shadow: inset 0 0 30px rgba(255, 0, 255, 0.3);
+        }
+
+        #challenger-note {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Press Start 2P';
+            font-size: 2.5rem;
+            color: var(--neon-yellow);
+            text-shadow: 0 0 15px #000;
+            z-index: 1500;
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- LADDER UI (6 ERAS) -->
+        <div id="ladder-area">
+            <div class="ladder-step" id="step-0">EDAT MITJANA<div class="boss-progress" id="prog-0">0/5</div>
+            </div>
+            <div class="ladder-step" id="step-1">RENAIXEMENT<div class="boss-progress" id="prog-1">0/5</div>
+            </div>
+            <div class="ladder-step" id="step-2">BARROC<div class="boss-progress" id="prog-2">0/5</div>
+            </div>
+            <div class="ladder-step" id="step-3">CLASSICISME<div class="boss-progress" id="prog-3">0/5</div>
+            </div>
+            <div class="ladder-step" id="step-4">ROMANTICISME<div class="boss-progress" id="prog-4">0/5</div>
+            </div>
+            <div class="ladder-step" id="step-5">SEGLE XX<div class="boss-progress" id="prog-5">0/5</div>
+            </div>
+        </div>
+
+        <div id="main-fight">
+            <div id="hud">
+                <div class="fighter-stat">
+                    <div class="name-label">EL MESTRE 🎭</div>
+                    <div class="health-bar-bg">
+                        <div id="mestre-hp" class="health-bar-fill"></div>
+                    </div>
+                </div>
+                <div class="fighter-stat" style="text-align: right;">
+                    <div class="name-label" id="enemy-name-label">👺 L'IGNORANT</div>
+                    <div class="health-bar-bg">
+                        <div id="ignorant-hp" class="health-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="battle-arena">
+                <div id="player-sprite" class="fighter"><img src="img/personatge.png" alt="El Mestre"></div>
+                <div id="vs-label"
+                    style="font-family:'Press Start 2P'; font-size: 1.5rem; color: var(--neon-yellow); text-shadow: 0 0 10px #000; z-index: 10;">
+                    VS</div>
+                <div id="enemy-sprite" class="fighter"><img src="img/segleXX.png" alt="Rival"></div>
+            </div>
+
+            <div id="challenger-note">NOU RIVAL!</div>
+
+            <div id="quiz-section" class="hidden">
+                <div id="timer-bar-container">
+                    <div id="timer-bar"></div>
+                </div>
+                <div id="question-text">Preparat per al combat?</div>
+                <div id="options">
+                    <button class="option-btn" id="btn-a">Opció A</button>
+                    <button class="option-btn" id="btn-b">Opció B</button>
+                    <!-- More options could be added here if needed -->
+                </div>
+            </div>
+        </div>
+
+        <div id="message-overlay">
+            <h1
+                style="font-family:'Press Start 2P'; font-size: 2rem; color: var(--neon-pink); text-shadow:0 0 15px var(--neon-pink); margin-bottom:10px;">
+                LUCHA DE TITANES</h1>
+            <h3 style="letter-spacing: 3px; color: #aaa;">DOMINA LES 6 ÈPOCES</h3>
+            <p style="font-size: 1.1rem; margin-top: 15px; max-width: 700px;">Derrota un gran rival per cada època
+                musical! <br>Necessites <b>5 encerts</b> per vèncer cada BOSS.</p>
+            <button class="btn-main" onclick="startGame()">ENTRAR AL RING</button>
+        </div>
+    </div>
+
+    <script>
+        const ERAS_DATA = [
+            {
+                id: 0, name: "Edat Mitjana", boss: "El Monjo Mut", icon: "⛪", img: "img/mitjana.png", questions: [
+                    { q: "Quin estil dominava a l'Edat Mitjana?", a: "Romànic i Gòtic", b: "Renaixement", correct: 'a' },
+                    { q: "A qui es deu el nom del 'Cant Gregorià'?", a: "Papa Gregori I", b: "Sant Agustí", correct: 'a' },
+                    { q: "Com s'anomenen els poetes i músics nobles?", a: "Trobadors", b: "Joglars", correct: 'a' },
+                    { q: "Quina era la textura principal del gregorià?", a: "Monodia (una sola veu)", b: "Polifonia (moltes veus)", correct: 'a' },
+                    { q: "Com s'anomenaven els primers signes de notació?", a: "Neumes", b: "Notes", correct: 'a' },
+                    { q: "Quin d'aquests era un joglar?", a: "Un músic del poble/circ", b: "Un noble poeta", correct: 'a' },
+                    { q: "L'Ars Nova és una etapa de...", a: "Polifonia complexa", b: "Silenci monàstic", correct: 'a' }
+                ]
+            },
+            {
+                id: 1, name: "Renaixement", boss: "Don Polifònic", icon: "📜", img: "img/renaixement.png", questions: [
+                    { q: "El Renaixement se centra en...", a: "L'Humanisme (l'home)", b: "El Teocentrisme (Déu)", correct: 'a' },
+                    { q: "Quin invent va revolucionar la difusió de partitures?", a: "La Impremta", b: "L'Escritura a mà", correct: 'a' },
+                    { q: "Com s'anomena la música vocal profana polifònica a Itàlia?", a: "Madrigal", b: "Coral", correct: 'a' },
+                    { q: "Quin d'aquests països fou clau en la polifonia renaixentista?", a: "Flandes", b: "Estats Units", correct: 'a' },
+                    { q: "Al Renaixement la polifonia assoleix la seva màxima...", a: "Perfecció i equilibri", b: "Distorsió i caos", correct: 'a' },
+                    { q: "A la música renaixentista s'intentava reflectir...", a: "El significat de les paraules", b: "Només els ritmes de ball", correct: 'a' },
+                    { q: "Quin instrument de corda polsada era el més popular?", a: "Llaüt Renaixentista", b: "Harpa Elèctrica", correct: 'a' }
+                ]
+            },
+            {
+                id: 2, name: "Barroc", boss: "Comte Castrati", icon: "🎭", img: "img/barroc.png", questions: [
+                    { q: "Quin gran gènere dramàtic neix al Barroc?", a: "L'Òpera", b: "El Cinema", correct: 'a' },
+                    { q: "Quina és una característica visual i sonora del Barroc?", a: "L'Ornamentació i el contrast", b: "La simplicitat total", correct: 'a' },
+                    { q: "Com es deia el sistema d'acompanyament instrumental continu?", a: "Baix Continu", b: "Soli Deo Gloria", correct: 'a' },
+                    { q: "Quin d'aquests autors representa el cim del Barroc?", a: "J.S. Bach", b: "Beethoven", correct: 'a' },
+                    { q: "Vivaldi és famós per...", a: "Les Quatre Estacions", b: "La Novena Simfonia", correct: 'a' },
+                    { q: "Quin instrument de teclat predominava al Barroc?", a: "Clavicèmbal", b: "Sintetitzador", correct: 'a' },
+                    { q: "L'òpera neix a mans de...", a: "Claudio Monteverdi", b: "Mozart", correct: 'a' }
+                ]
+            },
+            {
+                id: 3, name: "Classicisme", boss: "Wolfie L'Amadeus", icon: "🎼", img: "img/classicisme.png", questions: [
+                    { q: "Què busca el Classicisme en la seva música?", a: "Ordre, simetria i claredat", b: "Drama i desbordament emocional", correct: 'a' },
+                    { q: "Qui és conegut com el nen prodigi del Classicisme?", a: "Mozart", b: "Chopin", correct: 'a' },
+                    { q: "Quina estructura de 4 moviments es consolida?", a: "La Simfonia", b: "El Nocturn", correct: 'a' },
+                    { q: "Quin instrument acaba substituint al clavicèmbal?", a: "El Piano", b: "L'Orgue", correct: 'a' },
+                    { q: "Haydn és considerat el pare de...", a: "La Simfonia i el Quartet", b: "L'Òpera seriosa", correct: 'a' },
+                    { q: "On es trobava el centre musical més important?", a: "Viena", b: "París", correct: 'a' },
+                    { q: "Com és la melodia clàssica?", a: "Equilibrada i fàcil de recordar", b: "Plena de salts estranys", correct: 'a' }
+                ]
+            },
+            {
+                id: 4, name: "Romanticisme", boss: "Lord Passionat", icon: "🥀", img: "img/romanticisme.png", questions: [
+                    { q: "El Romanticisme posa per davant...", a: "El sentiment i la passió", b: "La raó i les normes", correct: 'a' },
+                    { q: "Beethoven és el 'pont' cap al...", a: "Romanticisme", b: "Barroc", correct: 'a' },
+                    { q: "Quin instrument és l'estrella absoluta dels salons?", a: "El Piano", b: "La Flauta Travessera", correct: 'a' },
+                    { q: "Què és un Nocturn?", a: "Peça curta inspirada en la nit", b: "Un ball de màscares", correct: 'a' },
+                    { q: "Chopin i Liszt foren grans virtuosos de...", a: "El Piano", b: "El Violoncel", correct: 'a' },
+                    { q: "La música de programa o poema simfònic narra...", a: "Una història o idea extra-musical", b: "Només càlculs matemàtics", correct: 'a' },
+                    { q: "Wagner és conegut per les seves monumentals...", a: "Òperes (Drames Musicals)", b: "Mises", correct: 'a' }
+                ]
+            },
+            {
+                id: 5, name: "Segle XX", boss: "L'Ignorant Futurista", icon: "📺", img: "img/segleXX.png", questions: [
+                    { q: "Com trenca el Segle XX amb el passat?", a: "Amb nous sons i dissonància", b: "Tornant al Cant Gregorià", correct: 'a' },
+                    { q: "Quin estil neix de la fusió africana i europea?", a: "El Jazz", b: "El Vals", correct: 'a' },
+                    { q: "L'Impressionisme musical vol suggerir...", a: "Atmosferes i colors", b: "Rigor i duresa", correct: 'a' },
+                    { q: "Stravinsky va causar un escàndol amb...", a: "La consagració de la primavera", b: "Un concert de piano", correct: 'a' },
+                    { q: "El jazz es basa molt en...", a: "La improvisació", b: "Llegir partitures fixes", correct: 'a' },
+                    { q: "Al final del segle XX apareix la música...", a: "Electrònica", b: "Trobadoresca", correct: 'a' },
+                    { q: "Rock and Roll neix cap als anys...", a: "50", b: "10", correct: 'a' }
+                ]
+            }
+        ];
+
+        let bgMusic = new Audio('audio/Lucha Libre Rumble.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        let playerHP = 100;
+        let enemyHP = 100;
+        let currentEraIndex = 0;
+        let bossHitsNeeded = 5;
+        let currentBossHits = 0;
+        let timerInterval;
+        let timeLeft = 100;
+        let isTransitioning = false;
+        let currentQuestion = null;
+
+        const playerSprite = document.getElementById('player-sprite');
+        const enemySprite = document.getElementById('enemy-sprite');
+        const enemyNameLabel = document.getElementById('enemy-name-label');
+        const mestreBar = document.getElementById('mestre-hp');
+        const ignorantBar = document.getElementById('ignorant-hp');
+        const quizSection = document.getElementById('quiz-section');
+        const questionText = document.getElementById('question-text');
+        const btnA = document.getElementById('btn-a');
+        const btnB = document.getElementById('btn-b');
+        const timerBar = document.getElementById('timer-bar');
+        const overlay = document.getElementById('message-overlay');
+        const gameContainer = document.getElementById('game-container');
+        const challengerNote = document.getElementById('challenger-note');
+
+        function startGame() {
+            playerHP = 100;
+            currentEraIndex = 0;
+            overlay.classList.add('hidden');
+            quizSection.classList.remove('hidden');
+
+            try {
+                bgMusic.currentTime = 0;
+                bgMusic.play();
+            } catch (e) {
+                console.log("Audio play blocked");
+            }
+
+            // Reset Ladder
+            for (let i = 0; i < 6; i++) {
+                document.getElementById(`step-${i}`).className = 'ladder-step';
+                document.getElementById(`prog-${i}`).innerText = '0/5';
+            }
+
+            updateBars(100);
+            loadEraBoss();
+        }
+
+        function updateBars(eHP) {
+            enemyHP = eHP;
+            mestreBar.style.width = playerHP + '%';
+            ignorantBar.style.width = enemyHP + '%';
+        }
+
+        function loadEraBoss() {
+            if (currentEraIndex >= 6) {
+                showFinalVictory();
+                return;
+            }
+
+            const era = ERAS_DATA[currentEraIndex];
+            currentBossHits = 0;
+            updateBars(100);
+
+            // Transition
+            isTransitioning = true;
+            challengerNote.innerText = `${era.boss.toUpperCase()}!`;
+            challengerNote.style.opacity = 1;
+            enemySprite.style.opacity = 0;
+
+            const step = document.getElementById(`step-${currentEraIndex}`);
+            step.classList.add('active');
+
+            setTimeout(() => {
+                challengerNote.style.opacity = 0;
+                enemySprite.querySelector('img').src = era.img;
+                enemySprite.style.opacity = 1;
+                enemyNameLabel.innerText = `${era.icon} ${era.boss}`;
+                isTransitioning = false;
+                nextQuestion();
+            }, 1500);
+        }
+
+        function nextQuestion() {
+            if (isTransitioning) return;
+            const era = ERAS_DATA[currentEraIndex];
+
+            const pool = era.questions.filter(q => q !== currentQuestion);
+            currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+
+            questionText.innerHTML = `<span style="color:var(--neon-yellow); font-size:0.7rem; font-family:'Press Start 2P';">[${era.name.toUpperCase()}]</span><br>${currentQuestion.q}`;
+
+            // Randomize answer placement
+            if (Math.random() > 0.5) {
+                btnA.innerText = currentQuestion.a;
+                btnB.innerText = currentQuestion.b;
+                btnA.onclick = () => handleAnswer('a');
+                btnB.onclick = () => handleAnswer('b');
+            } else {
+                btnA.innerText = currentQuestion.b;
+                btnB.innerText = currentQuestion.a;
+                btnA.onclick = () => handleAnswer('b');
+                btnB.onclick = () => handleAnswer('a');
+            }
+
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 100;
+            timerBar.style.width = '100%';
+            timerBar.style.backgroundColor = 'var(--neon-yellow)';
+
+            timerInterval = setInterval(() => {
+                timeLeft -= 3.3; // ~3 seconds
+                timerBar.style.width = timeLeft + '%';
+                if (timeLeft < 30) timerBar.style.backgroundColor = 'var(--ignorant-color)';
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleAnswer('timeout');
+                }
+            }, 100);
+        }
+
+        function handleAnswer(ans) {
+            if (isTransitioning) return;
+            clearInterval(timerInterval);
+
+            if (ans === currentQuestion.correct) {
+                currentBossHits++;
+                document.getElementById(`prog-${currentEraIndex}`).innerText = `${currentBossHits}/5`;
+                playerAttack();
+            } else {
+                enemyAttack();
+            }
+        }
+
+        function playerAttack() {
+            playerSprite.classList.add('player-attack');
+            setTimeout(() => {
+                playerSprite.classList.remove('player-attack');
+                enemySprite.classList.add('shake');
+                enemySprite.classList.add('hit-flash');
+                gameContainer.classList.add('damage-flash-ignorant');
+
+                // Enemy HP based on 5 hits
+                const eHP = 100 - (currentBossHits * 20);
+                updateBars(eHP);
+
+                setTimeout(() => {
+                    enemySprite.classList.remove('shake');
+                    enemySprite.classList.remove('hit-flash');
+                    gameContainer.classList.remove('damage-flash-ignorant');
+                    if (currentBossHits >= 5) {
+                        finishEra();
+                    } else {
+                        nextQuestion();
+                    }
+                }, 1000); // 1 sec as requested
+            }, 200);
+        }
+
+        function enemyAttack() {
+            enemySprite.classList.add('enemy-attack');
+            setTimeout(() => {
+                enemySprite.classList.remove('enemy-attack');
+                playerSprite.classList.add('shake');
+                playerSprite.classList.add('hit-flash');
+                gameContainer.classList.add('damage-flash-mestre');
+                playerHP = Math.max(0, playerHP - 20);
+                updateBars(enemyHP); // Preserve enemy HP
+
+                setTimeout(() => {
+                    playerSprite.classList.remove('shake');
+                    playerSprite.classList.remove('hit-flash');
+                    gameContainer.classList.remove('damage-flash-mestre');
+                    if (playerHP <= 0) {
+                        showGameOver();
+                    } else {
+                        nextQuestion();
+                    }
+                }, 1000); // 1 sec as requested
+            }, 200);
+        }
+
+        function finishEra() {
+            const step = document.getElementById(`step-${currentEraIndex}`);
+            step.classList.remove('active');
+            step.classList.add('completed');
+
+            currentEraIndex++;
+            setTimeout(loadEraBoss, 1000);
+        }
+
+        function showGameOver() {
+            quizSection.classList.add('hidden');
+            bgMusic.pause();
+            overlay.innerHTML = `
+                <h1 style="font-family:'Press Start 2P'; color: var(--neon-pink); font-size:2rem;">K.O.</h1>
+                <p style="margin: 20px 40px; font-size: 1.5rem;">L'enemic t'ha superat en coneixements.<br> Cal estudiar més la història!</p>
+                <button class="btn-main" onclick="startGame()">REINTENTAR</button>
+            `;
+            overlay.classList.remove('hidden');
+        }
+
+        function showFinalVictory() {
+            quizSection.classList.add('hidden');
+            bgMusic.pause();
+            overlay.innerHTML = `
+                <h1 style="font-family:'Press Start 2P'; color: var(--neon-blue); font-size:2rem;">VICTÒRIA TOTAL!</h1>
+                <p style="margin: 20px 40px; font-size: 1.5rem;">Has vençut als 6 Titans de la Història de la Música.<br><b>Ets el Mestre Suprem!</b></p>
+                <button class="btn-main" onclick="startGame()">TORNAR A JUGAR</button>
+            `;
+            overlay.classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>

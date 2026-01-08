@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Destructora: Premium Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Cinzel:wght@700&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #2c1a12;
+            background-image: url('img/leather_desk.png');
+            background-size: cover;
+            /* or repeat */
+            background-blend-mode: multiply;
+            font-family: 'Special Elite', cursive;
+            /* Typewriter style */
+            user-select: none;
+            touch-action: none;
+        }
+
+        /* Vignette Overlay */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 40%, #000 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        /* --- ZONES (IMAGES) --- */
+        .zone {
+            position: absolute;
+            bottom: 50px;
+            /* Adjusted to be lower on desk */
+            width: 350px;
+            height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+
+        #shredder-zone {
+            left: 5%;
+            background: url('img/shredder.png') no-repeat center bottom;
+            background-size: contain;
+        }
+
+        #folder-zone {
+            right: 5%;
+            background: url('img/folder.png') no-repeat center bottom;
+            background-size: contain;
+        }
+
+        .zone-label {
+            position: absolute;
+            top: -40px;
+            font-family: 'Cinzel', serif;
+            font-size: 24px;
+            color: #d4a373;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px black;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 1px solid #d4a373;
+        }
+
+        /* --- PAPER CARD --- */
+        #card-stack {
+            position: relative;
+            width: 320px;
+            height: 480px;
+            z-index: 20;
+            margin-top: -50px;
+            /* Center properly */
+        }
+
+        .paper-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #f4e1c1;
+            /* Parchment color */
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+                radial-gradient(#d7c4a1 15%, transparent 16%);
+            /* Aged texture simulation */
+            background-size: 100% 20px, 4px 4px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            border: 1px solid #c7b299;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 22px;
+            color: #3e2723;
+            cursor: grab;
+            transform-origin: 50% 100%;
+            transition: transform 0.1s, opacity 0.3s;
+            border-radius: 2px;
+        }
+
+        .paper-card::before {
+            content: "CONFIDENTIAL";
+            position: absolute;
+            top: 15px;
+            color: rgba(182, 59, 59, 0.15);
+            font-size: 38px;
+            transform: rotate(-15deg);
+            pointer-events: none;
+            font-family: Impact, sans-serif;
+        }
+
+        .paper-card:active {
+            cursor: grabbing;
+        }
+
+        .stamp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg) scale(0);
+            font-size: 80px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 8px solid;
+            padding: 10px 20px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            z-index: 30;
+            mix-blend-mode: multiply;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .stamp-fake {
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+
+        .stamp-verify {
+            color: #2e7d32;
+            border-color: #2e7d32;
+        }
+
+        /* --- HUD --- */
+        #hud {
+            position: absolute;
+            top: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 36px;
+            color: #fbc02d;
+            font-family: 'Cinzel', serif;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+
+        /* --- ELEVATOR UI --- */
+        #elevator-panel {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(#2c2c2c, #1a1a1a);
+            padding: 15px;
+            border-radius: 15px;
+            border: 4px solid #444;
+            box-shadow: inset 0 0 20px #000, 5px 5px 15px #000;
+            z-index: 50;
+            width: 80px;
+        }
+
+        .floor-lamp {
+            width: 60px;
+            height: 60px;
+            background: #111;
+            border-radius: 50%;
+            margin: 10px auto;
+            border: 2px solid #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #444;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 14px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9);
+            transition: all 0.3s;
+        }
+
+        .floor-lamp.active {
+            background: radial-gradient(#fff, #ffcc00);
+            color: #000;
+            box-shadow: 0 0 15px #ffcc00, inset 0 -2px 5px rgba(0, 0, 0, 0.2);
+            border-color: #fff;
+            transform: scale(1.1);
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+
+        #start-screen h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 5rem;
+            text-shadow: 0 5px 15px black;
+            margin: 0;
+            color: #e5e5e5;
+        }
+
+        #start-screen button {
+            background: linear-gradient(45deg, #f57f17, #fbc02d);
+            border: 2px solid #fff;
+            box-shadow: 0 5px 20px rgba(245, 127, 23, 0.4);
+            color: #000;
+            font-family: 'Cinzel', serif;
+            transition: transform 0.2s;
+        }
+
+        #start-screen button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Animation Classes */
+        .shake-anim {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- CONFETTI -->
+        <canvas id="confetti-canvas"></canvas>
+
+        <!-- START SCREEN -->
+        <div id="start-screen">
+            <h1>LA DESTRUCTORA</h1>
+            <h2 style="font-size:2rem; color:#fbc02d; margin-bottom:40px; font-family:'Special Elite';">CLASSIFICAT: TOP
+                SECRET</h2>
+            <div
+                style="font-size:1.5rem; text-align:left; max-width:700px; line-height:1.6; margin-bottom:50px; background:rgba(255,255,255,0.1); padding:30px; border-radius:10px; border:1px solid #777;">
+                <p>🕵️‍♂️ <strong>MISSIÓ:</strong> Revisa els documents històrics.</p>
+                <p>✅ <strong>VERITAT:</strong> Arrossega a la <strong>Caixa Reial</strong> (DRETA).</p>
+                <p>❌ <strong>FALS:</strong> Destrueix a la <strong>Trituradora</strong> (ESQUERRA).</p>
+                <p>🏆 <strong>OBJECTIU:</strong> 10 Encerts per guanyar.</p>
+            </div>
+            <button onclick="startGame()"
+                style="padding:20px 60px; font-size:2rem; cursor:pointer; border-radius:5px; font-weight:bold;">OBRIR
+                DOSSIER</button>
+        </div>
+
+        <!-- ZONES (Visual Only) -->
+        <div id="shredder-zone" class="zone">
+            <div class="zone-label">TRITURAR (FALS)</div>
+        </div>
+
+        <div id="folder-zone" class="zone">
+            <div class="zone-label">ARXIVAR (CERT)</div>
+        </div>
+
+        <!-- STACK -->
+        <div id="card-stack">
+            <!-- Cards injected by JS -->
+        </div>
+
+        <!-- HUD -->
+        <div id="hud">
+            ENCERTS: <span id="score-val" style="color:#fff;">0</span> / 10
+        </div>
+
+        <!-- AUDIO & VOLUME -->
+        <audio id="bg-music" loop>
+            <source src="audio/Velvet Floors, Secret Doors.m4a" type="audio/mpeg">
+        </audio>
+        <!-- Placeholders for FX if available -->
+        <div id="volume-controls"
+            style="position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.8); padding:10px; border-radius:20px; display:flex; align-items:center; gap:10px; z-index:1000; border:1px solid #d4a373;">
+            <span style="font-size:1.5rem;">🎵</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                style="width:100px; accent-color:#fbc02d; cursor:pointer;">
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DOCUMENTS_DB = [
+            { text: "Beethoven va compondre 200 Simfonies.", type: "FALS" },
+            { text: "El Cant Gregorià és monòdic (una sola veu).", type: "VERITAT" },
+            { text: "Bach va viatjar a Amèrica de gira.", type: "FALS" },
+            { text: "El Piano es va inventar al segle XX.", type: "FALS" },
+            { text: "Wagner va crear l'òpera d'art total.", type: "VERITAT" },
+            { text: "Al Renaixement la música religiosa era molt important.", type: "VERITAT" },
+            { text: "Mozart va morir molt vell i ric.", type: "FALS" },
+            { text: "El Barroc busca el contrast i l'emoció.", type: "VERITAT" },
+            { text: "Els Beatles són del Renaixement.", type: "FALS" },
+            { text: "L'Orquestra Simfònica té violins.", type: "VERITAT" }
+        ];
+
+        // --- STATE ---
+        let cards = [];
+        let successes = 0;
+        let currentCard = null;
+
+        // --- DOM ---
+        const stackEl = document.getElementById('card-stack');
+        const scoreEl = document.getElementById('score-val');
+        const confettiCanvas = document.getElementById('confetti-canvas');
+        const ctx = confettiCanvas.getContext('2d');
+
+        // --- INIT ---
+        function resizeCanvas() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            initGame();
+
+            // Sountrack Logic
+            const music = document.getElementById('bg-music');
+            if (music) {
+                music.volume = 0.5;
+                music.play().catch(e => console.log("Audio play failed:", e));
+            }
+        }
+
+        function initGame() {
+            // Shuffle
+            const shuffled = [...DOCUMENTS_DB].sort(() => Math.random() - 0.5);
+
+            // Create DOM elements (reverse order)
+            shuffled.reverse().forEach((data, index) => {
+                const el = createCardElement(data, index);
+                stackEl.appendChild(el);
+                cards.push({ el, data });
+            });
+
+            successes = 0;
+            scoreEl.textContent = successes;
+            enableTopCard();
+        }
+
+        // Volume Slider Logic
+        const volumeSlider = document.getElementById('volume-slider');
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                const music = document.getElementById('bg-music');
+                if (music) music.volume = e.target.value;
+            });
+        }
+
+        function createCardElement(data, index) {
+            const div = document.createElement('div');
+            div.classList.add('paper-card');
+            div.innerHTML = `<p>${data.text}</p><div style="font-size:12px; margin-top:20px; color:#555;">REF: ${Math.floor(Math.random() * 99999)}</div>`;
+
+            // Random slight rotation
+            const rot = (Math.random() - 0.5) * 5;
+            div.style.transform = `rotate(${rot}deg)`;
+
+            // Random styling tweak
+            // div.style.backgroundColor = Math.random() > 0.5 ? '#f4e1c1' : '#f9f3e5';
+
+            return div;
+        }
+
+        function enableTopCard() {
+            if (cards.length === 0) {
+                if (successes >= 10) endGame();
+                else endGame(); // Basic loop end
+                return;
+            }
+
+            const cardObj = cards[cards.length - 1];
+            currentCard = cardObj;
+
+            const el = cardObj.el;
+            el.style.cursor = 'grab';
+
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            const onStart = (e) => {
+                isDragging = true;
+                startX = e.clientX || e.touches[0].clientX;
+                el.style.transition = 'none';
+                el.style.cursor = 'grabbing';
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                currentX = (e.clientX || e.touches[0].clientX) - startX;
+                const rot = currentX * 0.1;
+                el.style.transform = `translateX(${currentX}px) rotate(${rot}deg)`;
+
+                const opacity = Math.min(Math.abs(currentX) / 200, 1);
+                // Highlight Zones
+                /* Optional: Scale zones slightly */
+            };
+
+            const onEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                el.style.transition = 'transform 0.3s, opacity 0.3s';
+
+                if (Math.abs(currentX) > 150) {
+                    if (currentX > 0) makeDecision('RIGHT');
+                    else makeDecision('LEFT');
+                } else {
+                    el.style.transform = `rotate(0deg)`;
+                }
+
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onEnd);
+            };
+
+            el.addEventListener('mousedown', (e) => {
+                onStart(e);
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onEnd);
+            });
+
+            el.addEventListener('touchstart', (e) => {
+                onStart(e);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('touchend', onEnd);
+            });
+        }
+
+        function makeDecision(direction) {
+            const isCorrect = (direction === 'LEFT' && currentCard.data.type === 'FALS') ||
+                (direction === 'RIGHT' && currentCard.data.type === 'VERITAT');
+
+            const el = currentCard.el;
+
+            if (isCorrect) {
+                successes++;
+                showStamp(el, "CORRECTE", 'stamp-verify');
+
+                // JUICE
+                if (direction === 'LEFT') {
+                    // Shredding Effect
+                    shakeScreen();
+                    createConfetti(el.getBoundingClientRect());
+                } else {
+                    // Archive Effect (Maybe sparkles?)
+                }
+
+            } else {
+                showStamp(el, "ERROR", 'stamp-fake');
+                shakeScreen(); // Shake on error too
+            }
+
+            scoreEl.textContent = successes;
+
+            if (successes >= 10) {
+                setTimeout(endGame, 1000); // Win immediately
+                return;
+            }
+
+            // Animate card away
+            if (direction === 'LEFT') {
+                el.style.transform = 'translate(-500px, 100px) rotate(-45deg)';
+            } else {
+                el.style.transform = 'translate(500px, 0px) rotate(45deg)';
+            }
+            el.style.opacity = 0;
+
+            setTimeout(() => {
+                el.remove();
+                cards.pop();
+                enableTopCard();
+            }, 300);
+        }
+
+        function showStamp(parent, text, className) {
+            const stamp = document.createElement('div');
+            stamp.className = `stamp ${className}`;
+            stamp.textContent = text;
+            parent.appendChild(stamp);
+            void stamp.offsetWidth;
+            stamp.style.opacity = 1;
+            stamp.style.transform = 'translate(-50%, -50%) rotate(-20deg) scale(1)';
+        }
+
+        function shakeScreen() {
+            document.getElementById('game-container').classList.add('shake-anim');
+            setTimeout(() => {
+                document.getElementById('game-container').classList.remove('shake-anim');
+            }, 500);
+        }
+
+        function endGame() {
+            let msg = '';
+            let btnText = 'Tornar a Jugar';
+
+            if (successes >= 10) {
+                msg = '<h1 style="color:#fbc02d; font-size:3rem;">🎉 MISSIÓ COMPLERTA! 🎉</h1><p style="font-size:1.5rem;">Documents Classificats.</p>';
+            } else {
+                msg = '<h1 style="color:#d32f2f; font-size:3rem;">❌ MISSIÓ FALLIDA</h1><p style="font-size:1.5rem;">Intenta-ho de nou.</p>';
+            }
+
+            stackEl.innerHTML = `<div style="text-align:center; padding:30px; background:rgba(0,0,0,0.9); border:2px solid #d4a373; border-radius:10px; color:white; box-shadow:0 10px 30px black;">${msg}<br><button onclick="location.reload()" style="padding:15px 30px; font-size:1.5rem; cursor:pointer; margin-top:20px; background:#d4a373; border:none; font-family:'Cinzel';">${btnText}</button></div>`;
+        }
+
+        // --- PARTICLES (CONFETTI) ---
+        let particles = [];
+
+        function createConfetti(rect) {
+            const count = 30;
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height; // Bottom of card
+
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10 - 5,
+                    life: 1.0,
+                    color: `rgb(244, 225, 193)`, // Paper color
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 10
+                });
+            }
+            requestAnimationFrame(updateParticles);
+        }
+
+        function updateParticles() {
+            if (particles.length === 0) return;
+
+            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.5; // Gravity
+                p.life -= 0.02;
+                p.rotation += p.rotationSpeed;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
+                    ctx.fillRect(-5, -5, 10, 10); // Small square confetti
+                    ctx.restore();
+                }
+            }
+
+            if (particles.length > 0) requestAnimationFrame(updateParticles);
+        }
+
+    </script>
+</body>
+
+</html>
