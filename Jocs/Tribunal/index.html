@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Tribunal del Temps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --wood-dark: #3e2723;
+            --wood-light: #5d4037;
+            --gold: #ffc107;
+            --red: #c62828;
+            --green: #2e7d32;
+            --paper: #f5f5dc;
+            --text: #212121;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        /* --- TITLE SCREEN --- */
+        #title-screen {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('img/bg_courtroom.jpg') no-repeat center center/cover;
+            color: var(--gold);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 60px;
+            margin-bottom: 20px;
+            text-shadow: 4px 4px 0 #000;
+            border-bottom: 4px solid var(--gold);
+            padding-bottom: 10px;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--gold);
+            max-width: 600px;
+            margin-bottom: 40px;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #fff;
+        }
+
+        .btn-main {
+            background: var(--wood-light);
+            color: var(--gold);
+            border: 4px solid var(--gold);
+            padding: 20px 60px;
+            font-family: 'Cinzel', serif;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            background: var(--wood-dark);
+        }
+
+        /* --- MENU SCREEN --- */
+        #menu-screen {
+            background: #2c3e50;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 900px;
+        }
+
+        .era-btn {
+            background: var(--paper);
+            border: 4px solid var(--wood-dark);
+            padding: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+            color: var(--wood-dark);
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .era-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 5px 10px 0 rgba(0, 0, 0, 0.3);
+            background: #fff;
+        }
+
+        .chaos-btn {
+            grid-column: span 3;
+            background: #2c3e50;
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+
+        /* --- GAME SCREEN --- */
+        #game-screen {
+            background: #333;
+            perspective: 1000px;
+        }
+
+        /* Background/Courtroom */
+        #courtroom-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('img/bg_courtroom.jpg') no-repeat center center/cover;
+            filter: brightness(0.6);
+            z-index: 0;
+            transition: background-image 0.5s;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--gold);
+        }
+
+        #back-btn {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: var(--wood-light);
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            padding: 10px 20px;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #back-btn:hover {
+            background: var(--wood-dark);
+        }
+
+        /* Case Info Banner */
+        #case-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--paper);
+            padding: 15px 30px;
+            border: 3px solid var(--wood-dark);
+            border-radius: 5px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            transform: rotate(-2deg);
+            max-width: 400px;
+        }
+
+        #case-title {
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--red);
+            border-bottom: 2px solid var(--wood-dark);
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+        }
+
+        #case-desc {
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            color: var(--wood-dark);
+            font-style: italic;
+        }
+
+        .heart {
+            font-size: 30px;
+            color: var(--red);
+            filter: drop-shadow(2px 2px 0 #000);
+        }
+
+        .heart.lost {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        /* NPC Stand */
+        #npc-stand {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 90%;
+            /* Increased height to allow more space */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 15;
+            /* Behind desk (20) but ensure visibility */
+            padding-bottom: 250px;
+            /* Lift NPC up significantly so they are well above the desk */
+            pointer-events: none;
+            /* Let clicks pass through if needed */
+        }
+
+        #npc-img {
+            max-height: 100%;
+            /* Allow full height of the container */
+            max-width: 120%;
+            /* Allow slightly wider if needed */
+            transform: scale(1.0);
+            /* Reduced from 1.25 as requested */
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+            transition: transform 0.3s;
+            position: relative;
+            z-index: 100;
+            transform-origin: bottom center;
+            /* Scale from bottom */
+        }
+
+        /* Judge Desk (Overlay) */
+        #judge-desk {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--wood-dark);
+            border-top: 10px solid var(--wood-light);
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Dialogue Box */
+        #dialogue-box {
+            position: absolute;
+            top: -160px;
+            /* Above desk */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            background: var(--paper);
+            border: 4px solid var(--wood-dark);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            z-index: 15;
+        }
+
+        #prosecutor-label {
+            font-weight: bold;
+            color: var(--red);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        #statement-text {
+            font-size: 24px;
+            color: #000;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        #skip-btn {
+            background: #7f8c8d;
+            color: white;
+            border: 2px solid #2c3e50;
+            padding: 10px 20px;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        #skip-btn:hover {
+            background: #95a5a6;
+        }
+
+        /* Buttons */
+        .verdict-btn {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 8px solid rgba(0, 0, 0, 0.2);
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 0 40px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .btn-guilty {
+            background: radial-gradient(circle at 30% 30%, #ff5252, #b71c1c);
+            box-shadow: 0 10px 0 #7f0000, 0 15px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-innocent {
+            background: radial-gradient(circle at 30% 30%, #69f0ae, #1b5e20);
+            box-shadow: 0 10px 0 #003300, 0 15px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .verdict-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.5), 0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Gavel */
+        /* Gavel */
+        #gavel {
+            position: absolute;
+            bottom: 80px;
+            /* Moved up further */
+            right: 5%;
+            width: 280px;
+            /* Increased size */
+            height: 280px;
+            background: url('img/ui_gavel.png?v=3') no-repeat center center/contain;
+            font-size: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-origin: bottom right;
+            pointer-events: none;
+            transition: transform 0.1s;
+            z-index: 30;
+        }
+
+        .gavel-hit {
+            animation: gavel-smash 0.3s ease-out;
+        }
+
+        @keyframes gavel-smash {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(-45deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        /* Documents Prop */
+        /* Documents Prop */
+        #documents {
+            position: absolute;
+            bottom: 80px;
+            /* Moved up further */
+            left: 2%;
+            width: 300px;
+            /* Increased size */
+            height: 200px;
+            background: url('img/documents.png') no-repeat center center/contain;
+            z-index: 30;
+            pointer-events: none;
+            filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        /* Music Control */
+        #music-control {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Centered */
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            border: 1px solid var(--gold);
+        }
+
+        #lives-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+        }
+
+        #music-control span {
+            color: var(--gold);
+            font-size: 20px;
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+        }
+
+        #feedback-title {
+            font-size: 60px;
+            font-family: 'Cinzel', serif;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        #feedback-msg {
+            font-size: 24px;
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        /* Game Over */
+        #game-over-screen {
+            background: #000;
+            color: var(--red);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TITLE SCREEN -->
+    <div id="title-screen" class="screen active">
+        <h1>EL TRIBUNAL DEL TEMPS</h1>
+        <div class="instructions">
+            <p>Ets el Jutge Suprem.</p>
+            <p>Has de decidir si les declaracions dels músics són <strong>VERITAT HISTÒRICA</strong> o <strong>MENTIDA
+                    (ANACRONISME)</strong>.</p>
+            <p>Si falles 3 cops, estàs acomiadat.</p>
+        </div>
+        <button class="btn-main" onclick="showMenu()">COMENÇAR</button>
+    </div>
+
+    <!-- GLOBAL MUSIC CONTROL -->
+    <div id="music-control">
+        <span>🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <!-- MENU SCREEN -->
+    <div id="menu-screen" class="screen">
+        <h2 style="color: var(--gold); font-family: 'Cinzel'; font-size: 40px; margin-bottom: 40px;">SELECCIONA
+            EXPEDIENT</h2>
+        <div class="era-grid">
+            <button class="era-btn" onclick="startGame('medieval')">EDAT MITJANA<br><span
+                    style="font-size:12px; margin-top:10px">476 - 1450</span></button>
+            <button class="era-btn" onclick="startGame('renaixement')">RENAIXEMENT<br><span
+                    style="font-size:12px; margin-top:10px">1450 - 1600</span></button>
+            <button class="era-btn" onclick="startGame('barroc')">BARROC<br><span
+                    style="font-size:12px; margin-top:10px">1600 - 1750</span></button>
+            <button class="era-btn" onclick="startGame('classicisme')">CLASSICISME<br><span
+                    style="font-size:12px; margin-top:10px">1750 - 1820</span></button>
+            <button class="era-btn" onclick="startGame('romanticisme')">ROMANTICISME<br><span
+                    style="font-size:12px; margin-top:10px">1820 - 1910</span></button>
+            <button class="era-btn" onclick="startGame('sxx')">SEGLE XX<br><span
+                    style="font-size:12px; margin-top:10px">1910 - ...</span></button>
+            <button class="era-btn chaos-btn" onclick="startGame('chaos')">🌀 CAOS TEMPORAL 🌀<br><span
+                    style="font-size:12px; margin-top:10px">TOTES LES ÈPOQUES</span></button>
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen">
+        <div id="courtroom-bg"></div>
+
+        <div id="case-info">
+            <div id="case-title">CAS #1</div>
+            <div id="case-desc">Edat Mitjana - Monjo</div>
+        </div>
+
+
+
+        <!-- Music control moved to global -->
+
+        <button class="btn-main"
+            style="position: absolute; top: 20px; left: 28%; transform: translateX(-50%); padding: 10px 30px; font-size: 16px; z-index: 1000;"
+            onclick="showMenu()">⬅ TORNAR AL MENÚ</button>
+
+        <div id="lives-container">
+            <span>Reputació:</span>
+            <span class="heart" id="heart-1">❤</span>
+            <span class="heart" id="heart-2">❤</span>
+            <span class="heart" id="heart-3">❤</span>
+        </div>
+
+        <!-- NPC Area -->
+        <div id="npc-stand">
+            <img id="npc-img" src="" alt="NPC">
+        </div>
+
+        <!-- Judge Desk -->
+        <div id="judge-desk">
+            <div id="dialogue-box">
+                <div id="prosecutor-label">FISCAL: "L'ACUSAT DECLARA..."</div>
+                <div id="statement-text">"..."</div>
+                <button id="skip-btn" onclick="skipQuestion()">NO HO TINC CLAR... SEGÜENT PREGUNTA ➡</button>
+            </div>
+
+            <div id="gavel"></div>
+            <div id="documents"></div> <!-- New prop -->
+
+            <div
+                style="position: absolute; bottom: 100px; width: 100%; display: flex; justify-content: center; gap: 20px;">
+                <div class="verdict-btn btn-guilty" onclick="giveVerdict(true)"
+                    style="padding: 20px 40px; font-size: 24px;">CULPABLE<br><span
+                        style="font-size: 14px;">(FALS)</span></div>
+                <div class="verdict-btn btn-innocent" onclick="giveVerdict(false)"
+                    style="padding: 20px 40px; font-size: 24px;">INNOCENT<br><span
+                        style="font-size: 14px;">(VERITAT)</span></div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/music_background.m4a" type="audio/mpeg">
+    </audio>
+    <!-- FEEDBACK OVERLAY -->
+    <div id="feedback-overlay">
+        <h1 id="feedback-title">CORRECTE!</h1>
+        <p id="feedback-msg">Ben fet, Senyoria.</p>
+        <button id="continue-btn" class="btn-main"
+            style="margin-top: 30px; font-size: 20px; padding: 15px 40px;">CONTINUAR</button>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="game-over-screen" class="screen">
+        <h1 style="font-size: 80px;">DESPATXAT!</h1>
+        <p style="font-size: 24px; color: white; margin-bottom: 40px;">La teva reputació ha caigut en picat.</p>
+        <button class="btn-main" onclick="location.reload()">REINICIAR</button>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-screen" class="screen" style="background: #2ecc71; color: white;">
+        <h1 style="font-size: 60px; text-align: center;">ENHORABONA!</h1>
+        <p style="font-size: 24px; max-width: 600px; text-align: center; margin-bottom: 40px;">
+            Eres un excel.lent jutge d'aquesta època. Has aconseguit una ratxa de 20 encerts!
+        </p>
+        <button class="btn-main" onclick="location.reload()">JUGAR DE NOU</button>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const CASES_DB = {
+            medieval: {
+                name: "Edat Mitjana",
+                bg: "img/bg_courtroom.jpg",
+                npcs: [
+                    {
+                        name: "Monjo", img: "img/npc_monjo.png?v=99",
+                        truthStatements: [
+                            "Cantem en llatí per lloar Déu.",
+                            "La nostra música és monòdica, una sola veu.",
+                            "Utilitzem neumes per escriure la música.",
+                            "El cant gregorià és la nostra pregària.",
+                            "Vivim en comunitat al monestir."
+                        ],
+                        falseStatements: [
+                            { text: "Utilitzem el piano per acompanyar els salms.", reason: "El piano no es va inventar fins al 1700!" },
+                            { text: "M'encanta escoltar òpera al monestir.", reason: "L'òpera va néixer al Barroc (1600)." },
+                            { text: "Toquem la guitarra elèctrica a missa.", reason: "Anacronisme total! Faltaven segles per l'electricitat." },
+                            { text: "Cantem cançons de Beatles.", reason: "Els Beatles són del segle XX." },
+                            { text: "Fem concerts de rock dur.", reason: "El rock és del segle XX." }
+                        ]
+                    },
+                    {
+                        name: "Trobador", img: "img/npc_trobador.png",
+                        truthStatements: [
+                            "Canto cançons d'amor cortès en llengua vulgar.",
+                            "Soc un poeta i músic itinerant.",
+                            "Acompanyo les meves cançons amb instruments.",
+                            "Viatjo de cort en cort.",
+                            "Els meus temes són l'amor i la guerra."
+                        ],
+                        falseStatements: [
+                            { text: "Toco la guitarra elèctrica a la cort.", reason: "Anacronisme total! Faltaven segles per l'electricitat." },
+                            { text: "La meva música és complexa polifonia a 4 veus.", reason: "Els trobadors solien fer melodies més simples." },
+                            { text: "Utilitzo un sintetitzador.", reason: "El sintetitzador és del segle XX." },
+                            { text: "Gravo els meus discs en CD.", reason: "No hi havia tecnologia de gravació." },
+                            { text: "Canto òpera italiana.", reason: "L'òpera és posterior (Barroc)." }
+                        ]
+                    },
+                    {
+                        name: "Hildegard", img: "img/npc_hildegard.png",
+                        truthStatements: [
+                            "Soc una abadessa i compongo música.",
+                            "Les meves visions m'inspiren els cants.",
+                            "Escric sobre teologia i medicina.",
+                            "La meva música és per a veus femenines.",
+                            "Soc una dona important de l'Església."
+                        ],
+                        falseStatements: [
+                            { text: "Escric simfonies per a gran orquestra.", reason: "L'orquestra simfònica és del Classicisme/Romanticisme." },
+                            { text: "Utilitzo el sintetitzador per crear atmosferes.", reason: "Un sintetitzador al segle XII? Impossible." },
+                            { text: "Ballo ballet clàssic.", reason: "El ballet és posterior." },
+                            { text: "Toco el saxofon.", reason: "El saxofon és del segle XIX." },
+                            { text: "Soc una estrella del pop.", reason: "El concepte d'estrella del pop és modern." }
+                        ]
+                    },
+                    {
+                        name: "Joglar", img: "img/npc_joglar.png",
+                        truthStatements: [
+                            "Faig malabars i toco instruments per entretenir.",
+                            "Viatjo de poble en poble actuant.",
+                            "No soc compositor, interpreto música d'altres.",
+                            "Actuo a les places i castells.",
+                            "Soc d'origen humil."
+                        ],
+                        falseStatements: [
+                            { text: "Soc un noble molt ric i poderós.", reason: "Els joglars solien ser d'origen humil." },
+                            { text: "Componc grans misses polifòniques.", reason: "Això ho fan els mestres de capella, no els joglars." },
+                            { text: "Toco el piano de cua.", reason: "El piano no existia." },
+                            { text: "Soc director d'orquestra.", reason: "La figura del director és posterior." },
+                            { text: "Venc entrades per internet.", reason: "Internet és del segle XX." }
+                        ]
+                    },
+                    {
+                        name: "Cavaller", img: "img/npc_cavaller.png?v=99",
+                        truthStatements: [
+                            "Lluito a les Croades per la fe.",
+                            "Els joglars ens entretenen als banquets.",
+                            "Segueixo el codi de cavalleria.",
+                            "Porto armadura i espasa.",
+                            "Serveixo al meu senyor feudal."
+                        ],
+                        falseStatements: [
+                            { text: "Escolto Jazz abans de la batalla.", reason: "El Jazz és del segle XX!" },
+                            { text: "M'agrada ballar el Vals amb la dama.", reason: "El Vals és un ball molt posterior (Romanticisme)." },
+                            { text: "Disparo amb una pistola làser.", reason: "Ciència-ficció!" },
+                            { text: "Viatjo en tren de vapor.", reason: "La màquina de vapor és del segle XVIII/XIX." },
+                            { text: "Parlo per telèfon mòbil.", reason: "El mòbil és del segle XX." }
+                        ]
+                    }
+                ]
+            },
+            renaixement: {
+                name: "Renaixement",
+                bg: "img/bg_courtroom.jpg",
+                npcs: [
+                    {
+                        name: "Palestrina", img: "img/npc_palestrina.png",
+                        truthStatements: [
+                            "La meva polifonia és clara i equilibrada.",
+                            "He salvat la polifonia al Concili de Trento.",
+                            "Escric música religiosa.",
+                            "Busco la perfecció en les veus.",
+                            "Soc un mestre de la capella romana."
+                        ],
+                        falseStatements: [
+                            { text: "Utilitzo molt el baix continu.", reason: "El baix continu és típic del Barroc." },
+                            { text: "La meva música és atonal i dissonant.", reason: "Això seria música del segle XX!" },
+                            { text: "Toco la guitarra elèctrica.", reason: "Anacronisme." },
+                            { text: "Faig servir sintetitzadors.", reason: "Anacronisme." },
+                            { text: "Canto òpera.", reason: "L'òpera no existia encara." }
+                        ]
+                    },
+                    {
+                        name: "Mecenes", img: "img/npc_mecenes.png",
+                        truthStatements: [
+                            "Pago als artistes perquè creïn obres.",
+                            "Soc un noble o un ric comerciant.",
+                            "M'agrada l'art i la cultura clàssica.",
+                            "Tinc una gran col·lecció de pintures.",
+                            "Protegeixo els músics de la meva cort."
+                        ],
+                        falseStatements: [
+                            { text: "Em descarrego música per internet.", reason: "Internet és del segle XX." },
+                            { text: "Venc les meves obres a subhastes online.", reason: "Anacronisme." },
+                            { text: "M'agrada el grafit al carrer.", reason: "L'art urbà és modern." },
+                            { text: "Escric música per a videojocs.", reason: "Els videojocs són moderns." },
+                            { text: "Soc un camperol molt pobre.", reason: "Els mecenes eren rics." }
+                        ]
+                    },
+                    {
+                        name: "Impressor", img: "img/npc_impressor.png",
+                        truthStatements: [
+                            "Utilitzo la impremta de Gutenberg.",
+                            "Puc fer moltes còpies de partitures ràpidament.",
+                            "Ajudo a difondre la música per tot Europa.",
+                            "Utilitzo tipus mòbils de metall.",
+                            "Imprimeixo llibres i música."
+                        ],
+                        falseStatements: [
+                            { text: "Imprimeixo amb una impressora làser.", reason: "La tecnologia làser és moderna." },
+                            { text: "Faig fotocòpies en color.", reason: "La fotocopiadora és del segle XX." },
+                            { text: "Envio PDFs per email.", reason: "L'email és modern." },
+                            { text: "Escric a mà com els monjos medievals.", reason: "La meva feina és imprimir, no copiar a mà." },
+                            { text: "Utilitzo tinta invisible.", reason: "Això és d'espies moderns." }
+                        ]
+                    },
+                    {
+                        name: "Viola da Gamba", img: "img/npc_gamba.png",
+                        truthStatements: [
+                            "Tinc 6 o 7 cordes i trasts.",
+                            "Em toquen col·locada entre les cames.",
+                            "Tinc un so suau i malenconiós.",
+                            "Soc molt popular a les corts.",
+                            "Semblo un violoncel però soc diferent."
+                        ],
+                        falseStatements: [
+                            { text: "Tinc una pica per recolzar-me al terra.", reason: "Això ho fa el violoncel, la viola da gamba no." },
+                            { text: "Soc un instrument de vent metall.", reason: "Soc de corda fregada." },
+                            { text: "M'endollo a un amplificador.", reason: "Soc un instrument acústic." },
+                            { text: "Toco en una banda de rock.", reason: "Anacronisme." },
+                            { text: "Soc de plàstic.", reason: "Soc de fusta." }
+                        ]
+                    },
+                    {
+                        name: "Cantant", img: "img/npc_cantant.png",
+                        truthStatements: [
+                            "Cantem madrigals a cappella.",
+                            "Busquem l'expressió del text.",
+                            "Cantem en grups petits.",
+                            "La música profana és important.",
+                            "Cantem en la nostra llengua, no només llatí."
+                        ],
+                        falseStatements: [
+                            { text: "Utilitzem micròfons per projectar la veu.", reason: "No hi havia electricitat al Renaixement." },
+                            { text: "L'orquestra romàntica m'acompanya.", reason: "L'orquestra romàntica és molt més gran i tardana." },
+                            { text: "Canto amb autotune.", reason: "L'autotune és modern." },
+                            { text: "Fem concerts en estadis.", reason: "Els estadis són moderns." },
+                            { text: "La meva veu és gravada en MP3.", reason: "L'MP3 és digital." }
+                        ]
+                    }
+                ]
+            },
+            barroc: {
+                name: "Barroc",
+                bg: "img/bg_courtroom.jpg",
+                npcs: [
+                    {
+                        name: "Bach", img: "img/npc_bach.png",
+                        truthStatements: [
+                            "Soc un mestre de la fuga i el contrapunt.",
+                            "Toco l'orgue a l'església.",
+                            "He tingut molts fills músics.",
+                            "La meva música és complexa i matemàtica.",
+                            "Treballo a Leipzig."
+                        ],
+                        falseStatements: [
+                            { text: "He escrit moltes òperes famoses.", reason: "Bach mai va escriure cap òpera!" },
+                            { text: "El piano és el meu instrument principal.", reason: "Bach preferia el clavecí i l'orgue. El piano era massa nou." },
+                            { text: "Toco en una banda de jazz.", reason: "El jazz és modern." },
+                            { text: "Viatjo en avió.", reason: "L'avió és modern." },
+                            { text: "Utilitzo guitarra elèctrica.", reason: "Anacronisme." }
+                        ]
+                    },
+                    {
+                        name: "Vivaldi", img: "img/npc_vivaldi.png",
+                        truthStatements: [
+                            "Soc conegut com el 'Prete Rosso'.",
+                            "He compost 'Les Quatre Estacions'.",
+                            "Soc un virtuós del violí.",
+                            "Treballo a Venècia.",
+                            "He escrit molts concerts."
+                        ],
+                        falseStatements: [
+                            { text: "Odio el violí, prefereixo la bateria.", reason: "Vivaldi era un virtuós del violí!" },
+                            { text: "La meva música és minimalista i repetitiva.", reason: "El Barroc és ornamentat i complex." },
+                            { text: "Toco el sintetitzador.", reason: "Anacronisme." },
+                            { text: "Soc un cantant de rap.", reason: "El rap és modern." },
+                            { text: "Utilitzo ordinadors per compondre.", reason: "Els ordinadors són moderns." }
+                        ]
+                    },
+                    {
+                        name: "Castrato", img: "img/npc_castrato.png",
+                        truthStatements: [
+                            "Tinc una veu aguda molt potent.",
+                            "Soc l'estrella de l'òpera barroca.",
+                            "La gent m'adora com una estrella.",
+                            "Canto papers heroics.",
+                            "Tinc una gran capacitat pulmonar."
+                        ],
+                        falseStatements: [
+                            { text: "Soc una dona soprano.", reason: "Els castrati eren homes." },
+                            { text: "Canto amb micròfon i autotune.", reason: "Sense tecnologia al Barroc!" },
+                            { text: "Soc un cantant de rock.", reason: "El rock és modern." },
+                            { text: "Gravo videoclips per a la TV.", reason: "La TV és moderna." },
+                            { text: "Utilitzo amplificadors.", reason: "No hi havia electricitat." }
+                        ]
+                    },
+                    {
+                        name: "Noble", img: "img/npc_noble.png",
+                        truthStatements: [
+                            "Organitzo concerts al meu palau.",
+                            "M'agrada l'òpera italiana.",
+                            "Porto perruca blanca empolvada.",
+                            "Ballo el minuet.",
+                            "Soc ric i influent."
+                        ],
+                        falseStatements: [
+                            { text: "Porto texans i samarreta.", reason: "Vesteixo amb sedes i velluts." },
+                            { text: "Vaig a la discoteca els caps de setmana.", reason: "Vaig a balls de saló." },
+                            { text: "Miro sèries a Netflix.", reason: "Anacronisme." },
+                            { text: "Condueixo un Ferrari.", reason: "Vaig en carruatge." },
+                            { text: "Escric missatges per WhatsApp.", reason: "Escric cartes amb ploma." }
+                        ]
+                    },
+                    {
+                        name: "Luthier", img: "img/npc_luthier.png",
+                        truthStatements: [
+                            "Construeixo violins i violoncels.",
+                            "Utilitzo fustes de gran qualitat.",
+                            "El vernís és el meu secret.",
+                            "Stradivarius és el meu ídol.",
+                            "Treballo al meu taller artesanalment."
+                        ],
+                        falseStatements: [
+                            { text: "Construeixo guitarres elèctriques.", reason: "Anacronisme." },
+                            { text: "Utilitzo plàstic i fibra de carboni.", reason: "Només utilitzo fusta." },
+                            { text: "Faig instruments amb impressora 3D.", reason: "Anacronisme." },
+                            { text: "Reparo sintetitzadors.", reason: "Anacronisme." },
+                            { text: "Venc els meus instruments a Amazon.", reason: "Anacronisme." }
+                        ]
+                    }
+                ]
+            },
+            classicisme: {
+                name: "Classicisme",
+                bg: "img/bg_courtroom.jpg",
+                npcs: [
+                    {
+                        name: "Mozart", img: "img/npc_mozart.png",
+                        truthStatements: [
+                            "Vaig ser un nen prodigi.",
+                            "He escrit 'La Flauta Màgica'.",
+                            "Visc a Viena.",
+                            "La meva música és elegant i equilibrada.",
+                            "He compost moltes simfonies i concerts."
+                        ],
+                        falseStatements: [
+                            { text: "Vaig viure fins als 90 anys.", reason: "Mozart va morir molt jove (35 anys)." },
+                            { text: "La meva música és fosca i terrorífica.", reason: "El Classicisme busca la llum i l'equilibri." },
+                            { text: "Toco la guitarra elèctrica.", reason: "Anacronisme." },
+                            { text: "Soc un cantant de heavy metal.", reason: "El heavy metal és modern." },
+                            { text: "Utilitzo sintetitzadors.", reason: "Anacronisme." }
+                        ]
+                    },
+                    {
+                        name: "Haydn", img: "img/npc_haydn.png",
+                        truthStatements: [
+                            "Em diuen el 'Pare de la Simfonia'.",
+                            "Vaig treballar per als prínceps Esterházy.",
+                            "Tinc molt sentit de l'humor musical.",
+                            "He escrit més de 100 simfonies.",
+                            "Vaig ser mestre de Beethoven."
+                        ],
+                        falseStatements: [
+                            { text: "Odio l'ordre i l'estructura.", reason: "La forma sonata és pura estructura." },
+                            { text: "Toco en una banda de Rock.", reason: "Haydn és clàssic, no rocker." },
+                            { text: "Utilitzo amplificadors Marshall.", reason: "Anacronisme." },
+                            { text: "Viatjo en cotxe esportiu.", reason: "Anacronisme." },
+                            { text: "Gravo discos de vinil.", reason: "El vinil és modern." }
+                        ]
+                    },
+                    {
+                        name: "Soprano", img: "img/npc_soprano.png",
+                        truthStatements: [
+                            "Canto les àries de les òperes de Mozart.",
+                            "La meva veu és aguda i àgil.",
+                            "Porto vestits elegants a l'escenari.",
+                            "Interpreto personatges còmics i dramàtics.",
+                            "La gent m'aplaudeix al teatre."
+                        ],
+                        falseStatements: [
+                            { text: "Canto amb micròfon.", reason: "No hi havia micròfons." },
+                            { text: "Ballo hip-hop mentre canto.", reason: "Anacronisme." },
+                            { text: "La meva veu sona com un robot.", reason: "Anacronisme." },
+                            { text: "Porto pantalons texans a l'òpera.", reason: "Porto vestits d'època." },
+                            { text: "Canto cançons de Lady Gaga.", reason: "Anacronisme." }
+                        ]
+                    },
+                    {
+                        name: "Director", img: "img/npc_director.png",
+                        truthStatements: [
+                            "L'orquestra clàssica té corda, vent i percussió.",
+                            "Busquem l'equilibri i la claredat.",
+                            "Dirigeixo els músics amb la batuta.",
+                            "La simfonia té 4 moviments.",
+                            "El piano és el solista preferit."
+                        ],
+                        falseStatements: [
+                            { text: "Utilitzem saxofons a la simfonia.", reason: "El saxo es va inventar al 1840." },
+                            { text: "El baix continu és essencial per nosaltres.", reason: "El baix continu va desaparèixer al Classicisme." },
+                            { text: "Toquem música electrònica.", reason: "Anacronisme." },
+                            { text: "Utilitzem guitarres elèctriques.", reason: "Anacronisme." },
+                            { text: "Fem improvisació lliure com el Jazz.", reason: "El Classicisme és molt estructurat." }
+                        ]
+                    },
+                    {
+                        name: "Aristòcrata", img: "img/npc_aristocrata.png",
+                        truthStatements: [
+                            "La Revolució Francesa em fa por.",
+                            "M'agrada la música de cambra al meu saló.",
+                            "Porto perruca i roba elegant.",
+                            "Vaig a l'òpera a veure i ser vist.",
+                            "Toco el piano-forte per afició."
+                        ],
+                        falseStatements: [
+                            { text: "Soc comunista.", reason: "El comunisme és del segle XIX/XX." },
+                            { text: "Treballo a una fàbrica.", reason: "Els aristòcrates no treballaven a fàbriques." },
+                            { text: "Viatjo en metro.", reason: "El metro és modern." },
+                            { text: "Miro la televisió.", reason: "La TV és moderna." },
+                            { text: "Escric al meu blog.", reason: "Internet és modern." }
+                        ]
+                    }
+                ]
+            },
+            romanticisme: {
+                name: "Romanticisme",
+                bg: "img/bg_courtroom.jpg",
+                npcs: [
+                    {
+                        name: "Beethoven", img: "img/npc_beethoven.png",
+                        truthStatements: [
+                            "Vaig obrir la porta al Romanticisme.",
+                            "La meva 9a Simfonia té un cor.",
+                            "Vaig quedar sord però vaig seguir component.",
+                            "La meva música és intensa i emocional.",
+                            "Soc un geni incomprès."
+                        ],
+                        falseStatements: [
+                            { text: "Sempre he estat feliç i tranquil.", reason: "Beethoven tenia un caràcter tempestuós." },
+                            { text: "Només escric per a clavecí.", reason: "El piano era el seu instrument." },
+                            { text: "Canto cançons de pop.", reason: "Anacronisme." },
+                            { text: "Ballo disco.", reason: "Anacronisme." },
+                            { text: "Utilitzo un ordinador.", reason: "Anacronisme." }
+                        ]
+                    },
+                    {
+                        name: "Chopin", img: "img/npc_chopin.png",
+                        truthStatements: [
+                            "El piano és la meva ànima.",
+                            "Els meus Nocturns són molt expressius.",
+                            "Soc polonès però visc a París.",
+                            "La meva música és poètica.",
+                            "Utilitzo el rubato."
+                        ],
+                        falseStatements: [
+                            { text: "Escric grans òperes com Wagner.", reason: "Chopin es va centrar gairebé exclusivament en el piano." },
+                            { text: "Odio el rubato i la llibertat rítmica.", reason: "El rubato és essencial en Chopin." },
+                            { text: "Toco la trompeta.", reason: "Chopin era pianista." },
+                            { text: "Faig música electrònica.", reason: "Anacronisme." },
+                            { text: "Soc un cantant de rap.", reason: "Anacronisme." }
+                        ]
+                    },
+                    {
+                        name: "Ballarina", img: "img/npc_ballarina.png",
+                        truthStatements: [
+                            "El ballet romàntic busca la màgia i els esperits.",
+                            "Els tutús i les puntes són importants.",
+                            "Ballo històries d'amor tràgic.",
+                            "Semblo flotar a l'escenari.",
+                            "La música de Txaikovski és perfecta per ballar."
+                        ],
+                        falseStatements: [
+                            { text: "Ballo Breakdance al llac dels cignes.", reason: "Anacronisme d'estil." },
+                            { text: "La música és només percussió.", reason: "Txaikovski i altres feien grans melodies." },
+                            { text: "Porto vambes esportives.", reason: "Porto sabatilles de ballet." },
+                            { text: "Ballo hip-hop.", reason: "El hip-hop és modern." },
+                            { text: "Faig servir un patinet elèctric.", reason: "Anacronisme." }
+                        ]
+                    },
+                    {
+                        name: "Wagner", img: "img/npc_wagner.png",
+                        truthStatements: [
+                            "Vull crear l'obra d'art total.",
+                            "Utilitzo leitmotivs per als personatges.",
+                            "Les meves òperes són èpiques.",
+                            "Vaig construir el meu propi teatre a Bayreuth.",
+                            "La meva música és densa i cromàtica."
+                        ],
+                        falseStatements: [
+                            { text: "Les meves òperes duren 3 minuts.", reason: "Les òperes de Wagner són llarguíssimes!" },
+                            { text: "La meva música és senzilla i lleugera.", reason: "És densa, cromàtica i èpica." },
+                            { text: "Canto a cappella.", reason: "Utilitzo una orquestra gegant." },
+                            { text: "Toco el banjo.", reason: "Anacronisme d'estil." },
+                            { text: "Faig música per a anuncis de TV.", reason: "La TV és moderna." }
+                        ]
+                    },
+                    {
+                        name: "Virtuós", img: "img/npc_virtuos.png",
+                        truthStatements: [
+                            "Soc una estrella del rock del segle XIX.",
+                            "Els meus recitals fan embogir el públic.",
+                            "Toco amb una tècnica increïble.",
+                            "Viatjo per tot Europa fent concerts.",
+                            "Soc com Liszt o Paganini."
+                        ],
+                        falseStatements: [
+                            { text: "Toco amb partitura i sense moure'm.", reason: "Liszt tocava de memòria i amb molt espectacle." },
+                            { text: "Utilitzo un llaüt antic.", reason: "El gran piano de cua és la meva arma." },
+                            { text: "Soc tímid i no m'agrada el públic.", reason: "Els virtuosos eren showmans." },
+                            { text: "Toco música gravada.", reason: "Toco en directe." },
+                            { text: "Utilitzo un sintetitzador.", reason: "Anacronisme." }
+                        ]
+                    }
+                ]
+            },
+            sxx: {
+                name: "Segle XX",
+                bg: "img/bg_courtroom.jpg",
+                npcs: [
+                    {
+                        name: "Stravinsky", img: "img/npc_stravinsky.png",
+                        truthStatements: [
+                            "La meva 'Consagració de la Primavera' va causar un escàndol.",
+                            "Trenco les normes del ritme clàssic.",
+                            "La meva música és rítmica i potent.",
+                            "He compost ballets russos.",
+                            "Soc un compositor modern."
+                        ],
+                        falseStatements: [
+                            { text: "La meva música és sempre dolça i relaxant.", reason: "Stravinsky pot ser molt agressiu rítmicament." },
+                            { text: "Soc un trobador medieval.", reason: "Segle XX." },
+                            { text: "Toco el llaüt.", reason: "Instrument antic." },
+                            { text: "Canto òpera barroca.", reason: "Soc del segle XX." },
+                            { text: "Visc en un castell medieval.", reason: "Visc al món modern." }
+                        ]
+                    },
+                    {
+                        name: "Jazzman", img: "img/npc_jazz.png",
+                        truthStatements: [
+                            "La improvisació és clau en el Jazz.",
+                            "El saxofon és un instrument típic nostre.",
+                            "El ritme de swing ens fa moure.",
+                            "Vaig néixer a Nova Orleans.",
+                            "Toquem en clubs i bars."
+                        ],
+                        falseStatements: [
+                            { text: "Sempre toco exactament el que hi ha a la partitura.", reason: "El Jazz es basa en improvisar." },
+                            { text: "Toquem a les corts dels reis medievals.", reason: "El Jazz va néixer al Nova Orleans al s.XX." },
+                            { text: "Utilitzem el llaüt.", reason: "Instrument antic." },
+                            { text: "Vestim amb armadura.", reason: "Anacronisme." },
+                            { text: "Cantem en llatí.", reason: "Cantem en anglès o instrumental." }
+                        ]
+                    },
+                    {
+                        name: "Avantguarda", img: "img/npc_avantguarda.png",
+                        truthStatements: [
+                            "Busco nous sons i sorolls.",
+                            "La melodia no és l'important.",
+                            "Experimentem amb l'electrònica.",
+                            "Trenco amb totes les tradicions.",
+                            "La meva música pot semblar estranya."
+                        ],
+                        falseStatements: [
+                            { text: "Escric música molt consonant i fàcil.", reason: "L'avantguarda és dissonant i complexa." },
+                            { text: "Soc un compositor romàntic.", reason: "Soc del segle XX." },
+                            { text: "M'agrada la música de Mozart.", reason: "Busco trencar amb el passat." },
+                            { text: "Toco el clavicèmbal.", reason: "Instrument antic." },
+                            { text: "Vull que la gent es relaxi.", reason: "Vull provocar i fer pensar." }
+                        ]
+                    },
+                    {
+                        name: "Rocker", img: "img/npc_rock.png",
+                        truthStatements: [
+                            "La guitarra elèctrica sona fort!",
+                            "El ritme i la rebel·lia ens defineixen.",
+                            "Toquem en estadis plens de gent.",
+                            "Utilitzem amplificadors potents.",
+                            "El rock and roll va néixer als anys 50."
+                        ],
+                        falseStatements: [
+                            { text: "Toco el llaüt suaument.", reason: "El Rock necessita electricitat i potència." },
+                            { text: "Busquem el silenci absolut.", reason: "El Rock és sorollós!" },
+                            { text: "Vestim amb perruques del segle XVIII.", reason: "Vestim cuir i texans." },
+                            { text: "Toquem música de cambra.", reason: "Toquem rock!" },
+                            { text: "Som monjos d'un monestir.", reason: "Som músics de rock." }
+                        ]
+                    },
+                    {
+                        name: "Científic", img: "img/npc_cientific.png",
+                        truthStatements: [
+                            "La tecnologia canvia la música.",
+                            "Inventem nous instruments electrònics.",
+                            "L'ordinador és una eina musical.",
+                            "Podem gravar i editar el so.",
+                            "La física del so és fascinant."
+                        ],
+                        falseStatements: [
+                            { text: "Crec que la terra és plana.", reason: "Soc un científic modern!" },
+                            { text: "Utilitzo màgia per fer música.", reason: "Utilitzo ciència i tecnologia." },
+                            { text: "Escric amb ploma d'oca.", reason: "Utilitzo ordinadors." },
+                            { text: "Visc en una cova.", reason: "Visc en un laboratori." },
+                            { text: "No m'agrada l'electricitat.", reason: "És la base de la meva feina." }
+                        ]
+                    }
+                ]
+            },
+        };
+
+        // --- STATE ---
+        let currentEra = null;
+        let reputation = 3;
+        let currentNPC = null;
+        let currentQuestion = null;
+        let isChaosMode = false;
+
+        let caseCount = 0;
+        let questionQueue = []; // Array of questions for current NPC
+        let currentQuestionIndex = 0; // 0 or 1
+        let isCurrentNPCGuilty = false; // State for the current case
+        let isGameStarting = false; // Debounce flag
+        let streak = 0; // Track consecutive wins
+        const WIN_STREAK_TARGET = 20;
+
+        // --- LOGIC ---
+
+        // Initialize Gavel and Music
+        window.onload = function () {
+            document.getElementById('gavel').style.backgroundImage = "url('img/ui_gavel.png?v=3')";
+            document.getElementById('gavel').textContent = '';
+
+            // Music Setup
+            const music = document.getElementById('bg-music');
+            const slider = document.getElementById('volume-slider');
+            music.volume = 0.5;
+
+            slider.addEventListener('input', function () {
+                music.volume = this.value;
+            });
+
+            // Try to play music on first interaction
+            document.body.addEventListener('click', function () {
+                if (music.paused) {
+                    music.play().catch(e => console.log("Audio play failed:", e));
+                }
+            }, { once: true });
+        };
+
+        function showMenu() {
+            document.getElementById('title-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('menu-screen').classList.add('active');
+        }
+
+        function startGame(eraKey) {
+            if (isGameStarting) return; // Prevent double click
+            isGameStarting = true;
+
+            reputation = 3;
+            caseCount = 0;
+            streak = 0; // Reset streak
+            updateReputationUI();
+
+            if (eraKey === 'chaos') {
+                isChaosMode = true;
+                currentEra = 'chaos';
+            } else {
+                isChaosMode = false;
+                currentEra = eraKey;
+            }
+
+            document.getElementById('menu-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+
+            nextCase();
+
+            // Reset flag after a short delay
+            setTimeout(() => { isGameStarting = false; }, 1000);
+        }
+
+        function nextCase() {
+            document.getElementById('feedback-overlay').style.display = 'none';
+            caseCount++;
+
+            // Pick Era
+            let eraData;
+            if (isChaosMode) {
+                const keys = Object.keys(CASES_DB);
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                eraData = CASES_DB[randomKey];
+            } else {
+                eraData = CASES_DB[currentEra];
+            }
+
+            // Set BG
+            document.getElementById('courtroom-bg').style.backgroundImage = `url('${eraData.bg}')`;
+
+            // Pick NPC
+            const npc = eraData.npcs[Math.floor(Math.random() * eraData.npcs.length)];
+            currentNPC = npc;
+            setNPCImage(npc.img);
+
+            // Decide Guilt (50/50)
+            isCurrentNPCGuilty = Math.random() < 0.5;
+
+            // Filter Questions based on Guilt
+            // If Guilty (False Mode) -> Pick 2 random FALSE statements
+            // If Innocent (Truth Mode) -> Pick 2 random TRUE statements
+
+            let selectedQuestions = [];
+            if (isCurrentNPCGuilty) {
+                // Guilty: Pick from falseStatements
+                const shuffledFalse = [...npc.falseStatements].sort(() => 0.5 - Math.random());
+                selectedQuestions = shuffledFalse.slice(0, 2).map(q => ({ text: q.text, truth: false, reason: q.reason }));
+            } else {
+                // Innocent: Pick from truthStatements
+                const shuffledTrue = [...npc.truthStatements].sort(() => 0.5 - Math.random());
+                selectedQuestions = shuffledTrue.slice(0, 2).map(text => ({ text: text, truth: true }));
+            }
+
+            questionQueue = selectedQuestions;
+            currentQuestionIndex = 0;
+
+            // Update Case Info
+            document.getElementById('case-title').textContent = `CAS #${caseCount}`;
+            document.getElementById('case-desc').textContent = `${eraData.name} - ${npc.name}`;
+
+            // Reset Skip Button
+            document.getElementById('skip-btn').style.display = 'inline-block';
+            // If only 1 question available (shouldn't happen with current DB), hide skip
+            if (questionQueue.length < 2) {
+                document.getElementById('skip-btn').style.display = 'none';
+            }
+
+            showNextQuestion(); // Call the new function
+        }
+
+        function showNextQuestion() {
+            if (currentQuestionIndex >= questionQueue.length) {
+                // End of case
+                showFeedback("CAS TANCAT", "Has jutjat totes les declaracions.", true);
+                return;
+            }
+
+            currentQuestion = questionQueue[currentQuestionIndex];
+
+            // Update UI
+            // Only fade out/in if it's a NEW NPC (i.e. first question of the case)
+            if (currentQuestionIndex === 0) {
+                document.getElementById('npc-img').style.opacity = 0; // Fade out
+                setTimeout(() => {
+                    setNPCImage(currentNPC.img);
+                    document.getElementById('npc-img').style.opacity = 1; // Fade in
+                    updateQuestionText();
+                }, 300);
+            } else {
+                // Same NPC, just update text immediately without visual glitch
+                updateQuestionText();
+            }
+        }
+
+        function updateQuestionText() {
+            document.getElementById('statement-text').textContent = `"${currentQuestion.text}"`;
+            document.getElementById('prosecutor-label').textContent = `FISCAL: "L'acusat ${currentNPC.name} declara..."`;
+        }
+
+        // Renamed loadQuestion to showNextQuestion and updated its content
+        // function loadQuestion() {
+        //     currentQuestion = questionQueue[currentQuestionIndex];
+        //     document.getElementById('statement-text').textContent = `"${currentQuestion.text}"`;
+        //     document.getElementById('feedback-overlay').style.display = 'none';
+        // }
+
+        function skipQuestion() {
+            // Move to 2nd question
+            currentQuestionIndex++;
+            showNextQuestion(); // Call the new function
+            // Hide skip button (can't skip twice)
+            document.getElementById('skip-btn').style.display = 'none';
+        }
+
+        function giveVerdict(verdict) {
+            // verdict: true (Guilty), false (Innocent)
+            // isCurrentNPCGuilty: true (Guilty), false (Innocent)
+
+            // Correct if:
+            // Verdict is Guilty (true) AND NPC IS Guilty (true)
+            // Verdict is Innocent (false) AND NPC is NOT Guilty (false)
+
+            const isCorrect = (verdict === isCurrentNPCGuilty);
+
+            if (isCorrect) {
+                // Gavel Animation
+                const gavel = document.getElementById('gavel');
+                gavel.classList.add('gavel-hit');
+                setTimeout(() => gavel.classList.remove('gavel-hit'), 300);
+
+                streak++;
+                if (streak >= WIN_STREAK_TARGET) {
+                    showWinScreen();
+                } else {
+                    showFeedback(true, "Correcte!", `Has fet justícia històrica. Ratxa: ${streak}/${WIN_STREAK_TARGET}`);
+                }
+            } else {
+                reputation--;
+                streak = 0; // Reset streak on error
+                updateReputationUI();
+
+                let msg = "";
+                if (isCurrentNPCGuilty) {
+                    // NPC was Guilty (Lying), but player said Innocent
+                    // Show the reason why the CURRENT statement was a lie
+                    msg = currentQuestion.reason || "Aquest personatge us estava mentint!";
+                } else {
+                    // NPC was Innocent (Truth), but player said Guilty
+                    msg = "Aquest personatge deia la veritat! No era cap anacronisme.";
+                }
+
+                if (reputation <= 0) {
+                    showGameOver();
+                } else {
+                    showFeedback(false, "Error!", msg);
+                }
+            }
+        }
+
+        function showFeedback(success, title, msg) {
+            const overlay = document.getElementById('feedback-overlay');
+            const tEl = document.getElementById('feedback-title');
+            const mEl = document.getElementById('feedback-msg');
+            const btn = document.getElementById('continue-btn');
+
+            overlay.style.display = 'flex';
+            tEl.textContent = title;
+            tEl.style.color = success ? '#2ecc71' : '#e74c3c';
+            mEl.textContent = msg;
+
+            // Always go to Next Case after answering
+            btn.onclick = nextCase;
+            btn.textContent = "SEGÜENT CAS ➡";
+        }
+
+        function updateReputationUI() {
+            for (let i = 1; i <= 3; i++) {
+                const heart = document.getElementById(`heart-${i}`);
+                if (i > reputation) {
+                    heart.classList.add('lost');
+                } else {
+                    heart.classList.remove('lost');
+                }
+            }
+        }
+
+        function showGameOver() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('game-over-screen').classList.add('active');
+        }
+
+        function showWinScreen() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('win-screen').classList.add('active');
+
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'tribunal_mix',
+                    'Jutge Suprem',
+                    'Has dictat sentència correctament en 20 casos consecutius!',
+                    '../../img/card_tribunal.png'
+                );
+            }
+        }
+
+        function setNPCImage(url) {
+            // Simplified: No Canvas, no CORS issues. Just show the image.
+            const img = document.getElementById('npc-img');
+            img.onload = function () {
+                img.style.opacity = 1;
+            };
+            img.onerror = function () {
+                console.error("Failed to load image:", url);
+                // Keep previous image or show placeholder if needed
+            };
+            img.src = url;
+        }
+    </script>
+    <script src="../../../js/rewards.js"></script>
+</body>
+
+</html>

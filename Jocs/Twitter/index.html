@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Crític Musical</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --panel-bg: #ffffff;
+            --text-color: #0f1419;
+            --accent-blue: #1d9bf0;
+            --accent-green: #00ba7c;
+            --accent-red: #f91880;
+            --border-color: #eff3f4;
+            --hover-bg: #f7f9f9;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- INTRO SCREEN --- */
+        #intro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #intro-screen h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+        }
+
+        #intro-screen p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 15px 60px;
+            font-size: 1.2rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.2s;
+            box-shadow: 0 5px 20px rgba(29, 155, 240, 0.4);
+        }
+
+        .start-btn:hover {
+            background: #1a8cd8;
+            transform: scale(1.02);
+        }
+
+        /* --- MENU SCREEN --- */
+        #menu-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: none;
+            /* Hidden initially, shown after intro */
+            flex-direction: column;
+            padding: 20px;
+            z-index: 100;
+            overflow-y: auto;
+            align-items: center;
+        }
+
+        .menu-container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .menu-section-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin: 20px 20px 10px;
+            color: #657786;
+        }
+
+        .trend-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+            background: white;
+            position: relative;
+        }
+
+        .trend-item:hover {
+            background: #f5f8fa;
+        }
+
+        .trend-item.completed {
+            border-left: 5px solid var(--accent-green);
+        }
+
+        .trend-item.completed .trend-name {
+            color: var(--accent-green);
+        }
+
+        .trend-meta {
+            font-size: 0.8rem;
+            color: #657786;
+        }
+
+        .trend-name {
+            font-weight: 700;
+            margin: 2px 0;
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+        }
+
+        .viral-btn {
+            background: linear-gradient(45deg, #1da1f2, #17bf63);
+            border: none;
+            border-radius: 9999px;
+            padding: 15px;
+            color: white;
+            font-weight: 800;
+            text-align: center;
+            margin: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(29, 161, 242, 0.3);
+            display: block;
+        }
+
+        /* --- GAME UI (3 Columns) --- */
+        #game-ui {
+            display: none;
+            flex-direction: row;
+            height: 100%;
+            width: 100%;
+            max-width: 1200px;
+            background: var(--bg-color);
+        }
+
+        /* LEFT SIDEBAR (Trends) */
+        .sidebar-left {
+            width: 275px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .sidebar-box {
+            background: #f5f8fa;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .mini-trend {
+            margin-bottom: 15px;
+            cursor: default;
+        }
+
+        .mini-trend .meta {
+            font-size: 0.8rem;
+            color: #657786;
+        }
+
+        .mini-trend .name {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* CENTER (Feed) */
+        .main-feed {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            background: white;
+            max-width: 600px;
+        }
+
+        #header {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        #back-btn {
+            background: none;
+            border: none;
+            color: var(--accent-blue);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        #tweet-area {
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            flex-grow: 1;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #e1e8ed;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .tweet-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info {
+            margin-bottom: 5px;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: #14171a;
+        }
+
+        .user-handle {
+            color: #657786;
+            margin-left: 5px;
+        }
+
+        .tweet-text {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            color: #14171a;
+        }
+
+        .drop-zone {
+            min-height: 120px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+            margin-bottom: 15px;
+            background: white;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--accent-blue);
+            background: rgba(29, 155, 240, 0.05);
+            box-shadow: 0 0 0 2px rgba(29, 155, 240, 0.2);
+        }
+
+        .hashtag-pill {
+            background: white;
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 5px 12px;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .hashtag-pill:active {
+            cursor: grabbing;
+        }
+
+        #hashtags-pool {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            background: #f5f8fa;
+        }
+
+        #action-bar {
+            padding: 10px 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            background: white;
+        }
+
+        #publish-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: background 0.2s;
+        }
+
+        #publish-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #publish-btn.active:hover {
+            background: #1a8cd8;
+        }
+
+        /* RIGHT SIDEBAR (Navigation) */
+        .sidebar-right {
+            width: 350px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            padding: 12px 16px;
+            margin-bottom: 5px;
+            border-radius: 9999px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s;
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .nav-btn:hover {
+            background: rgba(15, 20, 25, 0.1);
+        }
+
+        .nav-btn.active {
+            font-weight: 800;
+            background: transparent;
+            color: var(--text-color);
+        }
+
+        .nav-btn.completed {
+            color: var(--accent-green);
+        }
+
+        .nav-btn.locked {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-left: 10px;
+        }
+
+        /* FEEDBACK */
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+
+        #like-anim {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 200;
+        }
+
+        /* MODAL */
+        #end-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        #end-modal h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            min-width: 300px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+
+            .sidebar-left,
+            .sidebar-right {
+                display: none;
+            }
+
+            #game-ui {
+                justify-content: center;
+            }
+
+            .main-feed {
+                width: 100%;
+                border: none;
+            }
+
+            /* Add bottom nav for mobile if needed, but for now focus on desktop layout as requested */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- INTRO SCREEN -->
+    <div id="intro-screen">
+        <h1>El Crític Musical</h1>
+        <p>Benvingut a la xarxa social de la història de la música.<br>
+            La teva missió és etiquetar correctament les grans obres mestres.<br>
+            Escolta, analitza i converteix-te en un influencer musical!</p>
+        <button class="start-btn" onclick="showMenu()">Començar</button>
+    </div>
+
+    <!-- MENU -->
+    <div id="menu-screen">
+        <div class="menu-container">
+            <h1>Trends for you</h1>
+            <div class="viral-btn" onclick="startMixViral()">🔥 MIX VIRAL (Aleatori)</div>
+
+            <div class="menu-section-title">Etapes Històriques</div>
+            <div id="trends-list">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME UI -->
+    <div id="game-ui">
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar-left">
+            <div class="sidebar-box">
+                <div class="sidebar-title">Trends for you</div>
+                <div class="mini-trend">
+                    <div class="meta">Music • Trending</div>
+                    <div class="name">#Beethoven</div>
+                    <div class="meta">10.5K Tweets</div>
+                </div>
+                <div class="mini-trend">
+                    <div class="meta">History • Trending</div>
+                    <div class="name">#BarrocStyle</div>
+                    <div class="meta">5,432 Tweets</div>
+                </div>
+                <div class="mini-trend">
+                    <div class="meta">Opera • Trending</div>
+                    <div class="name">#Divas</div>
+                    <div class="meta">2,100 Tweets</div>
+                </div>
+            </div>
+
+            <div class="sidebar-box">
+                <div class="sidebar-title">Who to follow</div>
+                <div class="mini-trend" style="display:flex; align-items:center; gap:10px;">
+                    <img src="img/mozart.png" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <div>
+                        <div class="name">Wolfgang A. Mozart</div>
+                        <div class="meta">@mozart_official</div>
+                    </div>
+                </div>
+                <div class="mini-trend" style="display:flex; align-items:center; gap:10px;">
+                    <img src="img/bach.png" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <div>
+                        <div class="name">J.S. Bach</div>
+                        <div class="meta">@bach_js</div>
+                    </div>
+                </div>
+                <div class="mini-trend" style="display:flex; align-items:center; gap:10px;">
+                    <img src="img/beethoven.png" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <div>
+                        <div class="name">Ludwig van Beethoven</div>
+                        <div class="meta">@ludwig_van_b</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN FEED -->
+        <div class="main-feed">
+            <div id="header">
+                <button id="back-btn" onclick="location.reload()">←</button>
+                <span id="header-title">Compose Post</span>
+            </div>
+
+            <div id="tweet-area">
+                <img src="" id="current-user-avatar" class="avatar"
+                    onerror="this.src='https://ui-avatars.com/api/?name=Music&background=random'">
+                <div class="tweet-content">
+                    <div class="user-info">
+                        <span class="user-name" id="current-user-name">Music History Bot</span>
+                        <span class="user-handle" id="current-user-handle">@musichistory</span>
+                    </div>
+                    <div class="tweet-text" id="instruction-text">
+                        <!-- Dynamic Content -->
+                    </div>
+                    <div class="drop-zone" id="drop-zone">
+                        <!-- Dropped items go here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="hashtags-pool">
+                <!-- Draggable items -->
+            </div>
+
+            <div id="action-bar">
+                <button id="publish-btn" onclick="checkAnswer()">Tweet</button>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="sidebar-right">
+            <div class="sidebar-box">
+                <div class="sidebar-title">Tweet Navigation</div>
+                <div id="nav-list">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="volume-control"
+        style="position: fixed; bottom: 20px; right: 20px; background: white; padding: 10px; border-radius: 9999px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; z-index: 1000; border: 1px solid var(--border-color);">
+        <span style="font-size: 1.2rem;">🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+            style="accent-color: var(--accent-blue); width: 100px;">
+    </div>
+
+    <!-- Audio -->
+    <audio id="bg-music" loop>
+        <source src="audio/Endless Scroll.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="like-anim">❤️</div>
+
+    <div id="end-modal">
+        <h2>Fi del Fil! 🧵</h2>
+        <div class="stat-box">
+            <div style="font-size: 3rem;">🎉</div>
+            <p style="color: #14171a; font-size: 1.2rem;">Has completat la tasca.</p>
+        </div>
+        <button class="viral-btn" onclick="location.reload()">Tornar a l'Inici</button>
+    </div>
+
+    <script>
+        // --- DATABASE ---
+        const DATABASE = {
+            "EDAT MITJANA": [
+                { title: "Dies Irae (Cant Gregorià)", composer: "Gregoriana", correct: ["Monòdic", "Llatí", "Religiosa"] },
+                { title: "Cantigas de Santa María (Alfons X)", composer: "Alfonso X", correct: ["Profana", "Instruments", "LlenguaVulgar"] },
+                { title: "Viderunt Omnes (Pérotin)", composer: "Perotin", correct: ["PolifoniaPrimitiva", "ArsAntiqua", "Religiosa"] },
+                { title: "Cançó de Trobador (Bernart de Ventadorn)", composer: "Bernart de Ventadorn", correct: ["AmorCortès", "Solista", "Profana"] }
+            ],
+            "RENAIXEMENT": [
+                { title: "Sicut Cervus (Palestrina)", composer: "Palestrina", correct: ["Polifonia", "A_Cappella", "Equilibri"] },
+                { title: "Ave Maria (Josquin des Prez)", composer: "Josquin", correct: ["Imitació", "Religiosa", "Humanisme"] },
+                { title: "Oy comamos y bebamos (Juan del Encina)", composer: "Juan del Encina", correct: ["Profana", "Dansa", "RitmeMarct"] },
+                { title: "Missa del Papa Marcel (Palestrina)", composer: "Palestrina", correct: ["Claredat", "Veus", "Litúrgia"] }
+            ],
+            "BARROC": [
+                { title: "Toccata i Fuga en Re menor (Bach)", composer: "Bach", correct: ["Orgue", "Contrast", "Complexitat"] },
+                { title: "Al·leluia del Messies (Händel)", composer: "Handel", correct: ["Oratori", "Majestuós", "OrquestraICor"] },
+                { title: "La Primavera (Vivaldi)", composer: "Vivaldi", correct: ["Concert", "Violí", "BaixContinu"] },
+                { title: "Tu se' morta - L'Orfeo (Monteverdi)", composer: "Monteverdi", correct: ["NaixementÒpera", "MonodiaAcompanyada", "Drama"] }
+            ],
+            "CLASSICISME": [
+                { title: "Eine Kleine Nachtmusik (Mozart)", composer: "Mozart", correct: ["MelodiaAcompanyada", "Equilibri", "Elegància"] },
+                { title: "Simfonia Sorpresa (Haydn)", composer: "Haydn", correct: ["OrquestraClàssica", "Ordre", "Estructura"] },
+                { title: "Per a Elisa (Beethoven)", composer: "Beethoven", correct: ["Piano", "Senzillesa", "FormaRondó"] },
+                { title: "Che farò senza Euridice (Gluck)", composer: "Gluck", correct: ["ÒperaReformada", "Claredat", "DramaGrech"] }
+            ],
+            "ROMANTICISME": [
+                { title: "Nocturn Op.9 No.2 (Chopin)", composer: "Chopin", correct: ["Sentiment", "Piano", "Íntim"] },
+                { title: "La Cavalcada de les Valquíries (Wagner)", composer: "Wagner", correct: ["ÒperaTotal", "Èpic", "GranOrquestra"] },
+                { title: "La Campanella (Liszt)", composer: "Liszt", correct: ["Virtuosisme", "Velocitat", "Dificultat"] },
+                { title: "Simfonia del Nou Món (Dvorak)", composer: "Dvorak", correct: ["Nacionalisme", "MelodiaInfinita", "Passió"] }
+            ],
+            "SEGLE XX": [
+                { title: "Clair de Lune (Debussy)", composer: "Debussy", correct: ["Impressionisme", "Atmosfera", "Colors"] },
+                { title: "La Consagració de la Primavera (Stravinsky)", composer: "Stravinsky", correct: ["RitmeTrencat", "Dissonància", "Ruptura"] },
+                { title: "Rhapsody in Blue (Gershwin)", composer: "Gershwin", correct: ["JazzSimfònic", "Fusió", "Modern"] },
+                { title: "El Supervivent de Varsòvia (Schönberg)", composer: "Schoenberg", correct: ["Expressionisme", "Dodecafonisme", "Tensió"] }
+            ]
+        };
+
+        const TRAPS = {
+            "EDAT MITJANA": ["Piano", "Òpera", "Orquestra", "Jazz", "Romanticisme"],
+            "RENAIXEMENT": ["Caos", "BaixContinu", "Solo", "Simfonia", "Electrònica"],
+            "BARROC": ["Senzillesa", "Piano", "SenseBaix", "Medieval", "Atonal"],
+            "CLASSICISME": ["Foscor", "Excesiu", "Soroll", "Clavecí", "Dissonància"],
+            "ROMANTICISME": ["Racional", "Mecànic", "SenseEmoció", "Barroc", "Feliç"],
+            "SEGLE XX": ["TonalitatClàssica", "Fàcil", "Mozart", "Llatí", "Dolç"]
+        };
+
+        const EMOJIS = {
+            "Piano": "🎹", "Violí": "🎻", "Orquestra": "🎻", "Veu": "🎤", "Cant": "🎤", "Òpera": "🎭",
+            "Religiosa": "⛪", "Profana": "🍷", "Dansa": "💃", "Amor": "💘", "Jazz": "🎷",
+            "Guitarra": "🎸", "Orgue": "🎹", "Missa": "⛪", "Simfonia": "🎼", "Colors": "🎨",
+            "Por": "😱", "Feliç": "😊", "Trist": "😢", "Èpic": "⚔️", "Nit": "🌙", "Sol": "☀️"
+        };
+
+        // --- AVATAR MAPPING ---
+        const COMPOSER_DATA = {
+            // Medieval
+            "Gregoriana": { img: "img/guido.png", name: "Cant Gregorià", handle: "@gregorian_chants" },
+            "Alfonso X": { img: "img/alfonsX.png", name: "Alfons X El Savi", handle: "@king_alfonso" },
+            "Perotin": { img: "img/perotin.png", name: "Pérotin", handle: "@notre_dame_school" },
+            "Bernart de Ventadorn": { img: "img/bernat.png", name: "Bernart de Ventadorn", handle: "@troubadour_lovers" },
+            "Guido": { img: "img/guido.png", name: "Guido d'Arezzo", handle: "@do_re_mi_guido" },
+
+            // Renaissance
+            "Palestrina": { img: "img/plaestrina.png", name: "G.P. Palestrina", handle: "@papa_marcel_fan" },
+            "Josquin": { img: "img/josquin.png", name: "Josquin des Prez", handle: "@master_polyphony" },
+            "Juan del Encina": { img: "img/juandelaencina.png", name: "Juan del Encina", handle: "@spanish_beats" },
+
+            // Baroque
+            "Bach": { img: "img/bach.png", name: "J.S. Bach", handle: "@cantor_leipzig" },
+            "Handel": { img: "img/haendel.png", name: "G.F. Händel", handle: "@messiah_king" },
+            "Vivaldi": { img: "img/vivaldi.png", name: "Antonio Vivaldi", handle: "@red_priest" },
+            "Monteverdi": { img: "img/monteverdi.png", name: "Claudio Monteverdi", handle: "@opera_pioneer" },
+
+            // Classicism
+            "Mozart": { img: "img/mozart.png", name: "W.A. Mozart", handle: "@wolfgang_amadeus" },
+            "Haydn": { img: "img/haydn.png", name: "Joseph Haydn", handle: "@papa_haydn" },
+            "Beethoven": { img: "img/beethoven.png", name: "L. van Beethoven", handle: "@heroic_symphony" }, // Often cross-era
+            "Gluck": { img: "img/gluvk.png", name: "C.W. Gluck", handle: "@reform_opera" },
+
+            // Romanticism
+            "Chopin": { img: "img/chopin.png", name: "Frédéric Chopin", handle: "@poet_piano" },
+            "Wagner": { img: "img/wagner.png", name: "Richard Wagner", handle: "@ring_cycle" },
+            "Liszt": { img: "img/listz.png", name: "Franz Liszt", handle: "@virtuoso_king" },
+            "Dvorak": { img: "img/dvorak.png", name: "Antonín Dvořák", handle: "@new_world_symphony" },
+
+            // 20th C
+            "Debussy": { img: "img/debussy.png", name: "Claude Debussy", handle: "@clair_de_lune" },
+            "Stravinsky": { img: "img/stravinsky.png", name: "Igor Stravinsky", handle: "@rite_of_spring" },
+            "Gershwin": { img: "img/gershwin.png", name: "George Gershwin", handle: "@rhapsody_blue" },
+            "Schoenberg": { img: "img/schoemberg.png", name: "Arnold Schönberg", handle: "@atonal_master" }
+        };
+
+        // --- STATE ---
+        let currentQueue = [];
+        let currentRound = 0;
+        let currentWork = null;
+        let draggedItem = null;
+        let maxUnlocked = 0; // 0-indexed
+        let completedEras = JSON.parse(localStorage.getItem('twitter_game_completed')) || [];
+        let currentEraName = null;
+
+        // --- DOM ---
+        const introScreen = document.getElementById('intro-screen');
+        const menuScreen = document.getElementById('menu-screen');
+        const gameUI = document.getElementById('game-ui');
+        const trendsList = document.getElementById('trends-list');
+        const instructionText = document.getElementById('instruction-text');
+        const dropZone = document.getElementById('drop-zone');
+        const hashtagsPool = document.getElementById('hashtags-pool');
+        const publishBtn = document.getElementById('publish-btn');
+        const likeAnim = document.getElementById('like-anim');
+        const endModal = document.getElementById('end-modal');
+        const navList = document.getElementById('nav-list');
+
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // Init Audio
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+        bgMusic.volume = 0.5;
+
+        function showMenu() {
+            introScreen.style.display = 'none';
+            menuScreen.style.display = 'flex';
+
+            // Try play music
+            setTimeout(() => {
+                bgMusic.play().catch(e => console.log("Audio play failed:", e));
+            }, 500);
+
+            initMenu();
+        }
+
+        function initMenu() {
+            trendsList.innerHTML = '';
+            Object.keys(DATABASE).forEach(era => {
+                const isDone = completedEras.includes(era);
+                const div = document.createElement('div');
+                div.className = `trend-item ${isDone ? 'completed' : ''}`;
+                div.innerHTML = `
+                    <div class="trend-meta">Trending in Music History</div>
+                    <div class="trend-name">
+                        #${era.replace(/\s/g, '')} ${isDone ? '✅' : ''}
+                    </div>
+                    <div class="trend-meta">${isDone ? 'Completed' : '4 Tweets'}</div>
+                `;
+                div.onclick = () => startEra(era);
+                trendsList.appendChild(div);
+            });
+        }
+
+        function startEra(era) {
+            // Shuffle works
+            const works = [...DATABASE[era]].sort(() => Math.random() - 0.5);
+            currentQueue = works.map(w => ({ ...w, era: era }));
+            currentRound = 0;
+            maxUnlocked = 0;
+            currentEraName = era;
+            startGame();
+        }
+
+        function startMixViral() {
+            currentQueue = [];
+            Object.keys(DATABASE).forEach(era => {
+                const works = DATABASE[era];
+                const randomWork = works[Math.floor(Math.random() * works.length)];
+                currentQueue.push({ ...randomWork, era: era });
+            });
+            // Shuffle the mix
+            currentQueue.sort(() => Math.random() - 0.5);
+            currentRound = 0;
+            maxUnlocked = 0;
+            startGame();
+        }
+
+        function startGame() {
+            menuScreen.style.display = 'none';
+            gameUI.style.display = 'flex';
+            updateNav();
+            loadRound();
+        }
+
+        function updateNav() {
+            navList.innerHTML = '';
+            currentQueue.forEach((work, index) => {
+                const btn = document.createElement('div');
+                let statusClass = '';
+                let icon = '🔒';
+
+                if (index < maxUnlocked) {
+                    statusClass = 'completed';
+                    icon = '✅';
+                } else if (index === maxUnlocked) {
+                    statusClass = 'active';
+                    icon = '📝';
+                } else {
+                    statusClass = 'locked';
+                    icon = '🔒';
+                }
+
+                if (index === currentRound) {
+                    // Highlight current
+                    btn.style.borderLeft = '4px solid var(--accent-blue)';
+                }
+
+                btn.className = `nav-btn ${statusClass}`;
+                btn.innerHTML = `
+                    <span>Tweet ${index + 1}</span>
+                    <span class="nav-icon">${icon}</span>
+                `;
+
+                if (statusClass !== 'locked') {
+                    btn.onclick = () => {
+                        currentRound = index;
+                        loadRound();
+                        updateNav();
+                    };
+                }
+
+                navList.appendChild(btn);
+            });
+        }
+
+        function loadRound() {
+            if (currentRound >= currentQueue.length) {
+                // Save Progress if it's a specific Era (not mix)
+                if (currentEraName && !completedEras.includes(currentEraName)) {
+                    completedEras.push(currentEraName);
+                    localStorage.setItem('twitter_game_completed', JSON.stringify(completedEras));
+                }
+
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'critic_musical',
+                        'Crític Musical',
+                        'Has demostrat ser un expert en etiquetar obres mestres!',
+                        'img/mozart_real.jpg'
+                    );
+                }
+                endModal.style.display = 'flex';
+                return;
+            }
+
+            currentWork = currentQueue[currentRound];
+
+            // Update Avatar & User Info based on Composer (with fallback)
+            let compInfo = COMPOSER_DATA[currentWork.composer];
+
+            // Fallback for missing images (using UI Avatars to avoid broken images)
+            const fallbackImg = `https://ui-avatars.com/api/?name=${compInfo ? compInfo.name : 'Unknown'}&background=random`;
+
+            if (compInfo) {
+                document.getElementById('current-user-name').textContent = compInfo.name;
+                document.getElementById('current-user-handle').textContent = compInfo.handle;
+
+                // Try to load local image, fallback to UI Avatar on error
+                const imgEl = document.getElementById('current-user-avatar');
+                imgEl.src = compInfo.img;
+                imgEl.onerror = function () {
+                    this.onerror = null;
+                    this.src = fallbackImg;
+                };
+            } else {
+                // Generic fallback
+                document.getElementById('current-user-name').textContent = "Music History Bot";
+                document.getElementById('current-user-handle').textContent = "@musichistory";
+                document.getElementById('current-user-avatar').src = fallbackImg;
+            }
+
+            // Update Text
+            instructionText.innerHTML = `
+                <div style="font-size: 1.2rem; margin-bottom: 10px;">🎶 <b>Nova Tasca!</b></div>
+                Escolta l'obra <b>${currentWork.title}</b>.
+                <br><br>
+                <span style="font-size: 0.9rem; color: #657786;">Busca aquesta obra a YouTube, escolta-la i arrossega els 3 hashtags que la defineixen millor.</span>
+            `;
+
+            // Prepare Hashtags (3 Correct + 5 Traps)
+            const correctTags = currentWork.correct;
+            const trapPool = TRAPS[currentWork.era];
+            const traps = [...trapPool].sort(() => Math.random() - 0.5).slice(0, 5);
+
+            let allTags = [...correctTags, ...traps];
+            allTags.sort(() => Math.random() - 0.5);
+
+            // Render Pool
+            hashtagsPool.innerHTML = '';
+            dropZone.innerHTML = '';
+            publishBtn.classList.remove('active');
+
+            allTags.forEach(tag => {
+                const el = createPill(tag);
+                hashtagsPool.appendChild(el);
+            });
+
+            updateNav();
+        }
+
+        function createPill(text) {
+            const el = document.createElement('div');
+            el.className = 'hashtag-pill';
+            el.draggable = true;
+
+            // Add Emoji
+            let emoji = "";
+            Object.keys(EMOJIS).forEach(key => {
+                if (text.includes(key)) emoji = EMOJIS[key];
+            });
+            el.textContent = `#${text} ${emoji}`;
+            el.dataset.raw = text;
+
+            el.addEventListener('dragstart', (e) => {
+                draggedItem = el;
+                setTimeout(() => el.style.display = 'none', 0);
+            });
+
+            el.addEventListener('dragend', (e) => {
+                setTimeout(() => el.style.display = 'block', 0);
+                draggedItem = null;
+            });
+
+            // Click to toggle (Accessibility & Mobile friendly)
+            el.onclick = () => {
+                if (el.parentElement === hashtagsPool) {
+                    if (dropZone.children.length < 3) {
+                        dropZone.appendChild(el);
+                    }
+                } else {
+                    hashtagsPool.appendChild(el);
+                }
+                updateButton();
+            };
+
+            return el;
+        }
+
+        // Drop Zone Logic
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (draggedItem && dropZone.children.length < 3) {
+                dropZone.appendChild(draggedItem);
+                updateButton();
+            }
+        });
+
+        // Pool Drop Logic (return item)
+        hashtagsPool.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        hashtagsPool.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedItem && draggedItem.parentElement === dropZone) {
+                hashtagsPool.appendChild(draggedItem);
+                updateButton();
+            }
+        });
+
+        function updateButton() {
+            if (dropZone.children.length === 3) {
+                publishBtn.classList.add('active');
+            } else {
+                publishBtn.classList.remove('active');
+            }
+        }
+
+        // --- VALIDATION ---
+        function checkAnswer() {
+            const selected = Array.from(dropZone.children).map(el => el.dataset.raw);
+            const correct = currentWork.correct;
+
+            // Check if all selected are in correct list
+            const isCorrect = selected.every(tag => correct.includes(tag));
+
+            if (isCorrect) {
+                // Success
+                playSound('success');
+                showLikeAnim();
+
+                // Unlock next
+                if (currentRound === maxUnlocked) {
+                    maxUnlocked++;
+                }
+
+                setTimeout(() => {
+                    currentRound++;
+                    loadRound();
+                }, 1500);
+            } else {
+                // Fail
+                playSound('error');
+                gameUI.classList.add('shake');
+                setTimeout(() => gameUI.classList.remove('shake'), 500);
+
+                // Return wrong items to pool
+                Array.from(dropZone.children).forEach(el => {
+                    if (!correct.includes(el.dataset.raw)) {
+                        el.style.borderColor = 'red';
+                        setTimeout(() => {
+                            el.style.borderColor = 'var(--accent-blue)';
+                            hashtagsPool.appendChild(el);
+                            updateButton();
+                        }, 500);
+                    }
+                });
+            }
+        }
+
+        function showLikeAnim() {
+            likeAnim.style.opacity = 1;
+            likeAnim.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            setTimeout(() => {
+                likeAnim.style.opacity = 0;
+                likeAnim.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 1000);
+        }
+
+        // Audio
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+
+    </script>
+    <script src="../../../js/rewards.js"></script>
+</body>
+
+</html>

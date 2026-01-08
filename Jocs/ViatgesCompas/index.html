@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viatges El Compàs - Grand Tour</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Montserrat:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #2c3e50;
+            --panel-bg: #34495e;
+            --accent-gold: #f1c40f;
+            --text-color: #ecf0f1;
+            --slot-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-family: 'Courier Prime', monospace;
+            text-transform: uppercase;
+            border-bottom: 2px dashed var(--accent-gold);
+            padding-bottom: 10px;
+            color: var(--accent-gold);
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #game-area {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            height: 95vh;
+            gap: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Top: Client Info */
+        #ticket-info {
+            background: #fff;
+            color: #2c3e50;
+            padding: 15px 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 0 #bdc3c7;
+            position: relative;
+            background-image: repeating-linear-gradient(45deg, #fff, #fff 10px, #f0f0f0 10px, #f0f0f0 20px);
+        }
+
+        /* Ticket jagged edges */
+        #ticket-info::before,
+        #ticket-info::after {
+            content: '';
+            position: absolute;
+            background: var(--bg-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #ticket-info::before {
+            left: -15px;
+        }
+
+        #ticket-info::after {
+            right: -15px;
+        }
+
+        .client-avatar {
+            font-size: 3.5rem;
+            background: #ecf0f1;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 4px solid var(--bg-color);
+        }
+
+        .client-details {
+            flex: 1;
+        }
+
+        #client-name {
+            font-weight: 800;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        #client-req {
+            font-family: 'Courier Prime', monospace;
+            font-size: 1rem;
+            line-height: 1.2;
+            color: #555;
+        }
+
+        .stats-box {
+            text-align: right;
+            border-left: 2px dashed #bdc3c7;
+            padding-left: 20px;
+        }
+
+        /* Middle: Suitcase */
+        #suitcase-zone {
+            background: #5d4037;
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
+            border: 8px solid #3e2723;
+        }
+
+        #suitcase-handle {
+            width: 140px;
+            height: 25px;
+            background: #3e2723;
+            border-radius: 10px;
+            position: absolute;
+            top: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        #slots-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+        }
+
+        .slot {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .slot-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .slot-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .slot-content {
+            font-size: 0.9rem;
+            padding: 0 10px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .slot.hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
+            transform: scale(1.02);
+        }
+
+        .slot.filled {
+            background: rgba(255, 255, 255, 0.95);
+            border-style: solid;
+            color: #2c3e50;
+        }
+
+        .slot-icon {
+            width: 40px;
+            height: 40px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+        }
+
+        #slot-dest .slot-icon {
+            background-image: url('img/destinations.png');
+        }
+
+        #slot-trans .slot-icon {
+            background-image: url('img/transports.png');
+        }
+
+        #slot-act1 .slot-icon,
+        #slot-act2 .slot-icon {
+            background-image: url('img/activities.png');
+        }
+
+        .slot.filled .slot-icon {
+            opacity: 1;
+        }
+
+        .slot.filled .slot-label {
+            color: #7f8c8d;
+        }
+
+        .slot.filled .slot-content {
+            color: #2c3e50;
+        }
+
+        /* Bottom: Items */
+        #inventory {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            height: 240px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .inv-col h3 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            opacity: 0.8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+
+        .inv-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item-card {
+            background: #fff;
+            color: #333;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: grab;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #bdc3c7;
+            transition: transform 0.1s;
+            position: relative;
+        }
+
+        .item-card:hover {
+            transform: translateY(-2px);
+            background: #f9f9f9;
+        }
+
+        .item-card[data-type="dest"] {
+            border-color: #e74c3c;
+        }
+
+        .item-card[data-type="trans"] {
+            border-color: #3498db;
+        }
+
+        .item-card[data-type="act"] {
+            border-color: #2ecc71;
+        }
+
+        .item-card:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+
+        #submit-btn {
+            position: absolute;
+            bottom: -25px;
+            padding: 15px 40px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #1e8449, 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+
+        #submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #1e8449, 0 15px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        #submit-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 #1e8449, 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        /* TOOLTIP */
+        .tooltip {
+            position: absolute;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            max-width: 250px;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid #34495e;
+            line-height: 1.4;
+        }
+
+        .tooltip.hidden {
+            display: none;
+        }
+
+        /* MODALS & OVERLAYS */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal {
+            background: #fff;
+            color: #2c3e50;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 5px solid var(--accent-gold);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: #d35400;
+        }
+
+        .modal ul {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+
+        .modal li {
+            margin-bottom: 10px;
+        }
+
+        .action-btn {
+            background: var(--accent-gold);
+            color: #2c3e50;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 #d35400;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0 #d35400;
+        }
+
+        .action-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #d35400;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Submit Button Disabled State */
+        #submit-btn:disabled {
+            background: #95a5a6;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* VOLUME CONTROL */
+        #volume-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10001;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #volume-control input[type="range"] {
+            cursor: pointer;
+            width: 80px;
+        }
+
+        #volume-control button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Ticket To Anywhere.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="volume-control">
+        <button onclick="toggleMute()" id="mute-btn">🔊</button>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+    </div>
+
+    <div id="game-area">
+        <h1>Viatges El Compàs</h1>
+
+        <div id="ticket-info">
+            <div class="client-avatar" id="client-avatar">?</div>
+            <div class="client-details">
+                <div id="client-name">Carregant...</div>
+                <div id="client-req">...</div>
+            </div>
+            <div class="stats-box">
+                <div>ERRORS: <span id="errors" style="color:#e74c3c; font-weight:bold;">0</span></div>
+                <div>CLIENTS: <span id="progress" style="color:#27ae60; font-weight:bold;">0/12</span></div>
+            </div>
+        </div>
+
+        <div id="suitcase-zone">
+            <div id="suitcase-handle"></div>
+            <div id="slots-container">
+                <div class="slot" data-accept="dest" id="slot-dest">
+                    <div class="slot-icon"></div>
+                    <span class="slot-label">Destí</span>
+                    <span class="slot-content">Arrossega Destí</span>
+                </div>
+                <div class="slot" data-accept="trans" id="slot-trans">
+                    <div class="slot-icon"></div>
+                    <span class="slot-label">Transport</span>
+                    <span class="slot-content">Arrossega Transport</span>
+                </div>
+                <div class="slot" data-accept="act" id="slot-act1">
+                    <div class="slot-icon"></div>
+                    <span class="slot-label">Activitat 1</span>
+                    <span class="slot-content">Arrossega Acció</span>
+                </div>
+                <div class="slot" data-accept="act" id="slot-act2">
+                    <div class="slot-icon"></div>
+                    <span class="slot-label">Activitat 2</span>
+                    <span class="slot-content">Arrossega Acció</span>
+                </div>
+            </div>
+            <button id="submit-btn" onclick="validateSuitcase()">FACTURAR EQUIPATGE</button>
+        </div>
+
+        <div id="inventory">
+            <div class="inv-col" id="col-dest">
+                <h3><img src="img/destinations.png"
+                        style="height:24px; vertical-align:middle; margin-right:8px;">Destins</h3>
+            </div>
+            <div class="inv-col" id="col-trans">
+                <h3><img src="img/transports.png"
+                        style="height:24px; vertical-align:middle; margin-right:8px;">Transport</h3>
+            </div>
+            <div class="inv-col" id="col-act">
+                <h3><img src="img/activities.png"
+                        style="height:24px; vertical-align:middle; margin-right:8px;">Activitats</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Screen Overlay -->
+    <div id="start-screen" class="overlay">
+        <div class="modal">
+            <h2>Benvingut a l'Agència</h2>
+            <p>Ets el nou agent de viatges de "El Compàs".</p>
+            <ul>
+                <li>Omple la maleta segons el que demani el client.</li>
+                <li>1 Destí + 1 Transport + 2 Activitats.</li>
+                <li><strong>ATENCIÓ:</strong> Si comets <strong>6 errors</strong>, seràs acomiadat!</li>
+            </ul>
+            <button class="action-btn" onclick="startGame()">COMENÇAR TORN</button>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Messages -->
+    <div id="game-modal" class="overlay hidden">
+        <div class="modal">
+            <h2 id="modal-title">Títol</h2>
+            <p id="modal-body">Missatge...</p>
+            <button id="modal-btn" class="action-btn" onclick="closeModal()">D'ACORD</button>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip hidden"></div>
+
+    <script>
+        const GAME_DATA = {
+            "assets": {
+                "destinations": [
+                    { "id": "dst_monestir", "label": "Monestir de Pedra", "cat": "mitjana", "hint": "Un lloc fred i silenciós, ideal per a l'aïllament." },
+                    { "id": "dst_taverna", "label": "Taverna del Port", "cat": "mitjana", "hint": "Ambient festiu amb olor de vi i música popular." },
+                    { "id": "dst_capella", "label": "Capella Sixtina", "cat": "renaix", "hint": "Sostre pintat per Miquel Àngel. Acústica sagrada." },
+                    { "id": "dst_palau", "label": "Jardí de Florència", "cat": "renaix", "hint": "Estàtues gregues i natura ordenada. Molt humanista." },
+                    { "id": "dst_opera", "label": "Teatre Reial", "cat": "barroc", "hint": "Teló de vellut vermell i llotges privades." },
+                    { "id": "dst_versalles", "label": "Sala dels Miralls", "cat": "barroc", "hint": "Luxe infinit i reflexos daurats." },
+                    { "id": "dst_auditori", "label": "Auditori Nacional", "cat": "classic", "hint": "Sala de concerts formal perfecta per simfonies." },
+                    { "id": "dst_salon", "label": "Saló de Te", "cat": "classic", "hint": "Ambient íntim amb sofàs còmodes i porcellana." },
+                    { "id": "dst_cementiri", "label": "Cementiri Gòtic", "cat": "roman", "hint": "Boira baixa, làpides antigues i malenconia." },
+                    { "id": "dst_barricada", "label": "Barricada al Carrer", "cat": "roman", "hint": "Foc, banderes trencades i esperit revolucionari." },
+                    { "id": "dst_fabrica", "label": "Fàbrica de Motors", "cat": "sxx", "hint": "Fum, greix i soroll de màquines industrials." },
+                    { "id": "dst_buit", "label": "Habitació Blanca", "cat": "sxx", "hint": "Res absolut. Silenci pur o soroll blanc." }
+                ],
+                "transports": [
+                    { "id": "tr_sandalia", "label": "Sandàlies", "cat": "mitjana", "hint": "Viatge a peu, lent i humil." },
+                    { "id": "tr_carro", "label": "Carro de Fenc", "cat": "mitjana", "hint": "Transport rústic i ple de sotracs." },
+                    { "id": "tr_nuvol", "label": "Núvol Angelical", "cat": "renaix", "hint": "Transport diví sense gravetat." },
+                    { "id": "tr_gondola", "label": "Gòndola", "cat": "renaix", "hint": "Navegació suau pels canals de Venècia." },
+                    { "id": "tr_maquina", "label": "Màquina Teatral", "cat": "barroc", "hint": "Enginy mecànic per baixar del sostre (Deus ex machina)." },
+                    { "id": "tr_carrossa", "label": "Carrossa Daurada", "cat": "barroc", "hint": "Vehicle de luxe amb rodes massisses." },
+                    { "id": "tr_metronom", "label": "Metrònom Gegant", "cat": "classic", "hint": "Viatge a ritme perfecte i constant." },
+                    { "id": "tr_cotxe", "label": "Cotxe de Cavalls", "cat": "classic", "hint": "Passeig urbà elegant i moderat." },
+                    { "id": "tr_funebre", "label": "Cotxe Fúnebre", "cat": "roman", "hint": "Transport negre, lent i solemne." },
+                    { "id": "tr_cavall", "label": "Cavall Desbocat", "cat": "roman", "hint": "Galop èpic sense control." },
+                    { "id": "tr_coet", "label": "Coet Espacial", "cat": "sxx", "hint": "Velocitat supersònica i tecnologia punta." },
+                    { "id": "tr_cinta", "label": "Cinta Mecànica", "cat": "sxx", "hint": "Moviment en bucle constant." }
+                ],
+                "activities": [
+                    { "id": "ac_resar", "label": "Resar en Llatí", "cat": "mitjana", "hint": "Recitar oracions antigues en veu baixa." },
+                    { "id": "ac_copiar", "label": "Copiar Manuscrits", "cat": "mitjana", "hint": "Escriure amb ploma i tinta pacientment." },
+                    { "id": "ac_beure", "label": "Beure Vi", "cat": "mitjana", "hint": "Gaudir de la beguda i la companyia sorollosa." },
+                    { "id": "ac_dansa", "label": "Dansa Macabra", "cat": "mitjana", "hint": "Ballar recordant que la mort ens iguala a tots." },
+                    { "id": "ac_polifonia", "label": "Cantar a 4 Veus", "cat": "renaix", "hint": "Entrellaçar melodies diferents en harmonia." },
+                    { "id": "ac_contemplar", "label": "Mirar al Cel", "cat": "renaix", "hint": "Buscar la inspiració divina a les altures." },
+                    { "id": "ac_poesia", "label": "Llegir Petrarca", "cat": "renaix", "hint": "Recitar versos d'amor idealitzat." },
+                    { "id": "ac_llaud", "label": "Tocar el Llaüt", "cat": "renaix", "hint": "Puntejar cordes amb delicadesa cortesana." },
+                    { "id": "ac_trino", "label": "Fer Trinos (x100)", "cat": "barroc", "hint": "Adornar la melodia amb notes ràpides." },
+                    { "id": "ac_disfressa", "label": "Posar-se Plomes", "cat": "barroc", "hint": "Vestir-se amb excés per impressionar." },
+                    { "id": "ac_reverencia", "label": "Fer Reverències", "cat": "barroc", "hint": "Inclinar-se davant la reialesa." },
+                    { "id": "ac_dansa_reial", "label": "Ballar el Minuet", "cat": "barroc", "hint": "Dansa de passos petits i elegants." },
+                    { "id": "ac_analisi", "label": "Analitzar Forma", "cat": "classic", "hint": "Estudiar l'estructura A-B-A de la peça." },
+                    { "id": "ac_silenci", "label": "Callar i Escoltar", "cat": "classic", "hint": "Respectar el concert amb silenci absolut." },
+                    { "id": "ac_riure", "label": "Riure de l'Embolic", "cat": "classic", "hint": "Gaudir de l'humor de l'Opera Buffa." },
+                    { "id": "ac_cafè", "label": "Prendre Cafè", "cat": "classic", "hint": "Vida social refinada." },
+                    { "id": "ac_plorar", "label": "Plorar Desconsolat", "cat": "roman", "hint": "Expressar sentiments extrems sense filtre." },
+                    { "id": "ac_tossir", "label": "Tossir Sang", "cat": "roman", "hint": "Símptoma tràgic del destí romàntic." },
+                    { "id": "ac_bandera", "label": "Onejar Bandera", "cat": "roman", "hint": "Luitar per la llibertat del poble." },
+                    { "id": "ac_crit", "label": "Cridar Llibertat", "cat": "roman", "hint": "Rebel·lar-se contra l'opressió." },
+                    { "id": "ac_trencar", "label": "Trencar un Violí", "cat": "sxx", "hint": "Rebuig violent de la tradició." },
+                    { "id": "ac_soroll", "label": "Gravar Sorolls", "cat": "sxx", "hint": "Capturar el so de la ciutat moderna." },
+                    { "id": "ac_meditar", "label": "No fer res (4'33'')", "cat": "sxx", "hint": "Escoltar el silenci com a música." },
+                    { "id": "ac_repetir", "label": "Repetir Nota", "cat": "sxx", "hint": "Minimalisme hipnòtic." }
+                ]
+            },
+            "clients_db": [
+                { "name": "Germà Bernat", "avatar": "monje.png", "request": "Vull retirar-me del món. Necessito silenci per parlar amb Déu i molta tinta per treballar a la biblioteca.", "solution": ["dst_monestir", "tr_sandalia", "ac_resar", "ac_copiar"] },
+                { "name": "Raimon", "avatar": "campesino.png", "request": "Avorrits! Jo vull festa. Porta'm on hi hagi vi, que vull ballar fins que surti el sol amb la gent del poble.", "solution": ["dst_taverna", "tr_carro", "ac_beure", "ac_dansa"] },
+                { "name": "El Papa", "avatar": "papa.png", "request": "La música sacra ha de ser pura. Vull elevar els ulls al cel i que les veus s'entrellacin sense instruments.", "solution": ["dst_capella", "tr_nuvol", "ac_polifonia", "ac_contemplar"] },
+                { "name": "Humanista", "avatar": "humanista.png", "request": "L'home és la mesura. Vull seure sota un arbre simètric, tocar el llaüt i recitar poemes d'amor.", "solution": ["dst_palau", "tr_gondola", "ac_llaud", "ac_poesia"] },
+                { "name": "La Diva", "avatar": "diva.png", "request": "Sóc una estrella! Vull un vestit amb mil plomes, baixar volant a l'escenari i fer tantes notes ràpides que maregi al públic.", "solution": ["dst_opera", "tr_maquina", "ac_trino", "ac_disfressa"] },
+                { "name": "Lluís XIV", "avatar": "reisol.png", "request": "Tot ha de ser protocol. Vull passejar pel meu saló d'or, que tothom s'inclini davant meu i ballar amb elegància rígida.", "solution": ["dst_versalles", "tr_carrossa", "ac_reverencia", "ac_dansa_reial"] },
+                { "name": "Crític Seriós", "avatar": "critico.png", "request": "Vinc a jutjar l'obra. Vull seure, callar, i comprovar que el compositor ha seguit l'estructura perfecta.", "solution": ["dst_auditori", "tr_metronom", "ac_analisi", "ac_silenci"] },
+                { "name": "Burgesa Alegre", "avatar": "burguesa.png", "request": "Oh, quina comèdia! Vull prendre alguna cosa calenta mentre ric dels embolics amorosos dels criats.", "solution": ["dst_salon", "tr_cotxe", "ac_riure", "ac_cafè"] },
+                { "name": "Poeta Maleït", "avatar": "poeta.png", "request": "La vida és dolor... Porta'm on hi hagi tombes. Vull tossir la meva malaltia i plorar pel meu amor perdut.", "solution": ["dst_cementiri", "tr_funebre", "ac_plorar", "ac_tossir"] },
+                { "name": "Revolucionari", "avatar": "revolucionario.png", "request": "A les armes! Vull pujar a un cavall, agafar la bandera i cridar fins que el poble sigui lliure!", "solution": ["dst_barricada", "tr_cavall", "ac_bandera", "ac_crit"] },
+                { "name": "Luigi (Futurista)", "avatar": "futurista.png", "request": "La música vella fa fàstic! Vull màquines! Vull agafar un martell, trencar els violins i gravar el soroll!", "solution": ["dst_fabrica", "tr_coet", "ac_trencar", "ac_soroll"] },
+                { "name": "Steve (Minimalista)", "avatar": "minimalista.png", "request": "Menys és més. Porta'm al buit. No vull fer res. O potser repetir una nota.", "solution": ["dst_buit", "tr_cinta", "ac_meditar", "ac_repetir"] }
+            ]
+        };
+
+        let queue = [];
+        let r_client = null;
+        let errors = 0;
+        let suitcase = { dest: null, trans: null, act1: null, act2: null };
+        let doneCount = 0;
+        const MAX_ERRORS = 6;
+        let resetOnClose = false;
+
+        function init() {
+            // Fill inventory - Shuffled
+            const dCol = document.getElementById('col-dest');
+            [...GAME_DATA.assets.destinations].sort(() => Math.random() - 0.5)
+                .forEach(x => createItem(x, 'dest', dCol));
+
+            const tCol = document.getElementById('col-trans');
+            [...GAME_DATA.assets.transports].sort(() => Math.random() - 0.5)
+                .forEach(x => createItem(x, 'trans', tCol));
+
+            const aCol = document.getElementById('col-act');
+            [...GAME_DATA.assets.activities].sort(() => Math.random() - 0.5)
+                .forEach(x => createItem(x, 'act', aCol));
+
+            // Init slots
+            const slots = document.querySelectorAll('.slot');
+            slots.forEach(s => {
+                s.ondragover = e => { e.preventDefault(); s.classList.add('hover'); };
+                s.ondragleave = e => s.classList.remove('hover');
+                s.ondrop = handleDrop;
+            });
+
+            // Disable button initially
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-btn').style.opacity = "0.5";
+            document.getElementById('submit-btn').style.cursor = "not-allowed";
+
+            // Show intro
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        function createItem(data, type, parent) {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.draggable = true;
+            div.dataset.type = type;
+            div.innerHTML = `<strong>${data.label}</strong>`;
+
+            // Tooltip events
+            div.onmousemove = (e) => showTooltip(e, data.hint);
+            div.onmouseleave = hideTooltip;
+
+            div.ondragstart = e => {
+                hideTooltip(); // Hide when dragging starts
+                e.dataTransfer.setData('id', data.id);
+                e.dataTransfer.setData('type', type);
+                e.dataTransfer.setData('label', data.label);
+            };
+            parent.appendChild(div);
+        }
+
+        function showTooltip(e, text) {
+            const tt = document.getElementById('tooltip');
+            tt.textContent = text;
+            tt.classList.remove('hidden');
+            tt.style.left = (e.pageX + 15) + 'px';
+            tt.style.top = (e.pageY + 15) + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.add('hidden');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('hover');
+
+            // Find closest slot
+            const slot = e.target.closest('.slot');
+            if (!slot) return;
+
+            const id = e.dataTransfer.getData('id');
+            const type = e.dataTransfer.getData('type');
+            const label = e.dataTransfer.getData('label');
+            const accept = slot.dataset.accept;
+
+            if (type !== accept) {
+                return;
+            }
+
+            // Fill Slot
+            slot.querySelector('.slot-content').textContent = label;
+            slot.classList.add('filled');
+
+            // Update Logic
+            if (slot.id === 'slot-dest') suitcase.dest = id;
+            if (slot.id === 'slot-trans') suitcase.trans = id;
+            if (slot.id === 'slot-act1') suitcase.act1 = id;
+            if (slot.id === 'slot-act2') suitcase.act2 = id;
+
+            checkButton();
+        }
+
+        function checkButton() {
+            const btn = document.getElementById('submit-btn');
+            if (suitcase.dest && suitcase.trans && suitcase.act1 && suitcase.act2) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            }
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            const music = document.getElementById('bg-music');
+            music.play().catch(e => console.log("Autoplay blocked", e));
+            errors = 0;
+            doneCount = 0;
+            // Shuffle
+            queue = [...GAME_DATA.clients_db].sort(() => Math.random() - 0.5);
+            nextTurn();
+        }
+
+        function setVolume(val) {
+            const music = document.getElementById('bg-music');
+            music.volume = val;
+            const btn = document.getElementById('mute-btn');
+            if (val == 0) btn.textContent = "🔇";
+            else btn.textContent = "🔊";
+        }
+
+        function toggleMute() {
+            const music = document.getElementById('bg-music');
+            const slider = document.getElementById('volume-slider');
+            if (music.volume > 0) {
+                music.dataset.oldVol = music.volume;
+                music.volume = 0;
+                slider.value = 0;
+                document.getElementById('mute-btn').textContent = "🔇";
+            } else {
+                const oldVol = music.dataset.oldVol || 0.5;
+                music.volume = oldVol;
+                slider.value = oldVol;
+                document.getElementById('mute-btn').textContent = "🔊";
+            }
+        }
+
+        function nextTurn() {
+            if (queue.length === 0) {
+                showModal("Jornada Acabada!", `Has completat el dia amb ${errors} errors.`, "Tornar a començar", true);
+                return;
+            }
+
+            r_client = queue.pop();
+            document.getElementById('client-name').textContent = r_client.name;
+            document.getElementById('client-avatar').innerHTML = `<img src="img/${r_client.avatar}" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">`;
+            document.getElementById('client-req').textContent = r_client.request;
+            document.getElementById('errors').textContent = `${errors}/${MAX_ERRORS}`;
+            document.getElementById('progress').textContent = `${doneCount}/12`;
+
+            // Clear Suitcase
+            suitcase = { dest: null, trans: null, act1: null, act2: null };
+            document.querySelectorAll('.slot').forEach(s => {
+                s.classList.remove('filled');
+                // Restore default labels with icons
+                let defText = "";
+                if (s.id === 'slot-dest') defText = "Arrossega Destí";
+                if (s.id === 'slot-trans') defText = "Arrossega Transport";
+                if (s.id.includes('act')) defText = "Arrossega Acció";
+                s.querySelector('.slot-content').textContent = defText;
+            });
+            checkButton(); // Reset button
+        }
+
+        function validateSuitcase() {
+            const sol = r_client.solution;
+            // suitcase: dest, trans, act1, act2
+            // solution: [dest, trans, actA, actB]
+
+            const dOk = suitcase.dest === sol[0];
+            const tOk = suitcase.trans === sol[1];
+
+            const acts = [suitcase.act1, suitcase.act2];
+            const solActs = [sol[2], sol[3]];
+            const aOk = acts.every(a => solActs.includes(a)) && new Set(acts).size === 2; // Unique actions used
+
+            if (dOk && tOk && aOk) {
+                // Success
+                doneCount++;
+                showModal("Èxit!", "El client està molt content.", "Següent Client", false);
+            } else {
+                // Error
+                errors++;
+                document.getElementById('errors').textContent = `${errors}/${MAX_ERRORS}`; // Update visual immediately
+
+                if (errors >= MAX_ERRORS) {
+                    showModal("ACOMIADAT!", "Has comès massa errors. Estàs al carrer.", "Tornar a jugar", true);
+                } else {
+                    showModal("Error!", "Equipatge incorrecte. El client ha perdut el vol.", "Continuar", false); // Counts as error but continues
+                }
+            }
+        }
+
+        function showModal(title, body, btnText, isReset) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').textContent = body;
+            document.getElementById('modal-btn').textContent = btnText;
+            document.getElementById('game-modal').classList.remove('hidden');
+            resetOnClose = isReset;
+        }
+
+        function closeModal() {
+            document.getElementById('game-modal').classList.add('hidden');
+            if (resetOnClose) {
+                document.getElementById('start-screen').classList.remove('hidden');
+            } else {
+                nextTurn();
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crono-Snack: L'Institut Musical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --machine-bg: #444;
+            --glass-bg: rgba(200, 230, 255, 0.2);
+            --led-green: #39ff14;
+            --led-red: #ff3939;
+            --school-wall: #e0e0e0;
+            --locker-blue: #0056b3;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: center/cover no-repeat url('img/fons.jpg'), linear-gradient(to bottom, #ccc, #999);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #game-layout {
+            display: none;
+            /* Hidden on start */
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            gap: 20px;
+        }
+
+        /* LEFT: COMPOSER (STUDENT) */
+        #composer-zone {
+            flex: 0 0 300px;
+            /* Fixed, narrower width */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            /* Align top-ish */
+            align-items: center;
+            position: relative;
+            padding-top: 50px;
+        }
+
+        #composer-avatar {
+            width: 250px;
+            /* Larger size */
+            height: 250px;
+            object-fit: cover;
+            /* Crop to fill circle */
+            object-position: top center;
+            /* Focus on face */
+            border-radius: 50%;
+            /* Circular */
+            border: 8px solid #fff;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s;
+            background: radial-gradient(circle, #85c1e9 0%, #2e86c1 100%);
+            /* School portrait bg */
+        }
+
+        #dialogue-bubble {
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            /* Space between bubble and avatar */
+            font-family: 'Bangers', cursive;
+            font-size: 1.3rem;
+            position: relative;
+            box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            z-index: 10;
+        }
+
+        #dialogue-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: #000 transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* RIGHT: VENDING MACHINE */
+        #machine-container {
+            flex: 1.2;
+            background: var(--machine-bg);
+            border-radius: 15px;
+            border: 5px solid #222;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        /* DISPLAY GLASS */
+        #items-grid {
+            background: #222;
+            flex: 1;
+            border-radius: 5px;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 10px;
+            padding: 10px;
+            border: 5px solid #666;
+            margin-bottom: 15px;
+            /* overflow: hidden; Removed for tooltip visibility */
+        }
+
+        #items-grid::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .item-slot {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 5px;
+            border-bottom: 3px solid #111;
+        }
+
+        .item-slot:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .item-slot img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+
+        .item-code {
+            background: #000;
+            color: var(--led-red);
+            padding: 2px 5px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            border-radius: 3px;
+        }
+
+        /* TOOLTIP HOVER */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.95);
+            color: #fff;
+            padding: 8px 12px;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            font-size: 1rem;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            pointer-events: none;
+            white-space: nowrap;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .item-slot:hover .tooltip {
+            display: block;
+        }
+
+        /* CONTROL PANEL */
+        #controls {
+            height: 200px;
+            background: #333;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        #keypad {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        .key {
+            background: #555;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #222;
+        }
+
+        .key:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        #display-panel {
+            flex: 1;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            border: 2px solid #555;
+            color: var(--led-green);
+            font-family: 'Courier New', monospace;
+        }
+
+        #lcd-screen {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--led-green);
+        }
+
+        #dispenser-slot {
+            height: 60px;
+            background: #111;
+            margin-top: 10px;
+            border-radius: 0 0 10px 10px;
+            border-top: 5px solid #333;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #dispensed-item {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #dispensed-item.drop {
+            transform: translateY(0);
+        }
+
+        /* HEART SYSTEM */
+        #lives-display {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            color: black;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: 2px solid #000;
+            z-index: 200;
+            display: none;
+            /* Hidden on start */
+        }
+
+        /* SCREENS */
+        #start-screen,
+        #game-over-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+        }
+
+        .btn-large {
+            padding: 15px 40px;
+            font-size: 2rem;
+            font-family: 'Bangers', cursive;
+            background: var(--locker-blue);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border: 3px solid #fff;
+            transform: rotate(-3deg);
+            transition: 0.2s;
+        }
+
+        .btn-large:hover {
+            transform: scale(1.1) rotate(3deg);
+        }
+    </style>
+</head>
+
+<body>
+    <audio id="bg-music" src="audio/Hallway Rush.m4a" loop></audio>
+
+    <div id="lives-display">❤️❤️❤️❤️❤️</div>
+
+    <div id="game-layout">
+        <div id="composer-zone">
+            <div id="dialogue-bubble">Ei! Sóc el J.S. Bach. Tinc un examen de mates i necessito posar-me seriós!</div>
+            <img id="composer-avatar" src="img/bach.png" alt="Bach">
+        </div>
+
+        <div id="machine-container">
+            <div id="items-grid">
+                <!-- Items Generated by JS -->
+            </div>
+
+            <div id="controls">
+                <div id="display-panel">
+                    <div id="lcd-screen">---</div>
+                    <div id="status-msg">SELECCIONA</div>
+                </div>
+                <div id="keypad">
+                    <!-- Letters A-F -->
+                    <button class="key" onclick="pressKey('A')">A</button>
+                    <button class="key" onclick="pressKey('B')">B</button>
+                    <button class="key" onclick="pressKey('C')">C</button>
+                    <button class="key" onclick="pressKey('D')">D</button>
+                    <button class="key" onclick="pressKey('E')">E</button>
+                    <button class="key" onclick="pressKey('F')">F</button>
+
+                    <!-- Numbers 1-2 -->
+                    <button class="key" onclick="pressKey('1')">1</button>
+                    <button class="key" onclick="pressKey('2')">2</button>
+
+                    <!-- Actions -->
+                    <button class="key" style="background: var(--led-green); color:black;" onclick="vend()">OK</button>
+                    <button class="key" style="background: var(--led-red);" onclick="clearCode()">X</button>
+                </div>
+            </div>
+
+            <div id="dispenser-slot">
+                <img id="dispensed-item" src="" alt="Item">
+            </div>
+        </div>
+    </div>
+
+    <!-- VICTORY SCREEN -->
+    <div id="victory-screen" style="display:none;">
+        <h1 style="font-family: 'Bangers'; font-size: 4rem; color: var(--led-green);">ENHORABONA!</h1>
+        <p>Has salvat el concert de l'Institut!</p>
+        <button class="btn-large" onclick="location.reload()">TORNAR A JUGAR</button>
+    </div>
+
+    <!-- CUSTOM MODAL -->
+    <div id="custom-modal" class="modal-hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">NOTIFICACIÓ</h2>
+            <p id="modal-msg">Missatge del sistema...</p>
+            <button class="btn-large" onclick="closeModal()">D'ACORD</button>
+        </div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1 style="font-family: 'Bangers'; font-size: 4rem; color: var(--led-green);">CRONO-SNACK</h1>
+        <p>REPARTEIX EINES ALS COMPOSITORS DE L'INSTITUT!</p>
+        <button class="btn-large" onclick="startGame()">OBRIR MÀQUINA</button>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="game-over-screen" style="display:none;">
+        <h1 style="font-family: 'Bangers'; font-size: 4rem; color: var(--led-red);">MÀQUINA TRENCADA!</h1>
+        <p>Has fallat 5 cops. El director està furiós.</p>
+        <button class="btn-large" onclick="location.reload()">REPARAR</button>
+    </div>
+
+    <style>
+        /* MODAL STYLES */
+        .modal-hidden {
+            display: none !important;
+        }
+
+        #custom-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            border: 5px solid #000;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.5);
+            max-width: 80%;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #modal-title {
+            font-family: 'Bangers', cursive;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            color: var(--locker-blue);
+        }
+
+        #modal-msg {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        /* VICTORY & GAME OVER SCREENS */
+        #victory-screen,
+        #game-over-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            /* Darker overlay */
+            z-index: 1000;
+            /* Top level */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+        }
+    </style>
+
+    <script>
+        const COMPOSERS = [
+            { id: 'guido', name: "Guido d'Arezzo", dialog: "Pff, els de cor no s'enteren de res... Tens la meva xuleta?", item: "maguidoniana", clue: "Mà Guidoniana" },
+            { id: 'hildegard', name: "Hildegard", dialog: "He tingut una visió al pati... Necessito escriure-la ja!", item: "ploma", clue: "Ploma Mística" },
+            { id: 'josquin', name: "Josquin", dialog: "No veig res a la pissarra... on són les meves ulleres?", item: "ulleres", clue: "Ulleres" },
+            { id: 'palestrina', name: "Palestrina", dialog: "Mare meva, quin estrés d'exàmens... necessito resar.", item: "rosari", clue: "Rosari" },
+            { id: 'bach', name: "Bach", dialog: "El profe de mates diu que la meva fuga és 'massa complexa'. On és la meva perruca?", item: "perrucablanca", clue: "Perruca Blanca" },
+            { id: 'vivaldi', name: "Vivaldi", dialog: "He trencat l'arc fent un solo de rock! En tens un altre?", item: "arcvioli", clue: "Arc de Violí" },
+            { id: 'mozart', name: "Mozart", dialog: "Anem a muntar una festa! On és el meu teclat portàtil?", item: "keytar", clue: "Piano Fort" },
+            { id: 'haydn', name: "Haydn", dialog: "Aquests nens no callen... hauré de treure el manual.", item: "manualsimfonia", clue: "Llibre Mestre" },
+            { id: 'beethoven', name: "Beethoven", dialog: "QUÈ?! NO SENTO RES AMB AQUEST RLOLL!!", item: "trompaorella", clue: "Trompeta d'Olla" },
+            { id: 'wagner', name: "Wagner", dialog: "L'obra de teatre necessita més ÈPICA! Dona'm el casc!", item: "valquiriacasc", clue: "Casc de Valquíria" },
+            { id: 'schoemberg', name: "Schoenberg", dialog: "Odio la tonalitat... necessito la meva matriu.", item: "matriu12", clue: "Matriu 12 Tons" },
+            { id: 'cage', name: "John Cage", dialog: "Vaig a liar-la al piano de la sala d'actes... jeje.", item: "cargols", clue: "Cargols i Goma" }
+        ];
+
+        const ITEMS = [
+            // Row 1: Medieval
+            { code: "A1", id: "maguidoniana", name: "Mà Guidoniana", desc: "La xuleta definitiva per notes" },
+            { code: "A2", id: "ploma", name: "Ploma Mística", desc: "Escriu visions divines" },
+
+            // Row 2: Renaissance
+            { code: "B1", id: "ulleres", name: "Ulleres", desc: "Per veure polifonia complexa" },
+            { code: "B2", id: "rosari", name: "Rosari", desc: "Per calmar l'ànima" },
+
+            // Row 3: Baroque
+            { code: "C1", id: "arcvioli", name: "Arc de Violí", desc: "Per tocar les 4 estacions" },
+            { code: "C2", id: "perrucablanca", name: "Perruca Blanca", desc: "Estil barroc matemàtic" },
+
+            // Row 4: Classicism
+            { code: "D1", id: "keytar", name: "Piano Fort", desc: "Teclat portàtil d'última generació" },
+            { code: "D2", id: "manualsimfonia", name: "Llibre Mestre", desc: "Manual 'Papa Haydn'" },
+
+            // Row 5: Romanticism
+            { code: "E1", id: "trompaorella", name: "Trompeta d'Olla", desc: "Amplificador analògic" },
+            { code: "E2", id: "valquiriacasc", name: "Casc de Valquíria", desc: "Utileria per òperes llargues" },
+
+            // Row 6: 20th C
+            { code: "F1", id: "matriu12", name: "Matriu 12 Tons", desc: "Graella per trencar regles" },
+            { code: "F2", id: "cargols", name: "Cargols i Goma", desc: "Kit de preparació de piano" }
+        ];
+
+        let currentInput = "";
+        let currentComposerIdx = 0;
+        let lives = 5;
+        let queue = [];
+        let pendingAction = null; // For modal callbacks
+
+        // RESPONSIVE SCALING
+        window.addEventListener('resize', resizeGame);
+        function resizeGame() {
+            const gameWidth = 1200;
+            const gameHeight = 800;
+            const scaleX = window.innerWidth / gameWidth;
+            const scaleY = window.innerHeight / gameHeight;
+            const scale = Math.min(scaleX, scaleY) * 0.95; // 95% margin
+
+            const layout = document.getElementById('game-layout');
+            layout.style.transform = `scale(${scale})`;
+            // Center horizontally/vertically via flex container usually, but transform origin helps
+            // layout.style.transformOrigin = "center center"; // Already centered by body flex
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            const layout = document.getElementById('game-layout');
+            layout.style.display = 'flex'; // Show game
+            resizeGame(); // Initial scale
+
+            document.getElementById('lives-display').style.display = 'block'; // Show lives
+            document.getElementById('bg-music').play().catch(e => console.log("Audio autoplay blocked"));
+            renderGrid();
+            queue = [...COMPOSERS].sort(() => Math.random() - 0.5); // Shuffle
+            lives = 5;
+            updateLives();
+            nextCustomer();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = "";
+            ITEMS.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'item-slot';
+                div.innerHTML = `
+                    <div class="tooltip">${item.name}: ${item.desc}</div>
+                    <img src="img/${item.id}.png" alt="${item.name}">
+                    <div class="item-code">${item.code}</div>
+                `;
+                div.onclick = () => { currentInput = item.code; updateLCD(); };
+                grid.appendChild(div);
+            });
+        }
+
+        function nextCustomer() {
+            if (queue.length === 0) {
+                document.getElementById('victory-screen').style.display = 'flex';
+                return;
+            }
+            const composer = queue.shift();
+
+            document.getElementById('composer-avatar').src = `img/${composer.id}.png`;
+            document.getElementById('dialogue-bubble').innerText = composer.dialog;
+            document.getElementById('status-msg').innerText = "ESPERANT...";
+
+            // Store current correct item code
+            const answer = ITEMS.find(i => i.id === composer.item);
+            document.getElementById('machine-container').dataset.target = answer.code;
+        }
+
+        /* KEYPAD LOGIC */
+        function pressKey(key) {
+            if (currentInput.length < 2) {
+                currentInput += key;
+                updateLCD();
+            }
+        }
+
+        function clearCode() {
+            currentInput = "";
+            updateLCD();
+        }
+
+        function updateLCD() {
+            document.getElementById('lcd-screen').innerText = currentInput || "---";
+        }
+
+        function vend() {
+            const target = document.getElementById('machine-container').dataset.target;
+            const lcd = document.getElementById('status-msg');
+
+            if (currentInput === target) {
+                // SUCCESS
+                lcd.style.color = "var(--led-green)";
+                lcd.innerText = "SERVINT...";
+                dispenseItem(target);
+            } else {
+                // FAIL
+                lcd.style.color = "var(--led-red)";
+                lcd.innerText = "ERROR CODE";
+                shakeMachine();
+                lives--;
+                updateLives();
+                currentInput = "";
+                updateLCD();
+                if (lives <= 0) gameOver();
+            }
+        }
+
+        function dispenseItem(code) {
+            const item = ITEMS.find(i => i.code === code);
+            const img = document.getElementById('dispensed-item');
+            img.src = `img/${item.id}.png`;
+            img.classList.add('drop');
+
+            setTimeout(() => {
+                showModal("COMPOSITOR CONTENT!", "Gràcies! Just el que necessitava! 🎵", () => {
+                    img.classList.remove('drop');
+                    currentInput = "";
+                    updateLCD();
+                    document.getElementById('status-msg').innerText = "SELECCIONA";
+                    document.getElementById('status-msg').style.color = "var(--led-green)";
+                    nextCustomer();
+                });
+            }, 1000);
+        }
+
+        function shakeMachine() {
+            const m = document.getElementById('machine-container');
+            m.style.transform = "translateX(5px)";
+            setTimeout(() => m.style.transform = "translateX(-5px)", 50);
+            setTimeout(() => m.style.transform = "translateX(5px)", 100);
+            setTimeout(() => m.style.transform = "translateX(0)", 150);
+        }
+
+        function updateLives() {
+            document.getElementById('lives-display').innerText = `ERRORS POSSIBLES: ${lives}`;
+            document.getElementById('lives-display').style.color = lives <= 2 ? "red" : "black";
+        }
+
+        function gameOver() {
+            document.getElementById('game-over-screen').style.display = 'flex';
+        }
+
+        /* MODAL LOGIC */
+        function showModal(title, msg, callback) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-msg').innerText = msg;
+            document.getElementById('custom-modal').classList.remove('modal-hidden');
+            pendingAction = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('modal-hidden');
+            if (pendingAction) {
+                pendingAction();
+                pendingAction = null;
+            }
+        }
+
+    </script>
+</body>
+
+</html>

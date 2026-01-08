@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venue Finder: L'Amfitrió</title>
+    <style>
+        :root {
+            --primary: #ff5a5f;
+            /* Airbnb Red */
+            --bg: #ffffff;
+            --text: #484848;
+            --gray: #767676;
+            --light-gray: #f7f7f7;
+            --success: #008489;
+            --error: #c13515;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Circular, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            color: var(--text);
+            background: var(--light-gray);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 15px 24px;
+            border-bottom: 1px solid #ebebeb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .level-indicator {
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        /* Main Content */
+        .main-container {
+            flex: 1;
+            display: flex;
+            padding: 24px;
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Left: Property Info */
+        .property-panel {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .property-img {
+            height: 250px;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 80px;
+            color: #555;
+        }
+
+        .property-details {
+            padding: 24px;
+        }
+
+        .property-title {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .property-desc {
+            font-size: 16px;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        /* Right: Inbox */
+        .inbox-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .inbox-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .message-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ebebeb;
+            transition: transform 0.2s;
+        }
+
+        .message-header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        .sender-info h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .sender-info span {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .message-body {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-accept {
+            background: white;
+            border: 1px solid var(--text);
+            color: var(--text);
+        }
+
+        .btn-accept:hover {
+            background: #f7f7f7;
+        }
+
+        .btn-reject {
+            background: white;
+            border: 1px solid var(--text);
+            color: var(--text);
+        }
+
+        .btn-reject:hover {
+            background: #f7f7f7;
+        }
+
+        /* Feedback States */
+        .message-card.accepted {
+            border: 2px solid var(--success);
+            background-color: #f0fff4;
+        }
+
+        .message-card.rejected {
+            border: 2px solid var(--error);
+            background-color: #fff5f5;
+        }
+
+        .message-card.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Volume Control */
+        .volume-control {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .volume-icon {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        input[type=range] {
+            width: 100px;
+            accent-color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">🏠 Venue Finder</div>
+        <div class="level-indicator" id="level-display">Nivell 1/6</div>
+    </header>
+
+    <div class="main-container">
+        <div class="property-panel">
+            <div class="property-img" id="prop-img">🏰</div>
+            <div class="property-details">
+                <div class="property-title" id="prop-title">La Catedral Gòtica</div>
+                <div class="property-desc" id="prop-desc">Sostres alts, molta reverb, sagrada. Ideal per a música
+                    religiosa i veus.</div>
+            </div>
+        </div>
+
+        <div class="inbox-panel">
+            <div class="inbox-title">Sol·licituds de Reserva (4 pendents)</div>
+            <div id="messages-list">
+                <!-- Messages injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO & CONTROLS -->
+    <audio id="bg-music" loop>
+        <source src="audio/Soft Corners at the Desk.m4a" type="audio/mpeg">
+    </audio>
+
+    <div class="volume-control">
+        <span class="volume-icon" onclick="game.toggleMute()">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5"
+            oninput="game.setVolume(this.value)">
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="modal-overlay">
+        <div class="modal">
+            <h1 style="color:var(--primary); font-size: 3rem; margin-bottom: 10px;">Venue Finder</h1>
+            <p style="font-size: 1.2rem; color: var(--gray); margin-bottom: 30px;">
+                Fes d'Amfitrió musical! Rebràs sol·licituds de músics de totes les èpoques.<br>
+                <strong>Accepta</strong> els que encaixin amb l'acústica i l'estil de l'espai.<br>
+                <strong>Rebutja</strong> els que siguin un desastre!<br><br>
+                <em style="color: var(--primary);">Recorda l'època històrica de les sol·licituds i els espais per
+                    encertar!</em>
+            </p>
+            <button class="btn btn-accept" onclick="startGame()"
+                style="background:var(--primary); color:white; border:none; font-size:1.5rem; padding: 15px 40px;">COMENÇAR</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="modal-title">Nivell Complet!</h2>
+            <p id="modal-msg">Has gestionat correctament totes les reserves.</p>
+            <div id="modal-actions">
+                <button id="btn-next" class="btn btn-accept" onclick="game.nextLevel()"
+                    style="background:var(--primary); color:white; border:none;">Següent Nivell</button>
+                <button id="btn-retry" class="btn btn-reject hidden" onclick="game.retryLevel()"
+                    style="background:var(--error); color:white; border:none;">Tornar-ho a provar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const HOUSES_DB = [
+            {
+                title: "La Catedral Gòtica",
+                desc: "Sostres alts, molta reverb, sagrada.",
+                img: "catedral.jpg",
+                requests: [
+                    { sender: "Cor de Monjos", icon: "monjo.png", msg: "Volem cantar Gregorià.", valid: true },
+                    { sender: "Guitarrista Heavy", icon: "rocker.png", msg: "Volem fer un concert de Metal.", valid: false },
+                    { sender: "Músic d'Orgue", icon: "barroc.png", msg: "Volem tocar l'Orgue Portàtil.", valid: false },
+                    { sender: "Orquestra Simfònica", icon: "directorclassic.png", msg: "Som 100 músics.", valid: false } // Too much reverb
+                ]
+            },
+            {
+                title: "El Palau de Màntua",
+                desc: "Sales privades, elegants, per a l'aristocràcia.",
+                img: "mantua.jpg",
+                requests: [
+                    { sender: "Consort de Violes", icon: "barroc.png", msg: "Música suau per a la cort.", valid: true }, // Keeping Violes as the one valid for Mantua (Monteverdi era)
+                    { sender: "Madrigalistes", icon: "directorclassic.png", msg: "Cantarem a 4 veus.", valid: false },
+                    { sender: "Cor de 500 persones", icon: "monjo.png", msg: "No hi cabem, però volem provar.", valid: false },
+                    { sender: "Músic de Jazz", icon: "jazz.png", msg: "Improvisació moderna.", valid: false }
+                ]
+            },
+            {
+                title: "El Saló dels Miralls",
+                desc: "Luxe, decoració daurada, acústica brillant.",
+                img: "miralls.jpg",
+                requests: [
+                    { sender: "Orquestra de Cambra", icon: "barroc.png", msg: "Amb Clavecí i corda.", valid: false },
+                    { sender: "J.B. Lully", icon: "barroc.png", msg: "Marcaré el ritme amb bastó.", valid: true },
+                    { sender: "Monjos Silenciosos", icon: "monjo.png", msg: "Volem austeritat.", valid: false },
+                    { sender: "Grup de Rock", icon: "rocker.png", msg: "Volem trencar els miralls.", valid: false }
+                ]
+            },
+            {
+                title: "Sala de Concerts Burgesa",
+                desc: "Equilibrada, acústica clara, públic pagant.",
+                img: "burgesa.jpg",
+                requests: [
+                    { sender: "Quartet de Corda", icon: "directorclassic.png", msg: "Música de Haydn.", valid: true },
+                    { sender: "Pianista i Orquestra", icon: "directorclassic.png", msg: "Concert per a piano.", valid: false },
+                    { sender: "Baix Continu", icon: "barroc.png", msg: "Només clavecí i cello.", valid: false },
+                    { sender: "DJ Electrònic", icon: "tecno.png", msg: "Festa rave.", valid: false }
+                ]
+            },
+            {
+                title: "Gran Teatre d'Òpera",
+                desc: "Foso per a orquestra gegant, teló de vellut.",
+                img: "opera.jpg",
+                requests: [
+                    { sender: "Richard Wagner", icon: "directorclassic.png", msg: "Òpera de les Valquíries.", valid: true },
+                    { sender: "Niccolò Paganini", icon: "barroc.png", msg: "Virtuosisme al violí.", valid: false },
+                    { sender: "Llaüt Solista", icon: "barroc.png", msg: "Tocaré molt fluixet.", valid: false },
+                    { sender: "Música Techno", icon: "tecno.png", msg: "Bum bum bum.", valid: false }
+                ]
+            },
+            {
+                title: "Estadi Olímpic",
+                desc: "Altaveus gegants, multituds.",
+                img: "estadi.jpg",
+                requests: [
+                    { sender: "The Beatles", icon: "rocker.png", msg: "Concert de Rock.", valid: true },
+                    { sender: "Quartet de Corda", icon: "directorclassic.png", msg: "Sense micròfons.", valid: false },
+                    { sender: "DJ", icon: "tecno.png", msg: "Música Electrònica.", valid: false },
+                    { sender: "Trobador", icon: "monjo.png", msg: "Cantaré sense amplificar.", valid: false }
+                ]
+            }
+        ];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            const audio = document.getElementById('bg-music');
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log("Audio autoplay prevented", e));
+        }
+
+        class Game {
+            constructor() {
+                this.currentLevel = 0;
+                this.score = 0; // Requests handled correctly in current level
+                this.initLevel();
+            }
+
+            initLevel() {
+                if (this.currentLevel >= HOUSES_DB.length) {
+                    alert("Joc Completat! Ets un Super Amfitrió!");
+                    this.currentLevel = 0;
+                }
+
+                const data = HOUSES_DB[this.currentLevel];
+                this.score = 0;
+
+                // UI Update
+                document.getElementById('level-display').textContent = `Nivell ${this.currentLevel + 1}/6`;
+
+                // Set Image instead of Emoji
+                const propImg = document.getElementById('prop-img');
+                propImg.innerHTML = `<img src="img/${data.img}" style="width:100%; height:100%; object-fit:cover;">`;
+
+                document.getElementById('prop-title').textContent = data.title;
+                document.getElementById('prop-desc').textContent = data.desc;
+
+                // Render Messages
+                const list = document.getElementById('messages-list');
+                list.innerHTML = '';
+
+                data.requests.forEach((req, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'message-card';
+                    card.innerHTML = `
+                        <div class="message-header">
+                            <div class="avatar">
+                                <img src="img/${req.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                            </div>
+                            <div class="sender-info">
+                                <h3>${req.sender}</h3>
+                                <span>Sol·licitud de Reserva</span>
+                            </div>
+                        </div>
+                        <div class="message-body">${req.msg}</div>
+                        <div class="actions">
+                            <button class="btn btn-accept" onclick="game.handleDecision(this, ${idx}, true)">✅ ACCEPTAR</button>
+                            <button class="btn btn-reject" onclick="game.handleDecision(this, ${idx}, false)">❌ REBUTJAR</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            }
+
+            handleDecision(btn, reqIdx, accepted) {
+                const data = HOUSES_DB[this.currentLevel];
+                const req = data.requests[reqIdx];
+                const card = btn.closest('.message-card');
+
+                // Logic:
+                // ONE correct option per level.
+                // WIN: Accepted == True AND Valid == True
+                // FAIL: Accepted == True AND Valid == False
+                // FAIL: Accepted == False AND Valid == True
+                // NEUTRAL: Accepted == False AND Valid == False (Just remove card)
+
+                if (accepted) {
+                    if (req.valid) {
+                        // WINNER
+                        card.classList.add('accepted');
+                        this.levelComplete();
+                    } else {
+                        // WRONG CHOICE
+                        card.classList.add('rejected');
+                        this.levelFail("Aquesta opció no és correcta per l'espai!");
+                    }
+                } else {
+                    // REJECTED
+                    if (req.valid) {
+                        // OOPS, YOU REJECTED THE ONE
+                        card.classList.add('rejected'); // You flagged it red basically
+                        this.levelFail("Era l'opció correcta! Se t'ha escapat.");
+                    } else {
+                        // Correctly rejected bad option
+                        card.classList.add('disabled');
+                        card.style.opacity = '0.5';
+                        btn.parentElement.innerHTML = '<span style="color:var(--gray)">Rebutjat correctament</span>';
+                    }
+                }
+            }
+
+            levelComplete() {
+                setTimeout(() => {
+                    document.getElementById('modal-title').textContent = "Nivell Complet!";
+                    document.getElementById('modal-msg').textContent = "Has trobat l'artista ideal!";
+                    document.getElementById('btn-next').classList.remove('hidden');
+                    document.getElementById('btn-retry').classList.add('hidden');
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                }, 500);
+            }
+
+            levelFail(reason) {
+                setTimeout(() => {
+                    document.getElementById('modal-title').textContent = "Has fallat!";
+                    document.getElementById('modal-title').style.color = "var(--error)";
+                    document.getElementById('modal-msg').textContent = reason;
+                    document.getElementById('btn-next').classList.add('hidden');
+                    document.getElementById('btn-retry').classList.remove('hidden');
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                }, 500);
+            }
+
+            retryLevel() {
+                document.getElementById('modal-overlay').classList.add('hidden');
+                // Reset styling
+                document.getElementById('modal-title').style.color = "initial";
+                this.initLevel();
+            }
+
+            nextLevel() {
+                document.getElementById('modal-overlay').classList.add('hidden');
+                this.currentLevel++;
+                this.initLevel();
+            }
+
+            setVolume(val) {
+                const audio = document.getElementById('bg-music');
+                audio.volume = val;
+
+                // Update Icon
+                const icon = document.querySelector('.volume-icon');
+                if (val == 0) icon.textContent = '🔇';
+                else if (val < 0.5) icon.textContent = '🔉';
+                else icon.textContent = '🔊';
+            }
+
+            toggleMute() {
+                const audio = document.getElementById('bg-music');
+                const slider = document.getElementById('volume-slider');
+                if (audio.volume > 0) {
+                    this.lastVolume = audio.volume;
+                    audio.volume = 0;
+                    slider.value = 0;
+                    this.setVolume(0);
+                } else {
+                    const vol = this.lastVolume || 0.5;
+                    audio.volume = vol;
+                    slider.value = vol;
+                    this.setVolume(vol);
+                }
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

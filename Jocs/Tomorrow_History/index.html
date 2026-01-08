@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomorrow-History: The Corrupted USB</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+            --neon-green: #00ff00;
+            --dark-bg: #050505;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: url('img/camerino.jpg') no-repeat center center;
+            /* Prompt created */
+            background-size: cover;
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Overlay to darken room */
+        #room-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+
+        /* --- USB INTERFACE --- */
+        #usb-interface {
+            position: relative;
+            z-index: 10;
+            width: 80%;
+            max-width: 900px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px rgba(0, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Glitch Effect Class */
+        .glitch {
+            position: relative;
+            color: var(--neon-pink);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px var(--neon-blue);
+        }
+
+        /* Timer */
+        #timer-container {
+            font-size: 4rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            margin: 20px 0;
+            border: 2px solid var(--neon-green);
+            padding: 10px 40px;
+            border-radius: 5px;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .timer-warning {
+            color: red !important;
+            border-color: red !important;
+            text-shadow: 0 0 10px red !important;
+            background: rgba(255, 0, 0, 0.1) !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Player */
+        #player-ui {
+            width: 100%;
+            border-top: 1px solid var(--glass);
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #track-info {
+            font-size: 1.2rem;
+            color: #ddd;
+            text-align: center;
+            min-height: 1.5em;
+        }
+
+        /* Audio Visualizer Fake */
+        #visualizer {
+            display: flex;
+            gap: 5px;
+            height: 50px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .bar {
+            width: 8px;
+            background: var(--neon-pink);
+            animation: equalize 0.5s infinite alternate;
+        }
+
+        @keyframes equalize {
+            0% {
+                height: 10%;
+            }
+
+            100% {
+                height: 100%;
+            }
+        }
+
+        /* Options Grid */
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn-option {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 15px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-option:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #game-screen {
+            display: none;
+            background: transparent;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-main {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            padding: 20px 50px;
+            background: transparent;
+            color: var(--neon-pink);
+            border: 3px solid var(--neon-pink);
+            box-shadow: 0 0 20px var(--neon-pink);
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn-main:hover {
+            background: var(--neon-pink);
+            color: white;
+            box-shadow: 0 0 40px var(--neon-pink);
+        }
+
+        /* Progress */
+        #progress {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="room-overlay"></div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen">
+        <h1 class="glitch" style="font-size:4rem; margin-bottom: 10px;">TOMORROW-HISTORY</h1>
+        <h2 style="color:var(--neon-blue); margin-bottom: 40px;">THE CORRUPTED USB</h2>
+        <p style="text-align:center; max-width:600px; margin-bottom:40px; line-height:1.6; font-size:1.2rem;">
+            Tinc l'USB amb les pistes pel festival... però s'ha corromput!<br>
+            Els metadates s'han perdut. Tinc <strong>5 minuts</strong> abans de sortir a l'escenari.<br>
+            M'has d'ajudar a reetiquetar els temes o la sessió serà un desastre.
+        </p>
+        <button class="btn-main" onclick="startGame()">CONNECTAR USB</button>
+    </div>
+
+    <!-- GAME INTERFACE -->
+    <div id="game-screen">
+        <div id="usb-interface">
+            <div id="progress">Pista <span id="current-track-num">1</span> / <span id="total-tracks">10</span></div>
+            <h2 class="glitch">RECUPERANT METADATES</h2>
+
+            <div id="timer-container">05:00</div>
+
+            <div id="player-ui">
+                <div id="visualizer">
+                    <div class="bar" style="animation-delay:0.1s"></div>
+                    <div class="bar" style="animation-delay:0.3s"></div>
+                    <div class="bar" style="animation-delay:0.5s"></div>
+                    <div class="bar" style="animation-delay:0.2s"></div>
+                    <div class="bar" style="animation-delay:0.4s"></div>
+                    <div class="bar" style="animation-delay:0.1s"></div>
+                    <div class="bar" style="animation-delay:0.3s"></div>
+                    <div class="bar" style="animation-delay:0.5s"></div>
+                </div>
+
+                <div id="track-info">Reproduint arxiu corrupte...</div>
+
+                <div id="options-grid">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="screen" style="display:none;">
+        <h1 id="end-title" class="glitch">SISTEMA RESTAURAT</h1>
+        <p id="end-msg" style="font-size:1.5rem; text-align:center; max-width:600px; margin-bottom:30px;">
+            Dades recuperades. La sessió està salvada!
+        </p>
+        <button class="btn-main" onclick="location.reload()">REINICIAR SISTEMA</button>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+        // --- DATA ---
+        // Filenames from directory listing
+        const RAW_FILES = [
+            "Ànonim- Organum.Tu patris sempiternu.m4a",
+            "Ànonim-Greensleeves.m4a",
+            "Bach-Toccata & Fugue D Minor, BWV 565.m4a",
+            "Beethoven- 5a Simfonia.m4a",
+            "Chopin - Nocturne op.9 No.2.m4a",
+            "Franz Joseph Haydn - ＂Simfonia Sorpresa＂ (Symphony no. 94).m4a",
+            "Haendel- Lascia ch'io pianga.m4a",
+            "Hildegard of Bingen： De Spiritu Sancto (Holy Spirit, The Quickener Of Life).m4a",
+            "Jellybean Fenderson-Oscilloscope Music.m4a",
+            "Mozart-Pequeña Serenata Nocturna.m4a",
+            "P. Tchaikovsky - Pas de Deux ('The Nutcracker').m4a",
+            "Palestrina-O bone Jesu.m4a",
+            "Richard Wagner- Cavalcada de les Valkiries.m4a",
+            "Schoemberg-Tres piezas para piano.m4a",
+            "Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a",
+            "Trobador anònim-Fi d'amor.m4a",
+            "Verdelot-Con soave parlar.m4a",
+            "Vivaldi- Four Seasons： Winter (L'Inverno).m4a"
+        ];
+
+        let playList = [];
+        let currentIndex = 0;
+        let timeLeft = 300; // 5 minutes
+        let timerInterval;
+        let isGameOver = false;
+        let isFrozen = false;
+
+        // --- INIT ---
+        function parseFiles() {
+            return RAW_FILES.map(file => {
+                // Remove mp3 and clean up
+                let clean = file.replace('.m4a', '');
+                let parts = clean.split(/[-–—:]/); // Split by various dash types or colons
+
+                let composer = "Desconegut";
+                let title = clean;
+
+                if (parts.length >= 2) {
+                    composer = parts[0].trim();
+                    // Join the rest in case title has hyphens
+                    title = parts.slice(1).join(' ').trim();
+                }
+
+                // Cleanup common dirty chars
+                title = title.replace(/[＂"']/g, '');
+
+                return {
+                    src: '../../assets/audio_shared/' + file,
+                    composer: composer,
+                    title: title,
+                    label: `${composer} - ${title}`
+                };
+            });
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+
+            // Randomize Playlist
+            let allTracks = parseFiles();
+            // Shuffle
+            playList = allTracks.sort(() => Math.random() - 0.5); // Play all or subset? "Tinc 5 minuts". Let's do ALL.
+
+            document.getElementById('total-tracks').innerText = playList.length;
+
+            currentIndex = 0;
+            timeLeft = 300;
+            isGameOver = false;
+
+            startTimer();
+            loadTrack(currentIndex);
+        }
+
+        // --- ENGINE ---
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    gameOver(false);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            let str = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            const el = document.getElementById('timer-container');
+            el.innerText = str;
+
+            if (timeLeft < 30) el.classList.add('timer-warning');
+            else el.classList.remove('timer-warning');
+        }
+
+        function loadTrack(idx) {
+            if (idx >= playList.length) {
+                gameOver(true);
+                return;
+            }
+
+            document.getElementById('current-track-num').innerText = idx + 1;
+
+            let track = playList[idx];
+            let audio = document.getElementById('audio-player');
+            audio.src = track.src;
+            audio.play().catch(e => console.log("Autoplay block"));
+
+            // Generate Options
+            generateOptions(track);
+        }
+
+        function generateOptions(correctTrack) {
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+
+            // Get 3 random distractors
+            let distractors = playList.filter(t => t.src !== correctTrack.src);
+            distractors.sort(() => Math.random() - 0.5);
+            let wrong = distractors.slice(0, 3);
+
+            let options = [correctTrack, ...wrong];
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                let btn = document.createElement('div');
+                btn.className = 'btn-option';
+                btn.innerText = opt.label;
+                btn.onclick = () => handleAnswer(opt === correctTrack, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect, btn) {
+            if (isGameOver || isFrozen) return;
+
+            if (isCorrect) {
+                btn.style.background = 'var(--neon-green)';
+                btn.style.color = '#000';
+                currentIndex++;
+                setTimeout(() => loadTrack(currentIndex), 500); // Quick transition
+            } else {
+                // FREEZE PENALTY
+                isFrozen = true;
+                btn.style.background = 'red';
+                btn.style.borderColor = 'red';
+
+                // Visual feedback for freeze
+                const container = document.getElementById('usb-interface');
+                const originalBorder = container.style.borderColor;
+                container.style.borderColor = 'red';
+                container.style.boxShadow = '0 0 50px red';
+
+                const freezeMsg = document.createElement('div');
+                freezeMsg.id = 'freeze-overlay';
+                freezeMsg.style.position = 'absolute';
+                freezeMsg.style.top = '0'; freezeMsg.style.left = '0';
+                freezeMsg.style.width = '100%'; freezeMsg.style.height = '100%';
+                freezeMsg.style.background = 'rgba(255,0,0,0.2)';
+                freezeMsg.style.display = 'flex';
+                freezeMsg.style.alignItems = 'center';
+                freezeMsg.style.justifyContent = 'center';
+                freezeMsg.style.color = 'red';
+                freezeMsg.style.fontSize = '3rem';
+                freezeMsg.style.fontWeight = 'bold';
+                freezeMsg.style.textShadow = '0 0 20px black';
+                freezeMsg.style.zIndex = '50';
+                freezeMsg.innerText = "SYSTEM FROZEN (10s)";
+                container.appendChild(freezeMsg);
+
+                // Disable all buttons visually
+                document.querySelectorAll('.btn-option').forEach(b => b.style.opacity = '0.5');
+
+                // Countdown for freeze
+                let freezeTime = 10;
+                let freezeInterval = setInterval(() => {
+                    freezeTime--;
+                    freezeMsg.innerText = `SYSTEM FROZEN (${freezeTime}s)`;
+                    if (freezeTime <= 0) clearInterval(freezeInterval);
+                }, 1000);
+
+                setTimeout(() => {
+                    isFrozen = false;
+                    container.style.borderColor = '';
+                    container.style.boxShadow = '';
+                    freezeMsg.remove();
+                    document.querySelectorAll('.btn-option').forEach(b => b.style.opacity = '1');
+                    btn.style.background = 'rgba(255,0,0,0.1)'; // Reset the wrong button visual lightly
+                }, 10000);
+            }
+        }
+
+        function gameOver(win) {
+            clearInterval(timerInterval);
+            document.getElementById('audio-player').pause();
+            isGameOver = true;
+
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'flex';
+
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if (win) {
+                title.innerText = "SISTEMA RESTAURAT";
+                title.style.color = "var(--neon-green)";
+                msg.innerText = "Ja pots sortir a l'escenari a fer el teu set. Segur que serà un èxit!";
+            } else {
+                title.innerText = "ERROR CRÍTIC";
+                title.style.color = "red";
+                title.style.textShadow = "0 0 20px red";
+                msg.innerText = "No t'ha donat temps! Surtes a l'escenari sense els metadates i les mescles són un fracàs absolut.";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

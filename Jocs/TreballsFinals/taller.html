@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Taller Artesà de la Música</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap');
+
+        :root {
+            --bg-color: #fdfbf7;
+            --text-color: #444;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --hover-transform: translateY(-5px);
+
+            /* Era Colors (Pastel + Accent) */
+            --medieval-bg: #fdf2e9;
+            --medieval-accent: #d35400;
+            --renaissance-bg: #e8f8f5;
+            --renaissance-accent: #16a085;
+            --baroque-bg: #f4ecf7;
+            --baroque-accent: #8e44ad;
+            --classicism-bg: #fdedec;
+            --classicism-accent: #c0392b;
+            --romanticism-bg: #ebf5fb;
+            --romanticism-accent: #2980b9;
+            --xx-bg: #f2f3f4;
+            --xx-accent: #2c3e50;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            color: #2c3e50;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+            border-bottom: 5px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: var(--hover-transform);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin: 0 0 10px;
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: #777;
+        }
+
+        /* Era Specific Styles */
+        .card[data-era="medieval"] {
+            border-color: var(--medieval-accent);
+        }
+
+        .card[data-era="medieval"] .card-icon {
+            color: var(--medieval-accent);
+        }
+
+        .card[data-era="renaissance"] {
+            border-color: var(--renaissance-accent);
+        }
+
+        .card[data-era="renaissance"] .card-icon {
+            color: var(--renaissance-accent);
+        }
+
+        .card[data-era="baroque"] {
+            border-color: var(--baroque-accent);
+        }
+
+        .card[data-era="baroque"] .card-icon {
+            color: var(--baroque-accent);
+        }
+
+        .card[data-era="classicism"] {
+            border-color: var(--classicism-accent);
+        }
+
+        .card[data-era="classicism"] .card-icon {
+            color: var(--classicism-accent);
+        }
+
+        .card[data-era="romanticism"] {
+            border-color: var(--romanticism-accent);
+        }
+
+        .card[data-era="romanticism"] .card-icon {
+            color: var(--romanticism-accent);
+        }
+
+        .card[data-era="xx"] {
+            border-color: var(--xx-accent);
+        }
+
+        .card[data-era="xx"] .card-icon {
+            color: var(--xx-accent);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: #fff;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            transform: translateY(50px);
+            transition: transform 0.3s;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #eee;
+        }
+
+        .modal-title {
+            font-size: 2.5rem;
+            margin: 0;
+            color: #333;
+        }
+
+        .modal-concept {
+            font-size: 1.2rem;
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        .modal-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .materials-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Presentation Mode Styles */
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .step-slide {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.3s;
+            flex-grow: 1;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .step-slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-number {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--era-color);
+            opacity: 0.2;
+            margin-bottom: -20px;
+        }
+
+        .step-title {
+            font-size: 2rem;
+            color: var(--era-color);
+            margin-bottom: 20px;
+        }
+
+        .step-description {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            color: #555;
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        .materials-slide {
+            text-align: left;
+        }
+
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .material-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #eee;
+        }
+
+        /* Navigation Controls */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .nav-btn {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            font-family: 'Quicksand', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.05);
+            background: #555;
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #ddd;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: var(--era-color);
+            transform: scale(1.2);
+        }
+
+        .challenge-slide {
+            background: #fff3cd;
+            border: 2px solid #ffeeba;
+            border-radius: 20px;
+            color: #856404;
+        }
+
+        /* Print Button hidden in presentation mode, visible in print */
+        .print-btn-modal {
+            display: none;
+            /* Only show on last slide or header */
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>EL TALLER ARTESÀ</h1>
+        <div class="subtitle">CONSTRUEIX LA HISTÒRIA DE LA MÚSICA</div>
+    </header>
+
+    <div class="container">
+        <div class="grid">
+            <!-- Medieval -->
+            <div class="card" data-era="medieval" onclick="openModal('medieval')">
+                <div class="card-icon">🏰</div>
+                <h2>Edat Mitjana</h2>
+                <p>La Il·luminació del Còdex</p>
+            </div>
+
+            <!-- Renaissance -->
+            <div class="card" data-era="renaissance" onclick="openModal('renaissance')">
+                <div class="card-icon">🧶</div>
+                <h2>Renaixement</h2>
+                <p>El Teixit Polifònic</p>
+            </div>
+
+            <!-- Baroque -->
+            <div class="card" data-era="baroque" onclick="openModal('baroque')">
+                <div class="card-icon">✨</div>
+                <h2>Barroc</h2>
+                <p>L'Horror Vacui</p>
+            </div>
+
+            <!-- Classicism -->
+            <div class="card" data-era="classicism" onclick="openModal('classicism')">
+                <div class="card-icon">✂️</div>
+                <h2>Classicisme</h2>
+                <p>Kirigami Sonor</p>
+            </div>
+
+            <!-- Romanticism -->
+            <div class="card" data-era="romanticism" onclick="openModal('romanticism')">
+                <div class="card-icon">💧</div>
+                <h2>Romanticisme</h2>
+                <p>La Taca de l'Ànima</p>
+            </div>
+
+            <!-- 20th Century -->
+            <div class="card" data-era="xx" onclick="openModal('xx')">
+                <div class="card-icon">🧱</div>
+                <h2>Segle XX</h2>
+                <p>Frottage de Textures</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TEMPLATE -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <div id="modal-content-dynamic">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const db = {
+            medieval: {
+                title: "La Il·luminació del Còdex",
+                concept: "La música com a tresor sagrat i únic.",
+                color: "#d35400",
+                materials: [
+                    "Cartolina negra o marró (simulant pergamí antic)",
+                    "Retoladors daurats o platejats",
+                    "Regle",
+                    "Llapis i goma"
+                ],
+                steps: [
+                    "<strong>Prepara el suport:</strong> Agafa la cartolina fosca. Aquesta serà la pàgina del teu còdex antic.",
+                    "<strong>La Lletra Capital:</strong> A l'esquerra del full, dibuixa la inicial del teu nom. Ha de ser GEGANT i ocupar gairebé tota l'alçada. Fes-la gruixuda, com si fos una columna.",
+                    "<strong>El Tetragrama:</strong> Al costat de la lletra, dibuixa 4 línies horitzontals vermelles amb el regle. Deixa espai entre elles per poder dibuixar-hi a dins.",
+                    "<strong>Els Neumes:</strong> Dibuixa els símbols musicals (quadradets negres o daurats) a sobre de les línies. Recorda que antigament les notes eren quadrades!",
+                    "<strong>Il·luminació:</strong> Ara ve la màgia. Omple la teva lletra gegant amb motius vegetals (enredaderes, fulles) o geomètrics utilitzant el retolador daurat. Que brilli!"
+                ],
+                challenge: "REPTE: Aconsegueix que sembli or real i que tingui un aire misteriós i antic."
+            },
+            renaissance: {
+                title: "El Teixit Polifònic",
+                concept: "Polifonia = Teixir veus independents.",
+                color: "#16a085",
+                materials: [
+                    "Foli blanc (base)",
+                    "Tires de paper de 3 colors diferents",
+                    "Tisores",
+                    "Pegament de barra"
+                ],
+                steps: [
+                    "<strong>Prepara el temps:</strong> Agafa el foli blanc. Fes talls horitzontals paral·lels cada 2cm, però ATENCIÓ: no arribis al final del paper! Deixa un marge sense tallar perquè el foli no es trenqui.",
+                    "<strong>Prepara les veus:</strong> Talla tires llargues de paper de colors. Cada color representarà una veu diferent (Soprano, Alt, Tenor...).",
+                    "<strong>Teixit Musical:</strong> Comença a passar la primera tira de color a través dels talls del foli blanc: una vegada per sobre, una vegada per sota (Over-Under).",
+                    "<strong>Contrapunt:</strong> Agafa la segona tira d'un altre color. Fes el contrari que la primera: si la primera passava per sota, aquesta ha de passar per sobre.",
+                    "<strong>Acabat:</strong> Quan tinguis tot el foli ple de tires entrellaçades, fixa els extrems amb una mica de pegament perquè no es moguin."
+                ],
+                challenge: "REPTE: Assegura't que mai hi hagi dues tires del mateix color tocant-se. Tot ha d'estar perfectament alternat."
+            },
+            baroque: {
+                title: "L'Horror Vacui (Repujat)",
+                concept: "L'Ornamentació i el luxe. No deixar espais buits.",
+                color: "#8e44ad",
+                materials: [
+                    "Paper d'Alumini de cuina",
+                    "Un tros de cartró quadrat (base)",
+                    "Boli sense tinta (o un punxó de punta rodona)",
+                    "Pegament de barra"
+                ],
+                steps: [
+                    "<strong>La Base de Plata:</strong> Posa pegament al cartró i enganxa-hi el paper d'alumini. Allisa-ho molt bé amb un drap perquè quedi com un mirall, sense arrugues.",
+                    "<strong>El Motiu Central:</strong> Amb el boli (sense tinta) o el punxó, dibuixa una gran Clau de Sol o una nota musical al centre. Apreta fort perquè quedi marcat en relleu, però sense trencar el paper.",
+                    "<strong>Horror Vacui:</strong> Aquest és el pas més important. El Barroc té por al buit. Has d'omplir TOT el fons al voltant de la clau amb espirals, punts, línies ondulades i sanefes.",
+                    "<strong>Detalls Finals:</strong> Repassa les línies principals perquè el relleu es noti bé al tacte."
+                ],
+                challenge: "REPTE: No pot quedar ni un sol mil·límetre quadrat llis. Tot ha d'estar decorat i texturat."
+            },
+            classicism: {
+                title: "Kirigami Sonor",
+                concept: "Simetria, Equilibri i Frase Quadrada (A-B-A).",
+                color: "#c0392b",
+                materials: [
+                    "Paper quadrat de colors vius",
+                    "Tisores",
+                    "Cartolina negra (per al fons)",
+                    "Pegament"
+                ],
+                steps: [
+                    "<strong>L'Eix de Simetria:</strong> Doblega el paper quadrat exactament per la meitat. Marca bé el plec. Això representa l'equilibri clàssic.",
+                    "<strong>La Melodia:</strong> Dibuixa un perfil melòdic (una línia corba o punxeguda) en un dels costats, començant i acabant en el plec.",
+                    "<strong>El Tall:</strong> Retalla seguint la línia que has dibuixat. IMPORTANT: No tallis tot el plec, o el paper es separarà en dos trossos!",
+                    "<strong>La Revelació:</strong> Obre el paper. Veuràs que la forma de l'esquerra és idèntica a la de la dreta. És una estructura A-B-A perfecta.",
+                    "<strong>Contrast:</strong> Enganxa la teva figura simètrica sobre la cartolina negra perquè ressalti la forma."
+                ],
+                challenge: "REPTE: La simetria ha de ser matemàticament perfecta. Si doblegues de nou, ha de coincidir exactament."
+            },
+            romanticism: {
+                title: "La Taca de l'Ànima",
+                concept: "Subjectivitat, emoció i ruptura de la forma.",
+                color: "#2980b9",
+                materials: [
+                    "Foli blanc",
+                    "Retolador negre, Tinta xinesa o Aquarel·la líquida",
+                    "Una mica d'aigua (opcional)"
+                ],
+                steps: [
+                    "<strong>El Plec Ocult:</strong> Doblega el foli per la meitat i torna'l a obrir. Aquesta línia serà el nostre eix secret.",
+                    "<strong>L'Emoció (La Taca):</strong> En una de les meitats, deixa caure unes gotes de tinta o fes un gargot ràpid i intens amb el retolador. No pensis, deixa que surti l'emoció!",
+                    "<strong>El Destí:</strong> Abans que s'assequi, tanca el foli ràpidament i apreta fort amb la mà. Pots fregar una mica perquè la tinta s'escampi.",
+                    "<strong>La Revelació (Pareidòlia):</strong> Obre el foli a poc a poc. Què hi veus? Un monstre? Una papallona fosca? Una tempesta?",
+                    "<strong>El Títol:</strong> Els romàntics posaven títols poètics. Escriu a sota què representa per a tu."
+                ],
+                challenge: "REPTE: Troba una forma figurativa en la teva taca i posa-li un títol tràgic (ex: 'El Destí', 'La Solitud')."
+            },
+            xx: {
+                title: "Frottage (Caçadors de Textures)",
+                concept: "Música Concreta. El soroll de la realitat.",
+                color: "#2c3e50",
+                materials: [
+                    "Foli blanc (millor si és finet)",
+                    "Cera tova (tipus Manley) o Llapis tou (2B o més)",
+                    "El Món Real (parets, terres, monedes...)"
+                ],
+                steps: [
+                    "<strong>La Recerca:</strong> Aixeca't i busca superfícies amb textura rugosa: la sola de la teva sabata, una paret de totxos, una moneda, l'escorça d'un arbre...",
+                    "<strong>La Captura:</strong> Posa el foli a sobre de la textura. Amb la cera o el llapis tombat (no de punta!), frega suaument sobre el paper. Veuràs com apareix la textura màgicament.",
+                    "<strong>La Composició:</strong> No facis només una textura. Mou el paper i captura'n una altra al costat, o a sobre. Barreja textures com si fossin instruments d'una orquestra.",
+                    "<strong>L'Abstracció:</strong> No dibuixis res figuratiu (ni cases, ni cares). Ha de ser una composició abstracta feta només de 'sorolls' visuals."
+                ],
+                challenge: "REPTE: Crea una obra completa i complexa sense haver dibuixat ni una sola línia directament."
+            }
+        };
+
+        const overlay = document.getElementById('modal-overlay');
+        const contentDiv = document.getElementById('modal-content-dynamic');
+        let currentStepIndex = 0;
+        let currentEraData = null;
+
+        function parseStep(stepString) {
+            const parts = stepString.split('</strong>');
+            if (parts.length > 1) {
+                return {
+                    title: parts[0].replace('<strong>', '').replace(':', ''),
+                    desc: parts[1].trim()
+                };
+            }
+            return { title: '', desc: stepString };
+        }
+
+        function openModal(era) {
+            currentEraData = db[era];
+            currentStepIndex = 0;
+            renderModal();
+            overlay.classList.add('active');
+        }
+
+        function renderModal() {
+            const data = currentEraData;
+            contentDiv.style.setProperty('--era-color', data.color);
+
+            const totalSlides = 1 + data.steps.length + 1;
+
+            let slideContent = '';
+
+            if (currentStepIndex === 0) {
+                // MATERIALS SLIDE
+                let materialsHtml = data.materials.map(m => `<div class="material-item">📌 ${m}</div>`).join('');
+                slideContent = `
+                    <div class="step-slide active materials-slide">
+                        <h2 style="color: ${data.color}; font-size: 2.5rem; margin-bottom: 10px;">${data.title}</h2>
+                        <p style="font-style: italic; color: #666; margin-bottom: 30px;">${data.concept}</p>
+                        <h3 style="color: ${data.color}">🛠 MATERIALS NECESSARIS</h3>
+                        <div class="materials-grid">${materialsHtml}</div>
+                    </div>
+                `;
+            } else if (currentStepIndex === totalSlides - 1) {
+                // CHALLENGE SLIDE
+                slideContent = `
+                    <div class="step-slide active challenge-slide">
+                        <div style="font-size: 5rem; margin-bottom: 20px;">🏆</div>
+                        <h2 style="color: #856404; font-size: 2.5rem;">EL REPTE FINAL</h2>
+                        <p class="step-description" style="font-weight: bold; color: #856404;">${data.challenge}</p>
+                        <button class="print-btn" onclick="window.print()" style="margin-top: 30px; background: #856404; color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 1.2rem; cursor: pointer;">🖨 IMPRIMIR GUIA COMPLETA</button>
+                    </div>
+                `;
+            } else {
+                // STEP SLIDE
+                const stepData = parseStep(data.steps[currentStepIndex - 1]);
+                slideContent = `
+                    <div class="step-slide active">
+                        <div class="step-number">${currentStepIndex}</div>
+                        <h2 class="step-title">${stepData.title}</h2>
+                        <p class="step-description">${stepData.desc}</p>
+                    </div>
+                `;
+            }
+
+            // Navigation & Dots
+            let dotsHtml = '';
+            for (let i = 0; i < totalSlides; i++) {
+                dotsHtml += `<div class="dot ${i === currentStepIndex ? 'active' : ''}"></div>`;
+            }
+
+            const html = `
+                ${slideContent}
+                
+                <div class="nav-controls">
+                    <button class="nav-btn" onclick="prevStep()" ${currentStepIndex === 0 ? 'disabled' : ''}>
+                        ⬅ Enrere
+                    </button>
+                    
+                    <div class="progress-dots">
+                        ${dotsHtml}
+                    </div>
+
+                    <button class="nav-btn" onclick="nextStep()" ${currentStepIndex === totalSlides - 1 ? 'disabled' : ''}>
+                        Següent ➡
+                    </button>
+                </div>
+            `;
+
+            contentDiv.innerHTML = html;
+        }
+
+        function nextStep() {
+            const totalSlides = 1 + currentEraData.steps.length + 1;
+            if (currentStepIndex < totalSlides - 1) {
+                currentStepIndex++;
+                renderModal();
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderModal();
+            }
+        }
+
+        function closeModal() {
+            overlay.classList.remove('active');
+        }
+
+        // Close on click outside
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeModal();
+        });
+
+    </script>
+</body>
+
+</html>

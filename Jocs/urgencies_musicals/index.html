@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urgències Musicals</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #00a8ff;
+            --alert-color: #e84118;
+            --success-color: #4cd137;
+            --bg-color: #f5f6fa;
+            --text-color: #2f3640;
+            --monitor-bg: #000000;
+            --monitor-line: #4cd137;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* Header / HUD */
+        #header {
+            background: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-box {
+            background: #dcdde1;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        /* Main Game Area */
+        #game-container {
+            flex: 1;
+            display: flex;
+            position: relative;
+            background: #dcdde1;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-era {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 0 #0097e6;
+        }
+
+        .btn-era:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-era:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* Operating Room */
+        #operating-room {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Monitor */
+        #monitor {
+            width: 100%;
+            max-width: 800px;
+            height: 150px;
+            background: var(--monitor-bg);
+            border: 4px solid #555;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #ecg-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="150" viewBox="0 0 100 150"><path d="M0 75 L20 75 L30 20 L40 130 L50 75 L100 75" fill="none" stroke="%234cd137" stroke-width="2"/></svg>');
+            background-repeat: repeat-x;
+            animation: ecg-scroll 1s linear infinite;
+        }
+
+        @keyframes ecg-scroll {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: -100px 0;
+            }
+        }
+
+        .flatline {
+            background: none !important;
+        }
+
+        .flatline::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--alert-color);
+        }
+
+        /* Patient Info */
+        #patient-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: left;
+            border-left: 10px solid var(--primary-color);
+        }
+
+        #symptom-text {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        /* Treatments */
+        #treatments {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .btn-treatment {
+            background: white;
+            border: 2px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .btn-treatment:hover {
+            border-color: var(--primary-color);
+            background: #f0f9ff;
+        }
+
+        .btn-treatment i {
+            font-size: 2rem;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        #feedback-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s;
+        }
+
+        #feedback-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .show-feedback {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        .show-feedback #feedback-content {
+            transform: scale(1) !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Instructions List */
+        .instructions {
+            text-align: left;
+            background: #ffeaa7;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #fdcb6e;
+            margin: 20px 0;
+            max-width: 600px;
+            color: #d35400;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        #btn-start-game {
+            background: #0984e3;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #006eb3;
+            transition: transform 0.1s;
+        }
+
+        #btn-start-game:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+    </style>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div id="header">
+        <h1><i class="fas fa-user-md"></i> Urgències Musicals</h1>
+        <div class="stats">
+            <div class="stat-box">PACIENTS: <span id="score">0</span>/10</div>
+            <div class="stat-box" style="color: var(--alert-color)">REPUTACIÓ: <span id="reputation">100</span>%</div>
+        </div>
+    </div>
+
+    <div id="game-container">
+
+        <!-- Main Menu -->
+        <div id="main-menu"
+            style="position: absolute; width: 100%; height: 100%; background: white; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+            <h1 style="font-size: 3rem; margin-bottom: 10px;"><i class="fas fa-ambulance"></i> URGÈNCIES MUSICALS</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">Servei de Triatge Històric</p>
+
+            <div class="instructions">
+                <h3>📋 PROTOCOL D'ACTUACIÓ:</h3>
+                <ul>
+                    <li>Tens <strong>10 Pacients</strong> per torn. No perdis temps.</li>
+                    <li>Cada pacient té un problema musical real de la seva època.</li>
+                    <li>Diagnostica bé per guanyar <strong>Reputació</strong>.</li>
+                    <li>Si la Reputació cau a 0, et retirarem la llicència.</li>
+                    <li>Completa el torn amb >50% de reputació per superar l'època! ✅</li>
+                </ul>
+            </div>
+
+            <button id="btn-start-game">COMENÇAR TORN <i class="fas fa-play"></i></button>
+        </div>
+
+        <!-- Era Selector (Start Screen) -->
+        <div id="start-screen" class="hidden">
+            <h1>Sala d'Espera</h1>
+            <p>Tria l'època dels pacients que vols atendre avui, Doctor.</p>
+            <div class="era-grid">
+                <button class="btn-era" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="btn-era" data-era="renaixement">Renaixement</button>
+                <button class="btn-era" data-era="barroc">Barroc</button>
+                <button class="btn-era" data-era="classicisme">Classicisme</button>
+                <button class="btn-era" data-era="romanticisme">Romanticisme</button>
+                <button class="btn-era" data-era="segle_xx">Segle XX</button>
+            </div>
+        </div>
+
+        <!-- Operating Room -->
+        <div id="operating-room" class="hidden">
+            <div id="monitor">
+                <div id="ecg-line"></div>
+            </div>
+
+            <div id="patient-card">
+                <h3 style="color: #7f8c8d; margin: 0;">INFORME DEL PACIENT</h3>
+                <div id="symptom-text">...</div>
+            </div>
+
+            <div id="treatments">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <div id="feedback-content">
+                <div id="feedback-icon"></div>
+                <h2 id="feedback-title"></h2>
+                <p id="feedback-msg"></p>
+                <button class="btn-era" id="next-btn">SEGÜENT PACIENT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Structure: Era -> Cases -> { symptom, treatments: [{ text, type }] }
+        // Types: correct, wrong, irrelevant
+
+        const DB = {
+            edat_mitjana: [
+                {
+                    s: "El pacient diu que vol compondre una simfonia per a orquestra.", t: [
+                        { txt: "Dosi de Realitat: Això és del Classicisme. Fes Cant Gregorià.", type: "correct" },
+                        { txt: "Dosi de Futur: Dona-li una batuta.", type: "wrong" },
+                        { txt: "Operació: Treure-li les amígdales.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Presenta febre alta i canta en polifonia complexa a 4 veus.", t: [
+                        { txt: "Tractament: Simplificar a Monodia (una sola veu).", type: "correct" },
+                        { txt: "Tractament: Afegir-hi més veus.", type: "wrong" },
+                        { txt: "Recepta: Aigua amb llimona.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El monjo té al·lucinacions i veu notes rodones i blanques.", t: [
+                        { txt: "Correcció: Ensenyar-li Neumes quadrats.", type: "correct" },
+                        { txt: "Correcció: Donar-li ulleres 3D.", type: "irrelevant" },
+                        { txt: "Animar-lo a escriure Jazz.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "El Trobador vol tocar el Piano de Cua al castell.", t: [
+                        { txt: "Canvi d'instrument: Donar-li un Llaüt o Viola.", type: "correct" },
+                        { txt: "Afina-li el piano.", type: "wrong" },
+                        { txt: "Tallar-li les ungles.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient creu que la música és per expressar els seus sentiments personals.", t: [
+                        { txt: "Recordatori: La música és per a Déu (Teocentrisme).", type: "correct" },
+                        { txt: "Dona-li un diari personal.", type: "wrong" },
+                        { txt: "Posa-li una tireta.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "S'ha empassat un metrònom i marca un compàs de 4/4 perfecte.", t: [
+                        { txt: "Tractament: Tornar al Ritme Lliure del text.", type: "correct" },
+                        { txt: "Acelerar el metrònom.", type: "wrong" },
+                        { txt: "Operació d'estómac.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol signar la seva obra amb el seu nom en lletres de neó.", t: [
+                        { txt: "Cura d'Humilitat: L'autor és anònim.", type: "correct" },
+                        { txt: "Fes-li un logo.", type: "wrong" },
+                        { txt: "Renta-li les mans.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Està intentant ballar un Vals a l'església.", t: [
+                        { txt: "Prohibició: Aquí només es prega (Cant Pla).", type: "correct" },
+                        { txt: "Posa-li un frac.", type: "wrong" },
+                        { txt: "Mira-li la pressió.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Diu que vol imprimir 1000 còpies de la seva partitura.", t: [
+                        { txt: "Realitat: Copia-ho a mà al Scriptorium.", type: "correct" },
+                        { txt: "Envia-ho per PDF.", type: "wrong" },
+                        { txt: "Dona-li tinta xina.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient Guido d'Arezzo ha oblidat el nom de les notes.", t: [
+                        { txt: "Recordatori: Ut, Re, Mi, Fa, Sol, La.", type: "correct" },
+                        { txt: "Do, Re, Mi, Fa, Sol, La, Si.", type: "wrong" },
+                        { txt: "A, B, C, D, E, F, G.", type: "irrelevant" }
+                    ]
+                },
+                // ... More cases would follow, filling up to 20 per era. For brevity in this artifact, I'll include 10 solid ones per era which loops if needed or I can generate more.
+                // Let's add 5 more to be safe.
+                {
+                    s: "Vol fer un concert públic pagant entrada.", t: [
+                        { txt: "Impossible: La música és funcional (religiosa/cortesana).", type: "correct" },
+                        { txt: "Ven les entrades a Ticketmaster.", type: "wrong" },
+                        { txt: "Posa-li una vacuna.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Està cantant en llatí però vol fer-ho en italià.", t: [
+                        { txt: "Permís: Si ets Trobador, pots fer-ho (llengua vulgar).", type: "correct" },
+                        { txt: "Prohibit: Només llatí sempre.", type: "wrong" },
+                        { txt: "Gargares amb mel.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Té una obsessió amb la 'Ars Nova' però viu al segle X.", t: [
+                        { txt: "Diagnòstic: Viatge al futur. Torna a l'Ars Antiqua.", type: "correct" },
+                        { txt: "Deixa'l fer.", type: "wrong" },
+                        { txt: "Posa-li gel.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol tocar el Sac de Gemecs a la missa.", t: [
+                        { txt: "Expulsió: Instruments prohibits, només veu.", type: "correct" },
+                        { txt: "Dona-li un amplificador.", type: "wrong" },
+                        { txt: "Canvia-li la bossa.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient Alfons X el Savi no sap a qui dedicar les cançons.", t: [
+                        { txt: "Consell: A la Verge Maria (Cantigas).", type: "correct" },
+                        { txt: "A la seva nòvia.", type: "wrong" },
+                        { txt: "Al seu cavall.", type: "irrelevant" }
+                    ]
+                }
+            ],
+            renaixement: [
+                {
+                    s: "El pacient té por de l'infern i només pensa en Déu.", t: [
+                        { txt: "Tractament: Dosi d'Humanisme (l'home és el centre).", type: "correct" },
+                        { txt: "Dona-li un rosari.", type: "wrong" },
+                        { txt: "Posa-li un termòmetre.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol tocar una simfonia amb 100 músics.", t: [
+                        { txt: "Reducció: Fes un Consort de violes petit.", type: "correct" },
+                        { txt: "Lloga el Palau Sant Jordi.", type: "wrong" },
+                        { txt: "Dona-li vitamines.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Canta una Ensalada però li falten ingredients.", t: [
+                        { txt: "Afegir: Barreja d'idiomes i ritmes.", type: "correct" },
+                        { txt: "Afegir: Enciam i tomàquet.", type: "irrelevant" },
+                        { txt: "Afegir: Guitarra elèctrica.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "El compositor Palestrina està trist perquè el Papa vol prohibir la polifonia.", t: [
+                        { txt: "Solució: Fes que s'entengui el text (Missa Papa Marcelli).", type: "correct" },
+                        { txt: "Fes vaga de fam.", type: "irrelevant" },
+                        { txt: "Passa't al protestantisme.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "Vol escriure una òpera.", t: [
+                        { txt: "Error: Encara no existeix. Fes un Madrigal.", type: "correct" },
+                        { txt: "Endavant, truca a Wagner.", type: "wrong" },
+                        { txt: "Opera-lo d'apèndix.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Té un atac de 'Baix Continu'.", t: [
+                        { txt: "Calmant: Això és del Barroc. Aquí tot és a cappella o doblat.", type: "correct" },
+                        { txt: "Dona-li un violoncel.", type: "wrong" },
+                        { txt: "Massatge als peus.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Josquin des Prez vol signar un contracte discogràfic.", t: [
+                        { txt: "Alternativa: Impremta de Petrucci.", type: "correct" },
+                        { txt: "Spotify.", type: "wrong" },
+                        { txt: "Fes-li una radiografia.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol fer servir un piano per acompanyar.", t: [
+                        { txt: "Substitució: Usa un Llaüt o Virginal.", type: "correct" },
+                        { txt: "Afina el piano.", type: "wrong" },
+                        { txt: "Talla-li els cabells.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Canta totes les veus alhora amb el mateix ritme.", t: [
+                        { txt: "Diagnòstic: Homofonia (Correcte).", type: "correct" },
+                        { txt: "Error: Això és monodia.", type: "wrong" },
+                        { txt: "Dona-li xarop.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol expressar emocions extremes i contrastades.", t: [
+                        { txt: "Sedant: Busca l'equilibri i la serenitat.", type: "correct" },
+                        { txt: "Dona-li cafè.", type: "wrong" },
+                        { txt: "Posa-li una camisa de força.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Luter vol cantar en llatí.", t: [
+                        { txt: "Correcció: En alemany, que el poble ho entengui (Coral).", type: "correct" },
+                        { txt: "Molt bé, segueix així.", type: "wrong" },
+                        { txt: "Dona-li pastilles per la gola.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol fer un concert de violí solista.", t: [
+                        { txt: "Negatiu: La música instrumental és per dansa o acompanyar.", type: "correct" },
+                        { txt: "Compra un Stradivarius.", type: "wrong" },
+                        { txt: "Posa-li gel al braç.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Està component una 'Missa' però amb cançons profanes a dins.", t: [
+                        { txt: "Diagnòstic: Missa Paròdia (És normal).", type: "correct" },
+                        { txt: "Sacrilegi! A la foguera.", type: "wrong" },
+                        { txt: "Dona-li l'extremunció.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient creu que la terra és plana.", t: [
+                        { txt: "Educació: Colom ha demostrat que no (més o menys).", type: "correct" },
+                        { txt: "Té raó.", type: "wrong" },
+                        { txt: "Dona-li un globus terraqüi.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol pintar un quadre sense perspectiva.", t: [
+                        { txt: "Error: Ara usem la Perspectiva lineal.", type: "correct" },
+                        { txt: "Fes-ho estil Picasso.", type: "wrong" },
+                        { txt: "Neteja els pinzells.", type: "irrelevant" }
+                    ]
+                }
+            ],
+            barroc: [
+                {
+                    s: "El pacient troba l'escenari massa buit i senzill.", t: [
+                        { txt: "Tractament: Omplir-ho d'ornaments i or (Horror Vacui).", type: "correct" },
+                        { txt: "Deixa-ho minimalista.", type: "wrong" },
+                        { txt: "Neteja el terra.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Té una crisi d'identitat: no sap si és home o dona.", t: [
+                        { txt: "Diagnòstic: És un Castrato. (Veu aguda, cos d'home).", type: "correct" },
+                        { txt: "És un tenor.", type: "wrong" },
+                        { txt: "Fes-li una anàlisi de sang.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El músic vol ser lliure i independent.", t: [
+                        { txt: "Dosi de Realitat: Buscat un Mecenes o mor de gana.", type: "correct" },
+                        { txt: "Fes-te autònom.", type: "wrong" },
+                        { txt: "Dona-li una guitarra i al metro.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "L'orquestra sona massa fluixa.", t: [
+                        { txt: "Afegir: Clavecí fent Baix Continu.", type: "correct" },
+                        { txt: "Posa micròfons.", type: "wrong" },
+                        { txt: "Canvia les piles.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vivaldi té tos i no pot tocar.", t: [
+                        { txt: "Substitució: Que toqui una de les noies de l'Ospedale.", type: "correct" },
+                        { txt: "Cancel·la el concert.", type: "wrong" },
+                        { txt: "Dona-li xarop.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El públic s'avorreix perquè la música és massa igual.", t: [
+                        { txt: "Solució: Aplica Contrast (Fort/Fluix, Ràpid/Lent).", type: "correct" },
+                        { txt: "Posa llums làser.", type: "wrong" },
+                        { txt: "Reparteix crispetes.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Bach està component una òpera.", t: [
+                        { txt: "Alerta: Bach mai va fer òpera! Fes una Cantata.", type: "correct" },
+                        { txt: "Que sigui divertida.", type: "wrong" },
+                        { txt: "Opera-lo de la vista.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El rei Lluís XIV vol ballar.", t: [
+                        { txt: "Recepta: Un Ballet de Cour o Minuet.", type: "correct" },
+                        { txt: "Posa-li Hip Hop.", type: "wrong" },
+                        { txt: "Dona-li sabates còmodes.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Händel vol estrenar a l'aire lliure amb focs artificials.", t: [
+                        { txt: "Aprovat: Música per als Reials Focs Artificials.", type: "correct" },
+                        { txt: "Perillós: Prohibit.", type: "wrong" },
+                        { txt: "Posa-li crema solar.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient té 'Fuga' disociativa.", t: [
+                        { txt: "Tractament: Subjecte, Resposta i Contrasubjecte.", type: "correct" },
+                        { txt: "Tanca la porta.", type: "irrelevant" },
+                        { txt: "Dona-li una Sonata.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "Vol tocar el piano.", t: [
+                        { txt: "Canvi: El piano encara no xuta. Toca el Clavecí.", type: "correct" },
+                        { txt: "Dona-li un teclat Yamaha.", type: "wrong" },
+                        { txt: "Fes-li fer escales.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "L'òpera és massa seriosa i tràgica.", t: [
+                        { txt: "Alternativa: Intermezzo o Òpera Bufa napolitana.", type: "correct" },
+                        { txt: "Posa-li riures enllaunats.", type: "wrong" },
+                        { txt: "Fes-li pessigolles.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Stradivarius diu que el vernís no s'asseca.", t: [
+                        { txt: "Secret: És la fórmula màgica del so.", type: "correct" },
+                        { txt: "Usa assecador.", type: "irrelevant" },
+                        { txt: "Compra un violí xinès.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "El públic parla i menja durant l'òpera.", t: [
+                        { txt: "Normalitat: L'òpera és un acte social.", type: "correct" },
+                        { txt: "Fes-los callar.", type: "wrong" },
+                        { txt: "Ven-los entrepans.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol fer un crescendo progressiu.", t: [
+                        { txt: "Error: Fes Dinàmica per Terrasses (esglaonada).", type: "correct" },
+                        { txt: "Gira la rodeta de volum.", type: "wrong" },
+                        { txt: "Puja una escala.", type: "irrelevant" }
+                    ]
+                }
+            ],
+            classicisme: [
+                {
+                    s: "El pacient troba la música massa complicada i recarregada.", t: [
+                        { txt: "Tractament: Neteja Barroca. Busca la Senzillesa.", type: "correct" },
+                        { txt: "Fes-la encara més complexa.", type: "wrong" },
+                        { txt: "Neteja-li les orelles.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "L'orquestra no té director.", t: [
+                        { txt: "Evolució: El concertino o clavecinista ja no n'hi ha prou. Posa un Director.", type: "correct" },
+                        { txt: "Que toquin com vulguin.", type: "wrong" },
+                        { txt: "Posa un robot.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Mozart es queixa que el tracten com un criat.", t: [
+                        { txt: "Consell: Fes-te freelance a Viena (difícil però possible).", type: "correct" },
+                        { txt: "Aguanta, és el que hi ha.", type: "wrong" },
+                        { txt: "Fes-li un massatge.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El clarinetista no té lloc a l'orquestra.", t: [
+                        { txt: "Ingrés: L'escola de Mannheim l'acaba d'incorporar.", type: "correct" },
+                        { txt: "Que toqui la flauta.", type: "wrong" },
+                        { txt: "Dona-li un xumet.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "La melodia no s'entén, hi ha massa contrapunt.", t: [
+                        { txt: "Cirurgia: Aplica Melodia Acompanyada.", type: "correct" },
+                        { txt: "Fes una Fuga.", type: "wrong" },
+                        { txt: "Dona-li una lupa.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient té una 'Forma Sonata' desordenada.", t: [
+                        { txt: "Reordenació: Exposició, Desenvolupament, Reexposició.", type: "correct" },
+                        { txt: "Introducció, Nus, Desenllaç.", type: "wrong" },
+                        { txt: "Posa-ho tot en una batedora.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Beethoven comença a no sentir-hi.", t: [
+                        { txt: "Tragèdia: Sordesa progressiva. Utilitza quaderns de conversa.", type: "correct" },
+                        { txt: "Posa-li un audiòfon.", type: "wrong" },
+                        { txt: "Crida-li més fort.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Haydn vol fer una broma musical.", t: [
+                        { txt: "Aprovat: Simfonia de la Sorpresa (cop fort per despertar).", type: "correct" },
+                        { txt: "Explica un acudit.", type: "irrelevant" },
+                        { txt: "Fes un TikTok.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "L'òpera només parla de déus i reis.", t: [
+                        { txt: "Reforma: Fes Òpera bufa amb gent normal (Criats, Barbers).", type: "correct" },
+                        { txt: "Segueix així, és més digne.", type: "wrong" },
+                        { txt: "Posa-li una corona.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol tocar el Clavecí en un concert públic.", t: [
+                        { txt: "Canvi: El Piano ha guanyat la batalla. Toca el Piano.", type: "correct" },
+                        { txt: "Toca l'orgue.", type: "wrong" },
+                        { txt: "Neteja les tecles.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Les frases musicals són irregulars i caòtiques.", t: [
+                        { txt: "Tractament: Quadratura (8 compassos: 4+4).", type: "correct" },
+                        { txt: "Fes Jazz.", type: "wrong" },
+                        { txt: "Mesura-li el pols.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Gluck vol treure els excessos dels cantants d'òpera.", t: [
+                        { txt: "Reforma de Gluck: La música al servei del drama.", type: "correct" },
+                        { txt: "Deixa que facin gorgoritos.", type: "wrong" },
+                        { txt: "Talla-li la llengua.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Volen fer un quartet de corda amb 5 instruments.", t: [
+                        { txt: "Sostracció: 2 Violins, 1 Viola, 1 Violoncel. Sobra un.", type: "correct" },
+                        { txt: "Afegeix un contrabaix.", type: "wrong" },
+                        { txt: "Posa-hi un triangle.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "La música expressa massa sentiments foscos.", t: [
+                        { txt: "Correcció: L'objectiu és la Bellesa i l'Entreteniment elegant.", type: "correct" },
+                        { txt: "Fes-te Emo.", type: "wrong" },
+                        { txt: "Dona-li antidepressius.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Una dona vol compondre i publicar.", t: [
+                        { txt: "Realitat Trista: Nannerl Mozart o Fanny Mendelssohn ho tenen difícil.", type: "correct" },
+                        { txt: "Cap problema, igualtat total.", type: "wrong" },
+                        { txt: "Regala-li flors.", type: "irrelevant" }
+                    ]
+                }
+            ],
+            romanticisme: [
+                {
+                    s: "El pacient sent una passió desbocada i vol trencar les normes.", t: [
+                        { txt: "Diagnòstic: Esperit Romàntic. Deixa'l fluir.", type: "correct" },
+                        { txt: "Calmant: Torna a l'equilibri clàssic.", type: "wrong" },
+                        { txt: "Dona-li una til·la.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "L'orquestra de 40 músics li sembla petita.", t: [
+                        { txt: "Ampliació: Posa'n 100. (Berlioz, Wagner).", type: "correct" },
+                        { txt: "És suficient.", type: "wrong" },
+                        { txt: "Posa miralls.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pianista trenca les cordes de tant fort que toca.", t: [
+                        { txt: "Normalitat: És Liszt o un virtuós. Necessita pianos de ferro.", type: "correct" },
+                        { txt: "Diga-li que toqui fluix.", type: "wrong" },
+                        { txt: "Posa-li guants.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Schubert vol fer una simfonia de 5 minuts.", t: [
+                        { txt: "Error: Fes un Lied o una Petita Forma.", type: "correct" },
+                        { txt: "Fes un jingle.", type: "wrong" },
+                        { txt: "Cronometra-ho.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El públic no entén l'obra perquè no segueix la forma sonata.", t: [
+                        { txt: "Explicació: És un Poema Simfònic, segueix un guió literari.", type: "correct" },
+                        { txt: "Està mal feta.", type: "wrong" },
+                        { txt: "Dona-li el llibret.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Chopin té tos i està molt pàl·lid.", t: [
+                        { txt: "Diagnòstic: Tuberculosi (malaltia romàntica). Viatge a Mallorca.", type: "correct" },
+                        { txt: "És COVID.", type: "wrong" },
+                        { txt: "Posa-li maquillatge.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Wagner vol que l'òpera duri 15 hores.", t: [
+                        { txt: "Aprovat: L'Anell del Nibelung (Tetralogia).", type: "correct" },
+                        { txt: "Estàs boig.", type: "wrong" },
+                        { txt: "Porta un sac de dormir.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Verdi vol que Itàlia sigui lliure.", t: [
+                        { txt: "Acció: Escriu 'Va, pensiero' (Nabucco) com a himne.", type: "correct" },
+                        { txt: "Fica't en política.", type: "irrelevant" },
+                        { txt: "Fes pizzes.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "El ritme és massa constant i avorrit.", t: [
+                        { txt: "Tractament: Rubato (robar temps, accelerar/frenar).", type: "correct" },
+                        { txt: "Posa una caixa de ritmes.", type: "wrong" },
+                        { txt: "Canvia de bateria.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol tocar el Saxòfon a l'orquestra.", t: [
+                        { txt: "Possibilitat: Acaba d'inventar-se, però encara és rar.", type: "correct" },
+                        { txt: "Impossible, és del futur.", type: "wrong" },
+                        { txt: "Neteja-li la bava.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Brahms té por de comparar-se amb Beethoven.", t: [
+                        { txt: "Diagnòstic: L'ombra del gegant. Trigarà a fer la 1a Simfonia.", type: "correct" },
+                        { txt: "Beethoven està mort, tranquil.", type: "wrong" },
+                        { txt: "Fes ioga.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Txaikovski vol posar canons reals a l'obra.", t: [
+                        { txt: "Aprovat: Obertura 1812.", type: "correct" },
+                        { txt: "Prohibit per la llei d'armes.", type: "wrong" },
+                        { txt: "Posa petards.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El compositor vol inspirar-se en cançons populars del seu país.", t: [
+                        { txt: "Diagnòstic: Nacionalisme Musical.", type: "correct" },
+                        { txt: "Això és plagi.", type: "wrong" },
+                        { txt: "Viatja a l'estranger.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol escriure una òpera sobre la vida real i pobra.", t: [
+                        { txt: "Estil: Verisme (Puccini, Mascagni).", type: "correct" },
+                        { txt: "Fes fantasia.", type: "wrong" },
+                        { txt: "Dona-li diners.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El cantant vol lluir-se amb moltes notes ràpides.", t: [
+                        { txt: "Tècnica: Bel Canto.", type: "correct" },
+                        { txt: "Que canti Rap.", type: "wrong" },
+                        { txt: "Fes-li gargarismes.", type: "irrelevant" }
+                    ]
+                }
+            ],
+            segle_xx: [
+                {
+                    s: "El pacient sent sorolls de fàbrica i vol fer música amb ells.", t: [
+                        { txt: "Diagnòstic: Futurisme / Sorollisme.", type: "correct" },
+                        { txt: "Posa-li taps.", type: "wrong" },
+                        { txt: "Dona-li oli.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Debussy diu que les línies no són clares, tot és borrós.", t: [
+                        { txt: "Estil: Impressionisme. Suggereix, no descriguis.", type: "correct" },
+                        { txt: "Posa-li ulleres.", type: "wrong" },
+                        { txt: "Neteja la lent.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Schoenberg té pànic a repetir una nota abans que sonin les altres 11.", t: [
+                        { txt: "Mètode: Dodecafonisme.", type: "correct" },
+                        { txt: "TOC musical.", type: "wrong" },
+                        { txt: "Compta fins a 10.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Stravinsky ha provocat una baralla al teatre.", t: [
+                        { txt: "Causa: La Consagració de la Primavera (Ritmes salvatges).", type: "correct" },
+                        { txt: "Era un partit de futbol.", type: "wrong" },
+                        { txt: "Truca a la policia.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "John Cage vol cobrar per 4 minuts de silenci.", t: [
+                        { txt: "Obra: 4'33''. Tot so és música.", type: "correct" },
+                        { txt: "Estafa.", type: "wrong" },
+                        { txt: "Dona-li propina.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient vol tocar el piano posant claus i gomes entre les cordes.", t: [
+                        { txt: "Tècnica: Piano Preparat.", type: "correct" },
+                        { txt: "Vandalisme.", type: "wrong" },
+                        { txt: "Truca al tècnic.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol fer música tallant i enganxant cintes magnètiques.", t: [
+                        { txt: "Estil: Música Concreta.", type: "correct" },
+                        { txt: "Manualitats.", type: "irrelevant" },
+                        { txt: "Fes un collage.", type: "wrong" }
+                    ]
+                },
+                {
+                    s: "Stockhausen vol un helicòpter per al concert.", t: [
+                        { txt: "Aprovat: Quartet d'Helicòpters.", type: "correct" },
+                        { txt: "Massa car.", type: "wrong" },
+                        { txt: "Dona-li un dron.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient repeteix la mateixa nota 1000 vegades.", t: [
+                        { txt: "Estil: Minimalisme.", type: "correct" },
+                        { txt: "Està ratllat.", type: "wrong" },
+                        { txt: "Reinicia'l.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol tocar un instrument sense tocar-lo físicament.", t: [
+                        { txt: "Instrument: Theremin.", type: "correct" },
+                        { txt: "Màgia.", type: "wrong" },
+                        { txt: "Fes mímica.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Diu que la música és aleatòria, depèn dels daus.", t: [
+                        { txt: "Estil: Aleatorietat (Indeterminació).", type: "correct" },
+                        { txt: "Ludopatia.", type: "wrong" },
+                        { txt: "Juga al parxís.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol barrejar Jazz amb música clàssica.", t: [
+                        { txt: "Exemple: Rhapsody in Blue (Gershwin).", type: "correct" },
+                        { txt: "Impossible, oli i aigua.", type: "wrong" },
+                        { txt: "Fes un còctel.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "El pacient crida i parla en lloc de cantar (Sprechgesang).", t: [
+                        { txt: "Tècnica: Expressionisme (Pierrot Lunaire).", type: "correct" },
+                        { txt: "Mal de coll.", type: "wrong" },
+                        { txt: "Dona-li mel.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Vol fer música amb un ordinador gegant.", t: [
+                        { txt: "Inici: Música Electrònica (anys 50).", type: "correct" },
+                        { txt: "Juga al Fortnite.", type: "wrong" },
+                        { txt: "Desendolla'l.", type: "irrelevant" }
+                    ]
+                },
+                {
+                    s: "Diu que el rock and roll és cosa del diable.", t: [
+                        { txt: "Context: Reacció conservadora anys 50.", type: "correct" },
+                        { txt: "Té raó.", type: "wrong" },
+                        { txt: "Fes el senyal de la creu.", type: "irrelevant" }
+                    ]
+                }
+            ]
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let patientsTreated = 0;
+        let reputation = 100;
+        let gameActive = false;
+        let currentCase = null;
+        let availableCases = [];
+        let roundsPlayed = 0; // Track actual turns
+        let completedEras = new Set();
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'heartbeat') {
+                // Low thud
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(60, now);
+                osc.frequency.exponentialRampToValueAtTime(0.01, now + 0.1);
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+
+                // Second thud
+                const osc2 = audioCtx.createOscillator();
+                const g2 = audioCtx.createGain();
+                osc2.connect(g2);
+                g2.connect(audioCtx.destination);
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(60, now + 0.15);
+                osc2.frequency.exponentialRampToValueAtTime(0.01, now + 0.25);
+                g2.gain.setValueAtTime(0.4, now + 0.15);
+                g2.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc2.start(now + 0.15);
+                osc2.stop(now + 0.25);
+
+            } else if (type === 'flatline') {
+                // Continuous beep
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0.3, now + 1.5);
+                gainNode.gain.linearRampToValueAtTime(0, now + 1.6);
+                osc.start(now);
+                osc.stop(now + 1.6);
+            } else if (type === 'success') {
+                // Ding ding
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.setValueAtTime(800, now + 0.1);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'error') {
+                // Buzz
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- LOGIC ---
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            if (btn.id === 'next-btn') return;
+            btn.addEventListener('click', () => {
+                currentEra = btn.dataset.era;
+                startGame();
+            });
+            // Check formatted completion
+            if (completedEras && completedEras.has(btn.dataset.era)) {
+                btn.style.backgroundColor = '#4cd137';
+                btn.textContent += ' ✅';
+            }
+        });
+
+        // Main Menu Logic
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('start-screen').style.display = 'flex'; // Force flex logic
+        });
+
+
+        // Removed static listener to avoid conflict
+        // document.getElementById('next-btn').addEventListener('click', nextPatient);
+
+        function getIconForSymptom(text) {
+            const t = text.toLowerCase();
+            if (t.includes('cor') || t.includes('amor') || t.includes('passió') || t.includes('sentiments')) return 'fa-heart-pulse';
+            if (t.includes('pulmons') || t.includes('tos') || t.includes('cantar') || t.includes('aire')) return 'fa-lungs';
+            if (t.includes('cap') || t.includes('pensar') || t.includes('idea') || t.includes('al·lucinacions')) return 'fa-brain';
+            if (t.includes('orella') || t.includes('sord') || t.includes('escoltar') || t.includes('soroll')) return 'fa-ear-listen';
+            if (t.includes('mà') || t.includes('dits') || t.includes('tocar')) return 'fa-hand-holding-medical';
+            if (t.includes('ull') || t.includes('veure') || t.includes('mirar')) return 'fa-eye';
+            if (t.includes('estómac') || t.includes('budells')) return 'fa-bacteria';
+            if (t.includes('nen') || t.includes('petit')) return 'fa-baby';
+            return 'fa-user-md'; // Default
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('operating-room').classList.remove('hidden');
+
+            patientsTreated = 0;
+            roundsPlayed = 0;
+            reputation = 100;
+            gameActive = true;
+
+            // Clone cases to avoid modifying DB
+            availableCases = [...DB[currentEra]];
+            // Shuffle
+            availableCases.sort(() => Math.random() - 0.5);
+            // Limit to 10 cases max for the session if we want EXACTLY 10
+            availableCases = availableCases.slice(0, 10);
+
+            updateStats();
+            nextPatient();
+
+            // Start heartbeat loop
+            startHeartbeat();
+        }
+
+        let heartbeatInterval;
+        function startHeartbeat() {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = setInterval(() => {
+                if (gameActive && reputation > 0) playSound('heartbeat');
+            }, 1000);
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = patientsTreated;
+            document.getElementById('reputation').textContent = reputation;
+            if (reputation < 50) document.getElementById('reputation').style.color = 'red';
+            else document.getElementById('reputation').style.color = '#4cd137';
+        }
+
+        function nextPatient() {
+            document.getElementById('feedback-overlay').classList.remove('show-feedback');
+            document.getElementById('ecg-line').classList.remove('flatline');
+            document.getElementById('ecg-line').style.animationPlayState = 'running';
+
+            document.getElementById('feedback-overlay').classList.remove('show-feedback');
+            document.getElementById('ecg-line').classList.remove('flatline');
+            document.getElementById('ecg-line').style.animationPlayState = 'running';
+
+            if (availableCases.length === 0 || reputation <= 0 || roundsPlayed >= 10) {
+                endGame();
+                return;
+            }
+
+            roundsPlayed++;
+
+            currentCase = availableCases.pop();
+
+            // Icon logic
+            const iconClass = getIconForSymptom(currentCase.s);
+            const iconHtml = `<i class="fas ${iconClass}" style="float: right; font-size: 3rem; color: var(--primary-color); opacity: 0.5;"></i>`;
+
+            // Display Symptom
+            document.getElementById('symptom-text').innerHTML = iconHtml + currentCase.s;
+
+            // Display Treatments
+            const treatmentsContainer = document.getElementById('treatments');
+            treatmentsContainer.innerHTML = '';
+
+            // Shuffle treatments
+            const shuffledTreatments = [...currentCase.t].sort(() => Math.random() - 0.5);
+
+            shuffledTreatments.forEach(t => {
+                const btn = document.createElement('div');
+                btn.className = 'btn-treatment';
+
+                let icon = 'fa-user-md';
+                if (t.type === 'correct') icon = 'fa-check-circle'; // Hidden in real game, logic here just for dev? No, icons should be generic.
+                // Let's use generic icons based on text keywords maybe? Or just random medical icons.
+                const icons = ['fa-syringe', 'fa-pills', 'fa-scalpel', 'fa-stethoscope', 'fa-band-aid'];
+                const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+
+                btn.innerHTML = `<i class="fas ${randomIcon}"></i><span>${t.txt}</span>`;
+                btn.onclick = () => handleTreatment(t.type);
+                treatmentsContainer.appendChild(btn);
+            });
+        }
+
+        function handleTreatment(type) {
+            let title, msg, icon, color;
+
+            if (type === 'correct') {
+                patientsTreated++;
+                title = "PACIENT CURAT!";
+                msg = "El tractament ha funcionat perfectament.";
+                icon = '<i class="fas fa-smile-beam" style="color: #4cd137;"></i>';
+                playSound('success');
+            } else if (type === 'wrong') {
+                reputation -= 20;
+                title = "ERROR MÈDIC!";
+                msg = "El pacient ha empitjorat greument.";
+                icon = '<i class="fas fa-dizzy" style="color: #e84118;"></i>';
+                document.getElementById('ecg-line').classList.add('flatline');
+                document.getElementById('ecg-line').style.animationPlayState = 'paused';
+                playSound('flatline');
+            } else {
+                // Irrelevant
+                reputation -= 5;
+                title = "TRACTAMENT INÚTIL";
+                msg = "Això no ha servit de res, però el pacient segueix viu.";
+                icon = '<i class="fas fa-meh" style="color: #fbc531;"></i>';
+                playSound('error');
+            }
+
+            updateStats();
+            showFeedback(title, msg, icon);
+        }
+
+        function showFeedback(title, msg, icon) {
+            document.getElementById('feedback-title').textContent = title;
+            document.getElementById('feedback-msg').textContent = msg;
+            document.getElementById('feedback-icon').innerHTML = icon;
+            document.getElementById('feedback-overlay').classList.add('show-feedback');
+
+            // Set button to NEXT PATIENT
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.textContent = "SEGÜENT PACIENT";
+            nextBtn.onclick = nextPatient;
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(heartbeatInterval);
+
+            const overlay = document.getElementById('feedback-overlay');
+            const title = document.getElementById('feedback-title');
+            const msg = document.getElementById('feedback-msg');
+            const nextBtn = document.getElementById('next-btn');
+
+            overlay.classList.add('show-feedback');
+            overlay.classList.add('show-feedback');
+            // nextBtn.onclick set below
+            nextBtn.textContent = "TORNAR AL MENÚ";
+
+            if (reputation > 0) {
+                title.textContent = "TORN FINALITZAT";
+                msg.textContent = `Has tractat ${patientsTreated} pacients. La teva reputació és ${reputation}%.`;
+                document.getElementById('feedback-icon').innerHTML = '<i class="fas fa-trophy" style="color: gold;"></i>';
+
+                // Mark complete if reputation is decent
+                if (reputation >= 50) {
+                    completedEras.add(currentEra);
+                    // We can't easily persist simply with reload, so we must manually rebuild menu or use SPA approach. 
+                    // Let's change reload to manual menu show.
+                    nextBtn.onclick = returnToMenu;
+                }
+            } else {
+                title.textContent = "SALA BUIDA!";
+                msg.textContent = "T'han retirat la llicència mèdica per mala praxis.";
+                document.getElementById('feedback-icon').innerHTML = '<i class="fas fa-skull-crossbones" style="color: red;"></i>';
+                nextBtn.onclick = returnToMenu;
+            }
+        }
+
+        function returnToMenu() {
+            document.getElementById('operating-room').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('main-menu').classList.add('hidden'); // Ensure main-menu remains hidden
+            document.getElementById('feedback-overlay').classList.remove('show-feedback'); // Hide overlay
+
+            // Update buttons
+            document.querySelectorAll('.btn-era').forEach(btn => {
+                if (completedEras.has(btn.dataset.era)) {
+                    btn.style.backgroundColor = '#4cd137';
+                    if (!btn.textContent.includes('✅')) btn.textContent += ' ✅';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

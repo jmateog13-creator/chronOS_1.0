@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uber Composer: El Taxista Històric</title>
+    <style>
+        :root {
+            --bg-dark: #1a1a2e;
+            --map-road: #2c2c54;
+            --map-land: #0f0f1a;
+            --accent: #e94560;
+            --ui-panel: #16213e;
+            --text: #ffffff;
+            --success: #00b894;
+            --error: #d63031;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 3D Map View */
+        .map-view {
+            flex: 1;
+            background: url('img/fons.jpg') no-repeat center bottom;
+            background-size: cover;
+            position: relative;
+            perspective: 600px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .road-grid {
+            width: 200%;
+            height: 200%;
+            background:
+                linear-gradient(90deg, var(--map-road) 2px, transparent 2px),
+                linear-gradient(0deg, var(--map-road) 2px, transparent 2px);
+            background-size: 100px 100px;
+            transform: rotateX(60deg) translateY(-20%);
+            position: absolute;
+            animation: moveRoad 2s linear infinite;
+            animation-play-state: paused;
+            /* Start paused (idling) */
+        }
+
+        @keyframes moveRoad {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 0 100px;
+            }
+        }
+
+        .car {
+            position: absolute;
+            bottom: 30%;
+            width: 280px;
+            /* Much bigger */
+            height: 200px;
+            background: url('img/taxi.png') no-repeat center center;
+            background-size: contain;
+            /* Remove CSS styling */
+            /* background: #f1c40f; */
+            /* border-radius: 10px; */
+            /* box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); */
+            z-index: 10;
+            transform: translateX(-50%);
+            left: 50%;
+            transition: transform 0.5s, bottom 0.5s;
+            filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        /* Remove CSS Car parts */
+        .car::before,
+        .car::after {
+            display: none;
+        }
+
+        /* Animations */
+        .car.drive-out {
+            animation: driveOut 1s forwards cubic-bezier(0.5, 0, 0.5, 1);
+        }
+
+        .car.drive-in {
+            animation: driveIn 1s forwards cubic-bezier(0.1, 0.7, 0.1, 1);
+        }
+
+        @keyframes driveOut {
+            0% {
+                bottom: 30%;
+                transform: translateX(-50%) scale(1);
+            }
+
+            100% {
+                bottom: 100%;
+                transform: translateX(-50%) scale(0.5);
+            }
+        }
+
+        @keyframes driveIn {
+            0% {
+                bottom: -20%;
+                transform: translateX(-50%) scale(1.2);
+            }
+
+            100% {
+                bottom: 30%;
+                transform: translateX(-50%) scale(1);
+            }
+        }
+
+        /* UI Panel */
+        .ui-panel {
+            background: var(--ui-panel);
+            padding: 20px;
+            border-top: 4px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 20;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .passenger-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .passenger-avatar {
+            width: 60px;
+            height: 60px;
+            background: #ddd;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+        }
+
+        .passenger-details h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .passenger-quote {
+            font-style: italic;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        .rating {
+            color: gold;
+        }
+
+        .destinations {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .dest-btn {
+            background: #2d3436;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dest-btn:hover {
+            background: #636e72;
+        }
+
+        .dest-btn span {
+            font-size: 1.5rem;
+        }
+
+        /* Feedback */
+        .feedback-overlay {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
+        }
+
+        .feedback-overlay.success {
+            color: var(--success);
+            display: block;
+        }
+
+        .feedback-overlay.error {
+            color: var(--error);
+            display: block;
+        }
+
+        /* Stars HUD */
+        .stars-hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+        <h1 style="font-size:3rem; color:var(--accent); margin-bottom:20px;">Uber Composer 🚕</h1>
+        <p style="font-size:1.5rem; max-width:600px; margin-bottom:40px;">Ets el taxista de la història de la
+            música.<br>Porta als teus passatgers al seu destí correcte.<br>Tens 12 viatges per completar.</p>
+        <button onclick="startGame()"
+            style="padding:20px 50px; font-size:1.5rem; background:var(--success); color:white; border:none; border-radius:50px; cursor:pointer; font-weight:bold; box-shadow:0 0 20px rgba(0,184,148,0.5);">COMENÇAR
+            TORN</button>
+    </div>
+
+    <!-- AUDIO UI -->
+    <div id="volume-control"
+        style="position: fixed; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 9999px; display: flex; align-items: center; gap: 10px; z-index: 1000; border: 1px solid var(--accent);">
+        <span style="font-size: 1.2rem;">🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+            style="accent-color: var(--accent); width: 100px;">
+    </div>
+    <audio id="bg-music" loop>
+        <source src="audio/Meter’s Still Running.m4a" type="audio/mpeg">
+    </audio>
+
+    <div class="map-view">
+        <div class="road-grid" id="road"></div>
+        <div class="car" id="car"></div>
+        <div class="feedback-overlay" id="feedback"></div>
+        <div class="stars-hud">⭐ <span id="stars">5.0</span></div>
+    </div>
+
+    <div class="ui-panel">
+        <div class="passenger-info">
+            <div class="passenger-avatar" id="p-avatar">👤</div>
+            <div class="passenger-details">
+                <h2 id="p-name">Carregant...</h2>
+                <div class="passenger-quote" id="p-quote">"..."</div>
+            </div>
+        </div>
+        <div class="destinations" id="dest-buttons">
+            <!-- Buttons injected by JS -->
+        </div>
+    </div>
+
+    <script>
+        const RIDERS_DB = [
+            // EDAT MITJANA
+            { name: "Guido d'Arezzo", quote: "Necessito ensenyar la mà a uns monjos.", correct: "Monestir de Pomposa", wrong: "Discoteca", avatar: "guido.png" },
+            { name: "Bernart de Ventadorn", quote: "La meva amor m'espera al castell.", correct: "Castell Feudal", wrong: "Supermercat", avatar: "trobador.png" },
+
+            // RENAIXEMENT
+            { name: "Palestrina", quote: "El Papa m'ha cridat d'urgència.", correct: "El Vaticà", wrong: "Taverna", avatar: "palestrina.png" },
+            { name: "Josquin des Prez", quote: "Soc el mestre de mestres.", correct: "Catedral de Cambrai", wrong: "Estadi de Futbol", avatar: "josquin.png" },
+
+            // BARROC
+            { name: "Vivaldi", quote: "Les nenes de l'orfenat necessiten música.", correct: "Ospedale de la Pietà", wrong: "Casino", avatar: "vivaldi.png" },
+            { name: "J.S. Bach", quote: "Tinc molta feina a l'església.", correct: "Església de Sant Tomàs", wrong: "Teatre d'Òpera", avatar: "bach.png" },
+
+            // CLASSICISME
+            { name: "Mozart", quote: "Porta'm a la festa... dic, a l'estrena!", correct: "Burgtheater (Viena)", wrong: "Biblioteca", avatar: "mozart.png" },
+            { name: "Haydn", quote: "El príncep Esterházy té gana.", correct: "Palau Esterházy", wrong: "McDonald's", avatar: "haydn.png" },
+
+            // ROMANTICISME
+            { name: "Beethoven", quote: "GRRR! Necessito silenci i natura!", correct: "Bosc de Viena", wrong: "Centre Comercial", avatar: "bbeethoven.png" },
+            { name: "Wagner", quote: "El meu teatre és l'únic digne.", correct: "Festspielhaus Bayreuth", wrong: "Sala Polivalent", avatar: "wagner.png" },
+
+            // SEGLE XX
+            { name: "Louis Armstrong", quote: "What a wonderful world!", correct: "Club de Jazz", wrong: "Biblioteca Silenciosa", avatar: "amstrong.png" },
+            { name: "The Beatles", quote: "Anem a gravar un èxit.", correct: "Abbey Road Studios", wrong: "Palau Reial", avatar: "beatles.png" }
+        ];
+
+        class Game {
+            constructor() {
+                this.stars = 5.0;
+                this.currentRider = null;
+                this.isProcessing = false;
+                this.car = document.getElementById('car');
+                this.road = document.getElementById('road');
+
+                // Game State
+                this.deck = [];
+                this.ridesCompleted = 0;
+                this.totalRides = RIDERS_DB.length;
+                // Wait for start game
+            }
+
+            initGame() {
+                // Shuffle full deck of 12 riders
+                this.deck = [...RIDERS_DB].sort(() => Math.random() - 0.5);
+                this.ridesCompleted = 0;
+                this.stars = 5.0;
+                document.getElementById('stars').textContent = "5.0";
+                this.initRound();
+            }
+
+            initRound() {
+                this.isProcessing = false;
+
+                // Win Condition
+                if (this.deck.length === 0) {
+                    this.showWinScreen();
+                    return;
+                }
+
+                // Update Progress HUD
+                this.updateHUD();
+
+                // Animate Car Arrival
+                this.car.className = 'car drive-in';
+                this.road.style.animationPlayState = 'paused';
+
+                // Pop next rider
+                this.currentRider = this.deck.pop();
+
+                // UI Update logic
+                document.getElementById('p-name').textContent = this.currentRider.name;
+                document.getElementById('p-quote').textContent = `"${this.currentRider.quote}"`;
+
+                // Avatar handling (User requested images)
+                const avatarEl = document.getElementById('p-avatar');
+                avatarEl.innerHTML = ''; // Clear emoji
+                // Create image element
+                const img = document.createElement('img');
+                img.src = `img/${this.currentRider.avatar}`;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '50%';
+                img.onerror = function () { this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(this.currentRider?.name || 'User'); }; // Fallback
+                avatarEl.appendChild(img);
+
+                document.getElementById('feedback').className = 'feedback-overlay'; // Hide
+
+                // Buttons
+                const container = document.getElementById('dest-buttons');
+                container.innerHTML = '';
+
+                const options = [
+                    { text: this.currentRider.correct, correct: true },
+                    { text: this.currentRider.wrong, correct: false }
+                ].sort(() => Math.random() - 0.5);
+
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'dest-btn';
+                    // User requested removing specific icons that gave away the answer.
+                    // Now both use a generic map pin to force reading the text.
+                    btn.innerHTML = `<span>📍</span> ${opt.text}`;
+                    btn.onclick = () => this.handleChoice(opt.correct);
+                    container.appendChild(btn);
+                });
+            }
+
+            updateHUD() {
+                // We can inject a ride counter if it doesn't exist
+                let counter = document.getElementById('ride-counter');
+                if (!counter) {
+                    counter = document.createElement('div');
+                    counter.id = 'ride-counter';
+                    counter.style.position = 'absolute';
+                    counter.style.top = '20px';
+                    counter.style.left = '50%';
+                    counter.style.transform = 'translateX(-50%)';
+                    counter.style.background = 'rgba(0,0,0,0.6)';
+                    counter.style.padding = '5px 15px';
+                    counter.style.borderRadius = '20px';
+                    counter.style.fontWeight = 'bold';
+                    document.body.appendChild(counter);
+                }
+                counter.textContent = `VIATGE ${this.ridesCompleted + 1} / ${this.totalRides}`;
+            }
+
+            handleChoice(isCorrect) {
+                if (this.isProcessing) return;
+                this.isProcessing = true;
+
+                const fb = document.getElementById('feedback');
+
+                if (isCorrect) {
+                    fb.innerHTML = "✅ Destí Correcte";
+                    fb.className = "feedback-overlay success";
+
+                    this.ridesCompleted++;
+
+                    // Drive Off Animation
+                    this.car.className = 'car drive-out';
+                    this.road.style.animationPlayState = 'running';
+
+                    setTimeout(() => {
+                        this.initRound();
+                    }, 1500);
+
+                } else {
+                    fb.innerHTML = "❌ Destí Incorrecte";
+                    fb.className = "feedback-overlay error";
+                    this.stars = Math.max(0, this.stars - 0.5);
+                    document.getElementById('stars').textContent = this.stars.toFixed(1);
+
+                    // Shake car
+                    this.car.style.transform = "translateX(-50%) rotate(5deg)";
+                    setTimeout(() => this.car.style.transform = "translateX(-50%) rotate(-5deg)", 100);
+                    setTimeout(() => this.car.style.transform = "translateX(-50%) rotate(0deg)", 200);
+
+                    // Put rider back in deck? Or just fail? Let's keep moving but with star penalty.
+                    // Actually, to "pass" 12 levels, we usually want them completed. 
+                    // Let's re-queue the rider at the bottom of the deck so they effectively "try again" later?
+                    // Or just proceed. Let's proceed for flow, but score penalty is the punishment.
+
+                    this.ridesCompleted++; // Count as attempt? 
+                    // No, if we want "12 correct", we should push back.
+                    // User said "tengas que hacer los 12". Usually implies completing them.
+                    // Let's re-add to bottom of deck to ensure mastery.
+                    this.deck.unshift(this.currentRider);
+                    this.ridesCompleted--; // Don't advance counter yet
+
+                    setTimeout(() => {
+                        // Drive off in anger (or stay?)
+                        // Let's just reset round (new arrival animation) for visual reset
+                        this.initRound();
+                    }, 1500);
+                }
+            }
+
+            showWinScreen() {
+                document.body.innerHTML = `
+                    <div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#000; color:white; text-align:center;">
+                        <h1 style="font-size:3rem; color:var(--success);">TORN COMPLETAT! 🏁</h1>
+                        <p style="font-size:1.5rem;">Has transportat als 12 músics històrics.</p>
+                        <div style="font-size:4rem; margin:20px;">⭐⭐⭐⭐⭐</div>
+                        <p>Ràting Final: ${this.stars.toFixed(1)}</p>
+                        <button onclick="location.reload()" style="padding:15px 30px; font-size:1.2rem; border-radius:30px; border:none; background:var(--accent); color:white; cursor:pointer; margin-top:20px;">Tornar a començar</button>
+                    </div>
+                 `;
+            }
+        }
+
+        const game = new Game();
+
+        // Audio & Start Logic
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+        bgMusic.volume = 0.5;
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            bgMusic.play().catch(e => console.log("Audio Error:", e));
+            game.initGame();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>La Batalla Sindical</title>
+    <style>
+        :root {
+            --bg-color: #222;
+            --text-box: rgba(0, 0, 0, 0.95);
+            --highlight: #ffd700;
+            --danger: #ff4444;
+            --player-color: #44aaff;
+            --boss-color: #ff4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            font-family: 'Courier New', Courier, monospace;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: #111;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            transition: background-image 0.5s ease;
+        }
+
+        /* --- Global Audio Controls --- */
+        #audio-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #audio-controls label {
+            font-size: 0.8rem;
+        }
+
+        input[type=range] {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        /* --- Screens / Overlays --- */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .overlay h1 {
+            font-size: 3.5rem;
+            color: var(--highlight);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .overlay p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            color: #eee;
+        }
+
+        .btn-start,
+        .btn-action {
+            padding: 15px 50px;
+            font-size: 1.8rem;
+            background: white;
+            color: black;
+            border: 2px solid white;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.2s, color 0.2s;
+            margin: 10px;
+        }
+
+        .btn-start:hover,
+        .btn-action:hover {
+            transform: scale(1.05);
+            background: var(--highlight);
+            color: black;
+            border-color: var(--highlight);
+        }
+
+        /* --- Era Selector Modal --- */
+        #era-modal {
+            display: none;
+            background: rgba(0, 0, 0, 0.95);
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 80%;
+            max-width: 900px;
+        }
+
+        .era-card {
+            background: #222;
+            border: 2px solid #555;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .era-card:hover {
+            border-color: var(--highlight);
+            background: #444;
+            transform: translateY(-5px);
+        }
+
+        .era-card h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: white;
+            z-index: 2;
+        }
+
+        .era-card p {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin: 5px 0 0 0;
+            z-index: 2;
+        }
+
+        /* Completed Status */
+        .era-card.completed {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .era-card.completed h3 {
+            color: #00ff00;
+        }
+
+        .era-card.completed::after {
+            content: '✅';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* --- Result Modal --- */
+        #result-modal {
+            display: none;
+            z-index: 300;
+        }
+
+        #result-title {
+            font-size: 5rem;
+            margin-bottom: 10px;
+        }
+
+        #result-desc {
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+
+
+        /* --- HUD --- */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            box-sizing: border-box;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+            z-index: 10;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bar-container {
+            width: 300px;
+            background: #222;
+            border: 3px solid white;
+            height: 25px;
+            position: relative;
+            transform: skewX(-20deg);
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.5s ease-out;
+        }
+
+        #player-bar {
+            background: var(--player-color);
+        }
+
+        #boss-bar {
+            background: var(--boss-color);
+        }
+
+        .name-tag {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px #000;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: white;
+        }
+
+        /* --- Stage --- */
+        #stage {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            display: none;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0;
+            pointer-events: none;
+        }
+
+        .character {
+            width: 48%;
+            height: 90%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            transition: transform 0.2s, filter 0.2s;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.8));
+            position: relative;
+            bottom: -5vh;
+        }
+
+        #player-img {
+            background-image: url('img/personatge.png');
+            transform-origin: bottom center;
+        }
+
+        /* --- Dialogue Box --- */
+        #dialogue-box {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1000px;
+            height: auto;
+            min-height: 220px;
+            background: var(--text-box);
+            border: 3px solid white;
+            border-radius: 10px;
+            padding: 25px;
+            box-sizing: border-box;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        #speaker-name {
+            font-size: 1.4rem;
+            color: var(--highlight);
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #dialogue-text {
+            font-size: 1.2rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            min-height: 3em;
+        }
+
+        #choices {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-choice {
+            background: rgba(40, 40, 40, 0.95);
+            color: white;
+            border: 1px solid #777;
+            padding: 12px 20px;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            border-radius: 5px;
+        }
+
+        .btn-choice:hover {
+            background: #444;
+            border-color: var(--highlight);
+            transform: translateX(5px);
+        }
+
+        #back-btn {
+            position: absolute;
+            top: 60px;
+            /* Below volume */
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #aaa;
+            border: 1px solid #555;
+            padding: 5px 10px;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+        }
+
+        #back-btn:hover {
+            color: white;
+            border-color: white;
+        }
+
+        /* --- Animations --- */
+        @keyframes shake {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            20% {
+                transform: translate(-10px, 0) rotate(-2deg);
+            }
+
+            40% {
+                transform: translate(10px, 0) rotate(2deg);
+            }
+
+            60% {
+                transform: translate(-10px, 0) rotate(-2deg);
+            }
+
+            80% {
+                transform: translate(10px, 0) rotate(2deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+        }
+
+        .shake {
+            animation: shake 0.4s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Crimson Blade Circuit.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="game-container">
+        <!-- Audio Controls -->
+        <div id="audio-controls">
+            <span style="font-size:1.2rem;">🎵</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="overlay">
+            <h1>La Batalla Sindical</h1>
+            <p>
+                Benvingut, representant sindical.<br><br>
+                Guanya el debat baixant la <b>PACIÈNCIA (HP)</b> del Boss a 0.<br>
+                Els arguments del Boss es repetiran fins que un dels dos caigui.<br><br>
+                La història de la música depèn de tu!
+            </p>
+            <button class="btn-start" onclick="startGame()">JUGAR</button>
+        </div>
+
+        <!-- ERA SELECTION MODAL -->
+        <div id="era-modal" class="overlay">
+            <h1>Tria la teva Batalla</h1>
+            <div class="era-grid">
+                <div class="era-card" onclick="startBoss(0)">
+                    <h3>Edat Mitjana</h3>
+                    <p>Vs. L'Església</p>
+                </div>
+                <div class="era-card" onclick="startBoss(1)">
+                    <h3>Renaixement</h3>
+                    <p>Vs. La Cort</p>
+                </div>
+                <div class="era-card" onclick="startBoss(2)">
+                    <h3>Barroc</h3>
+                    <p>Vs. Monarquia</p>
+                </div>
+                <div class="era-card" onclick="startBoss(3)">
+                    <h3>Classicisme</h3>
+                    <p>Vs. Mecenatge</p>
+                </div>
+                <div class="era-card" onclick="startBoss(4)">
+                    <h3>Romanticisme</h3>
+                    <p>Vs. Opera</p>
+                </div>
+                <div class="era-card" onclick="startBoss(5)">
+                    <h3>Segle XX</h3>
+                    <p>Vs. Indústria</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULT POPUP -->
+        <div id="result-modal" class="overlay">
+            <h1 id="result-title">VICTÒRIA!</h1>
+            <p id="result-desc">Has deixat al Boss sense arguments.</p>
+            <button class="btn-action" onclick="showEraSelection()">Tornar al Mapa</button>
+        </div>
+
+        <!-- GAMEPLAY HUD -->
+        <div id="hud">
+            <div style="width: 40%;">
+                <div class="name-tag" style="text-align: left;">Sindicat</div>
+                <div class="bar-container">
+                    <div id="player-bar" class="bar-fill"></div>
+                </div>
+            </div>
+            <div style="width: 20%; text-align:center; font-size: 2rem; font-weight: bold; color:#777;">VS</div>
+            <div style="width: 40%;">
+                <div id="boss-name-display" class="name-tag" style="text-align: right;">BOSS</div>
+                <div class="bar-container" style="margin-left: auto;">
+                    <div id="boss-bar" class="bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="back-btn" onclick="quitBattle()">X SORTIR</div>
+
+        <!-- STAGE -->
+        <div id="stage">
+            <div id="player-img" class="character"></div>
+            <div id="boss-img" class="character"></div>
+        </div>
+
+        <!-- DIALOGUE BOX -->
+        <div id="dialogue-box">
+            <div id="speaker-name">Speaker</div>
+            <div id="dialogue-text">...</div>
+            <div id="choices"></div>
+            <div id="next-btn"
+                style="text-align: right; cursor: pointer; color: #aaa; margin-top: 10px; font-size: 1.2rem;">[Clic per
+                continuar...]</div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO ---
+        const audio = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        audio.volume = 0.5;
+        volSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        function startGame() {
+            // User interaction required to play audio
+            audio.play().catch(e => console.log("Audio autoplay blocked", e));
+            showEraSelection();
+        }
+
+        // --- GAME DATA ---
+        const BOSSES = [
+            {
+                id: 'mitjana',
+                name: 'Abat Aureli',
+                img: 'img/mitjana.png',
+                bg: 'img/fonsmitjana.jpg',
+                hp: 150,
+                color: '#8B4513',
+                dialogue: [
+                    { text: "La notació musical és del diable. Només cal memòria!", options: [{ text: "Guido d'Arezzo ha inventat el tetragrama!", dmg: 30, type: 'crit' }, { text: "Tins raó, millor oblidar.", dmg: -10, selfDmg: 15, type: 'fail' }, { text: "Ho apuntaré en un pergamí.", dmg: 10, type: 'neutral' }] },
+                    { text: "Aquest 'organum' amb dues veus és confús. Tornem a la Monodia!", options: [{ text: "La Polifonia ens acosta al cel!", dmg: 30, type: 'crit' }, { text: "Una veu és més fàcil.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "Farem un cànon.", dmg: 10, type: 'neutral' }] },
+                    { text: "Els instruments estan prohibits. Només la veu és pura.", options: [{ text: "L'orgue és de vent, com la veu humana!", dmg: 25, type: 'crit' }, { text: "Cremaré el meu llaüt.", dmg: -20, selfDmg: 20, type: 'fail' }, { text: "Només tocarem campanes.", dmg: 5, type: 'neutral' }] },
+                    { text: "Les dones no poden cantar a l'Església. Taceat mulier.", options: [{ text: "Hildegard von Bingen compon música divina!", dmg: 35, type: 'crit' }, { text: "Les dones callaran.", dmg: -15, selfDmg: 15, type: 'fail' }, { text: "Cantaran des de darrere la cortina.", dmg: 10, type: 'neutral' }] },
+                    { text: "El ritme ha de ser ternari, com la Santíssima Trinitat.", options: [{ text: "L'Ars Nova permet el ritme binari i la llibertat!", dmg: 30, type: 'crit' }, { text: "El tres és l'únic número bo.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "Farem servir síncopes per dissimular.", dmg: 15, type: 'neutral' }] },
+                    { text: "Aquesta música profana dels trobadors és vulgar.", options: [{ text: "Explica la vida real i l'amor, això és cultura!", dmg: 25, type: 'crit' }, { text: "És música de taverna.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "La cantarem en llatí per dissimular.", dmg: 5, type: 'neutral' }] },
+                    { text: "El poble no entén el Llatí, però han de cantar igual.", options: [{ text: "Si canten en la seva llengua, pregaran millor!", dmg: 30, type: 'crit' }, { text: "El misteri és la fe.", dmg: -5, selfDmg: 20, type: 'fail' }, { text: "Els hi ensenyarem a xiular.", dmg: 10, type: 'neutral' }] }
+                ]
+            },
+            {
+                id: 'renaix',
+                name: 'Duc Mèdici',
+                img: 'img/renaixement.png',
+                bg: 'img/fonsrenaixement.jpg',
+                hp: 160,
+                color: '#FFD700',
+                dialogue: [
+                    { text: "Copiar partitures a mà és lent. Vull 50 còpies demà!", options: [{ text: "Petrucci i la impremta musical ho faran possible!", dmg: 35, type: 'crit' }, { text: "Treballaré tota la nit...", dmg: -15, selfDmg: 25, type: 'fail' }, { text: "Farem torns de copistes.", dmg: 10, type: 'neutral' }] },
+                    { text: "Vull música per ballar en la festa de demà!", options: [{ text: "Pavanas i Gallardes per a tothom!", dmg: 30, type: 'crit' }, { text: "Un rèquiem?", dmg: -20, selfDmg: 15, type: 'fail' }, { text: "Improvisarem.", dmg: 15, type: 'neutral' }] },
+                    { text: "No s'entén la lletra amb tanta polifonia!", options: [{ text: "Usarem l'homofonia, acords clars i verticals.", dmg: 30, type: 'crit' }, { text: "És culpa dels cantants.", dmg: -10, selfDmg: 15, type: 'fail' }, { text: "Cantarem més fluixet.", dmg: 5, type: 'neutral' }] },
+                    { text: "La música ha de servir per lloar la meva grandesa.", options: [{ text: "L'Humanisme posa l'home i l'emoció al centre, no només a tu!", dmg: 35, type: 'crit' }, { text: "Sí, senyor, sou el sol.", dmg: -10, selfDmg: 20, type: 'fail' }, { text: "Us dedicarem una cançoneta.", dmg: 10, type: 'neutral' }] },
+                    { text: "Vull un cor només d'homes, les veus agudes no arriben.", options: [{ text: "Els castrati o els nens cantors hi arribaran.", dmg: 20, type: 'neutral' }, { text: "Farem falset encara que quedi lleig.", dmg: -5, selfDmg: 5, type: 'fail' }, { text: "Podríem acceptar dones?", dmg: 40, type: 'crit' }] },
+                    { text: "Els instruments de vent desafinen. No els vull.", options: [{ text: "Trobarem 'Whole Consorts' de famílies senceres!", dmg: 25, type: 'crit' }, { text: "Només corda doncs.", dmg: -5, selfDmg: 5, type: 'fail' }, { text: "Els amagarem al fons.", dmg: 10, type: 'neutral' }] },
+                    { text: "El músic és un servent més, com el cuiner.", options: [{ text: "Som artistes i professionals, mereixem respecte!", dmg: 40, type: 'crit' }, { text: "Vaig a rentar els plats...", dmg: -30, selfDmg: 30, type: 'fail' }, { text: "Almenys el cuiner menja bé.", dmg: 5, type: 'neutral' }] }
+                ]
+            },
+            {
+                id: 'barroc',
+                name: 'Rei Sol',
+                img: 'img/barroc.png',
+                bg: 'img/fonsbarroc.jpg',
+                hp: 180,
+                color: '#FF69B4',
+                dialogue: [
+                    { text: "La melodia és massa simple. Vull virtuosisme!", options: [{ text: "Afegirem trinos, mordents i ornamentació!", dmg: 30, type: 'crit' }, { text: "Tocaré malament.", dmg: -10, selfDmg: 15, type: 'fail' }, { text: "Faré cops de cap.", dmg: -5, selfDmg: 5, type: 'fail' }] },
+                    { text: "L'orquestra es perd sense ritme.", options: [{ text: "El Baix Continu (Clavecí) ens guiarà!", dmg: 35, type: 'crit' }, { text: "Un director amb un bastó.", dmg: 20, type: 'neutral' }, { text: "Anarquia total.", dmg: -20, selfDmg: 20, type: 'fail' }] },
+                    { text: "Vull ser el protagonista de l'òpera.", options: [{ text: "Tragédie Lyrique amb ballets per vós!", dmg: 35, type: 'crit' }, { text: "No sabeu cantar.", dmg: -50, selfDmg: 50, type: 'fail' }, { text: "Us farem un vestit maco.", dmg: 10, type: 'neutral' }] },
+                    { text: "Aquesta música em fa plorar, no m'agrada.", options: [{ text: "És la Teoria dels Afectes, hem de moure l'ànima!", dmg: 30, type: 'crit' }, { text: "Tocaré música de circ.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "Us donaré un mocador.", dmg: 5, type: 'neutral' }] },
+                    { text: "El violí sona com un gat atropellat.", options: [{ text: "Stradivarius està creant els millors violins de la història!", dmg: 30, type: 'crit' }, { text: "És un so rústic.", dmg: -5, selfDmg: 5, type: 'fail' }, { text: "Tocarem la viola de gamba.", dmg: 15, type: 'neutral' }] },
+                    { text: "Vull un concert on toqui tothom contra uns pocs.", options: [{ text: "El Concerto Grosso: Ripieno vs Concertino!", dmg: 30, type: 'crit' }, { text: "Una baralla de carrer?", dmg: -10, selfDmg: 15, type: 'fail' }, { text: "Tots contra un.", dmg: 10, type: 'neutral' }] },
+                    { text: "La música religiosa és avorrida.", options: [{ text: "Bach està component passions i cantates sublims!", dmg: 40, type: 'crit' }, { text: "Teniu raó, millor el teatre.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "Posarem més trompetes.", dmg: 15, type: 'neutral' }] }
+                ]
+            },
+            {
+                id: 'classicisme',
+                name: 'Lord Reginald',
+                img: 'img/classicisme.png',
+                bg: 'img/fonsclassicisme.jpg',
+                hp: 170,
+                color: '#ADD8E6',
+                dialogue: [
+                    { text: "Això és un caos emocional!", options: [{ text: "Forma Sonata: Exposició, Desenvolupament, Reexposició!", dmg: 35, type: 'crit' }, { text: "Visca el caos!", dmg: -10, selfDmg: 15, type: 'fail' }, { text: "Repetiré el tema A.", dmg: 15, type: 'neutral' }] },
+                    { text: "El Clavecí no té volum.", options: [{ text: "El Pianoforte té dinàmiques fortes i fluixes!", dmg: 30, type: 'crit' }, { text: "El picaré amb força.", dmg: 5, type: 'neutral' }, { text: "Cridaré.", dmg: -5, selfDmg: 5, type: 'fail' }] },
+                    { text: "L'orquestra és petita.", options: [{ text: "Afegim clarinets i fem l'orquestra simfònica!", dmg: 30, type: 'crit' }, { text: "Altraveus.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "Tocarem fort.", dmg: 10, type: 'neutral' }] },
+                    { text: "La música ha de ser racional i equilibrada.", options: [{ text: "Buscarem la Bellesa Ideal i la proporció.", dmg: 30, type: 'crit' }, { text: "Serem romàntics abans d'hora.", dmg: -5, selfDmg: 5, type: 'fail' }, { text: "Compteu compassos.", dmg: 10, type: 'neutral' }] },
+                    { text: "L'Òpera Seria m'avorreix, sempre déus i reis.", options: [{ text: "L'Opera Buffa explica històries de gent real i diverteix!", dmg: 35, type: 'crit' }, { text: "Adormiu-vos.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "Farem un intermezzo còmic.", dmg: 15, type: 'neutral' }] },
+                    { text: "Vull un grup petit per tocar a casa.", options: [{ text: "Un Quartet de Corda: 2 violins, viola i cel·lo.", dmg: 30, type: 'crit' }, { text: "Una banda de flabiols.", dmg: -10, selfDmg: 5, type: 'fail' }, { text: "Un solista.", dmg: 10, type: 'neutral' }] },
+                    { text: "Mozart és massa jove i insolent.", options: [{ text: "És un geni prodigi que canviarà la música!", dmg: 40, type: 'crit' }, { text: "És un nen malcriat.", dmg: -5, selfDmg: 10, type: 'fail' }, { text: "Ignorem-lo.", dmg: 0, type: 'neutral' }] }
+                ]
+            },
+            {
+                id: 'romanticisme',
+                name: 'Wagnerià',
+                img: 'img/romanticisme.png',
+                bg: 'img/fonsromanticisme.jpg',
+                hp: 180,
+                color: '#8A2BE2',
+                dialogue: [
+                    { text: "La música pura no diu res.", options: [{ text: "Música Programàtica: narrarem llegendes!", dmg: 30, type: 'crit' }, { text: "Micròfon.", dmg: -5, selfDmg: 5, type: 'fail' }, { text: "Simfonia abstracta.", dmg: 10, type: 'neutral' }] },
+                    { text: "El ritme és massa quadrat.", options: [{ text: "Rubato: accelerar i frenar amb l'emoció!", dmg: 35, type: 'crit' }, { text: "Sense metrònom.", dmg: 10, type: 'neutral' }, { text: "Doble temps.", dmg: -10, selfDmg: 10, type: 'fail' }] },
+                    { text: "Vull una òpera eterna!", options: [{ text: "L'Anell del Nibelung (15 hores)!", dmg: 40, type: 'crit' }, { text: "Estàs boig.", dmg: -20, selfDmg: 20, type: 'fail' }, { text: "Pauses per sopar.", dmg: 15, type: 'neutral' }] },
+                    { text: "El piano ha de sonar com una orquestra.", options: [{ text: "Liszt i Chopin treuran tota la sonoritat virtuosística!", dmg: 35, type: 'crit' }, { text: "Tocaré amb els colzes.", dmg: -5, selfDmg: 10, type: 'fail' }, { text: "Posarem pedals.", dmg: 15, type: 'neutral' }] },
+                    { text: "Vull sentir el nacionalisme del meu poble.", options: [{ text: "Usarem melodies folklòriques i ritmes nacionals!", dmg: 30, type: 'crit' }, { text: "Himnes militars?", dmg: 10, type: 'neutral' }, { text: "Música estrangera.", dmg: -15, selfDmg: 10, type: 'fail' }] },
+                    { text: "L'orquestra necessita més color fosc.", options: [{ text: "Afegim la tuba i més trompes wagnerianes!", dmg: 30, type: 'crit' }, { text: "Apaguem el llum.", dmg: -5, selfDmg: 5, type: 'fail' }, { text: "Toquem més greu.", dmg: 10, type: 'neutral' }] },
+                    { text: "L'artista és un incomprès que pateix.", options: [{ text: "El geni romàntic expressa el seu món interior!", dmg: 35, type: 'crit' }, { text: "Busca feina normal.", dmg: -20, selfDmg: 20, type: 'fail' }, { text: "Escriu un diari.", dmg: 10, type: 'neutral' }] }
+                ]
+            },
+            {
+                id: 's20',
+                name: 'Mr. Big Shot',
+                img: 'img/segleXX.png',
+                bg: 'img/fonssegleXX.jpg',
+                hp: 190,
+                color: '#555',
+                dialogue: [
+                    { text: "La tonalitat està esgotada.", options: [{ text: "Atonalitat i Dodecafonisme!", dmg: 30, type: 'crit' }, { text: "Copiem Mozart.", dmg: -15, selfDmg: 10, type: 'fail' }, { text: "Soroll.", dmg: 10, type: 'neutral' }] },
+                    { text: "Instruments cars. Vull estalviar.", options: [{ text: "Sintetitzadors i electrònica!", dmg: 25, type: 'crit' }, { text: "Acomiadar tothom.", dmg: -20, selfDmg: 30, type: 'fail' }, { text: "Musique Concrète.", dmg: 15, type: 'neutral' }] },
+                    { text: "Vull quelcom mai vist.", options: [{ text: "4'33'' de silenci (John Cage).", dmg: 50, type: 'crit' }, { text: "Solo guitarra.", dmg: 10, type: 'neutral' }, { text: "Dutxa.", dmg: -10, selfDmg: 5, type: 'fail' }] },
+                    { text: "El ritme ha de ser mecànic i brutal.", options: [{ text: "La Consagració de la Primavera (Stravinsky)!", dmg: 35, type: 'crit' }, { text: "Un martell.", dmg: 10, type: 'neutral' }, { text: "Tocar fluix.", dmg: -10, selfDmg: 10, type: 'fail' }] },
+                    { text: "La música clàssica és per a museus.", options: [{ text: "El Minimalisme connecta amb el públic modern!", dmg: 30, type: 'crit' }, { text: "Tens raó, està morta.", dmg: -20, selfDmg: 20, type: 'fail' }, { text: "Farem bandes sonores.", dmg: 15, type: 'neutral' }] },
+                    { text: "Vull fusionar-ho tot.", options: [{ text: "Poliestilisme i Neoclassicisme!", dmg: 25, type: 'crit' }, { text: "Una amanida.", dmg: -5, selfDmg: 5, type: 'fail' }, { text: "Jazz simfònic.", dmg: 20, type: 'neutral' }] },
+                    { text: "Tot és aleatori, res importa.", options: [{ text: "Música Aleatòria, l'atzar forma part de l'obra.", dmg: 30, type: 'crit' }, { text: "Ho deixem córrer.", dmg: -10, selfDmg: 10, type: 'fail' }, { text: "Tirem els daus.", dmg: 15, type: 'neutral' }] }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentBossIdx = 0;
+        let playerHP = 100;
+        let bossHP = 100;
+        let questionPool = []; // Indices of available questions
+        let completedEras = [];
+
+        // Load progress
+        try {
+            completedEras = JSON.parse(localStorage.getItem('vagaMusicalProgress')) || [];
+        } catch (e) {
+            console.log("Error loading progress");
+        }
+
+        // --- ELEMENTS ---
+        const els = {
+            startScreen: document.getElementById('start-screen'),
+            eraModal: document.getElementById('era-modal'),
+            resultModal: document.getElementById('result-modal'),
+            hud: document.getElementById('hud'),
+            stage: document.getElementById('stage'),
+            box: document.getElementById('dialogue-box'),
+            playerBar: document.getElementById('player-bar'),
+            bossBar: document.getElementById('boss-bar'),
+            bossName: document.getElementById('boss-name-display'),
+            bossImg: document.getElementById('boss-img'),
+            scene: document.getElementById('game-container'),
+            speaker: document.getElementById('speaker-name'),
+            text: document.getElementById('dialogue-text'),
+            choices: document.getElementById('choices'),
+            nextBtn: document.getElementById('next-btn'),
+            backBtn: document.getElementById('back-btn'),
+            resultTitle: document.getElementById('result-title'),
+            resultDesc: document.getElementById('result-desc'),
+            eraCards: document.querySelectorAll('.era-card')
+        };
+
+        function showEraSelection() {
+            els.startScreen.style.display = 'none';
+            els.resultModal.style.display = 'none';
+            els.hud.style.display = 'none';
+            els.stage.style.display = 'none';
+            els.box.style.display = 'none';
+            els.backBtn.style.display = 'none';
+            els.eraModal.style.display = 'flex';
+
+            // Check completed
+            els.eraCards.forEach((card, idx) => {
+                if (completedEras.includes(idx)) {
+                    card.classList.add('completed');
+                }
+            });
+        }
+
+        function quitBattle() {
+            if (confirm("Vols abandonar la batalla?")) {
+                showEraSelection();
+            }
+        }
+
+        function startBoss(idx) {
+            currentBossIdx = idx;
+            const boss = BOSSES[idx];
+
+            // Populate pool
+            questionPool = Array.from({ length: boss.dialogue.length }, (_, i) => i);
+
+            els.eraModal.style.display = 'none';
+            els.hud.style.display = 'flex';
+            els.stage.style.display = 'flex';
+            els.box.style.display = 'flex';
+            els.backBtn.style.display = 'block';
+
+            els.bossImg.style.backgroundImage = `url('${boss.img}')`;
+            els.bossName.textContent = boss.name;
+            els.bossBar.style.backgroundColor = boss.color;
+            els.scene.style.backgroundImage = `url('${boss.bg}')`;
+
+            bossHP = boss.hp;
+            playerHP = 100;
+            updateBars();
+
+            bossTurn();
+        }
+
+        function updateBars() {
+            els.playerBar.style.width = Math.max(0, playerHP) + '%';
+            els.bossBar.style.width = Math.max(0, (bossHP / BOSSES[currentBossIdx].hp * 100)) + '%';
+        }
+
+        function typeWriter(text, callback) {
+            els.text.textContent = "";
+            els.nextBtn.style.display = 'none';
+            let i = 0;
+            const speed = 20;
+
+            function step() {
+                if (i < text.length) {
+                    els.text.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(step, speed);
+                } else {
+                    if (callback) callback();
+                    else els.nextBtn.style.display = 'block';
+                }
+            }
+            step();
+        }
+
+        function bossTurn() {
+            const boss = BOSSES[currentBossIdx];
+
+            // REFILL LOOP: If empty, refill pool so battle never ends by lack of questions
+            if (questionPool.length === 0) {
+                questionPool = Array.from({ length: boss.dialogue.length }, (_, i) => i);
+            }
+
+            const poolIdx = Math.floor(Math.random() * questionPool.length);
+            const questionIdx = questionPool[poolIdx];
+            questionPool.splice(poolIdx, 1);
+
+            const line = boss.dialogue[questionIdx];
+            els.speaker.textContent = boss.name;
+            els.speaker.style.color = boss.color;
+            els.choices.style.display = 'none';
+
+            typeWriter(line.text, () => {
+                els.nextBtn.style.display = 'block';
+                els.nextBtn.onclick = () => playerTurn(line);
+            });
+        }
+
+        function playerTurn(line) {
+            els.nextBtn.style.display = 'none';
+            els.speaker.textContent = 'Sindicat';
+            els.speaker.style.color = 'var(--player-color)';
+            els.text.textContent = "Opció de resposta:";
+
+            els.choices.innerHTML = '';
+            els.choices.style.display = 'flex';
+
+            line.options.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'btn-choice';
+                btn.textContent = opt.text;
+                btn.onclick = () => resolveRound(opt);
+                els.choices.appendChild(btn);
+            });
+        }
+
+        function resolveRound(option) {
+            els.choices.style.display = 'none';
+            bossHP -= option.dmg;
+            if (option.selfDmg) playerHP -= option.selfDmg;
+
+            if (option.type === 'crit') els.bossImg.classList.add('shake');
+            else if (option.type === 'fail') document.getElementById('player-img').classList.add('shake');
+
+            setTimeout(() => {
+                els.bossImg.classList.remove('shake');
+                document.getElementById('player-img').classList.remove('shake');
+            }, 500);
+
+            updateBars();
+
+            if (playerHP <= 0) {
+                showResult(false, "ACOMIADAT!", "El Boss t'ha vençut.");
+                return;
+            }
+
+            if (bossHP <= 0) {
+                completeLevel();
+                showResult(true, "VICTÒRIA TOTAL!", "Has destrossat la paciència del Boss.");
+                return;
+            }
+
+            setTimeout(bossTurn, 1000);
+        }
+
+        function completeLevel() {
+            if (!completedEras.includes(currentBossIdx)) {
+                completedEras.push(currentBossIdx);
+                localStorage.setItem('vagaMusicalProgress', JSON.stringify(completedEras));
+            }
+        }
+
+        function showResult(win, title, desc) {
+            els.resultModal.style.display = 'flex';
+            els.resultTitle.textContent = title;
+            els.resultDesc.textContent = desc;
+            els.resultTitle.style.color = win ? 'gold' : 'red';
+        }
+
+    </script>
+</body>
+
+</html>

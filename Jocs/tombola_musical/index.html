@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tómbola Musical</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rye&family=Roboto:wght@400;700&family=Bungee+Inline&display=swap');
+
+        :root {
+            --booth-red: #d32f2f;
+            --booth-gold: #ffc107;
+            --booth-blue: #1976d2;
+            --wood: #5d4037;
+            --light-on: #fff700;
+            --light-off: #555;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('./img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(8px) brightness(0.6);
+            transform: scale(1.1);
+            z-index: -1;
+        }
+
+        #game-container {
+            position: relative;
+            width: 95vw;
+            height: 90vh;
+            max-width: 1200px;
+            border: 10px solid transparent;
+            border-image: radial-gradient(circle, var(--booth-gold) 40%, transparent 40%) 20;
+            z-index: 10;
+        }
+
+        @keyframes lights {
+            from {
+                opacity: 0.7;
+                scale: 1.002;
+            }
+
+            to {
+                opacity: 1;
+                scale: 1;
+            }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 10px 20px;
+            background: linear-gradient(to bottom, var(--booth-red), #8e0000);
+            border-bottom: 5px solid var(--booth-gold);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Volume Slider */
+        .vol-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid var(--booth-gold);
+        }
+
+        .vol-control span {
+            font-size: 1.5rem;
+        }
+
+        input[type=range] {
+            accent-color: var(--booth-gold);
+            cursor: pointer;
+        }
+
+        h1 {
+            font-family: 'Rye', serif;
+            font-size: 3.5rem;
+            margin: 0;
+            color: var(--booth-gold);
+            text-shadow: 3px 3px 0 #000, 0 0 20px rgba(255, 193, 7, 0.5);
+            letter-spacing: 3px;
+        }
+
+        /* Layout */
+        #main-area {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        #wheel-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #prize-section {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 3px solid var(--wood);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 {
+            font-family: 'Rye', serif;
+            color: var(--booth-gold);
+            margin-top: 0;
+        }
+
+        /* The Wheel */
+        #wheel-wrapper {
+            position: relative;
+            width: 450px;
+            height: 450px;
+        }
+
+        #wheel-canvas {
+            width: 100%;
+            height: 100%;
+            border: 10px solid var(--booth-gold);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            transition: transform 4s cubic-bezier(0.15, 0, 0.2, 1);
+        }
+
+        #pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 70px;
+            background: var(--booth-red);
+            clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+            z-index: 20;
+            border: 3px solid white;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+        }
+
+        #spin-btn {
+            margin-top: 30px;
+            padding: 15px 50px;
+            font-family: 'Bungee Inline', cursive;
+            font-size: 2rem;
+            background: var(--booth-gold);
+            border: none;
+            border-radius: 50px;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #b79100, 0 15px 20px rgba(0, 0, 0, 0.4);
+            transition: all 0.1s;
+        }
+
+        #spin-btn:hover {
+            background: #ffca28;
+            transform: translateY(-2px);
+        }
+
+        #spin-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #b79100;
+        }
+
+        #spin-btn:disabled {
+            background: #999;
+            box-shadow: 0 8px 0 #666;
+            cursor: not-allowed;
+        }
+
+        /* Prize Shelf -> Era Collection Grid */
+        #collection-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .era-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .era-card.completed {
+            border-color: var(--booth-gold);
+            background: rgba(255, 193, 7, 0.1);
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .era-title {
+            font-size: 0.8rem;
+            color: #ccc;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .token-slots {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .token-slot {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .token-slot.filled {
+            background: var(--booth-gold);
+            border-color: #fff;
+            box-shadow: 0 0 5px var(--booth-gold);
+            animation: popIn 0.3s;
+            background-image: url('./img/moneda.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .teddy-display {
+            width: 80px;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            filter: grayscale(1) opacity(0.3);
+            transition: all 0.5s;
+        }
+
+        .era-card.completed .teddy-display {
+            filter: grayscale(0) opacity(1);
+            transform: scale(1.1);
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.5), transparent);
+        }
+
+        .teddy-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+            /* Hidden by default until we have images */
+        }
+
+        /* Temporary emoji display */
+        .teddy-emoji {
+            display: block;
+        }
+
+        /* Quiz Modal */
+        #quiz-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #quiz-content {
+            background: #fff;
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            border: 8px solid var(--booth-gold);
+            position: relative;
+        }
+
+        #quiz-era {
+            font-family: 'Rye', serif;
+            color: var(--booth-red);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        #question-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: var(--booth-blue);
+            color: white;
+            border-color: var(--booth-blue);
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            text-align: center;
+        }
+
+        .start-btn {
+            padding: 20px 60px;
+            font-family: 'Rye', serif;
+            font-size: 2.5rem;
+            background: var(--booth-red);
+            color: var(--booth-gold);
+            border: 4px solid var(--booth-gold);
+            cursor: pointer;
+        }
+
+        /* Feedback Overlay */
+        #feedback {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 200;
+            display: none;
+        }
+
+        .correct {
+            background: #4caf50;
+            color: white;
+        }
+
+        .wrong {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div class="marquee"></div>
+
+        <header>
+            <h1>TÓMBOLA MUSICAL</h1>
+            <div class="vol-control">
+                <span>🎵</span>
+                <input type="range" min="0" max="1" step="0.1" value="0.3"
+                    oninput="document.getElementById('bg-music').volume=this.value">
+            </div>
+        </header>
+
+        <audio id="bg-music" src="./audio/Carousel%20Candy.m4a" loop></audio>
+
+        <div id="main-area">
+            <div id="wheel-section">
+                <div id="pointer"></div>
+                <div id="wheel-wrapper">
+                    <canvas id="wheel-canvas" width="500" height="500"></canvas>
+                </div>
+                <button id="spin-btn">GIRA LA RUEDA!</button>
+            </div>
+
+            <div id="prize-section">
+                <h2>COL·LECCIÓ</h2>
+                <div id="collection-grid">
+                    <!-- JS will populate this -->
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8; text-align: center;">
+                    3 Fitxes = 1 Peluix<br>Aconsegueix els 6 Peluixos!
+                </p>
+            </div>
+        </div>
+
+        <div id="quiz-modal">
+            <div id="quiz-content">
+                <div id="quiz-era">Època</div>
+                <div id="question-text">Pregunta?</div>
+                <div id="options-container">
+                    <!-- Buttons here -->
+                </div>
+            </div>
+        </div>
+
+        <div id="start-screen">
+            <h1 style="font-size: 5rem; margin-bottom: 20px;">BENVINGUTS!</h1>
+            <p style="font-size: 1.5rem; max-width: 700px; margin-bottom: 30px;">
+                COL·LECCIONA ELS 6 PELUIXOS MUSICALS!<br><br>
+                1. Gira la roda per triar una època.<br>
+                2. En encertar la pregunta, guanyes 1 FITXA.<br>
+                3. Amb 3 FITXES d'una època... GUANYES EL SEU PELUIX!<br>
+            </p>
+            <p style="font-size: 1.2rem; color: var(--booth-gold); margin-bottom: 40px;">
+                Aconseguiràs completar la col·lecció sencera?
+            </p>
+            <button class="start-btn" id="start-game-btn">COMENÇAR</button>
+        </div>
+
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const ERAS = [
+            { id: "edat_mitjana", name: "EDAT MITJANA", color: "#9c27b0" },
+            { id: "renaixement", name: "RENAIXEMENT", color: "#e91e63" },
+            { id: "barroc", name: "BARROC", color: "#3f51b5" },
+            { id: "classicisme", name: "CLASSICISME", color: "#00bcd4" },
+            { id: "romanticisme", name: "ROMANTICISME", color: "#ff9800" },
+            { id: "segle_xx", name: "SEGLE XX", color: "#4caf50" }
+        ];
+
+        const DB = {
+            edat_mitjana: [
+                { q: "Quina era la principal música a l'església?", a: ["Cant Gregorià", "Òpera", "Simfonia", "Jazz"], c: 0 },
+                { q: "Com s'anomenaven els poetes-músics que viatjaven?", a: ["Trobadors", "DJs", "Sopranos", "Samurais"], c: 0 },
+                { q: "Quin sistema d'escriptura musical s'usava abans de les notes?", a: ["Neumes", "Emojis", "Jeroglífics", "Codi Morse"], c: 0 }
+            ],
+            renaixement: [
+                { q: "Quina invenció va permetre difondre la música?", a: ["La Impremta", "Internet", "La Ràdio", "El CD"], c: 0 },
+                { q: "Com s'anomena l'estil de moltes veus simultànies?", a: ["Polifonia", "Solo", "Punk", "Monodia"], c: 0 },
+                { q: "Quin instrument era molt popular a les cases?", a: ["Llaüt", "Sintetitzador", "Saxofon", "Bateria"], c: 0 }
+            ],
+            barroc: [
+                { q: "Quin compositor és el gran mestre de la Fuga?", a: ["Bach", "Mozart", "Elvis", "Beethoven"], c: 0 },
+                { q: "Quin estil teatral neix en el Barroc?", a: ["Òpera", "Musical", "Sitcom", "Tragèdia Grega"], c: 0 },
+                { q: "Qui va compondre 'Les Quatre Estacions'?", a: ["Vivaldi", "Händel", "Purcell", "Lully"], c: 0 }
+            ],
+            classicisme: [
+                { q: "Quin nen prodigi va compondre des dels 5 anys?", a: ["Mozart", "Brahms", "Wagner", "Schumann"], c: 0 },
+                { q: "Quin instrument de tecla es va fer popular?", a: ["Piano", "Sintetitzatador", "Clavicèmbal", "Acordió"], c: 0 },
+                { q: "Quina forma musical per a orquestra neix ara?", a: ["Simfonia", "Videoclip", "Oratori", "Jazz Session"], c: 0 }
+            ],
+            romanticisme: [
+                { q: "Quin valor era el més important per als romàntics?", a: ["L'Emoció", "L'Ordre", "La Raó", "Els Diners"], c: 0 },
+                { q: "Quin compositor va quedar sord però seguia creant?", a: ["Beethoven", "Chopin", "Liszt", "Verdi"], c: 0 },
+                { q: "Com s'anomena la unió de música i poesia pel cant?", a: ["Lied", "Rap", "Reggaeton", "Himne"], c: 0 }
+            ],
+            segle_xx: [
+                { q: "Quin estil va trencar amb la tonalitat tradicional?", a: ["Atonalitat", "Pop", "Rock", "Disco"], c: 0 },
+                { q: "Quin estil neix als EUA amb molta improvisació?", a: ["Jazz", "Flamenc", "Salsa", "Country"], c: 0 },
+                { q: "Quins instruments nous apareixen?", a: ["Electrònics", "De fusta", "De pedra", "Cap"], c: 0 }
+            ]
+        };
+
+        const PRIZE_DATA = {
+            "edat_mitjana": "./img/mitjana.png",
+            "renaixement": "./img/renaixement.png",
+            "barroc": "./img/barroc.png",
+            "classicisme": "./img/classicisme.png",
+            "romanticisme": "./img/romanticisme.png",
+            "segle_xx": "./img/segleXX.png"
+        };
+
+        // --- STATE ---
+        let currentRotation = 0;
+        let isSpinning = false;
+        let tokens = {
+            edat_mitjana: 0,
+            renaixement: 0,
+            barroc: 0,
+            classicisme: 0,
+            romanticisme: 0,
+            segle_xx: 0
+        };
+        let selectedEraIndex = 0;
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+
+            if (type === 'tick') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'win') {
+                const frequencies = [523, 659, 783, 1046];
+                frequencies.forEach((f, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.frequency.setValueAtTime(f, now + i * 0.1);
+                    gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.3);
+                });
+            } else if (type === 'lose') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(40, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- CORE ---
+        let canvas, ctx, spinBtn;
+        let lastTickedAngle = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Tombola Musical Script Loaded");
+            try {
+                canvas = document.getElementById('wheel-canvas');
+                ctx = canvas.getContext('2d');
+                spinBtn = document.getElementById('spin-btn');
+
+                // Event Listeners
+                spinBtn.addEventListener('click', spinWheel);
+
+                const startBtn = document.getElementById('start-game-btn');
+                if (startBtn) startBtn.addEventListener('click', startGame);
+
+                // Initial Draw (only static)
+                // drawWheel is called in startGame
+            } catch (e) {
+                console.error("Init Error:", e);
+                alert("Game Init Error: " + e.message);
+            }
+        });
+
+        function drawWheel() {
+            if (!ctx) return;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = centerX - 10;
+            const sliceAngle = (2 * Math.PI) / ERAS.length;
+
+            ERAS.forEach((era, i) => {
+                ctx.beginPath();
+                ctx.fillStyle = era.color;
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.fill();
+                ctx.stroke();
+
+                // Text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(i * sliceAngle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "white";
+                ctx.font = "bold 20px Rye";
+                ctx.fillText(era.name, radius - 20, 10);
+                ctx.restore();
+            });
+
+            // Center circle
+            ctx.beginPath();
+            ctx.fillStyle = "white";
+            ctx.arc(centerX, centerY, 40, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "#d32f2f";
+            ctx.font = "bold 15px Rye";
+            ctx.textAlign = "center";
+            ctx.fillText("CHRONOS", centerX, centerY + 5);
+        }
+
+        function initGrid() {
+            const grid = document.getElementById('collection-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            ERAS.forEach(era => {
+                const card = document.createElement('div');
+                card.className = 'era-card';
+                card.id = `card-${era.id}`;
+                // Simplified innerHTML to avoid potential parsing issues
+                // Using a fallback mechanism that is safer
+                const imgSrc = PRIZE_DATA[era.id] || '';
+
+                card.innerHTML = `
+                    <div class="era-title" style="color:${era.color}">${era.name}</div>
+                    <div class="token-slots">
+                        <div class="token-slot" id="slot-${era.id}-1"></div>
+                        <div class="token-slot" id="slot-${era.id}-2"></div>
+                        <div class="token-slot" id="slot-${era.id}-3"></div>
+                    </div>
+                    <div class="teddy-display">
+                        <img class="teddy-img" src="${imgSrc}" alt="Teddy" onerror="this.style.display='none'; this.parentNode.innerText='🧸'">
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+
+
+        function startGame() {
+            try {
+                const screen = document.getElementById('start-screen');
+                if (screen) screen.style.display = 'none';
+
+                // Audio
+                const audio = document.getElementById('bg-music');
+                if (audio && audio.paused) {
+                    audio.volume = 0.3;
+                    audio.play().catch(e => console.log("Audio play blocked: " + e));
+                }
+
+                initGrid();
+                drawWheel();
+            } catch (e) {
+                alert("Error starting game: " + e.message);
+                console.error(e);
+            }
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+
+            isSpinning = true;
+            if (spinBtn) spinBtn.disabled = true;
+
+            const extraSpins = 5 + Math.random() * 5;
+            const extraDegrees = Math.random() * 360;
+            const totalDegrees = extraSpins * 360 + extraDegrees;
+
+            const startRotation = currentRotation;
+            currentRotation += totalDegrees;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Ticking sound logic
+            const sliceDegrees = 360 / ERAS.length;
+            let currentTempRotation = startRotation;
+            const animationDuration = 4000;
+            const frames = 60 * 4;
+            let frameCount = 0;
+
+            const tickInterval = setInterval(() => {
+                frameCount++;
+                const progress = frameCount / frames;
+                // Cubic ease out approximation
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const currentAngle = startRotation + (totalDegrees * easeOut);
+
+                if (Math.floor(currentAngle / sliceDegrees) !== Math.floor(lastTickedAngle / sliceDegrees)) {
+                    playSound('tick');
+                    lastTickedAngle = currentAngle;
+                }
+
+                if (frameCount >= frames) clearInterval(tickInterval);
+            }, 1000 / 60);
+
+            setTimeout(() => {
+                isSpinning = false;
+                calculateResult();
+            }, 4000);
+        }
+
+        function calculateResult() {
+            const actualRotation = currentRotation % 360;
+            let normalizedAngle = (270 - actualRotation) % 360;
+            if (normalizedAngle < 0) normalizedAngle += 360;
+
+            const sliceSize = 360 / ERAS.length;
+            selectedEraIndex = Math.floor(normalizedAngle / sliceSize);
+
+            showQuiz(ERAS[selectedEraIndex]);
+        }
+
+        function showQuiz(era) {
+            const modal = document.getElementById('quiz-modal');
+            const eraTitle = document.getElementById('quiz-era');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+
+            const questions = DB[era.id];
+            const qObj = questions[Math.floor(Math.random() * questions.length)];
+
+            eraTitle.textContent = era.name;
+            eraTitle.style.color = era.color;
+            questionText.textContent = qObj.q;
+
+            optionsContainer.innerHTML = '';
+            qObj.a.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(i === qObj.c);
+                optionsContainer.appendChild(btn);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function checkAnswer(correct) {
+            const modal = document.getElementById('quiz-modal');
+            modal.style.display = 'none';
+            if (spinBtn) spinBtn.disabled = false;
+
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+
+            if (correct) {
+                feedback.textContent = "CORRECTE! FITXA ACONSEGUIDA!";
+                feedback.className = "correct";
+                playSound('win');
+                winPrize(ERAS[selectedEraIndex].id);
+            } else {
+                feedback.textContent = "OOOH! NO ÉS CORRECTE. TORNA A INTENTAR-HO!";
+                feedback.className = "wrong";
+                playSound('lose');
+            }
+
+            setTimeout(() => {
+                feedback.style.display = 'none';
+                // Game win check moved to unlockTeddy
+            }, 2000);
+        }
+
+        function winPrize(eraId) {
+            // Logic: Add token
+            if (tokens[eraId] < 3) {
+                tokens[eraId]++;
+                // Update UI visually
+                const slot = document.getElementById(`slot-${eraId}-${tokens[eraId]}`);
+                if (slot) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = ''; // Icon handled by CSS background
+                }
+
+                // Check for Teddy Unlock
+                if (tokens[eraId] === 3) {
+                    setTimeout(() => unlockTeddy(eraId), 500);
+                }
+            } else {
+                // Already have teddy, bonus?
+                // For now, nothing special, just feedback
+            }
+        }
+
+        function unlockTeddy(eraId) {
+            const card = document.getElementById(`card-${eraId}`);
+            card.classList.add('completed');
+            playSound('win'); // Extra fanfare
+
+            // Check Win Game
+            const allDone = Object.values(tokens).every(val => val >= 3);
+            if (allDone) {
+                setTimeout(winGame, 1000);
+            }
+        }
+
+        function winGame() {
+            const startScreen = document.getElementById('start-screen');
+            startScreen.innerHTML = `
+                <h1 style="color:var(--booth-gold)">ENHORABONA!</h1>
+                <p style="font-size: 2rem;">Ets un expert de la Tómbola Musical!</p>
+                <p style="font-size: 5rem; margin: 20px;">🏆</p>
+                <button class="start-btn" onclick="location.reload()">TORNAR A JUGAR</button>
+            `;
+            startScreen.style.display = 'flex';
+        }
+
+        // Expose to window to ensure global access
+
+        // Expose to window to ensure global access
+        window.startGame = startGame;
+    </script>
+</body>
+
+</html>

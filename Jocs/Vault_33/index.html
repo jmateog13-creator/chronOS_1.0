@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault 33: The Initiation Ritual</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --v-blue: #0050b3;
+            --v-yellow: #ffc700;
+            --crt-green: #33ff33;
+            --crt-red: #ff3333;
+            --bg-dark: #0a0a0a;
+            --pip-bg: rgba(0, 30, 0, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            cursor: crosshair;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--crt-green);
+            font-family: 'VT323', monospace;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        /* --- CRT OVERLAY --- */
+        #monitor {
+            width: 95vw;
+            max-width: 1200px;
+            height: 90vh;
+            border: 20px solid #333;
+            border-radius: 40px;
+            position: relative;
+            background: #000;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 1), inset 0 0 100px rgba(51, 255, 51, 0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        #monitor::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 10;
+            background-size: 100% 3px, 2px 100%;
+            pointer-events: none;
+        }
+
+        #screen-mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 20, 0, 0.2);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* --- HUD --- */
+        #hud {
+            padding: 15px 25px;
+            border-bottom: 2px solid var(--crt-green);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 24px;
+            background: var(--pip-bg);
+            z-index: 20;
+        }
+
+        #rad-meter {
+            color: var(--crt-red);
+            font-weight: bold;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+            z-index: 15;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        #start-screen h1 {
+            font-size: 80px;
+            color: var(--v-yellow);
+            margin: 0;
+            text-shadow: 0 0 20px var(--v-yellow);
+        }
+
+        #start-screen .status {
+            font-size: 32px;
+            border: 2px solid var(--crt-green);
+            padding: 10px 30px;
+            margin: 20px 0;
+        }
+
+        /* --- INTERROGATION --- */
+        #interrogation-room {
+            display: none;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+            padding: 40px;
+        }
+
+        #npc-portrait-wrap {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 320px;
+            height: 320px;
+            border: 4px solid var(--v-yellow);
+            border-radius: 15px;
+            background: var(--v-blue);
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 80, 179, 0.5);
+            z-index: 10;
+        }
+
+        #npc-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #dialogue-box {
+            width: 65%;
+            margin-right: 0;
+            background: var(--pip-bg);
+            border: 2px solid var(--crt-green);
+            padding: 25px 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            z-index: 15;
+        }
+
+        #npc-name {
+            font-size: 28px;
+            color: var(--v-yellow);
+            border-bottom: 2px solid var(--v-yellow);
+            display: inline-block;
+        }
+
+        #dialogue-text {
+            font-size: 24px;
+            min-height: 80px;
+            line-height: 1.2;
+        }
+
+        #options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .option-btn {
+            background: rgba(0, 50, 0, 0.3);
+            border: 1px solid var(--crt-green);
+            color: var(--crt-green);
+            font-family: inherit;
+            font-size: 24px;
+            text-align: left;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+        }
+
+        .option-btn:hover {
+            color: var(--bg-dark);
+            background: var(--crt-green);
+            box-shadow: 0 0 15px var(--crt-green);
+        }
+
+        .option-btn::before {
+            content: "[ ] ";
+        }
+
+        .option-btn:hover::before {
+            content: "[X] ";
+        }
+
+        /* --- CONTROLS --- */
+        #bottom-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .volume-panel {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--crt-green);
+        }
+
+        input[type=range] {
+            width: 100px;
+            accent-color: var(--crt-green);
+            cursor: pointer;
+        }
+
+        /* --- END SCREENS --- */
+        #end-screen {
+            display: none;
+        }
+
+        .win-title {
+            color: var(--v-yellow);
+            font-size: 60px;
+            text-shadow: 0 0 20px var(--v-yellow);
+        }
+
+        .fail-title {
+            color: var(--crt-red);
+            font-size: 60px;
+            text-shadow: 0 0 20px var(--crt-red);
+        }
+
+        .btn-large {
+            background: var(--v-yellow);
+            color: var(--v-blue);
+            border: none;
+            padding: 15px 50px;
+            font-family: inherit;
+            font-size: 30px;
+            margin-top: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 199, 0, 0.4);
+        }
+
+        .btn-large:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- EFFECTS --- */
+        .shake {
+            animation: shake-anim 0.5s;
+        }
+
+        @keyframes shake-anim {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translate(-5px, -5px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translate(5px, 5px);
+            }
+        }
+
+        .flash-green {
+            animation: flash-g 0.3s;
+        }
+
+        @keyframes flash-g {
+            0% {
+                box-shadow: inset 0 0 100px rgba(51, 255, 51, 0.5);
+            }
+
+            100% {
+                box-shadow: none;
+            }
+        }
+
+        .flash-red {
+            animation: flash-r 0.3s;
+        }
+
+        @keyframes flash-r {
+            0% {
+                box-shadow: inset 0 0 100px rgba(255, 51, 51, 0.5);
+            }
+
+            100% {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="monitor" style="background-image: url('img/fonssupervisor.jpg');">
+        <div id="screen-mask"></div>
+        <div id="hud">
+            <div>VAULT-TEC PROTOCOL v4.0.1</div>
+            <div id="citizen-score">LOYALTY: 0</div>
+            <div id="rad-meter">RADS: 000 MSV</div>
+        </div>
+
+        <div id="start-screen" class="screen">
+            <h1>VAULT 33</h1>
+            <div class="status">CITIZENSHIP STATUS: PENDING</div>
+            <div style="font-size: 24px; max-width: 800px; margin-bottom: 20px;">
+                BENVINGUT AL REFUGI 33. PER SER ACCEPTAT, HAS DE DEMOSTRAR QUE ETS UN CIUTADÀ EXEMPLAR.
+                ELS NOSTRES HABITANTS T'INTERROGARAN SOBRE HISTÒRIA DE LA CULTURA MUSICAL.
+            </div>
+            <button class="btn-large" onclick="game.start()">INICIAR PROTOCOL</button>
+        </div>
+
+        <div id="interrogation-room" class="screen">
+            <div id="npc-portrait-wrap">
+                <img id="npc-img" src="" alt="Habitant">
+            </div>
+            <div id="dialogue-box">
+                <div id="npc-name">NPC NAME</div>
+                <div id="dialogue-text">Dialogue here...</div>
+                <div id="options-container"></div>
+            </div>
+        </div>
+
+        <div id="end-screen" class="screen">
+            <div id="result-title"></div>
+            <div id="result-desc" style="font-size: 28px; margin-top: 20px;"></div>
+            <button class="btn-large" onclick="location.reload()">REINTENTAR</button>
+        </div>
+
+        <div id="bottom-controls">
+            <div class="volume-panel">
+                <span id="vol-icon">🔊</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5"
+                    oninput="game.updateVolume(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const INITIATION_DATA = [
+            {
+                npc: "SUPERVISOR",
+                img: "supervisor.jpg",
+                bg: "fonssupervisor.jpg",
+                dialogue: "ATENCIÓ, NOVELL. PER VIURE AQUÍ HAS DE SABER HISTÒRIA. DE QUÈ TRACTAVEN LES CANÇONS DELS TROBADORS?",
+                options: ["DE DÉU I LA BÍBLIA", "D'AMOR I CAVALLERS", "DE POLÍTICA"],
+                correct: 1
+            },
+            {
+                npc: "CAP DE SEGURETAT",
+                img: "capdeseguritat.jpg",
+                bg: "fonscapdeseguritat.jpg",
+                dialogue: "PROTOCOL DE TEXTURA. EL CANT GREGORIÀ ÉS SIMPLE. QUINA ÉS LA SEVA CARACTERÍSTICA PRINCIPAL?",
+                options: ["POLIFONIA (MOLTES VEUS)", "MONODIA (UNA SOLA VEU)", "MELODIA ACOMPANYADA"],
+                correct: 1
+            },
+            {
+                npc: "MESTRE D'ESCOLA",
+                img: "mestre.jpg",
+                bg: "fonsescola.jpg",
+                dialogue: "AVANCEM EN EL TEMPS. QUIN INVENT VA PERMETRE FER LLIBRES I PARTITURES RÀPIDAMENT?",
+                options: ["LA MÀQUINA D'ESCRIURE", "LA IMPREMTA", "L'ORDINADOR"],
+                correct: 1
+            },
+            {
+                npc: "ENGINYER DE SO",
+                img: "enginyerdeso.jpg",
+                bg: "fonsenginyer.jpg",
+                dialogue: "ANALITZA L'ÀUDIO. QUÈ SIGNIFICA 'POLIFONIA'?",
+                options: ["UNA SOLA VEU", "MOLTES VEU SONANT ALHORA", "MÚSICA SENSE VEU"],
+                correct: 1
+            },
+            {
+                npc: "DJ DE LA SALA COMUNA",
+                img: "dj.jpg",
+                bg: "fonsdj.jpg",
+                dialogue: "M'AGRADA EL RITME FORT. QUÈ BUSCA LA MÚSICA DEL BARROC AMB EL VOLUM?",
+                options: ["L'EQUILIBRI", "EL CONTRAST (FORT/FLUIX)", "LA MONOTONIA"],
+                correct: 1
+            },
+            {
+                npc: "MECÀNIC DE MANTENIMENT",
+                img: "mecanic.jpg",
+                bg: "fonsmecanic.jpg",
+                dialogue: "EL RITME ÉS COM UN MOTOR. QUÈ ÉS EL 'BAIX CONTINU'?",
+                options: ["UN INSTRUMENT FLUIX", "UNA BASE RÍTMICA QUE MAI PARA", "UN CANTANT BAIX"],
+                correct: 1
+            },
+            {
+                npc: "CIENTÍFIC DEL REFUGI",
+                img: "cientific.jpg",
+                bg: "fonscientific.jpg",
+                dialogue: "AQUÍ ENS AGRADA LA LÒGICA. QUÈ ERA EL MÉS IMPORTANT AL CLASSICISME?",
+                options: ["ELS SENTIMENTS", "LA RAÓ, L'ORDRE I LA INTEL·LIGÈNCIA", "EL LUXE"],
+                correct: 1
+            },
+            {
+                npc: "DIRECTOR D'ORQUESTRA",
+                img: "director.jpg",
+                bg: "fonsteatre.jpg",
+                dialogue: "COM S'ORGANITZA UNA ORQUESTRA CIVILITZADA?",
+                options: ["ÉS UN GRUP DESORDENAT", "TÉ SECCIONS CLARES (CORDA, VENT...)", "NOMÉS VIOLINS"],
+                correct: 1
+            },
+            {
+                npc: "POETA TRIST",
+                img: "poeta.jpg",
+                bg: "fonspoeta.jpg",
+                dialogue: "LA LÒGICA ÉS AVORRIDA. QUÈ ÉS EL 'RUBATO'?",
+                options: ["ROBAR UN INSTRUMENT", "CANVIAR LA VELOCITAT LLIUREMENT PER EMOCIONAR", "TOCAR IGUAL"],
+                correct: 1
+            },
+            {
+                npc: "REBEL DEL REFUGI",
+                img: "rebel.jpg",
+                bg: "fonsrebel.jpg",
+                dialogue: "L'ÚLTIMA PROVA. QUÈ FA LA MÚSICA DE SCHÖNBERG (EXPRESSIONISME)?",
+                options: ["SONA RELAXANT", "UTILITZA LA DISSONÀNCIA EXPRESSAMENT", "ÉS POP SIMPLISTA"],
+                correct: 1
+            }
+        ];
+
+        class VaultGame {
+            constructor() {
+                this.currentIndex = 0;
+                this.score = 0;
+                this.rads = 0;
+                this.isTyping = false;
+                this.typingTimer = null;
+                this.bgMusic = new Audio('audio/Sublevel Broadcast.m4a');
+                this.bgMusic.loop = true;
+                this.bgMusic.volume = 0.5;
+
+                // Add click to skip
+                document.getElementById('monitor').addEventListener('click', () => {
+                    if (this.isTyping) this.skipDialogue();
+                });
+            }
+
+            updateVolume(val) {
+                this.bgMusic.volume = val;
+                document.getElementById('vol-icon').innerText = val == 0 ? "🔇" : "🔊";
+            }
+
+            start() {
+                this.bgMusic.play().catch(e => console.log("Audio block"));
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('interrogation-room').style.display = 'flex';
+                this.loadQuestion();
+            }
+
+            loadQuestion() {
+                if (this.currentIndex >= INITIATION_DATA.length) {
+                    this.finish();
+                    return;
+                }
+
+                const data = INITIATION_DATA[this.currentIndex];
+                document.getElementById('monitor').style.backgroundImage = `url('img/${data.bg}')`;
+                document.getElementById('npc-name').innerText = data.npc;
+                document.getElementById('npc-img').src = `img/${data.img}`;
+
+                this.typeDialogue(data.dialogue);
+                document.getElementById('options-container').innerHTML = "";
+            }
+
+            typeDialogue(text) {
+                if (this.typingTimer) clearInterval(this.typingTimer);
+                this.isTyping = true;
+                let i = 0;
+                const dialogueEl = document.getElementById('dialogue-text');
+                dialogueEl.innerText = "";
+
+                this.typingTimer = setInterval(() => {
+                    dialogueEl.innerText += text.charAt(i);
+                    i++;
+                    if (i >= text.length) {
+                        this.finishTyping();
+                    }
+                }, 20);
+            }
+
+            skipDialogue() {
+                const data = INITIATION_DATA[this.currentIndex];
+                if (!data) return;
+                document.getElementById('dialogue-text').innerText = data.dialogue;
+                this.finishTyping();
+            }
+
+            finishTyping() {
+                clearInterval(this.typingTimer);
+                this.typingTimer = null;
+                this.isTyping = false;
+                this.showOptions();
+            }
+
+            showOptions() {
+                const data = INITIATION_DATA[this.currentIndex];
+                const container = document.getElementById('options-container');
+                data.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = opt;
+                    btn.onclick = () => this.checkAnswer(idx);
+                    container.appendChild(btn);
+                });
+            }
+
+            checkAnswer(idx) {
+                if (this.isTyping) return;
+
+                const data = INITIATION_DATA[this.currentIndex];
+                const monitor = document.getElementById('monitor');
+
+                if (idx === data.correct) {
+                    this.score++;
+                    monitor.classList.add('flash-green');
+                    document.getElementById('citizen-score').innerText = `LOYALTY: ${this.score * 10}`;
+                    setTimeout(() => monitor.classList.remove('flash-green'), 300);
+
+                    this.currentIndex++;
+                    setTimeout(() => this.loadQuestion(), 800);
+                } else {
+                    this.rads = 999;
+                    monitor.classList.add('shake', 'flash-red');
+                    document.getElementById('rad-meter').innerText = `RADS: 999 MSV`;
+                    document.getElementById('dialogue-text').innerText = "ERROR CRÍTIC: SI NO SAPS AIXÒ, NO ETS DIGNE D'ENTRAR AL REFUGI.";
+                    document.getElementById('dialogue-text').style.color = "var(--crt-red)";
+
+                    setTimeout(() => {
+                        monitor.classList.remove('shake', 'flash-red');
+                        this.finish(); // Immediate failure
+                    }, 1200);
+                }
+            }
+
+            finish() {
+                document.getElementById('interrogation-room').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'flex';
+
+                const title = document.getElementById('result-title');
+                const desc = document.getElementById('result-desc');
+
+                if (this.score >= 8) {
+                    title.innerText = "BENVINGUT A CASA";
+                    title.className = "win-title";
+                    desc.innerText = "HAS SUPERAT EL PROTOCOL D'INICIACIÓ. ETS UN CIUTADÀ EXEMPLAR DEL REFUGI 33.";
+                } else {
+                    title.innerText = "EXILI IMMINENT";
+                    title.className = "fail-title";
+                    desc.innerText = "SI NO SAPS AIXÒ, NO ETS DIGNE D'ENTRAR AL REFUGI. ELS TEUS NIVELLS DE RADIACIÓ SÓN INACCEPTABLES. LES PORTES S'OBRIRAN CAP A L'ERM.";
+                }
+            }
+        }
+
+        const game = new VaultGame();
+    </script>
+</body>
+
+</html>

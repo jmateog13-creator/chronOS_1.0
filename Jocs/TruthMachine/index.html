@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truth Machine: El Polígraf del Temps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --phosphor-primary: #00ff00;
+            --phosphor-secondary: #008f11;
+            --phosphor-alert: #ff3333;
+            --bg-color: #0c0c0c;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--phosphor-primary);
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-shadow: 0 0 5px var(--phosphor-secondary);
+        }
+
+        /* CRT EFFECT OVERLAY */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .crt-flicker {
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.97;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* CONTAINER */
+        #game-interface {
+            width: 90%;
+            max-width: 900px;
+            border: 4px solid var(--phosphor-secondary);
+            padding: 30px;
+            background: rgba(0, 20, 0, 0.95);
+            box-shadow: 0 0 30px var(--phosphor-secondary);
+            position: relative;
+            border-radius: 10px;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--phosphor-secondary);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 2px;
+        }
+
+        #score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* MAIN CONTENT GRID */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+
+        /* SUBJECT PROFILE */
+        #subject-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 2px solid var(--phosphor-secondary);
+            padding-right: 20px;
+        }
+
+        #subject-img {
+            width: 200px;
+            height: 200px;
+            border: 4px solid var(--phosphor-primary);
+            margin-bottom: 15px;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.2) sepia(50%) hue-rotate(50deg);
+            box-shadow: 0 0 15px var(--phosphor-secondary);
+        }
+
+        #subject-info h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .subject-meta {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* ANALYSIS AREA */
+        #analysis-area {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* POLYGRAPH CANVAS */
+        #polygraph-container {
+            width: 100%;
+            height: 180px;
+            background: #001100;
+            border: 2px solid var(--phosphor-secondary);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #polygraph-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 95%, rgba(0, 255, 0, 0.5) 100%);
+            background-size: 40px 100%;
+            /* Grid lines */
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* QUESTION BOX */
+        #question-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 2px dashed var(--phosphor-secondary);
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(0, 10, 0, 0.5);
+            min-height: 100px;
+        }
+
+        #question-text {
+            font-size: 1.4rem;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* CONTROLS */
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        button {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            padding: 15px 50px;
+            border: 3px solid;
+            background: black;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-true {
+            color: var(--phosphor-primary);
+            border-color: var(--phosphor-primary);
+        }
+
+        .btn-true:hover {
+            background: var(--phosphor-primary);
+            color: black;
+            box-shadow: 0 0 20px var(--phosphor-primary);
+        }
+
+        .btn-false {
+            color: var(--phosphor-alert);
+            border-color: var(--phosphor-alert);
+        }
+
+        .btn-false:hover {
+            background: var(--phosphor-alert);
+            color: black;
+            box-shadow: 0 0 20px var(--phosphor-alert);
+        }
+
+        /* SELECTION SCREEN */
+        #selection-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        #selection-screen h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px var(--phosphor-primary);
+        }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .char-card {
+            border: 2px solid var(--phosphor-secondary);
+            padding: 15px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: rgba(0, 20, 0, 0.5);
+        }
+
+        .char-card:hover {
+            background: var(--phosphor-secondary);
+            color: black;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--phosphor-primary);
+        }
+
+        .char-card img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.2);
+            border: 2px solid currentColor;
+            margin-bottom: 10px;
+        }
+
+        .char-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .char-era {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* RESULT OVERLAY */
+        #result-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 50;
+        }
+
+        #result-status {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border: 4px solid currentColor;
+            padding: 10px 40px;
+            transform: rotate(-5deg);
+        }
+
+        #result-msg {
+            font-size: 1.5rem;
+            max-width: 800px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            color: #fff;
+        }
+
+        /* PULSE ANIMATION FOR TENSION */
+        .tension-pulse {
+            animation: tension 0.5s infinite alternate;
+        }
+
+        @keyframes tension {
+            from {
+                box-shadow: 0 0 10px var(--phosphor-alert) inset;
+            }
+
+            to {
+                box-shadow: 0 0 50px var(--phosphor-alert) inset;
+            }
+        }
+
+        /* MUSIC CONTROL */
+        #music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        #music-control:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop>
+        <source src="audio/Cold Room Questions.m4a" type="audio/mpeg">
+    </audio>
+    <div id="music-control" onclick="toggleMusic()">🔇</div>
+
+    <div class="scanlines"></div>
+    <div class="crt-flicker"
+        style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+
+        <!-- SELECTION SCREEN -->
+        <div id="selection-screen">
+            <h1>TRUTH MACHINE</h1>
+            <p style="font-size: 1.5rem; letter-spacing: 1px;">SISTEMA DE DETECCIÓ D'ANACRONISMES ACTIU</p>
+            <p>Selecciona un subjecte per iniciar l'interrogatori:</p>
+            <div class="char-grid" id="char-grid">
+                <!-- JS Populated -->
+            </div>
+        </div>
+
+        <!-- GAME UI -->
+        <div id="game-interface" style="display:none;">
+            <header>
+                <div>
+                    <span style="font-size: 1.2rem;">SISTEMA: V.2.04 [ACTIU]</span><br>
+                    <span style="font-size: 0.9rem; opacity: 0.7;">CONNEXIÓ ESTABLE</span>
+                </div>
+                <div id="score-display">CREDIBILITAT: 0%</div>
+            </header>
+
+            <div class="main-grid">
+                <!-- LEFT COL -->
+                <div id="subject-area">
+                    <img id="subject-img" src="" alt="Subject">
+                    <div id="subject-info">
+                        <h2 id="subject-name">Name</h2>
+                        <div class="subject-meta" id="subject-meta">ERA: UNKNOWN<br>ID: #0000</div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COL -->
+                <div id="analysis-area">
+                    <div id="polygraph-container">
+                        <canvas id="polyGraph"></canvas>
+                        <div class="tension-pulse"
+                            style="font-weight:bold; letter-spacing:1px; color:#fff; background:rgba(0,50,0,0.8); position: absolute; top: 10px; right: 10px; font-size: 0.8rem; padding: 4px 8px; border: 1px solid var(--phosphor-primary);">
+                            PULSE MONITOR</div>
+                    </div>
+
+                    <div id="question-container">
+                        <div
+                            style="font-size: 0.9rem; margin-bottom: 10px; opacity: 0.7; border-bottom: 1px solid var(--phosphor-secondary); padding-bottom: 5px;">
+                            DECLARACIÓ #<span id="q-num">1</span></div>
+                        <div id="question-text">Carregant dades del subjecte...</div>
+                    </div>
+
+                    <div id="controls">
+                        <button class="btn-false" onclick="submitAnswer(false)">MENTIDA</button>
+                        <button class="btn-true" onclick="submitAnswer(true)">VERITAT</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULT OVERLAY -->
+            <div id="result-overlay">
+                <div id="result-status">CORRECTE</div>
+                <div id="result-msg">Explicació del resultat...</div>
+                <button class="btn-true" onclick="nextQuestion()">SEGÜENT DADA ></button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATABASE (6 ERAS) ---
+        const SUSPECTS_DB = [
+            {
+                id: "medieval",
+                name: "Guido d'Arezzo",
+                era: "EDAT MITJANA",
+                years: "c. 991 - c. 1033",
+                img: "img/guido.png",
+                questions: [
+                    { text: "Sóc un monjo benedictí i visc en un monestir.", isTrue: true, explanation: "Correcte. Guido era un monjo de l'ordre de Sant Benet." },
+                    { text: "Vaig inventar un sistema per escriure les notes musicals.", isTrue: true, explanation: "Correcte. El tetragrama i el nom de les notes (Ut, Re, Mi...)." },
+                    { text: "Componc simfonies per a grans orquestres.", isTrue: false, explanation: "MENTIDA! Les orquestres simfòniques són molt posteriors (segle XVIII/XIX)." },
+                    { text: "La meva mà ajuda a memoritzar les notes (La Mà Guidoniana).", isTrue: true, explanation: "Correcte. Un sistema pedagògic que utilitzava les falanges de la mà." },
+                    { text: "Utilitzo el piano per compondre les meves obres.", isTrue: false, explanation: "MENTIDA! El piano es va inventar l'any 1700, segles després de la meva mort." },
+                    { text: "Vaig posar nom a les notes basant-me en un himne a Sant Joan.", isTrue: true, explanation: "Correcte. Ut, Re, Mi, Fa, Sol, La." },
+                    { text: "Vaig inventar el violí.", isTrue: false, explanation: "MENTIDA! El violí apareix al segle XVI." },
+                    { text: "El meu sistema de notació permetia cantar 'a primera vista'.", isTrue: true, explanation: "Correcte. Això va revolucionar l'aprenentatge musical." },
+                    { text: "Vaig viure a Florència tota la vida.", isTrue: false, explanation: "MENTIDA! Vaig estar a l'abadia de Pomposa i a Arezzo." },
+                    { text: "La 'Micrologus' és la meva obra teòrica més famosa.", isTrue: true, explanation: "Correcte. És un tractat fonamental de l'Edat Mitjana." }
+                ]
+            },
+            {
+                id: "renaixement",
+                name: "G.P. da Palestrina",
+                era: "RENAIXEMENT",
+                years: "c. 1525 - 1594",
+                img: "img/palestrina.png",
+                questions: [
+                    { text: "Diuen que vaig 'salvar' la polifonia al Concili de Trento.", isTrue: true, explanation: "Correcte. Es volia prohibir la polifonia per ser massa complexa, però vaig demostrar que podia ser clara." },
+                    { text: "Escric principalment música instrumental per ballar.", isTrue: false, explanation: "MENTIDA! La gran majoria de la meva obra és música vocal religiosa (misses, motets)." },
+                    { text: "Visc a Roma i treballo per al Papa.", isTrue: true, explanation: "Correcte. Vaig ser mestre de capella a Sant Pere del Vaticà." },
+                    { text: "Introdueixo instruments electrònics a les misses.", isTrue: false, explanation: "MENTIDA! Això és un anacronisme total." },
+                    { text: "La meva música busca l'equilibri i la perfecció de les veus.", isTrue: true, explanation: "Correcte. L'estil de Palestrina és el model de la polifonia renaixentista." },
+                    { text: "La meva música és coneguda com 'l'estil antic' o 'prima prattica'.", isTrue: true, explanation: "Correcte. En contraposició al nou estil barroc." },
+                    { text: "Vaig compondre molts madrigals profans, tot i ser un músic d'església.", isTrue: true, explanation: "Correcte. Encara que després me'n vaig 'penedir' una mica." },
+                    { text: "Vaig ser mestre de capella de l'Emperador d'Alemanya.", isTrue: false, explanation: "MENTIDA! La meva carrera va ser principalment a Roma." },
+                    { text: "La 'Missa del Papa Marcel' és la meva obra més llegendària.", isTrue: true, explanation: "Correcte. Una obra mestra de la polifonia." },
+                    { text: "Utilitzava trompetes i timbals a totes les misses.", isTrue: false, explanation: "MENTIDA! El meu estil era principalment a cappella." }
+                ]
+            },
+            {
+                id: "barroc",
+                name: "J.S. Bach",
+                era: "BARROC",
+                years: "1685 - 1750",
+                img: "img/bach.png",
+                questions: [
+                    { text: "Sóc un expert en l'art de la fuga.", isTrue: true, explanation: "Correcte. Bach va portar el contrapunt i la fuga al seu màxim esplendor." },
+                    { text: "He compost més de 40 òperes d'èxit.", isTrue: false, explanation: "MENTIDA! Bach és un dels grans compositors que MAI va escriure una òpera." },
+                    { text: "Vaig tenir 20 fills.", isTrue: true, explanation: "Correcte. Amb dues esposes, i molts d'ells van ser músics famosos (C.P.E. Bach, J.C. Bach...)." },
+                    { text: "Tocava el saxofon a les meves cantates.", isTrue: false, explanation: "MENTIDA! El saxofon és un instrument del segle XIX (Adolphe Sax)." },
+                    { text: "Vaig treballar com a Cantor a l'església de Sant Tomàs de Leipzig.", isTrue: true, explanation: "Correcte. Vaig passar-hi els últims 27 anys de la meva vida." },
+                    { text: "Vaig quedar cec al final de la meva vida després d'una operació.", isTrue: true, explanation: "Correcte. Una operació fallida de John Taylor." },
+                    { text: "La meva música va ser oblidada fins que Mendelssohn la va recuperar.", isTrue: true, explanation: "Correcte. Durant anys se'm considerava passat de moda." },
+                    { text: "Mai vaig sortir d'Alemanya.", isTrue: true, explanation: "Correcte. No vaig ser un gran viatger com Händel o Mozart." },
+                    { text: "Vaig escriure els 'Concerts de Brandenburg' per al rei d'Anglaterra.", isTrue: false, explanation: "MENTIDA! Eren per al Margrave de Brandenburg." },
+                    { text: "El 'Clavecí ben temperat' explora totes les tonalitats majors i menors.", isTrue: true, explanation: "Correcte. Una obra clau per als teclats." }
+                ]
+            },
+            {
+                id: "classicisme",
+                name: "W.A. Mozart",
+                era: "CLASSICISME",
+                years: "1756 - 1791",
+                img: "img/mozart.png",
+                questions: [
+                    { text: "Vaig ser un nen prodigi i tocava davant reis als 6 anys.", isTrue: true, explanation: "Correcte. Vaig viatjar per tot Europa sorprenent a tothom." },
+                    { text: "La meva òpera 'La Flauta Màgica' és famosa arreu del món.", isTrue: true, explanation: "Correcte. És una de les òperes més estimades de la història." },
+                    { text: "Vaig morir molt vell, ric i famós.", isTrue: false, explanation: "MENTIDA! Vaig morir als 35 anys i amb molts deutes." },
+                    { text: "Utilitzava un sintetitzador per fer sons màgics.", isTrue: false, explanation: "MENTIDA! El sintetitzador és un instrument del segle XX." },
+                    { text: "Sóc de Salzburg, Àustria.", isTrue: true, explanation: "Correcte. Allà vaig néixer el 1756." },
+                    { text: "La meva germana Nannerl també era una gran música.", isTrue: true, explanation: "Correcte. De petits tocàvem junts per tot Europa." },
+                    { text: "Vaig escriure el 'Rèquiem' en el meu llit de mort.", isTrue: true, explanation: "Correcte. No el vaig poder acabar jo mateix." },
+                    { text: "Salieri va ser el meu millor amic i mai vam competir.", isTrue: false, explanation: "MENTIDA! Érem rivals, tot i que no em va matar." },
+                    { text: "Vaig compondre més de 600 obres en la meva curta vida.", isTrue: true, explanation: "Correcte (Catàleg Köchel)." },
+                    { text: "Tinc una simfonia anomenada 'Júpiter'.", isTrue: true, explanation: "Correcte. La simfonia núm. 41." }
+                ]
+            },
+            {
+                id: "romanticisme",
+                name: "L. van Beethoven",
+                era: "ROMANTICISME",
+                years: "1770 - 1827",
+                img: "img/beethoven.png",
+                questions: [
+                    { text: "Vaig quedar completament sord, però vaig seguir component.", isTrue: true, explanation: "Correcte. És un dels fets més increïbles de la història de la música." },
+                    { text: "La meva 9a Simfonia inclou un cor que canta l'Oda a l'Alegria.", isTrue: true, explanation: "Correcte. Va ser la primera simfonia en incloure veus humanes." },
+                    { text: "Sempre estava de bon humor i era molt fàcil tractar amb mi.", isTrue: false, explanation: "MENTIDA! Tenia un caràcter molt fort, tempestuós i malhumorat." },
+                    { text: "Tocava la guitarra elèctrica en un grup de Rock.", isTrue: false, explanation: "MENTIDA! Sóc el pare del Romanticisme, no del Rock (encara que tinc molta energia!)." },
+                    { text: "Vaig dedicar una simfonia a Napoleó, però després vaig esborrar la dedicatòria.", isTrue: true, explanation: "Correcte. La Simfonia Heroica (Núm. 3)." },
+                    { text: "Vaig escriure només una òpera: 'Fidelio'.", isTrue: true, explanation: "Correcte. Em va costar moltíssim escriure-la." },
+                    { text: "La famosa peça 'Per a Elisa' va ser un èxit mundial mentre jo vivia.", isTrue: false, explanation: "MENTIDA! Es va descobrir anys després de la meva mort." },
+                    { text: "El meu testament de Heiligenstadt parla de la meva desesperació per la sordesa.", isTrue: true, explanation: "Correcte. Vaig pensar en suïcidar-me, però la música em va salvar." },
+                    { text: "Vaig estudiar breument amb Haydn.", isTrue: true, explanation: "Correcte. Però no ens vam entendre gaire bé." },
+                    { text: "La Cinquena Simfonia comença amb quatre notes famoses: Ta-ta-ta-taaa.", isTrue: true, explanation: "Correcte. El destí trucant a la porta." }
+                ]
+            },
+            {
+                id: "sxx",
+                name: "Igor Stravinsky",
+                era: "SEGLE XX",
+                years: "1882 - 1971",
+                img: "img/stravinsky.png",
+                questions: [
+                    { text: "El meu ballet 'La Consagració de la Primavera' va causar una baralla a l'estrena.", isTrue: true, explanation: "Correcte. El públic es va escandalitzar pel ritme salvatge i la dansa moderna." },
+                    { text: "Sóc un compositor del segle XX que experimenta amb el ritme.", isTrue: true, explanation: "Correcte. Sóc famós pels meus canvis de compàs i accents irregulars." },
+                    { text: "Compongc música tranquil·la per a meditació i ioga.", isTrue: false, explanation: "MENTIDA! La meva música sol ser intensa, complexa i energètica." },
+                    { text: "Sóc un trobador que va de castell en castell.", isTrue: false, explanation: "MENTIDA! Això és de l'Edat Mitjana." },
+                    { text: "Vaig néixer a Rússia però vaig viure a França i als Estats Units.", isTrue: true, explanation: "Correcte. Sóc un ciutadà del món." },
+                    { text: "El meu ballet 'L'Ocell de Foc' em va fer famós a París.", isTrue: true, explanation: "Correcte. Va ser el meu primer gran èxit amb Diàguilev." },
+                    { text: "Vaig escriure una obra per a elefants de circ.", isTrue: true, explanation: "Correcte. La 'Circus Polka' per a un ballet d'elefants." },
+                    { text: "Vaig rebutjar sempre la música del passat (Neoclassicisme).", isTrue: false, explanation: "MENTIDA! Vaig tenir una important etapa neoclàssica inspirada en el Barroc." },
+                    { text: "Vaig conèixer a Walt Disney i la meva música surt a 'Fantasia'.", isTrue: true, explanation: "Correcte. La Consagració de la Primavera surt amb dinosaures." },
+                    { text: "Sóc conegut per utilitzar només l'escala pentatònica.", isTrue: false, explanation: "MENTIDA! Utilitzo harmonies molt més complexes, politonalitat, etc." }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentSuspect = null;
+        let currentQuestions = [];
+        let currentQIndex = 0;
+        let correctAnswers = 0;
+        let isAnalyzing = false;
+        let tensionLevel = 0; // 0 to 1
+        let animationId;
+        let audioCtx = null; // For beep sounds (optional)
+
+        // Load progress
+        let completedEras = JSON.parse(localStorage.getItem('truthMachine_completed')) || [];
+
+        // --- CANVAS VARS ---
+        const canvas = document.getElementById('polyGraph');
+        const ctx = canvas.getContext('2d');
+        let points = [];
+        let speed = 3;
+        let offset = 0; // For scrolling
+
+        // --- INIT ---
+        window.onload = function () {
+            renderSelectionScreen();
+            animateGraph(); // initCanvas will be called in startGame
+
+            // Resize handler
+            window.addEventListener('resize', initCanvas);
+        };
+
+        function initCanvas() {
+            const container = document.getElementById('polygraph-container');
+            if (container.offsetWidth > 0) {
+                canvas.width = container.offsetWidth;
+                canvas.height = container.offsetHeight;
+                points = new Array(Math.ceil(canvas.width / speed) + 1).fill(canvas.height / 2);
+            }
+        }
+
+        function renderSelectionScreen() {
+            const grid = document.getElementById('char-grid');
+            grid.innerHTML = '';
+
+            SUSPECTS_DB.forEach((suspect, index) => {
+                const isDone = completedEras.includes(suspect.id);
+                const card = document.createElement('div');
+                card.className = "char-card";
+                if (isDone) card.style.borderColor = "var(--phosphor-primary)";
+
+                card.innerHTML = `
+                    <div style="position:absolute; top:5px; right:5px; color:var(--phosphor-primary); font-weight:bold; display:${isDone ? 'block' : 'none'}">[FET]</div>
+                    <img src="${suspect.img}" onerror="this.src='https://ui-avatars.com/api/?name=${suspect.name}&background=003300&color=00ff00&size=128'" style="${isDone ? 'filter: grayscale(0%) sepia(0%) hue-rotate(0deg) !important;' : ''}">
+                    <div class="char-name" style="${isDone ? 'color:var(--phosphor-primary)' : ''}">${suspect.name}</div>
+                    <div class="char-era">${suspect.era}</div>
+                `;
+                card.onclick = () => startGame(index);
+                grid.appendChild(card);
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- GAME LOGIC ---
+        function startGame(index) {
+            currentSuspect = SUSPECTS_DB[index];
+            // Clone and shuffle questions
+            currentQuestions = shuffleArray([...currentSuspect.questions]);
+
+            currentQIndex = 0;
+            correctAnswers = 0;
+            tensionLevel = 0;
+
+            document.getElementById('selection-screen').style.display = 'none';
+            document.getElementById('game-interface').style.display = 'block';
+
+            // Resize canvas now that it is visible
+            initCanvas();
+
+            // Setup Profile
+            document.getElementById('subject-name').textContent = currentSuspect.name;
+            document.getElementById('subject-meta').innerHTML = `ERA: ${currentSuspect.era}<br>ANY: ${currentSuspect.years}`;
+
+            const img = document.getElementById('subject-img');
+            img.src = currentSuspect.img;
+            img.onerror = function () {
+                this.src = `https://ui-avatars.com/api/?name=${currentSuspect.name}&background=003300&color=00ff00&size=128`;
+            };
+
+            updateScore();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQIndex >= currentQuestions.length) {
+                endGame();
+                return;
+            }
+
+            const q = currentQuestions[currentQIndex];
+            document.getElementById('q-num').textContent = currentQIndex + 1;
+            document.getElementById('question-text').textContent = `"${q.text}"`;
+            document.getElementById('result-overlay').style.display = 'none';
+
+            // Reset state
+            isAnalyzing = false;
+            tensionLevel = 0;
+            document.querySelector('.main-grid').classList.remove('tension-pulse');
+        }
+
+        function submitAnswer(userSaysTrue) {
+            if (isAnalyzing) return; // Prevent double click
+            isAnalyzing = true;
+
+            // Increase tension visuals
+            tensionLevel = 1;
+            document.querySelector('.main-grid').classList.add('tension-pulse');
+            document.getElementById('question-text').textContent = "ANALITZANT CONSTANTS VITALS...";
+
+            // Random delay between 1.5 and 2.5 seconds
+            const delay = 1500 + Math.random() * 1000;
+
+            setTimeout(() => {
+                const q = currentQuestions[currentQIndex];
+                const isCorrect = (userSaysTrue === q.isTrue);
+
+                showResult(isCorrect, q, userSaysTrue);
+            }, delay);
+        }
+
+        function showResult(isCorrect, q, userSaysTrue) {
+            const overlay = document.getElementById('result-overlay');
+            const status = document.getElementById('result-status');
+            const msg = document.getElementById('result-msg');
+
+            overlay.style.display = 'flex';
+
+            if (isCorrect) {
+                status.textContent = "CORRECTE";
+                status.style.color = "var(--phosphor-primary)";
+                status.style.borderColor = "var(--phosphor-primary)";
+                msg.textContent = q.explanation;
+                correctAnswers++;
+            } else {
+                status.textContent = "ERROR";
+                status.style.color = "var(--phosphor-alert)";
+                status.style.borderColor = "var(--phosphor-alert)";
+
+                // Construct error message logic
+                if (q.isTrue) {
+                    msg.innerHTML = `El subjecte deia la VERITAT.<br><br>${q.explanation}`;
+                } else {
+                    msg.innerHTML = `El subjecte MENTIA.<br><br>${q.explanation}`;
+                }
+            }
+
+            updateScore();
+
+            // Stop tension
+            tensionLevel = 0.2; // Keep slight movement
+            document.querySelector('.main-grid').classList.remove('tension-pulse');
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            loadQuestion();
+        }
+
+        function updateScore() {
+            const total = currentQuestions.length;
+            // Avoid division by zero/weird start
+            const percentage = currentQIndex === 0 ? 0 : Math.round((correctAnswers / currentQIndex) * 100);
+
+            let displayScore = "";
+            let count = 0;
+            if (currentQIndex > 0) {
+                displayScore = `${correctAnswers}/${currentQIndex}`;
+            } else {
+                displayScore = "0/0";
+            }
+
+            document.getElementById('score-display').textContent = `VERACITAT DETECTADA: ${correctAnswers} encerts`;
+        }
+
+        function endGame() {
+            document.getElementById('selection-screen').style.display = 'flex';
+            document.getElementById('game-interface').style.display = 'none';
+
+            let finalMsg = "";
+            let success = false;
+
+            if (correctAnswers >= 7) {
+                finalMsg = "OBJECTIU ASSOLIT. Has demostrat un coneixement superior.";
+                success = true;
+
+                // Save progress
+                if (!completedEras.includes(currentSuspect.id)) {
+                    completedEras.push(currentSuspect.id);
+                    localStorage.setItem('truthMachine_completed', JSON.stringify(completedEras));
+                }
+            }
+            else if (correctAnswers >= 5) finalMsg = "BON TREBALL, PERÒ INSUFICIENT. Necessites 7 encerts per superar l'època.";
+            else finalMsg = "TORNAR A CALIBRAR. Necessites repassar la història de la música (Objectiu: 7 encerts).";
+
+            alert(`SESSIÓ FINALITZADA.\nEncerts: ${correctAnswers}/${currentQuestions.length}\n\n${finalMsg}`);
+            renderSelectionScreen();
+        }
+
+        // --- GRAPH ANIMATION ---
+        function animateGraph() {
+            requestAnimationFrame(animateGraph);
+
+            // 1. Shift array
+            points.shift();
+
+            // 2. Generate new point
+            const center = canvas.height / 2;
+            let noise = 0;
+
+            if (tensionLevel > 0.8) {
+                // High tension (Analysing) - Big spikes
+                noise = (Math.random() - 0.5) * (canvas.height * 0.8);
+            } else if (tensionLevel > 0) {
+                // Low tension (After result)
+                noise = (Math.random() - 0.5) * (canvas.height * 0.2);
+            } else {
+                // Resting heartbeat (Regular pulses)
+                const time = Date.now() / 1000;
+                // Periodic spike
+                if (Math.random() < 0.02) {
+                    noise = (Math.random() - 0.5) * 50;
+                } else {
+                    noise = (Math.random() - 0.5) * 5;
+                }
+            }
+
+            // Smooth transition slightly? No, raw noise is more "polygraphy"
+            points.push(center + noise);
+
+            // 3. Draw
+            ctx.fillStyle = "#001100";
+            ctx.fillRect(0, 0, canvas.width, canvas.height); // Clear
+
+            // Grid
+            ctx.strokeStyle = "rgba(0, 255, 0, 0.1)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, center);
+            ctx.lineTo(canvas.width, center);
+            ctx.stroke();
+
+            // Line
+            ctx.strokeStyle = (tensionLevel > 0.8) ? "#ff3333" : "#00ff00";
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = ctx.strokeStyle;
+
+            ctx.beginPath();
+            // simple line join
+            for (let i = 0; i < points.length; i++) {
+                let x = i * speed;
+                let y = points[i];
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Reset shadows
+            ctx.shadowBlur = 0;
+        }
+
+        // --- AUDIO ---
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const btn = document.getElementById('music-control');
+            if (music.paused) {
+                music.play().then(() => {
+                    btn.textContent = "🔊";
+                }).catch(e => console.error(e));
+            } else {
+                music.pause();
+                btn.textContent = "🔇";
+            }
+        }
+
+        // Auto-play attempt on interaction
+        document.body.addEventListener('click', () => {
+            const music = document.getElementById('bg-music');
+            if (music.paused) toggleMusic();
+        }, { once: true });
+
+    </script>
+
+</body>
+
+</html>
