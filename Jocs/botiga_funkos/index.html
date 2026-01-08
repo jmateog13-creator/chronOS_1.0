@@ -1,0 +1,768 @@
+```html
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Botiga de Funkos Històrics</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #FF5E78;
+            /* Energetic Pink/Red */
+            --secondary: #4A90E2;
+            /* Bright Blue */
+            --accent: #F5A623;
+            /* Gold/Orange */
+            --dark: #2C3E50;
+            --light: #ECF0F1;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: url('img/fons.jpg') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            color: var(--dark);
+            user-select: none;
+        }
+
+        /* Backdrop overlay to ensure text readability if huge contrast */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            /* Slight darkening */
+            z-index: -1;
+        }
+
+        /* --- SOUND CONTROLS --- */
+        #sound-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass);
+            padding: 8px 15px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #volume-slider {
+            width: 80px;
+            cursor: pointer;
+        }
+
+        /* --- HUD --- */
+        #hud {
+            width: 90%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass);
+            padding: 15px 30px;
+            border-radius: 0 0 25px 25px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            margin-top: 0;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .hud-item {
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #lives {
+            color: #E74C3C;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #score-display {
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- SHOP COUNTER (CENTER) --- */
+        #counter-area {
+            flex: 1;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #customer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Customer Avatar */
+        #customer-avatar {
+            width: 200px;
+            /* Bigger Pixars */
+            height: 200px;
+            /* background: transparent; Removed circle bg to let PNG shine match scene */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s;
+        }
+
+        #customer-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Speech Bubble */
+        #bubble {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            max-width: 400px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #444;
+            position: relative;
+            margin-bottom: 10px;
+            /* Bubble above head */
+            border: 4px solid var(--secondary);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 20px 20px 0;
+            border-style: solid;
+            border-color: var(--secondary) transparent;
+        }
+
+        /* --- SHELVES (BOTTOM) --- */
+        #shelves-area {
+            width: 100%;
+            height: 50vh;
+            /* Taller shelves */
+            background: rgba(255, 255, 255, 0.85);
+            /* Clean white shelf rack look */
+            border-top: 6px solid var(--accent);
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: auto;
+            /* Allow horizontal scroll if needed */
+            overflow-y: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        #funkos-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            /* FORCE 9 per row (Total 18 = 2 rows) */
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 1400px;
+            /* Wider to overlap less */
+            height: 100%;
+        }
+
+        /* --- FUNKO CARD --- */
+        .funko-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 2px solid transparent;
+            height: 100%;
+            min-height: 140px;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .funko-card:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            border-color: var(--secondary);
+            z-index: 50;
+        }
+
+        .funko-card:active {
+            transform: scale(0.95);
+        }
+
+        /* GLOBAL TOOLTIP (Fixes clipping) */
+        #global-tooltip {
+            position: fixed;
+            background: rgba(44, 62, 80, 0.95);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-width: 220px;
+            text-align: center;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.1s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            line-height: 1.4;
+            transform: translate(-50%, -120%);
+            /* Center above cursor */
+        }
+
+        .funko-img {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .funko-img img {
+            max-width: 100%;
+            max-height: 90px;
+            /* Limit height to fit */
+            object-fit: contain;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+        }
+
+        .funko-name {
+            font-size: 0.75rem;
+            /* Smaller text to fit */
+            text-align: center;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.1;
+        }
+
+        .funko-card.sold {
+            opacity: 0.4;
+            filter: grayscale(1);
+            pointer-events: none;
+            background: #f0f0f0;
+            box-shadow: none;
+        }
+
+        .funko-card.sold::after {
+            content: 'VENUT';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            color: #C0392B;
+            border: 2px solid #C0392B;
+            padding: 5px 10px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            opacity: 1;
+        }
+
+        /* --- FEEDBACK OVERLAY --- */
+        #feedback-toast {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: white;
+            border-radius: 50px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 500;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            transform: translate(-50%, -60%);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            transform: translate(-50%, -40%) rotate(-5deg);
+        }
+
+        /* --- MODALS --- */
+        #start-modal,
+        #end-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 80, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: none;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), #FF4757);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 94, 120, 0.4);
+            font-family: 'Nunito', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(255, 94, 120, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- GLOBAL TOOLTIP -->
+    <div id="global-tooltip"></div>
+
+    <!-- SOUND CONTROLS -->
+    <div id="sound-controls">
+        <span>🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop>
+        <source src="audio/Bubble Box Heroes.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- START MODAL -->
+    <div id="start-modal">
+        <div class="modal-content">
+            <h2>🛒 Botiga de Funkos Històrics</h2>
+            <p>Benvingut a la botiga musical més famosa!</p>
+            <p>Entraran clients demanant compositors. Llegeix la pista, troba el Funko correcte i fes la venda!</p>
+            <p><strong>Tens 5 vides. No fallis!</strong></p>
+            <button onclick="startGame()">OBRIR BOTIGA</button>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <div class="hud-item" id="lives">
+            ❤️❤️❤️❤️❤️
+        </div>
+        <div class="hud-item" id="score-display">
+            Vendes: 0 / 18
+        </div>
+    </div>
+
+    <!-- CENTER CUSTOMER -->
+    <div id="counter-area">
+        <div id="customer-container">
+            <div id="bubble">...</div>
+            <div id="customer-avatar">
+                <!-- Img injected by JS -->
+            </div>
+        </div>
+        <div id="feedback-toast">EXCEL·LENT!</div>
+    </div>
+
+    <!-- SHELVES -->
+    <div id="shelves-area">
+        <div id="funkos-grid">
+            <!-- Cards will be injected here -->
+        </div>
+    </div>
+
+    <!-- END MODAL -->
+    <div id="end-modal" style="display:none;">
+        <div class="modal-content">
+            <h2 id="end-title">FI DEL JOC</h2>
+            <p id="end-msg">Missatge final...</p>
+            <button onclick="location.reload()">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        // WITH NEW 'bio' field (Distinct from desc_clue)
+        const GAME_DATA = {
+            composers: [
+                // EDAT MITJANA
+                { id: "guido", name: "Guido d'Arezzo", era: "mitjana", desc_clue: "Busco aquell monjo que va inventar els noms de les notes (Do-Re-Mi...).", visual_trait: "Hàbit de monjo + Mà", img: "img/guido.png", bio: "Monjo i teòric musical del segle XI. Creador de la notació moderna." },
+                { id: "hildegard", name: "Hildegard von Bingen", era: "mitjana", desc_clue: "Vull la monja famosa que tenia visions místiques i componia.", visual_trait: "Monja + Llum divina", img: "img/hildegard.png", bio: "Abadessa, mística, compositora i escriptora alemanya." },
+                { id: "alfons", name: "Alfons X el Savi", era: "mitjana", desc_clue: "Teniu el Rei que va escriure les Cantigas a la Mare de Déu?", visual_trait: "Corona + Llibre", img: "img/alfons.png", bio: "Rei de Castella que va impulsar la cultura i les Cantigas de Santa Maria." },
+
+                // RENAIXEMENT
+                { id: "josquin", name: "Josquin des Prez", era: "renaix", desc_clue: "Busco el mestre de la polifonia francoflamenca, li deien 'el príncep'.", visual_trait: "Barret renaixentista", img: "img/jsoquin.png", bio: "Compositor franco-flamenc, considerat el més gran del primer Renaixement." },
+                { id: "palestrina", name: "G.P. Palestrina", era: "renaix", desc_clue: "Vull el compositor que va 'salvar' la polifonia al Concili de Trento.", visual_trait: "Sotana austera", img: "img/palestrina.png", bio: "Compositor italià de música sacra, model de la polifonia clàssica." },
+                { id: "monteverdi", name: "Claudio Monteverdi", era: "renaix", desc_clue: "L'autor de la primera gran òpera de la història: L'Orfeo.", visual_trait: "Barba + Lira", img: "img/monteverdi.png", bio: "Pioner de l'òpera, va marcar la transició del Renaixement al Barroc." },
+
+                // BARROC
+                { id: "bach", name: "J.S. Bach", era: "barroc", desc_clue: "Vull el geni absolut del Barroc. Porta una perruca blanca molt grossa.", visual_trait: "Perruca Blanca Gegant", img: "img/bach.png", bio: "Mestre del contrapunt i l'orgue. Una de les figures cabdals de la música." },
+                { id: "vivaldi", name: "Antonio Vivaldi", era: "barroc", desc_clue: "Teniu el 'Capellà Roig' que va compondre les Quatre Estacions?", visual_trait: "Cabell Pèl-roig + Violí", img: "img/vivaldi.png", bio: "Violinista i compositor venecià, famós pels seus concerts." },
+                { id: "handel", name: "G.F. Händel", era: "barroc", desc_clue: "L'alemany que va triomfar a Londres amb l'Al·leluia.", visual_trait: "Perruca + Bastó", img: "img/haendel.png", bio: "Compositor alemany nacionalitzat anglès, cèlebre pels seus oratoris com El Messies." },
+
+                // CLASSICISME
+                { id: "mozart", name: "W.A. Mozart", era: "classic", desc_clue: "Busco el nen prodigi més famós de la història. Va morir jove.", visual_trait: "Jaqueta Vermella + Coleta", img: "img/mozart.png", bio: "Geni austríac del Classicisme, autor d'obres mestres de tots els gèneres." },
+                { id: "haydn", name: "F.J. Haydn", era: "classic", desc_clue: "El 'Papà' de la Simfonia. Va ensenyar a Mozart i Beethoven.", visual_trait: "Somriure amable + Perruca curta", img: "img/hadyn.png", bio: "Compositor austríac, conegut com el pare de la simfonia i el quartet de corda." },
+                { id: "martinisoler", name: "Vicent Martín i Soler", era: "classic", desc_clue: "El valencià que va triomfar a Viena amb 'Una cosa rara'. Era amic de Mozart.", visual_trait: "Elegant + Partitura 'Una cosa rara'", img: "img/vicent.png", bio: "Compositor valencià d'òpera de gran èxit internacional al segle XVIII." },
+
+                // ROMANTICISME
+                { id: "chopin", name: "Frédéric Chopin", era: "roman", desc_clue: "El poeta del piano. Molt romàntic, delicat i una mica malaltís.", visual_trait: "Elegància trista + Piano", img: "img/chopin.png", bio: "Virtuós polonès del piano, màxim exponent del Romanticisme pianístic." },
+                { id: "wagner", name: "Richard Wagner", era: "roman", desc_clue: "Aquell que feia òperes de 5 hores amb vikings i anells màgics.", visual_trait: "Boina + Perfil sever", img: "img/wagner.png", bio: "Compositor alemany, va revolucionar l'òpera amb el concepte d'obra d'art total." },
+                { id: "beethoven", name: "L. van Beethoven", era: "roman", desc_clue: "El geni sord amb molt mal caràcter i els cabells esvalotats.", visual_trait: "Cabells grisos bojos + Mocador", img: "img/beethoven.png", bio: "Figura clau entre el Classicisme i el Romanticisme, malgrat la seva sordesa." },
+
+                // SEGLE XX
+                { id: "stravinsky", name: "Igor Stravinsky", era: "sxx", desc_clue: "El rus que va causar una baralla a l'estrena de la 'Consagració'.", visual_trait: "Ulleres rodones + Mirada intensa", img: "img/stravinski.png", bio: "Compositor rus molt influent, famós per 'La Consagració de la Primavera'." },
+                { id: "schoenberg", name: "Arnold Schönberg", era: "sxx", desc_clue: "L'inventor del dodecafonisme. Música matemàtica i atonal.", visual_trait: "Calb + Mirada seriosa", img: "img/schoemberg.png", bio: "Creador del dodecafonisme i líder de la Segona Escola de Viena." },
+                { id: "cage", name: "John Cage", era: "sxx", desc_clue: "Aquell senyor 'boig' que va fer una obra de 4 minuts de silenci.", visual_trait: "Somriure murri + Bolet (li agradaven)", img: "img/cage.png", bio: "Compositor avantguardista nord-americà, pioner de la música aleatòria." }
+            ]
+        };
+
+        const CLIENT_IMAGES = [
+            "img/client1.png",
+            "img/client2.png",
+            "img/client3.png",
+            "img/client4.png",
+            "img/client5.png"
+        ];
+
+        // --- STATE ---
+        let lives = 5;
+        let soldCount = 0;
+        let pendingComposers = [];
+        let currentTarget = null;
+        let isProcessing = false;
+
+        // --- ELEMENTS ---
+        const grid = document.getElementById('funkos-grid');
+        const bubble = document.getElementById('bubble');
+        const livesDisplay = document.getElementById('lives');
+        const scoreDisplay = document.getElementById('score-display');
+        const feedback = document.getElementById('feedback-toast');
+        const avatarContainer = document.getElementById('customer-avatar');
+        const tooltipEl = document.getElementById('global-tooltip');
+
+        // --- AUDIO ---
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        bgMusic.volume = 0.5;
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        // Effect Audio Context (kept for SFX)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'ching') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(1800, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.frequency.setValueAtTime(2000, audioCtx.currentTime);
+                    gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc2.start(audioCtx.currentTime);
+                    osc2.stop(audioCtx.currentTime + 0.3);
+                }, 100);
+
+            } else if (type === 'buzz') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- LOGIC ---
+        function startGame() {
+            document.getElementById('start-modal').style.display = 'none';
+            // Play Music
+            bgMusic.play().catch(e => console.log("Audio play failed interaction", e));
+
+            lives = 5;
+            soldCount = 0;
+            pendingComposers = [...GAME_DATA.composers];
+
+            renderGrid();
+            updateHUD();
+            nextCustomer();
+        }
+
+        function renderGrid() {
+            grid.innerHTML = '';
+            GAME_DATA.composers.forEach(comp => {
+                const card = document.createElement('div');
+                card.className = 'funko-card';
+                card.id = `card-${comp.id}`;
+                card.dataset.id = comp.id;
+
+                // Image
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'funko-img';
+                const img = document.createElement('img');
+                img.src = comp.img;
+                img.alt = comp.name;
+                img.onerror = () => { img.src = ''; img.innerText = '❓'; }; // Fallback
+                imgContainer.appendChild(img);
+
+                // Name
+                const name = document.createElement('div');
+                name.className = 'funko-name';
+                name.textContent = comp.name;
+
+                // --- EVENTS FOR GLOBAL TOOLTIP ---
+                card.onmouseenter = (e) => {
+                    tooltipEl.textContent = comp.bio;
+                    tooltipEl.style.opacity = '1';
+                    updateTooltipPos(e);
+                };
+
+                card.onmousemove = (e) => {
+                    updateTooltipPos(e);
+                };
+
+                card.onmouseleave = () => {
+                    tooltipEl.style.opacity = '0';
+                };
+
+                card.appendChild(imgContainer);
+                card.appendChild(name);
+
+                card.onclick = () => handleCardClick(comp);
+
+                grid.appendChild(card);
+            });
+        }
+
+        function updateTooltipPos(e) {
+            // Slight offset so it's not under the cursor
+            tooltipEl.style.left = e.clientX + 'px';
+            tooltipEl.style.top = e.clientY + 'px';
+        }
+
+        function nextCustomer() {
+            if (pendingComposers.length === 0) {
+                endGame(true);
+                return;
+            }
+
+            // Pick random composer
+            const idx = Math.floor(Math.random() * pendingComposers.length);
+            currentTarget = pendingComposers[idx];
+
+            // Render random Client Avatar
+            const randomClientImg = CLIENT_IMAGES[Math.floor(Math.random() * CLIENT_IMAGES.length)];
+            avatarContainer.innerHTML = `<img src="${randomClientImg}" alt="Client">`;
+
+            // Show Clue
+            bubble.textContent = currentTarget.desc_clue;
+
+            // Animation
+            bubble.style.animation = 'none';
+            bubble.offsetHeight;
+            bubble.style.animation = 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }
+
+        function handleCardClick(comp) {
+            if (isProcessing) return;
+            if (document.getElementById(`card-${comp.id}`).classList.contains('sold')) return;
+
+            isProcessing = true;
+
+            if (comp.id === currentTarget.id) {
+                // WIN
+                playSound('ching');
+                showFeedback("GRÀCIES! 🛍️", "toast-success");
+
+                const card = document.getElementById(`card-${comp.id}`);
+                card.classList.add('sold');
+
+                soldCount++;
+                pendingComposers = pendingComposers.filter(c => c.id !== comp.id);
+                updateHUD();
+
+                setTimeout(() => {
+                    isProcessing = false;
+                    nextCustomer();
+                }, 1500);
+
+            } else {
+                // FAIL
+                playSound('buzz');
+                showFeedback("AIXÒ NO! 😡", "toast-error");
+
+                lives--;
+                updateHUD();
+
+                if (lives <= 0) {
+                    setTimeout(() => endGame(false), 1000);
+                } else {
+                    setTimeout(() => {
+                        isProcessing = false;
+                        // Player tries again
+                    }, 1000);
+                }
+            }
+        }
+
+        function showFeedback(text, className) {
+            feedback.textContent = text;
+            feedback.className = "";
+            feedback.classList.add(className);
+            feedback.style.opacity = '1';
+
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+            }, 1000);
+        }
+
+        function updateHUD() {
+            let hearts = "";
+            for (let i = 0; i < lives; i++) hearts += "❤️";
+            for (let i = lives; i < 5; i++) hearts += "🖤";
+            livesDisplay.textContent = hearts;
+
+            scoreDisplay.textContent = `Vendes: ${soldCount} / 18`;
+        }
+
+        function endGame(win) {
+            const overlay = document.getElementById('end-modal');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                title.textContent = "BOTIGA BUIDA! 🏆";
+                title.style.color = "#2ecc71";
+                msg.textContent = "Has venut tots els Funkos! Ets el millor venedor de la història.";
+            } else {
+                title.textContent = "ACOMIADAT! 💀";
+                title.style.color = "#e74c3c";
+                msg.textContent = "Massa clients enfadats. La botiga ha tancat.";
+            }
+        }
+    </script>
+</body>
+
+</html>
+```

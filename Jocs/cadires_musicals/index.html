@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Cadires Musicals</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --primary: #ff4757;
+            --secondary: #2ed573;
+            --text: #2f3542;
+            --chair-color: #ffa502;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* HEADING */
+        header {
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #7f8fa6;
+            margin-top: 5px;
+        }
+
+        /* GAME AREA */
+        .game-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #ffffff 0%, #dfe4ea 100%);
+        }
+
+        .circle-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            transition: transform 5s linear;
+        }
+
+        .chair {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: white;
+            border: 4px solid var(--chair-color);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .chair:hover {
+            transform: scale(1.1);
+        }
+
+        .chair.active {
+            border-color: var(--secondary);
+            background: #dff9fb;
+        }
+
+        .chair-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        /* CENTER INFO */
+        .center-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 280px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            z-index: 5;
+            padding: 20px;
+        }
+
+        .music-note {
+            font-size: 60px;
+            animation: bounce 1s infinite;
+        }
+
+        .timer {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .score-hud {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #eee;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .song-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .song-artist {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinning {
+            animation: spin 4s linear infinite;
+        }
+
+        /* CONTROLS */
+        .controls {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border: none;
+            border-radius: 50px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #c0392b;
+            transition: 0.1s;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #c0392b;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* SCREENS */
+        #start-screen,
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            max-width: 550px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .instruction-list {
+            text-align: left;
+            margin: 25px auto;
+            display: block;
+            max-width: 400px;
+        }
+
+        .instruction-list li {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* CONFETTI */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            z-index: 2000;
+            animation: fall 3s linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div class="card">
+            <h1 style="color: var(--primary);">🎶 Les Cadires Musicals</h1>
+            <p>Escolta la música i seu a l'època correcta abans que s'acabi el temps!</p>
+            <ul class="instruction-list">
+                <li>🎵 La música sonarà durant <strong>20 segons</strong>.</li>
+                <li>⏳ Quan s'aturi, tindràs <strong>5 segons</strong> per triar cadira.</li>
+                <li>💎 Sumes <strong>+1 punt</strong> si l'encertes.</li>
+                <li>❌ Restes <strong>-2 punts</strong> si falles (mínim 0).</li>
+                <li>🏆 Arriba a <strong>10 punts</strong> per guanyar!</li>
+            </ul>
+            <button class="btn" style="width: 100%;" onclick="game.initGame()">COMENÇAR A JUGAR</button>
+        </div>
+    </div>
+
+    <header>
+        <h1>🪑 Les Cadires Musicals</h1>
+        <div class="subtitle">Descobreix l'època de la música!</div>
+    </header>
+
+    <div class="game-area">
+        <div class="circle-container" id="circle"></div>
+
+        <div class="center-info">
+            <div id="music-icon" class="music-note">🎵</div>
+            <div id="score-hub" class="score-hud">PUNTS: <span id="ui-score">0</span> / 10</div>
+            <div id="status-text" class="timer">?</div>
+            <div id="song-title" class="song-title hidden"></div>
+            <div id="song-artist" class="song-artist hidden"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="action-btn" class="btn" onclick="game.startRound()" disabled>SEGÜENT RONDA</button>
+        <div style="margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            🔊 <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                style="accent-color: var(--primary);">
+        </div>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <!-- WIN/LOSS MODAL -->
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="card">
+            <h2 id="modal-title" style="font-size: 2.5rem; color: var(--primary);">Joc Acabat!</h2>
+            <p id="modal-msg" style="font-size: 1.2rem; margin: 20px 0;"></p>
+            <button class="btn" onclick="location.reload()">OCUPAR EL TRON DE NOU</button>
+        </div>
+    </div>
+
+    <script>
+        const ERAS = [
+            { name: "Edat Mitjana", icon: "🏰" },
+            { name: "Renaixement", icon: "🎨" },
+            { name: "Barroc", icon: "🎻" },
+            { name: "Classicisme", icon: "🏛️" },
+            { name: "Romanticisme", icon: "🌹" },
+            { name: "Segle XX", icon: "🎸" }
+        ];
+
+        const SONGS_DB = [
+            // EDAT MITJANA
+            { title: "De Spiritu Sancto", artist: "Hildegard of Bingen", era: "Edat Mitjana", file: "../../assets/audio_shared/Hildegard of Bingen： De Spiritu Sancto (Holy Spirit, The Quickener Of Life).m4a" },
+            { title: "Tu patris sempiternus", artist: "Anònim (Organum)", era: "Edat Mitjana", file: "../../assets/audio_shared/Ànonim- Organum.Tu patris sempiternu.m4a" },
+            { title: "Fi d'amor", artist: "Trobador Anònim", era: "Edat Mitjana", file: "../../assets/audio_shared/Trobador anònim-Fi d'amor.m4a" },
+
+            // RENAIXEMENT
+            { title: "Greensleeves", artist: "Anònim", era: "Renaixement", file: "../../assets/audio_shared/Ànonim-Greensleeves.m4a" },
+            { title: "O bone Jesu", artist: "Giovanni Pierluigi da Palestrina", era: "Renaixement", file: "../../assets/audio_shared/Palestrina-O bone Jesu.m4a" },
+            { title: "Con soave parlar", artist: "Philippe Verdelot", era: "Renaixement", file: "../../assets/audio_shared/Verdelot-Con soave parlar.m4a" },
+
+            // BARROC
+            { title: "Toccata & Fugue D Minor", artist: "J.S. Bach", era: "Barroc", file: "../../assets/audio_shared/Bach-Toccata & Fugue D Minor, BWV 565.m4a" },
+            { title: "Lascia ch'io pianga", artist: "G.F. Händel", era: "Barroc", file: "../../assets/audio_shared/Haendel- Lascia ch'io pianga.m4a" },
+            { title: "Hivern (Les Quatre Estacions)", artist: "Antonio Vivaldi", era: "Barroc", file: "../../assets/audio_shared/Vivaldi- Four Seasons： Winter (L'Inverno).m4a" },
+
+            // CLASSICISME
+            { title: "Simfonia Sorpresa", artist: "Franz Joseph Haydn", era: "Classicisme", file: "../../assets/audio_shared/Franz Joseph Haydn - ＂Simfonia Sorpresa＂ (Symphony no. 94).m4a" },
+            { title: "Petita Serenata Nocturna", artist: "W.A. Mozart", era: "Classicisme", file: "../../assets/audio_shared/Mozart-Pequeña Serenata Nocturna.m4a" },
+
+            // ROMANTICISME
+            { title: "5a Simfonia", artist: "Ludwig van Beethoven", era: "Romanticisme", file: "../../assets/audio_shared/Beethoven- 5a Simfonia.m4a" },
+            { title: "Nocturn op.9 No.2", artist: "Frédéric Chopin", era: "Romanticisme", file: "../../assets/audio_shared/Chopin - Nocturne op.9 No.2.m4a" },
+            { title: "Pas de Deux (Trencanous)", artist: "P.I. Tchaikovsky", era: "Romanticisme", file: "../../assets/audio_shared/P. Tchaikovsky - Pas de Deux ('The Nutcracker').m4a" },
+            { title: "Cavalcada de les Valkiries", artist: "Richard Wagner", era: "Romanticisme", file: "../../assets/audio_shared/Richard Wagner- Cavalcada de les Valkiries.m4a" },
+
+            // SEGLE XX
+            { title: "Oscilloscope Music", artist: "Jellybean Fenderson", era: "Segle XX", file: "../../assets/audio_shared/Jellybean Fenderson-Oscilloscope Music.m4a" },
+            { title: "Tres peces per a piano", artist: "Arnold Schoenberg", era: "Segle XX", file: "../../assets/audio_shared/Schoemberg-Tres piezas para piano.m4a" },
+            { title: "Jazz Standards Medley", artist: "Various Artists", era: "Segle XX", file: "../../assets/audio_shared/Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a" }
+        ];
+
+        class MusicalChairs {
+            constructor() {
+                this.score = 0;
+                this.currentRound = 0;
+                this.chairs = [];
+                this.playlist = [...SONGS_DB].sort(() => Math.random() - 0.5);
+                this.canClick = false;
+                this.countdownInterval = null;
+
+                // DOM Elements
+                this.circle = document.getElementById('circle');
+                this.statusText = document.getElementById('status-text');
+                this.songTitle = document.getElementById('song-title');
+                this.songArtist = document.getElementById('song-artist');
+                this.musicIcon = document.getElementById('music-icon');
+                this.btn = document.getElementById('action-btn');
+                this.audio = document.getElementById('audio-player');
+                this.uiScore = document.getElementById('ui-score');
+
+                this.setupChairs();
+
+                // Volume listener
+                document.getElementById('volume-slider').oninput = (e) => {
+                    this.audio.volume = e.target.value;
+                };
+            }
+
+            setupChairs() {
+                this.circle.innerHTML = '';
+                this.chairs = [];
+                const radius = 250;
+                const step = (2 * Math.PI) / ERAS.length;
+
+                ERAS.forEach((era, i) => {
+                    const angle = i * step;
+                    const x = radius * Math.cos(angle) + 300 - 50;
+                    const y = radius * Math.sin(angle) + 300 - 50;
+
+                    const chair = document.createElement('div');
+                    chair.className = 'chair';
+                    chair.style.left = x + 'px';
+                    chair.style.top = y + 'px';
+                    chair.innerHTML = `<div class="chair-icon">${era.icon}</div><div>${era.name.toUpperCase()}</div>`;
+                    chair.dataset.era = era.name;
+                    chair.onclick = () => this.handleChairClick(chair);
+
+                    this.circle.appendChild(chair);
+                    this.chairs.push(chair);
+                });
+            }
+
+            initGame() {
+                document.getElementById('start-screen').classList.add('hidden');
+                this.btn.disabled = false;
+                this.statusText.textContent = "PRONT?";
+                this.updateHUD();
+            }
+
+            updateHUD() {
+                this.uiScore.textContent = this.score;
+            }
+
+            startRound() {
+                if (this.score >= 10) { this.gameOver(true); return; }
+
+                this.btn.disabled = true;
+                this.statusText.textContent = "🎵";
+                this.circle.classList.add('spinning');
+                this.songTitle.classList.add('hidden');
+                this.songArtist.classList.add('hidden');
+                this.musicIcon.classList.remove('hidden');
+
+                // Pick song
+                if (this.currentRound >= this.playlist.length) {
+                    this.playlist.sort(() => Math.random() - 0.5);
+                    this.currentRound = 0;
+                }
+                this.currentSong = this.playlist[this.currentRound];
+                this.audio.src = this.currentSong.file;
+                this.audio.play();
+
+                // Music stops after 20 seconds
+                setTimeout(() => this.stopMusic(), 20000);
+            }
+
+            stopMusic() {
+                this.audio.pause();
+                this.circle.classList.remove('spinning');
+                this.musicIcon.classList.add('hidden');
+
+                this.songTitle.textContent = this.currentSong.title;
+                this.songArtist.textContent = this.currentSong.artist;
+                this.songTitle.classList.remove('hidden');
+                this.songArtist.classList.remove('hidden');
+
+                this.canClick = true;
+                this.startTimer();
+            }
+
+            startTimer() {
+                let timeLeft = 5;
+                this.statusText.textContent = timeLeft;
+                this.statusText.style.color = "var(--primary)";
+
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        this.statusText.textContent = timeLeft;
+                    } else {
+                        clearInterval(this.countdownInterval);
+                        if (this.canClick) this.handleChairClick(null); // Too slow
+                    }
+                }, 1000);
+            }
+
+            handleChairClick(chair) {
+                if (!this.canClick) return;
+                this.canClick = false;
+                clearInterval(this.countdownInterval);
+
+                const correct = chair && chair.dataset.era === this.currentSong.era;
+
+                if (correct) {
+                    this.score += 1;
+                    this.statusText.textContent = "✅";
+                    this.statusText.style.color = "var(--secondary)";
+                    chair.classList.add('active');
+                    this.createConfetti();
+                } else {
+                    this.score = Math.max(0, this.score - 2);
+                    this.statusText.textContent = chair ? "❌" : "⌛";
+                    this.statusText.style.color = "red";
+                    if (chair) chair.style.background = "#ff7675";
+
+                    // Show correct chair anyway
+                    const rightOn = this.chairs.find(c => c.dataset.era === this.currentSong.era);
+                    if (rightOn) rightOn.style.borderColor = "var(--secondary)";
+                }
+
+                this.updateHUD();
+                this.currentRound++;
+
+                // Win check
+                if (this.score >= 10) {
+                    setTimeout(() => this.gameOver(true), 1500);
+                    return;
+                }
+
+                // Next round prep
+                setTimeout(() => {
+                    this.chairs.forEach(c => {
+                        c.classList.remove('active');
+                        c.style.background = "white";
+                        c.style.borderColor = "var(--chair-color)";
+                    });
+                    this.btn.disabled = false;
+                    this.statusText.textContent = "5";
+                    this.statusText.style.color = "var(--primary)";
+                }, 2000);
+            }
+
+            gameOver(won) {
+                this.audio.pause();
+                const modal = document.getElementById('game-over-modal');
+                const title = document.getElementById('modal-title');
+                const msg = document.getElementById('modal-msg');
+
+                title.textContent = won ? "VICTÒRIA! 🏆" : "JOC ACABAT";
+                msg.textContent = won
+                    ? "Has demostrat ser un autèntic mestre de la història de la música!"
+                    : "No et rendeixis! Torna-ho a provar per millorar la teva oïda.";
+
+                modal.classList.remove('hidden');
+            }
+
+            createConfetti() {
+                for (let i = 0; i < 40; i++) {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.left = (Math.random() * 100) + 'vw';
+                    c.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    c.style.animationDuration = (1 + Math.random() * 2) + 's';
+                    document.body.appendChild(c);
+                    setTimeout(() => c.remove(), 3000);
+                }
+            }
+        }
+
+        // START!
+        document.addEventListener('DOMContentLoaded', () => {
+            window.game = new MusicalChairs();
+        });
+    </script>
+</body>
+
+</html>

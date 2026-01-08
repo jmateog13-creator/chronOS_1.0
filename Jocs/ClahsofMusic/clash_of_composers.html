@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash of Composers: Roulette Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #FF4500;
+            --bg: #2c3e50;
+            --card-bg: #ecf0f1;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg);
+            font-family: 'Comic Neue', cursive;
+            color: white;
+            user-select: none;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Bangers', cursive;
+            text-shadow: 3px 3px 0 #000;
+            margin: 0;
+        }
+
+        button {
+            font-family: 'Bangers', cursive;
+            font-size: 1.5rem;
+            padding: 10px 30px;
+            background: var(--primary);
+            border: 4px solid #000;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 4px 4px 0 #000;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #34495e 0%, #2c3e50 100%);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ROULETTE */
+        #roulette-display {
+            font-size: 4rem;
+            color: var(--primary);
+            margin: 50px;
+            padding: 20px;
+            border: 5px solid white;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            min-width: 300px;
+            text-align: center;
+        }
+
+        /* DECK BUILDER */
+        #deck-header {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #timer {
+            font-size: 3rem;
+            color: var(--secondary);
+            font-family: 'Bangers';
+        }
+
+        #card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        /* CARDS WITH IMAGES */
+        .unit-img {
+            width: 100%;
+            height: 70px;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+            margin-bottom: 5px;
+        }
+
+        .battle-card img {
+            width: 100%;
+            height: 60px;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+            /* Remove white bg in UI */
+        }
+
+        .card-slot {
+            background: var(--card-bg);
+            color: #000;
+            border: 3px solid #000;
+            border-radius: 8px;
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 140px;
+            position: relative;
+        }
+
+        .card-slot:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-slot.selected {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .card-slot.shake {
+            animation: shake 0.5s;
+            border-color: red;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        #my-deck {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            height: 120px;
+        }
+
+        .deck-card {
+            width: 80px;
+            height: 110px;
+            background: var(--primary);
+            border: 3px solid #000;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 2px;
+        }
+
+        .deck-card .unit-img {
+            height: 60px;
+        }
+
+        /* BATTLE */
+        #battle-ui {
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            /* transform: translateX(-50%); REMOVED centering */
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .battle-card {
+            width: 70px;
+            height: 100px;
+            background: white;
+            border: 3px solid #000;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 0.7rem;
+            position: relative;
+        }
+
+        .battle-card .unit-img {
+            height: 50px;
+        }
+
+        .battle-card.disabled {
+            filter: grayscale(1);
+            cursor: not-allowed;
+        }
+
+        .cost-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #9b59b6;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 1px solid white;
+            z-index: 2;
+        }
+
+        #elixir-bar-container {
+            position: absolute;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 20px;
+            background: #333;
+            border: 2px solid white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #elixir-bar {
+            height: 100%;
+            background: #9b59b6;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        #elixir-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 14px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        canvas {
+            background: #5dade2;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- BATTLE AUDIO -->
+    <audio id="battle-music" loop>
+        <source src="March of the Mischief Knights.m4a" type="audio/mp3">
+    </audio>
+
+    <!-- SCREEN 0: START -->
+    <!-- SCREEN 0: START -->
+    <div id="start-screen" class="screen active">
+        <h1 style="font-size: 4rem; color: var(--primary); margin-bottom: 10px;">CLASH OF COMPOSERS</h1>
+
+        <!-- Progress Section -->
+        <div id="progress-container"
+            style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; width: 90%;">
+            <!-- Badges injected by JS -->
+        </div>
+        <div id="progress-text"
+            style="font-size: 1.5rem; color: #f1c40f; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;">
+            Victòries: 0/9
+        </div>
+
+        <div id="intro-content" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+            <h2 style="color: white; margin-bottom: 20px;">Sas jugar al Clash Royale? Doncs fliparàs!! 😲</h2>
+
+            <div
+                style="background: rgba(0,0,0,0.6); padding: 20px; border-radius: 10px; max-width: 600px; text-align: left; margin-bottom: 30px; border: 2px solid white;">
+                <h3 style="color: var(--primary); text-align: center; margin-bottom: 10px;">COM JUGAR:</h3>
+                <ol style="font-size: 1.2rem; line-height: 1.5;">
+                    <li>Gira la <strong>Ruleta del Temps</strong> per obtenir una època històrica.</li>
+                    <li>Tens 30 segons per reclutar <strong>4 compositors</strong> d'aquesta època.</li>
+                    <li>Si t'equivoques, perdràs temps!</li>
+                    <li>Un cop tinguis la teva "Deck", comença la <strong>BATALLA</strong>!</li>
+                    <li>Utilitza l'elixir per invocar les teves unitats i destruir la torre enemiga.</li>
+                </ol>
+            </div>
+
+            <button id="btn-start-roulette" onclick="goToRoulette()">CONTINUAR AVENTURA 🚀</button>
+        </div>
+
+        <!-- First Run Selection -->
+        <div id="first-run-selection" style="display: none; flex-direction: column; align-items: center;">
+            <h2 style="color: #e67e22; margin-bottom: 20px;">Benvingut Comandant! 🫡</h2>
+            <p style="font-size: 1.3rem; max-width: 600px; text-align: center; margin-bottom: 30px;">
+                Per començar la teva conquesta musical, pots <strong>TRIAR</strong> la teva primera època aliada.
+                Tria amb saviesa!
+            </p>
+            <div id="era-buttons" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 1: ROULETTE -->
+    <div id="roulette-screen" class="screen">
+        <h1>LA RULETA DEL TEMPS</h1>
+        <div id="roulette-display">???</div>
+        <button onclick="spinRoulette()">GIRAR RULETA 🔄</button>
+    </div>
+
+    <!-- SCREEN 2: DECK BUILDER -->
+    <div id="deck-builder-screen" class="screen">
+        <div id="deck-header">
+            <h2>Recluta mestres del <span id="target-era" style="color: var(--primary)"></span>!</h2>
+            <div id="deck-info-text" style="font-size: 1.2rem; color: #f39c12; font-style: italic; min-height: 1.5em;">
+                ...</div>
+            <div id="timer">30</div>
+        </div>
+        <div id="card-grid"></div>
+        <div id="my-deck">
+            <!-- Slots -->
+            <div class="deck-card" style="opacity: 0.5; border-style: dashed;">buit</div>
+            <div class="deck-card" style="opacity: 0.5; border-style: dashed;">buit</div>
+            <div class="deck-card" style="opacity: 0.5; border-style: dashed;">buit</div>
+            <div class="deck-card" style="opacity: 0.5; border-style: dashed;">buit</div>
+        </div>
+        <button id="btn-battle" disabled onclick="startBattle()">A LA BATALLA! ⚔️</button>
+    </div>
+
+    <!-- SCREEN 3: BATTLE -->
+    <div id="battle-screen" class="screen" style="background: none;">
+        <canvas id="gameCanvas"></canvas>
+        <div id="elixir-bar-container">
+            <div id="elixir-bar"></div>
+            <div id="elixir-text">0/10</div>
+        </div>
+        <div id="battle-ui"></div>
+    </div>
+
+    <!-- SCREEN 4: GAME OVER -->
+    <div id="game-over-screen" class="screen">
+        <h1 id="go-title">VICTÒRIA!</h1>
+        <p id="go-msg" style="font-size: 1.5rem;">Has salvat l'època!</p>
+        <button onclick="resetGame()">SEGÜENT REPTE ➡️</button>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const ERAS = [
+            "EDAT MITJANA", "RENAIXEMENT", "BARROC", "CLASSICISME", "ROMANTICISME", "SEGLE XX"
+        ];
+
+        const COMPOSERS = [
+            // Medieval
+            { name: "Hildegard", era: "EDAT MITJANA", type: "range", cost: 3, hp: 100, dmg: 20, speed: 1, img: "img/unitat_hildegard.jpg", desc: "Mística visionària que connecta amb el diví." },
+            { name: "Guido", era: "EDAT MITJANA", type: "tank", cost: 4, hp: 300, dmg: 10, speed: 0.5, img: "img/unitat_guido.jpg", desc: "Inventor de les notes musicals (Do-Re-Mi...)." },
+            { name: "Leonin", era: "EDAT MITJANA", type: "swarm", cost: 2, hp: 50, dmg: 30, speed: 2, img: "img/unitat_leonin.jpg", desc: "Pioner de la polifonia a Notre Dame." },
+            { name: "Perotin", era: "EDAT MITJANA", type: "range", cost: 3, hp: 120, dmg: 15, speed: 1, img: "img/unitat_perotin.jpg", desc: "Mestre del ritme i l'organum complex." },
+            // Renaixement
+            { name: "Josquin", era: "RENAIXEMENT", type: "tank", cost: 5, hp: 400, dmg: 15, speed: 0.5, img: "img/unitat_josquin.jpg", desc: "El 'Miquel Àngel' de la música vocal." },
+            { name: "Palestrina", era: "RENAIXEMENT", type: "range", cost: 4, hp: 150, dmg: 25, speed: 1, img: "img/unitat_palestrina.jpg", desc: "Salvador de la polifonia sacra." },
+            { name: "Victoria", era: "RENAIXEMENT", type: "swarm", cost: 2, hp: 60, dmg: 35, speed: 2, img: "img/unitat_victoria.jpg", desc: "El gran místic del Renaixement espanyol." },
+            { name: "Monteverdi", era: "RENAIXEMENT", type: "range", cost: 3, hp: 130, dmg: 20, speed: 1, img: "img/unitat_monteverdi.jpg", desc: "El pont revolucionari cap al Barroc." },
+            // Barroc
+            { name: "Bach", era: "BARROC", type: "tank", cost: 6, hp: 500, dmg: 20, speed: 0.4, img: "img/unitat_bach.jpg", desc: "El mestre absolut del contrapunt i la fuga." },
+            { name: "Vivaldi", era: "BARROC", type: "swarm", cost: 3, hp: 80, dmg: 40, speed: 2.5, img: "img/unitat_vivaldi.jpg", desc: "El 'Capellà Roig', àgil i virtuós." },
+            { name: "Handel", era: "BARROC", type: "range", cost: 4, hp: 200, dmg: 30, speed: 0.8, img: "img/unitat_haendel.jpg", desc: "Mestre de l'oratori i l'òpera espectacular." },
+            { name: "Purcell", era: "BARROC", type: "range", cost: 3, hp: 140, dmg: 25, speed: 1, img: "img/unitat_purcell.jpg", desc: "L'orgull musical d'Anglaterra." },
+            // Classicisme
+            { name: "Mozart", era: "CLASSICISME", type: "swarm", cost: 3, hp: 90, dmg: 50, speed: 3, img: "img/unitat_mozart.jpg", desc: "El nen prodigi etern, ràpid i genial." },
+            { name: "Haydn", era: "CLASSICISME", type: "tank", cost: 5, hp: 450, dmg: 15, speed: 0.5, img: "img/unitat_haydn.jpg", desc: "El 'Pare de la Simfonia' (Papa Haydn)." },
+            { name: "Martín i Soler", era: "CLASSICISME", type: "range", cost: 4, hp: 160, dmg: 30, speed: 1, img: "img/unitat_vicente.jpg", desc: "El 'Mozart Valencià', famós a tot Europa." },
+            { name: "Gluck", era: "CLASSICISME", type: "range", cost: 3, hp: 150, dmg: 20, speed: 1, img: "img/unitat_gluck.jpg", desc: "Reformador de l'òpera cap al drama." },
+            // Romanticisme
+            { name: "Beethoven", era: "ROMANTICISME", type: "range", cost: 5, hp: 250, dmg: 40, speed: 0.7, img: "img/unitat_beethoven.jpg", desc: "El geni sord que va trencar totes les regles." },
+            { name: "Chopin", era: "ROMANTICISME", type: "range", cost: 4, hp: 180, dmg: 45, speed: 1, img: "img/unitat_chopìn.jpg", desc: "El poeta del piano, sensible i profund." },
+            { name: "Wagner", era: "ROMANTICISME", type: "tank", cost: 7, hp: 600, dmg: 30, speed: 0.3, img: "img/unitat_wagner.jpg", desc: "Creador de l'Obra d'Art Total." },
+            { name: "Schubert", era: "ROMANTICISME", type: "range", cost: 3, hp: 160, dmg: 25, speed: 1, img: "img/unitat_schubert.jpg", desc: "El rei del lied i la melodia íntima." },
+            // Segle XX
+            { name: "Stravinsky", era: "SEGLE XX", type: "tank", cost: 5, hp: 400, dmg: 40, speed: 0.6, img: "img/unitat_stravinsky.jpg", desc: "El camaleó rítmic que va causar disturbis." },
+            { name: "Cage", era: "SEGLE XX", type: "range", cost: 2, hp: 50, dmg: 10, speed: 0, img: "img/unitat_cage.jpg", desc: "El silenci (4'33) també és música." }, // Special?
+            { name: "Schoenberg", era: "SEGLE XX", type: "range", cost: 4, hp: 200, dmg: 35, speed: 0.8, img: "img/unitat_schoenberg.jpg", desc: "El trencador de la tonalitat (Dodecafonisme)." },
+            { name: "Gershwin", era: "SEGLE XX", type: "swarm", cost: 3, hp: 110, dmg: 40, speed: 2, img: "img/unitat_ gershwin.jpg", desc: "Va portar el Jazz a la sala de concerts." }
+        ];
+
+        // --- STATE ---
+        let state = {
+            targetEra: null,
+            deck: [],
+            timer: 30,
+            interval: null,
+            elixir: 0,
+            units: [], // {x, y, type, hp, maxHp, team: 'player'|'enemy', target, ...}
+            gameOver: false
+        };
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'spin') {
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'ding') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            } else if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(880, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'spawn') {
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+
+        // --- HELPER ---
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function goToRoulette() {
+            showScreen('roulette-screen');
+            playSound('ding');
+        }
+
+        // --- PHASE 1: ROULETTE ---
+        function spinRoulette() {
+            const display = document.getElementById('roulette-display');
+            let spins = 0;
+            const maxSpins = 20;
+            const interval = setInterval(() => {
+                const randomEra = ERAS[Math.floor(Math.random() * ERAS.length)];
+                display.innerText = randomEra;
+                playSound('spin');
+                spins++;
+                if (spins >= maxSpins) {
+                    clearInterval(interval);
+                    // Randomize Era
+                    const finalEra = ERAS[Math.floor(Math.random() * ERAS.length)];
+                    state.targetEra = finalEra;
+                    display.innerText = state.targetEra;
+                    playSound('ding');
+                    setTimeout(startDeckBuilder, 1500);
+                }
+            }, 100);
+        }
+
+        // --- PHASE 2: DECK BUILDER ---
+        function startDeckBuilder() {
+            showScreen('deck-builder-screen');
+            document.getElementById('target-era').innerText = state.targetEra;
+            state.deck = [];
+            state.timer = 30;
+            updateDeckUI();
+
+            // Generate Grid
+            const grid = document.getElementById('card-grid');
+            grid.innerHTML = '';
+
+            // 4 Correct + 8 Random Intruders
+            const correct = COMPOSERS.filter(c => c.era === state.targetEra);
+            const others = COMPOSERS.filter(c => c.era !== state.targetEra);
+            const pool = [...correct, ...others.sort(() => Math.random() - 0.5).slice(0, 8)];
+            pool.sort(() => Math.random() - 0.5);
+
+            pool.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'card-slot';
+                const imgHTML = c.img ? `<img src="${c.img}" class="unit-img">` : '<div style="font-size: 2rem;">🎵</div>';
+                el.innerHTML = `${imgHTML}<div><strong>${c.name}</strong><br><small>${c.type}</small></div>`;
+                el.onclick = () => selectCard(c, el);
+                el.onmouseenter = () => { document.getElementById('deck-info-text').innerText = c.desc || ""; };
+                el.onmouseleave = () => { document.getElementById('deck-info-text').innerText = "..."; };
+                grid.appendChild(el);
+            });
+
+            // Timer
+            if (state.interval) clearInterval(state.interval);
+            state.interval = setInterval(() => {
+                state.timer--;
+                document.getElementById('timer').innerText = state.timer;
+                if (state.timer <= 0) {
+                    clearInterval(state.interval);
+                    if (state.deck.length < 4) {
+                        endGame(false, "S'ha acabat el temps!");
+                    }
+                }
+            }, 1000);
+        }
+
+        function selectCard(card, element) {
+            if (state.deck.length >= 4) return;
+            if (state.deck.includes(card)) return;
+
+            if (card.era === state.targetEra) {
+                // Correct
+                state.deck.push(card);
+                element.classList.add('selected');
+                element.style.background = '#2ecc71'; // Green
+                playSound('correct');
+                updateDeckUI();
+                if (state.deck.length === 4) {
+                    document.getElementById('btn-battle').disabled = false;
+                    clearInterval(state.interval); // Stop timer early if done
+                }
+            } else {
+                // Incorrect
+                element.classList.add('shake');
+                element.style.background = '#e74c3c'; // Red
+                playSound('wrong');
+                setTimeout(() => {
+                    element.classList.remove('shake');
+                    element.style.background = '';
+                }, 500);
+            }
+        }
+
+        function updateDeckUI() {
+            const container = document.getElementById('my-deck');
+            container.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const card = state.deck[i];
+                const el = document.createElement('div');
+                el.className = 'deck-card';
+                if (card) {
+                    const imgHTML = card.img ? `<img src="${card.img}" class="unit-img">` : '';
+                    el.innerHTML = `${imgHTML}<div><strong>${card.name}</strong><br>⚡${card.cost}</div>`;
+                } else {
+                    el.style.opacity = '0.5';
+                    el.style.borderStyle = 'dashed';
+                    el.innerText = 'buit';
+                }
+                container.appendChild(el);
+            }
+        }
+
+        // --- PHASE 3: BATTLE ---
+        function startBattle() {
+            showScreen('battle-screen');
+            initBattle();
+            // Start BGM
+            const embaudio = document.getElementById('battle-music');
+            if (embaudio) {
+                embaudio.volume = 0.4;
+                embaudio.play().catch(e => console.log("Audio play failed", e));
+            }
+        }
+
+        function initBattle() {
+            const canvas = document.getElementById('gameCanvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            state.elixir = 5;
+            state.aiElixir = 5; // AI starts with same elixir
+            state.units = [];
+            state.gameOver = false;
+
+            // Towers
+            state.units.push({
+                id: 'player-tower', x: canvas.width / 2, y: canvas.height - 50,
+                type: 'tower', hp: 2000, maxHp: 2000, team: 'player', radius: 40, dmg: 10, range: 200, speed: 0
+            });
+            state.units.push({
+                id: 'enemy-tower', x: canvas.width / 2, y: 50,
+                type: 'tower', hp: 2000, maxHp: 2000, team: 'enemy', radius: 40, dmg: 10, range: 200, speed: 0
+            });
+
+            // UI
+            const ui = document.getElementById('battle-ui');
+            ui.innerHTML = '';
+            state.deck.forEach(card => {
+                const el = document.createElement('div');
+                el.className = 'battle-card';
+                const imgHTML = card.img ? `<img src="${card.img}" class="unit-img">` : '';
+                el.innerHTML = `<div class="cost-badge">${card.cost}</div>${imgHTML}<strong>${card.name}</strong>`;
+                el.onclick = () => spawnUnit(card);
+                ui.appendChild(el);
+            });
+
+            // Loop
+            if (state.interval) clearInterval(state.interval);
+            state.interval = setInterval(gameLoop, 1000 / 60);
+
+            // Elixir Regen
+            setInterval(() => {
+                if (state.gameOver) return;
+
+                // Player: x1 speed (1 elixir per second)
+                if (state.elixir < 10) state.elixir += 1; // Increased from 0.5 to 1 for better flow
+
+                // AI: x0.5 speed (0.5 elixir per second)
+                if (state.aiElixir < 10) state.aiElixir += 0.5;
+
+                updateElixirUI();
+            }, 1000);
+
+            // AI Spawner Logic
+            setInterval(() => {
+                if (state.gameOver) return;
+
+                // AI Logic: Try to spend elixir if enough
+                const enemyTypes = [
+                    { type: 'tank', hp: 300, dmg: 10, speed: 0.5, color: '#e74c3c', cost: 5, name: 'goblin' },
+                    { type: 'swarm', hp: 50, dmg: 20, speed: 2, color: '#c0392b', cost: 2, name: 'goblin' },
+                    { type: 'range', hp: 120, dmg: 25, speed: 1, color: '#c0392b', cost: 3, name: 'goblin' },
+                    { type: 'elite', hp: 450, dmg: 30, speed: 0.6, color: '#8e44ad', cost: 6, name: 'knight' }, // New Knight
+                    { type: 'ghost', hp: 100, dmg: 40, speed: 1.5, color: '#1abc9c', cost: 4, name: 'ghost' }   // New Ghost
+                ];
+
+                // Pick a random unit to try and spawn (weighted towards cheap ones?)
+                // Simple random for now
+                const u = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+
+                if (state.aiElixir >= u.cost) {
+                    // Spawn it
+                    state.aiElixir -= u.cost;
+                    state.units.push({
+                        x: canvas.width / 2 + (Math.random() * 100 - 50),
+                        y: 150, // Spawn near enemy tower
+                        team: 'enemy',
+                        hp: u.hp, maxHp: u.hp, dmg: u.dmg, speed: u.speed,
+                        radius: 25, range: 30, color: u.color,
+                        name: u.name, // Use name to pick image
+                        lastAttack: 0
+                    });
+                }
+            }, 2000); // Check every 2s
+        }
+
+        function spawnUnit(card) {
+            if (state.gameOver) return;
+            if (state.elixir >= card.cost) {
+                state.elixir -= card.cost;
+                updateElixirUI();
+                playSound('spawn');
+
+                // Spawn logic
+                const canvas = document.getElementById('gameCanvas');
+                state.units.push({
+                    x: canvas.width / 2 + (Math.random() * 100 - 50),
+                    y: canvas.height - 150, // Spawn near player tower
+                    team: 'player',
+                    name: card.name, // Added name for image lookup
+                    hp: card.hp, maxHp: card.hp, dmg: card.dmg, speed: card.speed,
+                    radius: 25, range: 30, color: '#3498db',
+                    lastAttack: 0
+                });
+            } else {
+                playSound('wrong');
+            }
+        }
+
+        function updateElixirUI() {
+            const bar = document.getElementById('elixir-bar');
+            const txt = document.getElementById('elixir-text');
+            const pct = (state.elixir / 10) * 100;
+            bar.style.width = `${pct}%`;
+            txt.innerText = `${Math.floor(state.elixir)}/10`;
+
+            // Update cards availability
+            document.querySelectorAll('.battle-card').forEach((el, idx) => {
+                const cost = state.deck[idx].cost;
+                if (state.elixir < cost) el.classList.add('disabled');
+                else el.classList.remove('disabled');
+            });
+        }
+
+        function gameLoop() {
+            if (state.gameOver) return;
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Draw Background
+            const bgImg = new Image();
+            bgImg.src = "img/clash_bg.png"; // Note: creating new image every frame is bad for perf, but strict mode prevents global var easily. Ideally move out. 
+            // Better: use the global ones defined outside if possible, but let's stick to simple for now or check if we can access them. 
+            // Actually, let's define them in global scope or inside initBattle to avoid flickering/reload. 
+            // However, to fix this quickly:
+            // The previous code tried to define them inside loop which is also bad.
+            // Let's assume we can use a helper or just check if loaded. 
+
+            // To make it robust:
+            if (!state.bgImg) {
+                state.bgImg = new Image();
+                state.bgImg.src = "img/clash_bg.png";
+                state.enemyUnitImg = new Image();
+                state.enemyUnitImg.src = "img/enemy_unit.png";
+                state.enemyKnightImg = new Image();
+                state.enemyKnightImg.src = "img/enemy_knight.png";
+                state.enemyGhostImg = new Image();
+                state.enemyGhostImg.src = "img/enemy_ghost.png";
+
+                state.enemyTowerImg = new Image();
+                state.enemyTowerImg.src = "img/enemy_tower.png";
+                state.playerTowerImg = new Image();
+                state.playerTowerImg.src = "img/player_tower.png";
+
+                state.unitImages = {};
+                COMPOSERS.forEach(c => {
+                    if (c.img) {
+                        const img = new Image();
+                        img.src = c.img;
+                        state.unitImages[c.name] = img;
+                    }
+                });
+            }
+
+            if (state.bgImg.complete && state.bgImg.naturalWidth !== 0) {
+                const scale = Math.max(canvas.width / state.bgImg.width, canvas.height / state.bgImg.height);
+                const x = (canvas.width / 2) - (state.bgImg.width / 2) * scale;
+                const y = (canvas.height / 2) - (state.bgImg.height / 2) * scale;
+                ctx.drawImage(state.bgImg, x, y, state.bgImg.width * scale, state.bgImg.height * scale);
+            } else {
+                ctx.fillStyle = "#5dade2";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // 2. Draw Bridge/Lanes
+            ctx.fillStyle = "rgba(127, 140, 141, 0.5)";
+            ctx.fillRect(canvas.width / 2 - 100, 0, 200, canvas.height);
+            ctx.strokeStyle = "rgba(255,255,255,0.5)";
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.setLineDash([10, 10]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 3. Update & Draw Units
+            state.units.forEach(u => {
+                // DRAW
+                if (u.type === 'tower') {
+                    if (u.team === 'enemy') {
+                        // Enemy Tower
+                        const size = u.radius * 6;
+                        if (state.enemyTowerImg && state.enemyTowerImg.complete) {
+                            ctx.save();
+                            ctx.globalCompositeOperation = 'multiply';
+                            ctx.drawImage(state.enemyTowerImg, u.x - size / 2, u.y - size / 2 + 20, size, size);
+                            ctx.restore();
+                        } else {
+                            ctx.fillStyle = '#c0392b';
+                            ctx.beginPath(); ctx.arc(u.x, u.y, u.radius, 0, Math.PI * 2); ctx.fill();
+                        }
+                    } else {
+                        // Player Tower
+                        const size = u.radius * 6;
+                        if (state.playerTowerImg && state.playerTowerImg.complete) {
+                            ctx.save();
+                            ctx.globalCompositeOperation = 'multiply';
+                            ctx.drawImage(state.playerTowerImg, u.x - size / 2, u.y - size / 2 - 20, size, size);
+                            ctx.restore();
+                        } else {
+                            ctx.fillStyle = '#2980b9';
+                            ctx.beginPath();
+                            ctx.arc(u.x, u.y, u.radius, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.strokeStyle = "#fff";
+                            ctx.lineWidth = 4;
+                            ctx.stroke();
+                        }
+                    }
+
+                    // HP Bar Tower
+                    const hpPct = Math.max(0, u.hp / u.maxHp);
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(u.x - 40, u.y - u.radius - 20, 80, 10);
+                    ctx.fillStyle = u.team === 'player' ? "#2ecc71" : "#8e44ad";
+                    ctx.fillRect(u.x - 40, u.y - u.radius - 20, 80 * hpPct, 10);
+
+                } else {
+                    // UNITS
+                    let img = null;
+                    if (u.team === 'player') {
+                        img = state.unitImages ? state.unitImages[u.name] : null;
+                    } else {
+                        // Enemy Variants
+                        if (u.name === 'knight') img = state.enemyKnightImg; // New
+                        else if (u.name === 'ghost') img = state.enemyGhostImg; // New
+                        else img = state.enemyUnitImg;
+                    }
+
+                    if (img && img.complete) {
+                        const size = u.radius * 3.5;
+                        ctx.save();
+                        // Blend mode for ALL units (Player + Enemy) to remove white
+                        ctx.globalCompositeOperation = 'multiply';
+
+                        // No Shadow
+                        ctx.drawImage(img, u.x - size / 2, u.y - size / 2, size, size);
+                        ctx.restore();
+                    } else {
+                        // Fallback
+                        ctx.fillStyle = u.team === 'player' ? '#3498db' : '#e74c3c';
+                        ctx.beginPath();
+                        ctx.arc(u.x, u.y, u.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // HP Bar Unit
+                    const hpPct = Math.max(0, u.hp / u.maxHp);
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(u.x - 15, u.y - u.radius - 10, 30, 5);
+                    ctx.fillStyle = u.team === 'player' ? "#2ecc71" : "#c0392b";
+                    ctx.fillRect(u.x - 15, u.y - u.radius - 10, 30 * hpPct, 5);
+                }
+
+                // LOGIC
+                if (u.type === 'tower') return;
+
+                // Find Target
+                let target = null;
+                let minDst = Infinity;
+                state.units.forEach(other => {
+                    if (u.team !== other.team) {
+                        const dst = Math.hypot(u.x - other.x, u.y - other.y);
+                        if (dst < minDst) {
+                            minDst = dst;
+                            target = other;
+                        }
+                    }
+                });
+
+                if (target) {
+                    if (minDst <= u.range + target.radius) {
+                        // Attack
+                        if (Date.now() - u.lastAttack > 1000) {
+                            target.hp -= u.dmg;
+                            u.lastAttack = Date.now();
+                            if (target.hp <= 0) {
+                                // Kill
+                                const idx = state.units.indexOf(target);
+                                if (idx > -1) state.units.splice(idx, 1);
+
+                                // Check Win/Loss
+                                if (target.type === 'tower') {
+                                    endGame(target.team === 'enemy', target.team === 'enemy' ? "VICTÒRIA!" : "DERROTA...");
+                                }
+                            }
+                        }
+                    } else {
+                        // Move towards target
+                        const angle = Math.atan2(target.y - u.y, target.x - u.x);
+                        u.x += Math.cos(angle) * u.speed;
+                        u.y += Math.sin(angle) * u.speed;
+                    }
+                } else {
+                    // Move forward if no target
+                    const dir = u.team === 'player' ? -1 : 1;
+                    u.y += u.speed * dir;
+                }
+            });
+        }
+
+        // --- PROGRESSION ---
+        function initProgress() {
+            // Load from LS
+            const wins = parseInt(localStorage.getItem('com_wins') || '0');
+            const wonErasStr = localStorage.getItem('com_eras') || '[]';
+            const wonEras = JSON.parse(wonErasStr);
+
+            // Update Global State wrapper (extend state object)
+            state.wins = wins;
+            state.wonEras = wonEras;
+
+            // UI
+            const txt = document.getElementById('progress-text');
+            if (txt) txt.innerText = `Victòries: ${wins}/9`;
+
+            // Badges
+            const container = document.getElementById('progress-container');
+            if (container) {
+                container.innerHTML = '';
+                ERAS.forEach(era => {
+                    const badge = document.createElement('div');
+                    badge.style.padding = '5px 10px';
+                    badge.style.borderRadius = '5px';
+                    badge.style.fontSize = '0.8rem';
+                    badge.style.border = '2px solid white';
+                    badge.innerText = era;
+
+                    if (wonEras.includes(era)) {
+                        badge.style.background = '#2ecc71'; // Green (Won)
+                        badge.style.color = 'black';
+                    } else {
+                        badge.style.background = '#7f8c8d'; // Gray (Locked)
+                        badge.style.opacity = '0.6';
+                    }
+                    container.appendChild(badge);
+                });
+            }
+
+            // First Run Check
+            if (wins === 0) {
+                // Show Selection
+                document.getElementById('intro-content').style.display = 'none';
+                const selDiv = document.getElementById('first-run-selection');
+                if (selDiv) {
+                    selDiv.style.display = 'flex';
+                    const btnContainer = document.getElementById('era-buttons');
+                    btnContainer.innerHTML = '';
+                    ERAS.forEach(era => {
+                        const btn = document.createElement('button');
+                        btn.innerText = era;
+                        btn.style.fontSize = '1rem';
+                        btn.onclick = () => startWithEra(era);
+                        btnContainer.appendChild(btn);
+                    });
+                }
+            } else {
+                // Show Intro
+                const intro = document.getElementById('intro-content');
+                if (intro) intro.style.display = 'flex';
+
+                // Win Condition Check
+                if (state.wins >= 9 && state.wonEras.length === ERAS.length) {
+                    showScreen('game-over-screen');
+                    document.getElementById('go-title').innerText = "LLEGENDA MUSICAL!";
+                    document.getElementById('go-msg').innerText = "Has dominat totes les èpoques!";
+                }
+            }
+        }
+
+        function startWithEra(era) {
+            state.targetEra = era;
+            playSound('ding');
+            startDeckBuilder();
+        }
+
+        // --- GAME OVER ---
+        function endGame(win, msg) {
+            state.gameOver = true;
+            clearInterval(state.interval);
+            showScreen('game-over-screen');
+            document.getElementById('go-title').innerText = msg;
+
+            if (win) {
+                document.getElementById('go-msg').innerText = "Has salvat l'època!";
+
+                // Save Progress
+                state.wins = (state.wins || 0) + 1;
+                if (!state.wonEras) state.wonEras = [];
+
+                if (!state.wonEras.includes(state.targetEra)) {
+                    state.wonEras.push(state.targetEra);
+                }
+                localStorage.setItem('com_wins', state.wins);
+                localStorage.setItem('com_eras', JSON.stringify(state.wonEras));
+
+                // Check Final Win
+                if (state.wins >= 9 && state.wonEras.length === ERAS.length) {
+                    document.getElementById('go-title').innerText = "VICTÒRIA TOTAL!";
+                    document.getElementById('go-msg').innerText = "Joc Completat!";
+                }
+            } else {
+                document.getElementById('go-msg').innerText = "El soroll ha guanyat...";
+            }
+        }
+
+        function resetGame() {
+            // Relood page to refresh state properly
+            location.reload();
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // Init
+        initProgress();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Club del Temps</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --blueprint-blue: #0056b3;
+            --safety-orange: #ff6600;
+            --caution-yellow: #ffcc00;
+            --text-color: #f0f0f0;
+            --panel-bg: rgba(20, 30, 40, 0.95);
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* VISUAL ENGINE - LAYERS */
+        #club-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: all 0.5s ease;
+        }
+
+        #layer-background {
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.4);
+        }
+
+        #layer-staff {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            font-size: 15rem;
+            padding-bottom: 50px;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.8));
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        #layer-staff.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #layer-sign {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 300px;
+            /* Position higher up */
+            opacity: 0;
+        }
+
+        #layer-sign.visible {
+            opacity: 1;
+        }
+
+        .neon-sign-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 4rem;
+            color: #fff;
+            text-transform: uppercase;
+            border: 5px solid #fff;
+            padding: 20px 40px;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 20px var(--neon-pink), inset 0 0 20px var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink);
+            animation: flicker 3s infinite;
+        }
+
+        @keyframes flicker {
+
+            0%,
+            19%,
+            21%,
+            23%,
+            25%,
+            54%,
+            56%,
+            100% {
+                opacity: 1;
+            }
+
+            20%,
+            24%,
+            55% {
+                opacity: 0.5;
+            }
+        }
+
+        #layer-filter {
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+
+        /* UI SCREENS */
+        .screen {
+            display: none;
+            position: absolute;
+            /* Vital for overlay */
+            top: 0;
+            left: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.7);
+            /* Darken UI over scene */
+        }
+
+        .screen.active {
+            display: flex !important;
+            /* Force visibility */
+            animation: fadeIn 0.5s;
+        }
+
+        /* DESIGN UI (Transparent to see scene) */
+        #design-screen {
+            background: rgba(0, 0, 0, 0.3);
+            justify-content: flex-end;
+            padding-bottom: 50px;
+            z-index: 20;
+            /* Ensure on top */
+        }
+
+        h1 {
+            font-size: 4rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink);
+            margin-bottom: 10px;
+            letter-spacing: 5px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            color: var(--neon-gold);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        /* BUTTONS */
+        /* BUTTONS */
+        button {
+            background: var(--blueprint-blue);
+            border: 2px solid var(--text-color);
+            color: #fff;
+            padding: 15px 30px;
+            font-family: 'Courier New', Courier, monospace;
+            /* Blueprint font style */
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            margin: 10px;
+            border-radius: 2px;
+            /* Square edges */
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        button:hover {
+            background: var(--safety-orange);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        button.completed {
+            background: #28a745;
+            /* Green for done */
+            border-color: #1e7e34;
+            opacity: 0.8;
+        }
+
+        button.completed::after {
+            content: " ✓";
+            color: #fff;
+        }
+
+        /* CARDS */
+        .option-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #444;
+            padding: 15px;
+            border-radius: 15px;
+            width: 320px;
+            /* Increased width */
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .option-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid #555;
+            background-color: #000;
+            /* Dark bg for letterbox effect */
+        }
+
+        .option-card:hover {
+            border-color: var(--neon-pink);
+            transform: translateY(-10px);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+            background: rgba(50, 0, 50, 0.9);
+        }
+
+        .option-emoji {
+            font-size: 1.5rem;
+            /* Smaller emoji if kept as icon */
+            display: none;
+            /* Hide emoji if we have images, or keep as fallback */
+        }
+
+        .option-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        #options-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            max-width: 1200px;
+            /* Ensure wide container */
+        }
+
+        /* PROGRESS */
+        #progress-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* CONTROLS */
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #555;
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        .step-dot {
+            width: 25px;
+            height: 25px;
+            background: #444;
+            transform: rotate(45deg);
+            border: 2px solid #666;
+            transition: all 0.3s;
+            cursor: pointer;
+            /* Enable clicking */
+        }
+
+        .step-dot.active {
+            background: var(--caution-yellow);
+            border-color: #fff;
+            box-shadow: 0 0 10px var(--caution-yellow);
+            transform: rotate(45deg) scale(1.2);
+        }
+
+        .step-dot:hover {
+            border-color: var(--caution-yellow);
+        }
+
+        /* FINAL CARD - RECAP */
+        #final-card {
+            background: #fff;
+            color: #000;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+            transform: scale(0.8);
+            opacity: 0;
+            transition: all 1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #final-card.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        #recap-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .recap-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .recap-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .recap-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .recap-value {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes flashAnim {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* BLUEPRINT GRID */
+        .blueprint-bg {
+            background-color: var(--blueprint-blue);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+        }
+
+
+        /* SELECTED STATE */
+        .option-card.selected {
+            border-color: var(--caution-yellow);
+            box-shadow: 0 0 20px var(--caution-yellow);
+            background: rgba(100, 80, 0, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="volume-control"
+        style="position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 20px; border: 1px solid #555;">
+        <span style="font-size: 1.2rem">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+            style="width: 100px; cursor: pointer;">
+    </div>
+
+    <!-- VISUAL ENGINE -->
+    <div id="club-scene">
+        <div id="layer-background" class="layer"></div>
+        <div id="layer-sign" class="layer">
+            <div id="sign-text" class="neon-sign-text">CLUB</div>
+        </div>
+        <div id="layer-staff" class="layer"></div>
+        <div id="layer-filter" class="layer"></div>
+
+        <!-- Construction Overlay: Tape -->
+        <div
+            style="position:absolute; top:0; left:0; width:100%; height:20px; background: repeating-linear-gradient(45deg, #000, #000 10px, #ffcc00 10px, #ffcc00 20px); z-index:5;">
+        </div>
+        <div
+            style="position:absolute; bottom:0; left:0; width:100%; height:20px; background: repeating-linear-gradient(45deg, #000, #000 10px, #ffcc00 10px, #ffcc00 20px); z-index:5;">
+        </div>
+    </div>
+
+    <div id="flash-overlay" class="flash"></div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h1 style="font-size: 3rem; margin-bottom: 0;">CHRONOS</h1>
+        <h2 style="font-size: 1.5rem; color: var(--neon-blue); margin-top: 0;">RENOVATIONS & NIGHTLIFE</h2>
+        <p style="font-size: 1.2rem; max-width: 600px; margin: 20px auto;">
+            Benvingut a l'equip, Manager! <br><br>
+            Som l'única empresa de reformes que treballa a través del temps.
+            El <strong>Gran Club Chronos</strong> necessita obrir noves sales temàtiques per allotjar les festes més
+            llegendàries de la història.
+            <br><br>
+            La teva missió: <strong>Decorar i gestionar</strong> la sala VIP de cada època per satisfer als fantasmes
+            del passat.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 30px;">
+            <button id="btn-medieval" onclick="startGame('medieval')">EDAT MITJANA</button>
+            <button id="btn-renaixement" onclick="startGame('renaixement')">RENAIXEMENT</button>
+            <button id="btn-barroc" onclick="startGame('barroc')">BARROC</button>
+            <button id="btn-classicisme" onclick="startGame('classicisme')">CLASSICISME</button>
+            <button id="btn-romanticisme" onclick="startGame('romanticisme')">ROMANTICISME</button>
+            <button id="btn-segle_xx" onclick="startGame('segle_xx')">SEGLE XX</button>
+        </div>
+    </div>
+
+    <!-- DESIGN SCREEN -->
+    <div id="design-screen" class="screen">
+        <div id="progress-bar">
+            <div class="step-dot" id="dot-0"></div>
+            <div class="step-dot" id="dot-1"></div>
+            <div class="step-dot" id="dot-2"></div>
+            <div class="step-dot" id="dot-3"></div>
+        </div>
+
+        <div style="position: absolute; top: 20px; right: 20px; color: var(--neon-blue); font-family: monospace;">
+            PROJECTE: <span id="project-name">SALA X</span> <br>
+            ESTAT: EN OBRES
+        </div>
+
+        <h2 id="step-question">Pregunta...</h2>
+
+        <div id="options-container"></div>
+    </div>
+
+    <!-- EVALUATION SCREEN -->
+    <div id="eval-screen" class="screen">
+        <div id="final-card">
+            <h1 id="final-title" style="color:#000; text-shadow:none; font-size: 3rem;">GRAND OPENING</h1>
+            <h2 id="final-club-name" style="color:#333; text-shadow:none;">NOM DEL CLUB</h2>
+            <p id="final-verdict" style="font-size: 1.5rem; font-weight: bold;">ÈXIT TOTAL</p>
+            <div id="final-stars" style="font-size: 3rem; color: gold;">★★★★★</div>
+            <div id="recap-grid"></div>
+        </div>
+        <br>
+        <button onclick="location.reload()">NOU LOCAL</button>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATABASE ---
+        const CLUB_DB = {
+            medieval: {
+                filter: "sepia(0.6) contrast(1.2)",
+                bg_music: "audio/edatmitjana.m4a",
+                interior: [
+                    { text: "Murs de pedra i torxes", correct: true, emoji: "🏰", bg: "linear-gradient(to bottom, #2c3e50, #000)", img: "img/mursdepedra.jpg" },
+                    { text: "Neons i metall", correct: false, emoji: "💡", bg: "linear-gradient(45deg, #000, #333)", img: "img/neons.jpg" },
+                    { text: "Columnes de marbre", correct: false, emoji: "🏛️", bg: "linear-gradient(to bottom, #fff, #ccc)", img: "img/columnesdemarbre.jpg" }
+                ],
+                staff: [
+                    { text: "Túniques de sac", correct: true, emoji: "🧙‍♂️", img: "img/tuniquesdesac.jpg" },
+                    { text: "Perruques blanques", correct: false, emoji: "🤵", img: "img/perruquesblanques.jpg" },
+                    { text: "Frac negre", correct: false, emoji: "🧛", img: "img/fracnegre.jpg" }
+                ],
+                playlist: [
+                    { text: "Cant Gregorià Chill-out", correct: true, emoji: "🙏", sound: "medieval", audio: "audio/edatmitjana.m4a", img: "img/cantgregoria.jpg" },
+                    { text: "Grans Simfonies", correct: false, emoji: "🎻", sound: "romantic", audio: "audio/romanticisme.m4a", img: "img/granssimfonies.jpg" },
+                    { text: "Jazz Fusió", correct: false, emoji: "🎷", sound: "jazz", audio: "audio/segleXX.m4a", img: "img/jazz.jpg" }
+                ],
+                name: [
+                    { text: "El Claustre", correct: true, emoji: "⛪", img: "img/claustre.jpg" },
+                    { text: "L'Atonal", correct: false, emoji: "🚫", img: "img/atonal.jpg" },
+                    { text: "La Sonata", correct: false, emoji: "🎼", img: "img/sonata.jpg" }
+                ]
+            },
+            renaixement: {
+                filter: "saturate(1.2) brightness(1.1)",
+                bg_music: "audio/renaixement.m4a",
+                interior: [
+                    { text: "Proporció i Columnes", correct: true, emoji: "🏛️", bg: "linear-gradient(to bottom, #e6dada, #27408b)", img: "img/proporcioiordre.jpg" },
+                    { text: "Fosc i Natural", correct: false, emoji: "🌲", bg: "linear-gradient(to bottom, #002200, #000)", img: "img/foscinatural.jpg" },
+                    { text: "Or i Miralls", correct: false, emoji: "🪞", bg: "linear-gradient(to bottom, #ffd700, #8b4500)", img: "img/orimiralls.jpg" }
+                ],
+                staff: [
+                    { text: "Gorgueres i Vellut", correct: true, emoji: "🤴", img: "img/gorgueresivellut.jpg" },
+                    { text: "Monjos", correct: false, emoji: "🧘", img: "img/monjos.jpg" },
+                    { text: "Casual Modern", correct: false, emoji: "👕", img: "img/casualmodern.jpg" }
+                ],
+                playlist: [
+                    { text: "Madrigals a Cappella", correct: true, emoji: "🗣️", sound: "renaissance", audio: "audio/renaixement.m4a", img: "img/madrigals.jpg" },
+                    { text: "Tecno Dur", correct: false, emoji: "🎧", sound: "techno", audio: "audio/segleXX.m4a", img: "img/electronica.jpg" },
+                    { text: "Orgue d'Església", correct: false, emoji: "🎹", sound: "baroque", audio: "audio/barroc.m4a", img: "img/orgue.jpg" }
+                ],
+                name: [
+                    { text: "L'Humanista", correct: true, emoji: "🧠", img: "img/humanista.jpg" },
+                    { text: "El Baix Continu", correct: false, emoji: "🎸", img: "img/baixcontinu.jpg" },
+                    { text: "Sturm und Drang", correct: false, emoji: "🌪️", img: "img/sturmunddragn.jpg" }
+                ]
+            },
+            barroc: {
+                filter: "contrast(1.3) saturate(1.5)",
+                bg_music: "audio/barroc.m4a",
+                interior: [
+                    { text: "Miralls, Or i Vellut", correct: true, emoji: "🪞", bg: "radial-gradient(circle, #ffd700, #550000)", img: "img/mirallsor.jpg" },
+                    { text: "Murs de Pedra", correct: false, emoji: "🏰", bg: "linear-gradient(to bottom, #555, #000)", img: "img/mursdepedra.jpg" },
+                    { text: "Minimalista Blanc", correct: false, emoji: "⬜", bg: "linear-gradient(to bottom, #fff, #eee)", img: "img/milimalistablanc.jpg" }
+                ],
+                staff: [
+                    { text: "Perruques i Casaques", correct: true, emoji: "🤵", img: "img/perruques.jpg" },
+                    { text: "Túniques", correct: false, emoji: "🧙‍♂️", img: "img/tuniques.jpg" },
+                    { text: "Frac Despentinat", correct: false, emoji: "🎼", img: "img/fracdespentinat.jpg" }
+                ],
+                playlist: [
+                    { text: "Èxits de Vivaldi", correct: true, emoji: "🎻", sound: "baroque", audio: "audio/barroc.m4a", img: "img/existdevivaldi.jpg" },
+                    { text: "Cant Gregorià", correct: false, emoji: "🙏", sound: "medieval", audio: "audio/edatmitjana.m4a", img: "img/cantgregoria.jpg" },
+                    { text: "Dodecafonisme", correct: false, emoji: "🔢", sound: "modern", audio: "audio/segleXX.m4a", img: "img/dodecafonisme.jpg" }
+                ],
+                name: [
+                    { text: "El Continu", correct: true, emoji: "🎻", img: "img/elcontinu.jpg" },
+                    { text: "El Trobador", correct: false, emoji: "🎸", img: "img/eltrovador.jpg" },
+                    { text: "L'Equilibri", correct: false, emoji: "⚖️", img: "img/equilibri.jpg" }
+                ]
+            },
+            classicisme: {
+                filter: "brightness(1.2) contrast(0.9)",
+                bg_music: "audio/classcisme.m4a",
+                interior: [
+                    { text: "Senzillesa i Elegància", correct: true, emoji: "🎻", bg: "linear-gradient(to bottom, #f0f8ff, #aaddff)", img: "img/senzillielegant.jpg" },
+                    { text: "Or Exagerat", correct: false, emoji: "✨", bg: "radial-gradient(circle, #ffd700, #330000)", img: "img/orexagrerat.jpg" },
+                    { text: "Abstracte", correct: false, emoji: "🎨", bg: "linear-gradient(45deg, #f0f, #0ff)", img: "img/abstracte.jpg" }
+                ],
+                staff: [
+                    { text: "Elegant i Discret", correct: true, emoji: "🕴️", img: "img/elegant.jpg" },
+                    { text: "Gorgueres", correct: false, emoji: "🤴", img: "img/gorgueres.jpg" },
+                    { text: "Bohemi", correct: false, emoji: "🍷", img: "img/bohemi.jpg" }
+                ],
+                playlist: [
+                    { text: "Simfonies de Haydn", correct: true, emoji: "🎼", sound: "classical", audio: "audio/classcisme.m4a", img: "img/haydn.jpg" },
+                    { text: "Òpera Wagneriana", correct: false, emoji: "📢", sound: "romantic", audio: "audio/romanticisme.m4a", img: "img/wagner.jpg" },
+                    { text: "Música Electrònica", correct: false, emoji: "🎛️", sound: "techno", audio: "audio/segleXX.m4a", img: "img/electronica.jpg" }
+                ],
+                name: [
+                    { text: "L'Equilibri", correct: true, emoji: "⚖️", img: "img/equilibri.jpg" },
+                    { text: "El Contrast", correct: false, emoji: "🌗", img: "img/contrast.jpg" },
+                    { text: "El Monestir", correct: false, emoji: "⛪", img: "img/monestir.jpg" }
+                ]
+            },
+            romanticisme: {
+                filter: "sepia(0.3) contrast(1.4) brightness(0.8)",
+                bg_music: "audio/romanticisme.m4a",
+                interior: [
+                    { text: "Fosc, Natura i Ruïnes", correct: true, emoji: "🌲", bg: "linear-gradient(to bottom, #001100, #000)", img: "img/foscinatural.jpg" },
+                    { text: "Senzill i Clar", correct: false, emoji: "☀️", bg: "linear-gradient(to bottom, #fff, #ccf)", img: "img/senzill.jpg" },
+                    { text: "Tecnològic", correct: false, emoji: "🤖", bg: "linear-gradient(to bottom, #000, #0f0)", img: "img/tecnologic.jpg" }
+                ],
+                staff: [
+                    { text: "Levita i Cabell Llarg", correct: true, emoji: "🧛", img: "img/levitaicabellllarg.jpg" },
+                    { text: "Perruques Blanques", correct: false, emoji: "🤵", img: "img/perrucablanca.jpg" },
+                    { text: "Uniforme Espacial", correct: false, emoji: "👨‍🚀", img: "img/astronauta.jpg" }
+                ],
+                playlist: [
+                    { text: "Passió de Wagner", correct: true, emoji: "🔥", sound: "romantic", audio: "audio/romanticisme.m4a", img: "img/passio.jpg" },
+                    { text: "Madrigals Suaus", correct: false, emoji: "🍃", sound: "renaissance", audio: "audio/renaixement.m4a", img: "img/madrigalssuaus.jpg" },
+                    { text: "Clavicèmbal", correct: false, emoji: "🎹", sound: "baroque", audio: "audio/barroc.m4a", img: "img/clavicembal.jpg" }
+                ],
+                name: [
+                    { text: "Sturm und Drang", correct: true, emoji: "🌪️", img: "img/sturmunddragn.jpg" },
+                    { text: "L'Humanista", correct: false, emoji: "📚", img: "img/humanista.jpg" },
+                    { text: "El Dodecafònic", correct: false, emoji: "1️⃣2️⃣", img: "img/dodecafonisme.jpg" }
+                ]
+            },
+            segle_xx: {
+                filter: "grayscale(1) contrast(1.5)",
+                bg_music: "audio/segleXX.m4a",
+                interior: [
+                    { text: "Abstracte i Neons", correct: true, emoji: "💡", bg: "linear-gradient(90deg, #ff00ff, #00ffff)", img: "img/abstracte.jpg" },
+                    { text: "Pedra i Torxes", correct: false, emoji: "🔥", bg: "linear-gradient(to bottom, #333, #000)", img: "img/pedraitorxes.jpg" },
+                    { text: "Salons de Ball", correct: false, emoji: "💃", bg: "radial-gradient(circle, #fff, #fcc)", img: "img/salonsdeball.jpg" }
+                ],
+                staff: [
+                    { text: "Modern i Casual", correct: true, emoji: "😎", img: "img/modernicasual.jpg" },
+                    { text: "Túniques", correct: false, emoji: "🧙‍♂️", img: "img/tuniquesromanes.jpg" },
+                    { text: "Elegant S.XVIII", correct: false, emoji: "🕴️", img: "img/elegant.jpg" }
+                ],
+                playlist: [
+                    { text: "Electrònica i Soroll", correct: true, emoji: "🔊", sound: "modern", audio: "audio/segleXX.m4a", img: "img/electronicisoroll.jpg" },
+                    { text: "Valsos de Viena", correct: false, emoji: "💃", sound: "romantic", audio: "audio/romanticisme.m4a", img: "img/valsosdeviena.jpg" },
+                    { text: "Llaüt", correct: false, emoji: "🎸", sound: "renaissance", audio: "audio/renaixement.m4a", img: "img/llaut.jpg" }
+                ],
+                name: [
+                    { text: "L'Atonal", correct: true, emoji: "🔢", img: "img/atonal.jpg" },
+                    { text: "Basso Continuo", correct: false, emoji: "🎻", img: "img/bassocontinuo2.jpg" },
+                    { text: "La Sonata", correct: false, emoji: "🎼", img: "img/sonata.jpg" }
+                ]
+            }
+        };
+
+        const STEPS = [
+            { id: 'interior', q: "FASE 1: INTERIORISME\nQuina ambientació demana l'època?" },
+            { id: 'staff', q: "FASE 2: PERSONAL\nQuin és l'uniforme adequat per l'equip?" },
+            { id: 'playlist', q: "FASE 3: ACÚSTICA\nQuina música farà vibrar als convidats?" },
+            { id: 'name', q: "FASE 4: BRANDING\nQuin nom posarem a la sala?" }
+        ];
+
+        // --- GAME STATE ---
+        let gameState = {
+            era: null,
+            stepIndex: 0,
+            score: 0,
+            choices: {},
+            completedEras: JSON.parse(localStorage.getItem('club_completed_eras')) || []
+        };
+
+        // Init UI
+        updateMenuUI();
+
+        function updateMenuUI() {
+            gameState.completedEras.forEach(era => {
+                const btn = document.getElementById(`btn-${era}`);
+                if (btn) btn.classList.add('completed');
+            });
+
+            if (gameState.completedEras.length >= 6) {
+                document.querySelector('#start-screen h1').style.color = "var(--caution-yellow)";
+                document.querySelector('#start-screen h1').innerText = "CHRONOS: MESTRE D'OBRES";
+            }
+        }
+
+
+
+        // --- AUDIO ---
+
+        let globalVolume = 0.5;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let musicNode = null;
+        let bgMusicNode = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const volSlider = document.getElementById('volume-slider');
+            if (volSlider) {
+                volSlider.oninput = (e) => {
+                    globalVolume = parseFloat(e.target.value);
+                    if (bgMusicNode) bgMusicNode.volume = globalVolume * 0.6;
+                    if (musicNode) musicNode.volume = globalVolume;
+                };
+            }
+        });
+
+        function playBgMusic(path) {
+            if (bgMusicNode) {
+                bgMusicNode.pause();
+                bgMusicNode = null;
+            }
+            if (path) {
+                bgMusicNode = new Audio(path);
+                bgMusicNode.loop = true;
+                bgMusicNode.volume = 0.3 * globalVolume;
+                bgMusicNode.play().catch(e => console.log("Bg audio play error:", e));
+            }
+        }
+
+        function playSound(typeOrPath) {
+            // Stop previous sample
+            if (musicNode) {
+                try {
+                    musicNode.pause();
+                    if (musicNode.src) { musicNode.currentTime = 0; }
+                } catch (e) { }
+                musicNode = null;
+            }
+
+            // HTML5 Audio Check
+            if (typeOrPath && typeOrPath.includes('/')) {
+                musicNode = new Audio(typeOrPath);
+                musicNode.currentTime = 0;
+                musicNode.volume = 0.6 * globalVolume; // Slightly louder than bg
+                musicNode.play().catch(e => console.log("Audio play error:", e));
+                return;
+            }
+
+            // Fallback: Oscillator
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            // Generic beep based on type (simple reuse of previous logic logic abbreviated)
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(220, now);
+            gain.gain.setValueAtTime(0.1, now);
+            osc.start(now); osc.stop(now + 0.5);
+        }
+
+        // --- GAME LOGIC ---
+        function startGame(era) {
+            try {
+                console.log("Starting game for era:", era);
+                gameState.era = era;
+                gameState.stepIndex = 0;
+                gameState.score = 0;
+                gameState.choices = {};
+
+                // Play BG Music
+                if (CLUB_DB[era].bg_music) {
+                    playBgMusic(CLUB_DB[era].bg_music);
+                }
+
+                const projectEl = document.getElementById('project-name');
+                if (projectEl) projectEl.innerText = `SALA ${era.toUpperCase()}`;
+
+                const bg = document.getElementById('layer-background');
+                if (bg) {
+                    bg.style.background = '';
+                    bg.className = 'layer blueprint-bg';
+                }
+
+                document.getElementById('layer-staff').innerHTML = '';
+                document.getElementById('layer-staff').classList.remove('visible');
+                document.getElementById('layer-sign').classList.remove('visible');
+                document.getElementById('sign-text').innerText = '';
+                document.getElementById('layer-filter').style.filter = 'none';
+
+                document.getElementById('start-screen').classList.remove('active');
+                document.getElementById('design-screen').classList.add('active');
+
+                loadStep();
+            } catch (e) {
+                console.error(e);
+                alert("Error starting game: " + e.message);
+            }
+        }
+
+        function loadStep() {
+            try {
+                if (gameState.stepIndex >= STEPS.length) {
+                    finishGame();
+                    return;
+                }
+
+                const step = STEPS[gameState.stepIndex];
+                document.getElementById('step-question').innerText = step.q;
+
+                // Update dots
+                document.querySelectorAll('.step-dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === gameState.stepIndex);
+                    // Navigation
+                    d.onclick = () => {
+                        // Allow backtracking
+                        if (i < gameState.stepIndex) {
+                            gameState.stepIndex = i;
+                            loadStep();
+                        }
+                    };
+                });
+
+                // Load Options
+                if (!CLUB_DB[gameState.era] || !CLUB_DB[gameState.era][step.id]) {
+                    throw new Error("Missing data for era: " + gameState.era + ", step: " + step.id);
+                }
+
+                const options = CLUB_DB[gameState.era][step.id];
+                // Shuffle (only if not already shuffled? Actually shuffling every time is annoying if you go back. 
+                // But for simplicity let's just render. Ideally we'd store the shuffle order but it's not critical.)
+                const shuffled = [...options].sort(() => Math.random() - 0.5);
+
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+
+                // Check previously made choice
+                const previousChoiceStr = gameState.choices[step.id] ? JSON.stringify(gameState.choices[step.id]) : null;
+
+                shuffled.forEach(opt => {
+                    const card = document.createElement('div');
+                    card.className = 'option-card';
+
+                    // Highlight if previously selected
+                    // Note: comparing objects directly might fail if references change, but here they come from DB. 
+                    // To be safe, compare text or use stringify.
+                    if (gameState.choices[step.id] && gameState.choices[step.id].text === opt.text) {
+                        card.classList.add('selected');
+                    }
+
+                    // Use Image if available
+                    const imgSrc = opt.img ? opt.img : '';
+                    card.innerHTML = `
+                    <img src="${imgSrc}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <div class="option-emoji" style="${imgSrc ? 'display:none' : 'display:block'}">${opt.emoji}</div>
+                        <div class="option-text">${opt.text}</div>
+                        `;
+                    card.onclick = () => makeChoice(opt, step.id);
+
+                    // Removed audio hover logic as requested
+
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                alert("Error loading step: " + e.message);
+            }
+        }
+
+        function makeChoice(option, stepId) {
+            // Overwrite choice. We do NOT increment score here anymore.
+            gameState.choices[stepId] = option;
+
+            // VISUAL UPDATE (Immediate feedback)
+            if (stepId === 'interior') {
+                document.getElementById('layer-background').className = 'layer';
+                document.getElementById('layer-background').style.background = option.bg;
+                if (option.img) {
+                    document.getElementById('layer-background').style.backgroundImage = `url('${option.img}')`;
+                }
+            }
+
+            if (stepId === 'name') {
+                const el = document.getElementById('layer-sign');
+                document.getElementById('sign-text').innerText = option.text;
+                el.classList.add('visible');
+            }
+
+            // Next Step
+            gameState.stepIndex++;
+            if (gameState.stepIndex < STEPS.length) {
+                setTimeout(loadStep, 300);
+            } else {
+                setTimeout(finishGame, 500);
+            }
+        }
+
+        function finishGame() {
+            document.getElementById('design-screen').classList.remove('active');
+
+            if (bgMusicNode) {
+                bgMusicNode.pause();
+                bgMusicNode = null;
+            }
+
+            document.getElementById('layer-filter').style.filter = CLUB_DB[gameState.era].filter;
+
+            // Calculate Score HERE
+            let finalScore = 0;
+            const requiredSteps = ['interior', 'staff', 'playlist', 'name'];
+            requiredSteps.forEach(key => {
+                if (gameState.choices[key] && gameState.choices[key].correct) {
+                    finalScore++;
+                }
+            });
+
+            const flash = document.getElementById('flash-overlay');
+            flash.style.animation = 'flashAnim 0.5s forwards';
+
+            setTimeout(() => {
+                document.getElementById('eval-screen').classList.add('active');
+                const card = document.getElementById('final-card');
+                const title = document.getElementById('final-title');
+                const name = document.getElementById('final-club-name');
+                const verdict = document.getElementById('final-verdict');
+                const stars = document.getElementById('final-stars');
+
+                name.innerText = gameState.choices['name'] ? gameState.choices['name'].text : "CLUB";
+
+                const grid = document.getElementById('recap-grid');
+                grid.innerHTML = '';
+                requiredSteps.forEach(s => {
+                    const c = gameState.choices[s];
+                    if (c) {
+                        grid.innerHTML += `
+                            <div class="recap-item">
+                                <img src="${c.img}" onerror="this.style.display='none'">
+                                <div class="recap-label">${s}</div>
+                                <div class="recap-value">${c.text}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (finalScore === 4) {
+                    title.innerText = "CLIENT SATISFET!";
+                    verdict.innerText = `PROJECTE COMPLETAT! La Sala ${gameState.era.toUpperCase()} és un èxit rotund.`;
+                    verdict.style.color = "#00ff00";
+                    stars.innerText = "★★★★★";
+
+                    if (typeof Rewards !== 'undefined') {
+                        Rewards.unlockCard(
+                            'club_mix',
+                            'Rei de la Nit',
+                            'Has creat el club perfecte per a l\'època!',
+                            '../../img/card_club.png'
+                        );
+                    }
+                    if (!gameState.completedEras.includes(gameState.era)) {
+                        gameState.completedEras.push(gameState.era);
+                        localStorage.setItem('club_completed_eras', JSON.stringify(gameState.completedEras));
+                    }
+                } else {
+                    title.innerText = "PROJECTE REBUTJAT";
+                    verdict.innerText = "ERROR DE DISSENY. Els fantasmes no es senten com a casa.";
+                    verdict.style.color = "#ff0000";
+                    stars.innerText = "★☆☆☆☆";
+                    document.getElementById('layer-filter').style.filter = "grayscale(1) contrast(2)";
+                }
+
+                card.classList.add('show');
+            }, 500);
+        }
+
+    </script>
+</body>
+
+</html>

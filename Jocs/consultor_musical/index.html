@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Consultor Musical</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --primary: #1a73e8;
+            --secondary: #5f6368;
+            --success: #188038;
+            --error: #d93025;
+            --avatar-bg: #e8f0fe;
+            --avatar-text: #1967d2;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto', 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--secondary);
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Email View */
+        .email-view {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .subject {
+            font-size: 24px;
+            font-weight: normal;
+            margin-bottom: 20px;
+        }
+
+        .sender-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .avatar {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: var(--avatar-bg);
+            color: var(--avatar-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .sender-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sender-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .sender-email {
+            color: var(--secondary);
+            font-size: 14px;
+        }
+
+        .email-body {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #202124;
+            white-space: pre-wrap;
+        }
+
+        /* Smart Replies */
+        .smart-replies {
+            padding: 20px 30px;
+            border-top: 1px solid #eee;
+            background: #f9f9f9;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .reply-btn {
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 24px;
+            padding: 12px 24px;
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .reply-btn:hover {
+            background: #f1f3f4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Feedback Overlay */
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            padding: 40px;
+        }
+
+        .feedback-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .feedback-msg {
+            font-size: 18px;
+            color: var(--secondary);
+            margin-bottom: 30px;
+        }
+
+        .next-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+
+        /* New Modern Start Screen */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            /* Ensure it's on top of everything */
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .modal {
+            background: linear-gradient(145deg, #ffffff, #f0f7ff);
+            padding: 50px;
+            border-radius: 24px;
+            max-width: 550px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: translateY(0);
+            animation: slideUp 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal h1 {
+            color: #1a73e8;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            margin-top: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .modal-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: inline-block;
+            filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.1));
+        }
+
+        .modal p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #5f6368;
+            margin-bottom: 40px;
+        }
+
+        .new-start-btn {
+            background: linear-gradient(to right, #1a73e8, #1557b0);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(26, 115, 232, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .new-start-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(26, 115, 232, 0.4);
+        }
+
+        .new-start-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            width: 100%;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Volume Control */
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #volume-slider {
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Volume Control -->
+    <div id="volume-control">
+        <span id="vol-icon">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.1">
+    </div>
+
+    <audio id="bg-music" loop src="Quest Board Bouncer.m4a"></audio>
+
+    <!-- Start Modal -->
+    <div id="start-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-icon">👔</div>
+            <h1>El Consultor Musical</h1>
+            <p>
+                Benvingut al despatx.<br>
+                La història de la música depèn dels teus consells.<br>
+                Assessoraràs als grans genis o crearàs un desastre?
+            </p>
+            <button id="new-start-btn" class="new-start-btn" onclick="startNewGame()">ENTRAR AL DESPATX</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="header">
+            <div class="back-btn">←</div>
+            <div class="header-title">Safata d'entrada</div>
+            <div id="email-counter"
+                style="margin-left: auto; font-size: 1.1rem; color: var(--secondary); background: #eee; padding: 6px 16px; border-radius: 20px; font-weight: bold;">
+                1 / 12</div>
+        </div>
+
+        <div class="email-view" id="email-view">
+            <div class="subject" id="email-subject">Subject</div>
+            <div class="sender-info">
+                <div class="avatar" id="sender-avatar">G</div>
+                <div class="sender-details">
+                    <span class="sender-name" id="sender-name">Guido d'Arezzo</span>
+                    <span class="sender-email" id="sender-email">guido@monestir.org</span>
+                </div>
+            </div>
+            <div class="email-body" id="email-body">
+                Body content...
+            </div>
+        </div>
+
+        <div class="smart-replies" id="smart-replies">
+            <!-- Buttons injected here -->
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay" class="feedback-overlay hidden">
+            <div class="feedback-icon" id="fb-icon">✅</div>
+            <div class="feedback-title" id="fb-title">Correcte!</div>
+            <div class="feedback-msg" id="fb-msg">Gràcies pel teu consell.</div>
+            <button class="next-btn" id="next-btn" onclick="game.nextLevel()">Següent Correu</button>
+        </div>
+    </div>
+
+    <script>
+        const EMAILS_DB = [
+            // Edat Mitjana
+            {
+                sender: "Guido d'Arezzo",
+                email: "guido@monestir.org",
+                img: "img/guido.jpg",
+                subject: "URGENT: Els monjos tenen memòria de peix",
+                body: "Benvolgut Consultor,\n\nTinc un problema greu. Els meus monjos triguen 10 anys a aprendre's els cants de memòria. I quan se'ls aprenen, els canten malament!\n\nNecessito un sistema perquè recordin l'altura de les notes. Què faig?",
+                options: [
+                    { text: "Fes que cantin més fort.", feedback: "No ha funcionat. Ara criden i desafinen més.", correct: false },
+                    { text: "Inventa un nom per a cada nota (Ut-Re-Mi...).", feedback: "Genial! Amb la 'Mà Guiabana' i els noms, aprenen molt ràpid!", correct: true },
+                    { text: "Dona'ls partitures impreses.", feedback: "Impossible! La impremta no s'ha inventat encara.", correct: false }
+                ]
+            },
+            {
+                sender: "Trobador Anònim",
+                email: "loverboy123@castell.com",
+                img: "img/trobador.jpg",
+                subject: "Consell amorós (i musical)",
+                body: "Hola,\n\nVull cantar una cançó a la meva estimada Dama del Castell, però el capellà em mira malament perquè diu que la música només és per a Déu.\n\nCom puc guanyar-me el seu cor sense que m'excomuniquin?",
+                options: [
+                    { text: "Canta en llatí un salm religiós.", feedback: "La Dama s'ha adormit. Molt avorrit.", correct: false },
+                    { text: "Escriu en llengua vulgar i parla d'amor cortès.", feedback: "Perfecte! Ha entès la lletra i s'ha emocionat. Èxit total!", correct: true },
+                    { text: "Fes un solo de bateria.", feedback: "M'han cremat per bruixeria. La bateria no existeix.", correct: false }
+                ]
+            },
+            // Renaixement
+            {
+                sender: "Josquin des Prez",
+                email: "josquin@chapelle.fr",
+                img: "img/josquin.jpg",
+                subject: "La música sona buida",
+                body: "Mestre,\n\nEstic component una missa, però sento que falta alguna cosa. Tinc 4 veus, però cadascuna va a la seva i no hi ha cohesió.\n\nAlguna idea per fer-ho més interessant?",
+                options: [
+                    { text: "Fes servir la Polifonia Imitativa (Cànon).", feedback: "Sublim! Les veus es persegueixen i sona celestial.", correct: true },
+                    { text: "Posa-hi molt de baix continu.", feedback: "Això és massa modern (Barroc). No queda bé.", correct: false },
+                    { text: "Elimina 3 veus i fes monodia.", feedback: "Massa simple. Sembla Edat Mitjana.", correct: false }
+                ]
+            },
+            {
+                sender: "Lutier Reial",
+                email: "fusta@taller.it",
+                img: "img/luthier.jpg",
+                subject: "Nou instrument de moda",
+                body: "Bon dia,\n\nTinc un client noble que vol cantar acompanyant-se ell mateix. Necessita un instrument de corda polivalent, elegant i que estigui de moda.\n\nQuè li construeixo?",
+                options: [
+                    { text: "Un Piano de Cua.", feedback: "Massa gran i complex. Encara no existeix.", correct: false },
+                    { text: "Una Guitarra Elèctrica.", feedback: "On l'endollo? No hi ha electricitat!", correct: false },
+                    { text: "Un Llaüt.", feedback: "Excel·lent elecció! És l'instrument rei del Renaixement.", correct: true }
+                ]
+            },
+            // Barroc
+            {
+                sender: "G.F. Händel",
+                email: "handel@london.uk",
+                img: "img/handel.jpg",
+                subject: "El Rei s'avorreix al vaixell",
+                body: "Hello,\n\nEl Rei Jordi I vol fer una festa al riu Tàmesis. Necessito música que soni fort a l'aire lliure i que sigui majestuosa.\n\nQuè em recomanes?",
+                options: [
+                    { text: "Un quartet de corda íntim.", feedback: "No se sent res amb el soroll de l'aigua i el vent.", correct: false },
+                    { text: "Compon la 'Música Aquàtica' amb molts vents.", feedback: "Un èxit! El Rei ha demanat que la repeteixin 3 cops!", correct: true },
+                    { text: "Posa un DJ.", feedback: "Molt graciós. M'han tancat a la Torre de Londres.", correct: false }
+                ]
+            },
+            {
+                sender: "J.S. Bach",
+                email: "kantor@leipzig.de",
+                img: "img/bach.jpg",
+                subject: "No tinc temps!!!",
+                body: "Estimat amic,\n\nTinc 20 fills, faig classes de llatí, toco l'orgue i he de compondre música nova cada diumenge. No dono l'abast!\n\nCom m'organitzo?",
+                options: [
+                    { text: "Deixa la feina i fes-te youtuber.", feedback: "Què és això? He de mantenir la família!", correct: false },
+                    { text: "Fes que els fills copiïn partitures i fes Cantates.", feedback: "Bona idea! Una Cantata setmanal és viable amb ajuda.", correct: true },
+                    { text: "Escriu òperes.", feedback: "A l'església no volen òperes! M'han acomiadat.", correct: false }
+                ]
+            },
+            // Classicisme
+            {
+                sender: "Emperador Josep II",
+                email: "kaiser@viena.at",
+                img: "img/emperador.jpg",
+                subject: "Sobre el Sr. Mozart",
+                body: "Consultor,\n\nAcabo d'escoltar l'òpera del jove Mozart. És bonica, però... no sé, em cansa una mica l'oïda.\n\nQuin és el problema tècnic exactament?",
+                options: [
+                    { text: "Té massa notes!", feedback: "Exacte! Això és el que li diré. Massa densitat.", correct: true },
+                    { text: "És massa curta.", feedback: "Al contrari, se m'ha fet eterna.", correct: false },
+                    { text: "Falta distorsió.", feedback: "Perdó? Això és música culta.", correct: false }
+                ]
+            },
+            {
+                sender: "L.V. Beethoven",
+                email: "ludwig@bonn.de",
+                img: "img/beethoven.jpg",
+                subject: "La Sonata se'm queda petita",
+                body: "Mestre,\n\nLa forma Sonata clàssica de Haydn i Mozart és massa rígida. Tinc tantes emocions a dins que no hi caben!\n\nQuè faig amb les normes?",
+                options: [
+                    { text: "Segueix les normes, no arrisquis.", feedback: "Mai! La meva música ha de ser lliure!", correct: false },
+                    { text: "Trenca-les! Fes-la més llarga i dramàtica.", feedback: "SÍ! Canviaré la història de la música per sempre!", correct: true },
+                    { text: "Fes cançons de 3 minuts.", feedback: "Això és pel futur (Pop). Jo faig Art.", correct: false }
+                ]
+            },
+            // Romanticisme
+            {
+                sender: "Frédéric Chopin",
+                email: "fred@paris.fr",
+                img: "img/chopin.jpg",
+                subject: "Odio els concerts grans",
+                body: "Cher ami,\n\nEm poso molt nerviós quan he de tocar en grans teatres. La gent tossint, mirant... M'agrada més la intimitat.\n\nOn hauria de tocar?",
+                options: [
+                    { text: "A l'Estadi Olímpic.", feedback: "Em desmaio només de pensar-hi.", correct: false },
+                    { text: "En salons privats (Pleyel) per a l'alta societat.", feedback: "Perfecte. Ambient íntim, piano suau, gent culta.", correct: true },
+                    { text: "Al carrer.", feedback: "Fa fred i el piano es desafina.", correct: false }
+                ]
+            },
+            {
+                sender: "Giuseppe Verdi",
+                email: "peppino@milano.it",
+                img: "img/verdi.jpg",
+                subject: "Maleïda Censura!",
+                body: "Ciao,\n\nVull estrenar una òpera on maten a un Rei (Un Ballo in Maschera), però la censura diu que això incita a la revolució.\n\nCom ho soluciono sense canviar la música?",
+                options: [
+                    { text: "Canvia el Rei per un Governador de Boston.", feedback: "Bona pensada! La història és la mateixa però els censors callen.", correct: true },
+                    { text: "Deixa de compondre.", feedback: "Mai! Visca Verdi!", correct: false },
+                    { text: "Fes una comèdia.", feedback: "Aquesta història és tràgica, no puc.", correct: false }
+                ]
+            },
+            // Segle XX
+            {
+                sender: "Arnold Schönberg",
+                email: "arnold@viena.at",
+                img: "img/schoemberg.jpg",
+                subject: "La tonalitat ha mort",
+                body: "Estimats,\n\nJa no es pot esprémer més la tonalitat tradicional. Tot sona igual. Necessito un nou sistema per organitzar els 12 sons de l'escala cromàtica.\n\nIdees?",
+                options: [
+                    { text: "Torna al Do Major.", feedback: "Això és retrocedir! Vull avançar.", correct: false },
+                    { text: "Inventa el Dodecafonisme (sèries).", feedback: "Brillant! Una democràcia de notes, cap és més important.", correct: true },
+                    { text: "Fes música aleatòria.", feedback: "Això ho farà en John Cage més tard. Jo vull ordre.", correct: false }
+                ]
+            },
+            {
+                sender: "Director de Cinema",
+                email: "hollywood@studios.com",
+                img: "img/directorcine.jpg",
+                subject: "Necessito POR",
+                body: "Hey,\n\nEstem rodant una pel·li de ciència-ficció amb alienígenes. Necessito una banda sonora que faci molta por i soni 'd'un altre món'.\n\nQuè fem servir?",
+                options: [
+                    { text: "Un quartet de corda clàssic.", feedback: "Massa bonic. No fa por.", correct: false },
+                    { text: "Utilitza el Theremin i sons dissonants.", feedback: "Uau! Aquest so ondulant posa els pèls de punta!", correct: true },
+                    { text: "Una guitarra acústica.", feedback: "Sembla un foc de camp, no una invasió alienígena.", correct: false }
+                ]
+            }
+        ];
+
+        class Game {
+            constructor() {
+                this.currentLevel = 0;
+                // Shuffle emails for random order
+                this.emails = [...EMAILS_DB].sort(() => Math.random() - 0.5);
+                this.initAudio();
+                this.updateUI();
+            }
+
+            initAudio() {
+                this.bgMusic = document.getElementById('bg-music');
+                this.volumeSlider = document.getElementById('volume-slider');
+                this.bgMusic.volume = 0.1; // Default low volume
+
+                this.volumeSlider.addEventListener('input', (e) => {
+                    this.bgMusic.volume = e.target.value;
+                });
+            }
+
+            start() {
+                document.getElementById('start-modal').classList.add('hidden');
+                this.bgMusic.play().catch(e => console.log("Auto-play blocked", e));
+            }
+
+            updateUI() {
+                const email = this.emails[this.currentLevel];
+                const progress = ((this.currentLevel) / this.emails.length) * 100;
+
+                document.getElementById('progress-fill').style.width = `${progress}%`;
+
+                // Update Counter
+                const counterEl = document.getElementById('email-counter');
+                if (counterEl) {
+                    counterEl.textContent = `${this.currentLevel + 1} / ${this.emails.length}`;
+                }
+
+                // Email Content
+                document.getElementById('email-subject').textContent = email.subject;
+                document.getElementById('sender-name').textContent = email.sender;
+                document.getElementById('sender-email').textContent = email.email;
+
+                // Avatar Logic
+                const avatarEl = document.getElementById('sender-avatar');
+                if (email.img) {
+                    avatarEl.textContent = '';
+                    avatarEl.style.backgroundImage = `url('${email.img}')`;
+                    avatarEl.style.backgroundSize = 'cover';
+                    avatarEl.style.backgroundPosition = 'center';
+                } else {
+                    avatarEl.style.backgroundImage = 'none';
+                    avatarEl.textContent = email.sender.charAt(0);
+                }
+
+                document.getElementById('email-body').textContent = email.body;
+
+                // Replies
+                const repliesContainer = document.getElementById('smart-replies');
+                repliesContainer.innerHTML = '';
+
+                // Shuffle options
+                const shuffledOptions = [...email.options].sort(() => Math.random() - 0.5);
+
+                shuffledOptions.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'reply-btn';
+                    btn.textContent = opt.text;
+                    btn.onclick = () => this.handleReply(opt);
+                    repliesContainer.appendChild(btn);
+                });
+            }
+
+            handleReply(option) {
+                const overlay = document.getElementById('feedback-overlay');
+                const icon = document.getElementById('fb-icon');
+                const title = document.getElementById('fb-title');
+                const msg = document.getElementById('fb-msg');
+                const nextBtn = document.getElementById('next-btn');
+
+                overlay.classList.remove('hidden');
+                msg.textContent = option.feedback;
+
+                if (option.correct) {
+                    icon.textContent = "✅";
+                    title.textContent = "Resposta Correcta";
+                    title.style.color = "var(--success)";
+                    nextBtn.textContent = this.currentLevel === this.emails.length - 1 ? "Acabar Joc" : "Següent Correu";
+                    nextBtn.onclick = () => this.nextLevel();
+                } else {
+                    icon.textContent = "❌";
+                    title.textContent = "Resposta Incorrecta";
+                    title.style.color = "var(--error)";
+                    nextBtn.textContent = "Tornar-ho a provar";
+                    nextBtn.onclick = () => {
+                        overlay.classList.add('hidden');
+                    };
+                }
+            }
+
+            nextLevel() {
+                document.getElementById('feedback-overlay').classList.add('hidden');
+                this.currentLevel++;
+
+                if (this.currentLevel >= this.emails.length) {
+                    this.showVictory();
+                } else {
+                    this.updateUI();
+                }
+            }
+
+            showVictory() {
+                const overlay = document.getElementById('feedback-overlay');
+                overlay.classList.remove('hidden');
+                document.getElementById('fb-icon').textContent = "🏆";
+                document.getElementById('fb-title').textContent = "Joc Completat!";
+                document.getElementById('fb-msg').textContent = "Ets el millor Consultor Musical de la història!";
+                const btn = document.getElementById('next-btn');
+                btn.textContent = "Tornar a Jugar";
+                btn.onclick = () => location.reload();
+            }
+        }
+
+        // Initialize Game
+        let gameInstance = null;
+
+        function startNewGame() {
+            console.log("Start button clicked (Global Function)");
+
+            // 1. UI Feedback immediately
+            const modal = document.getElementById('start-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                console.log("Modal hidden");
+            } else {
+                console.error("Modal not found");
+            }
+
+            // 2. Start Game Logic
+            try {
+                if (!gameInstance) {
+                    gameInstance = new Game();
+                }
+                gameInstance.bgMusic.play().catch(e => console.log("Audio play blocked (user interaction needed):", e));
+            } catch (e) {
+                console.error("Game Start Error:", e);
+                alert("Error: " + e.message);
+            }
+        }
+
+        // Attach to window for safety
+        window.startNewGame = startNewGame;
+        window.Game = Game; // Expose class
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pre-load game logic safely
+            console.log("DOM Loaded, attempting to initialize game...");
+            try {
+                if (typeof Game === 'undefined') {
+                    throw new Error("Game class not defined. Script parsing might have failed previously.");
+                }
+                gameInstance = new Game();
+                window.game = gameInstance; // For debugging
+                console.log("Game initialized successfully on load.");
+            } catch (e) {
+                console.error("CRITICAL ERROR initializing game:", e);
+                alert("Error crític inicialitzant el joc: " + e.message);
+            }
+        });
+
+    </script>
+</body>
+
+</html>

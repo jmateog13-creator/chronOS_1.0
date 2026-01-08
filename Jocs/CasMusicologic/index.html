@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Cas Musicològic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cork-bg: #d4a373;
+            --thread-color: #e74c3c;
+            --note-yellow: #f1c40f;
+            --polaroid-bg: #fff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Special Elite', cursive;
+            font-family: 'Special Elite', cursive;
+            background-color: var(--cork-bg);
+            background-image: url('img/bg.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-board {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* CANVAS FOR THREADS */
+        #thread-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* CENTRAL CASE FILE */
+        .case-file {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            height: 420px;
+            background: #f0e68c;
+            /* Manila folder color */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            padding: 30px;
+            text-align: center;
+            z-index: 5;
+            border: 1px solid #d4c56f;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Tab of the folder */
+        .case-file::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 0;
+            width: 120px;
+            height: 15px;
+            background: #f0e68c;
+            border-radius: 5px 5px 0 0;
+            border: 1px solid #d4c56f;
+            border-bottom: none;
+        }
+
+        .case-photo {
+            display: none;
+            /* Remove the image container entirely */
+        }
+
+        .pin {
+            width: 20px;
+            height: 20px;
+            background: red;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            cursor: pointer;
+        }
+
+        .pin:hover {
+            transform: translateX(-50%) scale(1.2);
+        }
+
+        /* EVIDENCES */
+        .evidence {
+            position: absolute;
+            width: 160px;
+            height: 200px;
+            background: #fff;
+            /* Pure white photo paper */
+            padding: 10px 10px 40px 10px;
+            /* Big bottom padding for text */
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+            transform: rotate(var(--rotation));
+            transition: transform 0.3s;
+            cursor: pointer;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .evidence:hover {
+            z-index: 15;
+            transform: scale(1.1) rotate(0deg);
+        }
+
+        .evidence-img {
+            width: 100%;
+            height: 140px;
+            background: #eee;
+            margin-bottom: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            pointer-events: none;
+            /* Prevent image drag */
+        }
+
+        .evidence-text {
+            font-size: 1rem;
+            text-align: center;
+            font-family: 'Special Elite', cursive;
+            color: #333;
+            line-height: 1.2;
+            /* Ensure text sits in the white padding area */
+            position: absolute;
+            bottom: 10px;
+            width: 90%;
+            pointer-events: none;
+            /* Prevent text selection cursor */
+            user-select: none;
+        }
+
+        .evidence-pin {
+            width: 15px;
+            height: 15px;
+            background: #3498db;
+            border-radius: 50%;
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            /* Ensure on top */
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* STAMPS */
+        .stamp-evidence {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            color: red;
+            border: 3px solid red;
+            padding: 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .stamp-evidence.visible {
+            opacity: 0.8;
+        }
+
+        #case-closed {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 5rem;
+            color: var(--success-color, green);
+            border: 10px solid green;
+            padding: 20px 50px;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 100;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        #case-closed.visible {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* HUD */
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: white;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-family: 'Limelight', cursive;
+            /* or Special Elite */
+            font-size: 4rem;
+            color: var(--note-yellow);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #start-screen p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            background: var(--thread-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Special Elite', cursive;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            background: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hud">
+        <div>CAS: <span id="case-name">Carregant...</span></div>
+        <div>EVIDÈNCIES: <span id="evidence-count">0</span>/4</div>
+        <div style="margin-top:10px;">
+            <button id="music-btn"
+                style="background:transparent; border:1px solid white; color:white; cursor:pointer;">🎵 ON</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="Shadowed Evidence.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="start-screen">
+        <h1>CAS MUSICOLÒGIC</h1>
+        <p>Ets un detectiu temporal. Hi ha objectes barrejats de diferents èpoques.<br>
+            Connecta amb un fil vermell les 4 evidències correctes de cada cas a la carpeta central.</p>
+        <button class="start-btn" onclick="initGame()">COMENÇAR INVESTIGACIÓ</button>
+    </div>
+
+    <div id="game-board">
+        <canvas id="thread-canvas"></canvas>
+
+        <div class="case-file" id="case-file">
+            <div class="pin" id="central-pin"></div>
+            <div class="case-photo" id="case-photo">📁</div>
+            <h2 id="case-title">EL MISTERI DEL BARROC</h2>
+            <p>Connecta les proves que pertanyen a aquesta època.</p>
+        </div>
+
+        <div id="evidence-container"></div>
+
+        <div id="case-closed">CAS TANCAT</div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'tension') {
+                // High violin-like screech
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.5);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'snap') {
+                // Thread snapping
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // --- DATA ---
+        // Using actual filenames found in directory
+        const CASES_DATA = [
+            {
+                id: 'edat_mitjana',
+                title: 'EDAT MITJANA: El Misteri dels Monestirs',
+                correct: [
+                    { text: 'Cant Gregorià', img: 'img/monjos.jpg' },
+                    { text: 'Pergamí', img: 'img/pergami.jpg' },
+                    { text: 'Llatí', img: 'img/lalti.jpg' },
+                    { text: 'Neumes', img: 'img/neumes.jpg' }
+                ],
+                fake: [
+                    { text: 'Piano', img: 'img/pianomodern.jpg' },
+                    { text: 'Impremta', img: 'img/impremta.jpg' },
+                    { text: 'Violí', img: 'img/violi.jpg' },
+                    { text: 'Director', img: 'img/director.jpg' }
+                ]
+            },
+            {
+                id: 'renaixement',
+                title: 'RENAIXEMENT: L\'Enigma de l\'Humanisme',
+                correct: [
+                    { text: 'Impremta', img: 'img/impremta.jpg' },
+                    { text: 'Llaüt', img: 'img/llaud.jpg' },
+                    { text: 'Viola da Gamba', img: 'img/violadegamba.jpg' },
+                    { text: 'Polifonia', img: 'img/polifonia.jpg' }
+                ],
+                fake: [
+                    { text: 'Castrati', img: 'img/castratti.jpg' },
+                    { text: 'Wagner', img: 'img/wagner.jpg' },
+                    { text: 'Orquestra', img: 'img/director.jpg' }, // Placeholder
+                    { text: 'Jazz', img: 'img/saxofon.jpg' }
+                ]
+            },
+            {
+                id: 'barroc',
+                title: 'BARROC: El Misteri del Baix Continu',
+                correct: [
+                    { text: 'Clavecí', img: 'img/claveci.jpg' },
+                    { text: 'J.S. Bach', img: 'img/bach.jpg' },
+                    { text: 'Perruca', img: 'img/perruca.png' },
+                    { text: 'Orgue', img: 'img/orgue.jpg' }
+                ],
+                fake: [
+                    { text: 'Piano', img: 'img/pianomodern.jpg' },
+                    { text: 'W.A. Mozart', img: 'img/mozart.jpg' },
+                    { text: 'Guitarra Elèctrica', img: 'img/guitarrelectrica.jpg' },
+                    { text: 'Neumes', img: 'img/neumes.jpg' }
+                ]
+            },
+            {
+                id: 'classicisme',
+                title: 'CLASSICISME: L\'Enigma de la Simfonia',
+                correct: [
+                    { text: 'Mozart', img: 'img/mozart.jpg' },
+                    { text: 'Haydn', img: 'img/haydn.jpg' },
+                    { text: 'Clarinet', img: 'img/clarinet.jpg' },
+                    { text: 'Equilibri', img: 'img/balança.jpg' }
+                ],
+                fake: [
+                    { text: 'Bach', img: 'img/bach.jpg' },
+                    { text: 'Wagner', img: 'img/wagner.jpg' },
+                    { text: 'Baix Continu', img: 'img/claveci.jpg' }, // Placeholder
+                    { text: 'Dodecafonisme', img: 'img/dodecafonisme.jpg' }
+                ]
+            },
+            {
+                id: 'romanticisme',
+                title: 'ROMANTICISME: El Secret de l\'Expressió',
+                correct: [
+                    { text: 'Piano de Cua', img: 'img/pianomodern.jpg' },
+                    { text: 'Beethoven', img: 'img/beethoven.jpg' },
+                    { text: 'Passió', img: 'img/passio.jpg' },
+                    { text: 'Lied', img: 'img/pergami.jpg' } // Placeholder
+                ],
+                fake: [
+                    { text: 'Clavecí', img: 'img/claveci.jpg' },
+                    { text: 'Equilibri', img: 'img/balança.jpg' },
+                    { text: 'Monjos', img: 'img/monjos.jpg' },
+                    { text: 'Ràdio', img: 'img/radio.jpg' }
+                ]
+            },
+            {
+                id: 'segle_xx',
+                title: 'SEGLE XX: El Trencaclosques Sonor',
+                correct: [
+                    { text: 'Dodecafonisme', img: 'img/dodecafonisme.jpg' },
+                    { text: 'Ràdio', img: 'img/radio.jpg' },
+                    { text: 'Jazz', img: 'img/saxofon.jpg' },
+                    { text: 'Cinema', img: 'img/bobinacine.jpg' }
+                ],
+                fake: [
+                    { text: 'Viola da Gamba', img: 'img/violadegamba.jpg' },
+                    { text: 'Mozart', img: 'img/mozart.jpg' },
+                    { text: 'Castell', img: 'img/amorcortes.jpg' }, // Placeholder
+                    { text: 'Amor Cortès', img: 'img/amorcortes.jpg' }
+                ]
+            }
+        ];
+
+        let caseQueue = [];
+        let currentCaseIndex = 0;
+        let currentCase = null;
+        let connectedEvidences = 0;
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0 };
+        let mousePos = { x: 0, y: 0 };
+        let activeThreads = [];
+
+        const canvas = document.getElementById('thread-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawThreads();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function initGame() {
+            resizeCanvas();
+            document.getElementById('start-screen').style.display = 'none';
+
+            // Start Music interaction check
+            const music = document.getElementById('bg-music');
+            const musicBtn = document.getElementById('music-btn');
+
+            // Try auto-play
+            music.volume = 0.3;
+            music.play().catch(e => {
+                console.log("Audio needs interaction", e);
+                musicBtn.innerText = "🎵 OFF";
+            });
+
+            musicBtn.onclick = () => {
+                if (music.paused) {
+                    music.play();
+                    musicBtn.innerText = "🎵 ON";
+                } else {
+                    music.pause();
+                    musicBtn.innerText = "🎵 OFF";
+                }
+            };
+
+            // Shuffle and Queue all cases
+            caseQueue = [...CASES_DATA].sort(() => Math.random() - 0.5);
+            currentCaseIndex = 0;
+            loadCase(caseQueue[0]);
+        }
+
+        function loadCase(caseData) {
+            currentCase = caseData;
+            connectedEvidences = 0;
+            activeThreads = [];
+
+            // Update UI
+            document.getElementById('case-title').innerText = currentCase.title;
+            // Show Progress: CAS: BARROC (1/6)
+            document.getElementById('case-name').innerText = `${currentCase.id.toUpperCase()} (${currentCaseIndex + 1}/${CASES_DATA.length})`;
+            document.getElementById('evidence-count').innerText = "0";
+            document.getElementById('case-closed').classList.remove('visible');
+            document.getElementById('next-case-btn')?.remove(); // Remove button if exists
+
+            // Generate Evidences
+            const container = document.getElementById('evidence-container');
+            container.innerHTML = '';
+
+            const allEvidences = [
+                ...currentCase.correct.map(e => ({ ...e, type: 'correct' })),
+                ...currentCase.fake.map(e => ({ ...e, type: 'fake' }))
+            ];
+
+            // Shuffle
+            allEvidences.sort(() => Math.random() - 0.5);
+
+            // Grid-based scatter to prevent overlap
+            // 8 items, 3x3 grid minus center.
+            // Grid cells: 0 1 2
+            //             3 X 4
+            //             5 6 7
+
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            // Define 8 zones.
+            const zones = [
+                { x: w * 0.15, y: h * 0.15 }, { x: w * 0.5, y: h * 0.15 }, { x: w * 0.85, y: h * 0.15 },
+                { x: w * 0.15, y: h * 0.5 }, { x: w * 0.85, y: h * 0.5 },
+                { x: w * 0.15, y: h * 0.85 }, { x: w * 0.5, y: h * 0.85 }, { x: w * 0.85, y: h * 0.85 }
+            ];
+
+            // Scatter factor
+            const jitterX = w * 0.05;
+            const jitterY = h * 0.05;
+
+            // Shuffle zones to randomize which item goes where
+            zones.sort(() => Math.random() - 0.5);
+
+            allEvidences.forEach((ev, index) => {
+                const el = document.createElement('div');
+                el.className = 'evidence';
+                el.innerHTML = `
+                    <div class="evidence-pin" style="z-index: 10;"></div>
+                    <div class="evidence-img">
+                        <img src="${ev.img}" alt="${ev.text}" style="width:100%; height:100%; object-fit:cover; filter:sepia(0.6);">
+                    </div>
+                    <div class="evidence-text">${ev.text}</div>
+                    <div class="stamp-evidence">EVIDÈNCIA</div>
+                `;
+
+                // Assign to zone if available, else random fallback
+                let x, y;
+                if (index < zones.length) {
+                    const zone = zones[index];
+                    x = zone.x + (Math.random() * jitterX * 2 - jitterX) - 75; // -75 for center anchor
+                    y = zone.y + (Math.random() * jitterY * 2 - jitterY) - 90; // -90 for center anchor
+                } else {
+                    // Should not happen with 8 items but fallback logic:
+                    x = Math.random() * (w - 200) + 50;
+                    y = Math.random() * (h - 200) + 50;
+                }
+
+                // Boundary checks
+                x = Math.max(20, Math.min(w - 170, x));
+                y = Math.max(20, Math.min(h - 200, y));
+
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.setProperty('--rotation', `${Math.random() * 20 - 10}deg`);
+
+                el.dataset.type = ev.type;
+                el.dataset.connected = 'false';
+
+                // Drop target logic
+                el.addEventListener('mouseup', () => handleDrop(el));
+
+                container.appendChild(el);
+            });
+
+            drawThreads();
+        }
+
+        // Pin Logic
+        const centralPin = document.getElementById('central-pin');
+        centralPin.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const rect = centralPin.getBoundingClientRect();
+            dragStart = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mousePos = { x: e.clientX, y: e.clientY };
+            if (isDragging) {
+                drawThreads();
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                drawThreads();
+            }
+        });
+
+        function handleDrop(targetEl) {
+            if (!isDragging) return;
+            if (targetEl.dataset.connected === 'true') return;
+
+            const type = targetEl.dataset.type;
+
+            if (type === 'correct') {
+                // Connect!
+                playSound('tension');
+                targetEl.dataset.connected = 'true';
+                targetEl.querySelector('.stamp-evidence').classList.add('visible');
+
+                // Add permanent thread
+                const pinRect = targetEl.querySelector('.evidence-pin').getBoundingClientRect();
+                activeThreads.push({
+                    start: dragStart,
+                    end: { x: pinRect.left + pinRect.width / 2, y: pinRect.top + pinRect.height / 2 }
+                });
+
+                connectedEvidences++;
+                document.getElementById('evidence-count').innerText = connectedEvidences;
+
+                if (connectedEvidences >= 4) {
+                    setTimeout(() => {
+                        handleCaseComplete();
+                    }, 500);
+                }
+
+            } else {
+                // Fail!
+                playSound('snap');
+                targetEl.style.transform = `scale(0.9) rotate(${Math.random() * 20 - 10}deg)`;
+                setTimeout(() => targetEl.style.transform = `scale(1) rotate(${Math.random() * 20 - 10}deg)`, 200);
+            }
+
+            isDragging = false;
+            drawThreads();
+        }
+
+        function handleCaseComplete() {
+            document.getElementById('case-closed').classList.add('visible');
+            playSound('tension'); // Victory sound logic reuse or new
+
+            // Create "Next Case" button
+            const btn = document.createElement('button');
+            btn.id = 'next-case-btn';
+            btn.innerText = (currentCaseIndex < CASES_DATA.length - 1) ? "SEGÜENT CAS" : "FINALITZAR JOC";
+            btn.style.position = 'absolute';
+            btn.style.top = '65%';
+            btn.style.left = '50%';
+            btn.style.transform = 'translate(-50%, -50%)';
+            btn.style.fontSize = '2rem';
+            btn.style.padding = '10px 30px';
+            btn.style.cursor = 'pointer';
+            btn.style.zIndex = '200';
+            btn.onclick = nextCase;
+            document.getElementById('game-board').appendChild(btn);
+        }
+
+        function nextCase() {
+            currentCaseIndex++;
+            if (currentCaseIndex < CASES_DATA.length) {
+                loadCase(caseQueue[currentCaseIndex]);
+            } else {
+                // Global Win
+                if (window.Rewards) Rewards.unlockCard('detective_master');
+                alert("ENHORABONA! Has resolt tots els casos musicals de la història!");
+                location.reload(); // Reset or go to menu
+            }
+        }
+        function drawThreads() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw permanent threads
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#e74c3c'; // Red thread
+            ctx.shadowBlur = 2;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+            activeThreads.forEach(thread => {
+                ctx.beginPath();
+                ctx.moveTo(thread.start.x, thread.start.y);
+                ctx.lineTo(thread.end.x, thread.end.y);
+                ctx.stroke();
+            });
+
+            // Draw dragging thread
+            if (isDragging) {
+                ctx.beginPath();
+                ctx.moveTo(dragStart.x, dragStart.y);
+                ctx.lineTo(mousePos.x, mousePos.y);
+                ctx.strokeStyle = '#e74c3c';
+                ctx.setLineDash([5, 5]); // Dashed while dragging
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Contrabandista del Temps</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
+
+        :root {
+            --noir-black: #050505;
+            --noir-grey: #1a1a1a;
+            --noir-white: #f0f0f0;
+            --accent-gold: #c5a059;
+            --paper-texture: #e8e4d9;
+            --alert-red: #8b0000;
+            --success-green: #2e8b57;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier Prime', monospace;
+            background-color: var(--noir-black);
+            background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+            color: var(--noir-white);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #111;
+            border: 1px solid #333;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-family: 'Special Elite', cursive;
+            font-size: 4rem;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #888;
+            margin-bottom: 50px;
+            font-style: italic;
+        }
+
+        .btn-start {
+            background: transparent;
+            color: var(--noir-white);
+            border: 2px solid var(--accent-gold);
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-family: 'Special Elite', cursive;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-start:hover {
+            background: var(--accent-gold);
+            color: var(--noir-black);
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
+        }
+
+        /* Game Interface */
+        #interface {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100%;
+        }
+
+        /* HUD */
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #333;
+            font-size: 1.2rem;
+            font-family: 'Special Elite', cursive;
+            color: #888;
+        }
+
+        #money {
+            color: var(--accent-gold);
+        }
+
+        #lives {
+            color: var(--alert-red);
+        }
+
+        /* Main Area */
+        #main-area {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png');
+            /* Subtle texture */
+        }
+
+        /* Left Panel: Evidence Board (Inventory) */
+        #left-panel {
+            width: 40%;
+            background: #141414;
+            border-right: 1px solid #333;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+        }
+
+        .panel-title {
+            font-family: 'Special Elite';
+            color: #555;
+            border-bottom: 1px solid #333;
+            width: 100%;
+            text-align: center;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        /* POLAROID STYLE ITEM */
+        .evidence-photo {
+            background: white;
+            padding: 15px 15px 50px 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: rotate(-2deg);
+            transition: transform 0.3s;
+            max-width: 100%;
+        }
+
+        .evidence-photo:hover {
+            transform: rotate(0deg) scale(1.02);
+            z-index: 10;
+        }
+
+        .evidence-img {
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            display: block;
+            filter: grayscale(80%) new contrast(1.2) sepia(20%);
+            /* Noir Filter */
+            border: 1px solid #ddd;
+        }
+
+        .evidence-label {
+            font-family: 'Courier Prime', monospace;
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            width: 100%;
+        }
+
+        #status-log {
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+            font-family: 'Courier Prime';
+            opacity: 0.8;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            width: 100%;
+        }
+
+        /* Right Panel: Action Area */
+        #right-panel {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #222 0%, #0d0d0d 100%);
+            position: relative;
+        }
+
+        /* Phases */
+        .phase-container {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-family: 'Special Elite';
+            color: var(--accent-gold);
+            font-size: 2rem;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 10px;
+        }
+
+        /* Travel Grid */
+        .grid-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .btn-option {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 20px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-option:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            background: rgba(30, 30, 30, 0.9);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.1);
+        }
+
+        .btn-option::before {
+            content: '>';
+            position: absolute;
+            right: 20px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .btn-option:hover::before {
+            opacity: 1;
+        }
+
+        /* Disguise Grid */
+        .wardrobe-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .disguise-card {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+        }
+
+        .disguise-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
+            background: #222;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .disguise-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .disguise-card:hover .disguise-icon {
+            opacity: 1;
+        }
+
+        /* Result Phase */
+        #result-msg {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid var(--accent-gold);
+            max-width: 600px;
+        }
+
+        /* Character Silhouette */
+        #character {
+            position: absolute;
+            bottom: -20px;
+            right: 20px;
+            width: 200px;
+            height: 400px;
+            background: url('https://img.icons8.com/ios-filled/200/444444/spy.png') no-repeat center bottom;
+            background-size: contain;
+            opacity: 0.1;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* New Disguise Styles (Image) */
+        .disguise-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+            filter: grayscale(80%) sepia(20%);
+        }
+
+        .disguise-card:hover .disguise-img {
+            filter: grayscale(0%) sepia(0%);
+        }
+
+        .disguise-name {
+            font-family: 'Courier Prime';
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop src="music/Shadows Over Europe.m4a"></audio>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>El Contrabandista<br>del Temps</h1>
+            <div class="subtitle">Mercat Negre Temporal - Dossier Confidencial</div>
+            <p style="font-size: 1rem; margin-top: 10px; color: #666;">Objectiu: 5000 Monedes | Vides: 3</p>
+
+            <div id="instructions"
+                style="margin: 20px auto; max-width: 600px; text-align: left; font-size: 0.9rem; color: #aaa; border: 1px dashed #444; padding: 20px;">
+                <p><strong>GUIDA DE L'AGENT:</strong></p>
+                <ol>
+                    <li>Analitza la <strong>FOTO DE L'EVIDÈNCIA</strong> al panell esquerre.</li>
+                    <li>Identifica l'epoca històrica del objecte (Edat Mitjana, Barroc, etc.).</li>
+                    <li>Viatja a la <strong>mateixa època</strong> de l'objecte per trobar el comprador.</li>
+                    <li>Tria la disfressa correcta per no aixecar sospites (ha de coincidir amb l'època!).</li>
+                </ol>
+                <p>⚠️ <strong>ATENCIÓ:</strong> Qualsevol error (de disfressa o d'època) et costarà una vida ("Agent
+                    cremat").</p>
+            </div>
+
+            <br>
+            <button class="btn-start" onclick="startGame()">OBRIR EXPEDIENT</button>
+        </div>
+
+        <!-- Interface -->
+        <div id="interface" class="hidden">
+            <div id="hud">
+                <span>CAS: #<span id="turn-count">1</span></span>
+                <span>FONS: <span id="money">0</span> ₻</span>
+                <span>ÈXITS: <span id="success-count" style="color:var(--success-green)">0</span></span>
+                <span>ESTAT: <span id="lives">3</span>/3 AGENTS</span>
+            </div>
+
+            <div id="main-area">
+                <div id="left-panel">
+                    <div class="panel-title">EVIDÈNCIA #402</div>
+
+                    <!-- Evidence Photo -->
+                    <div class="evidence-photo">
+                        <img id="current-item-img" class="evidence-img" src="" alt="Item Evidence">
+                        <div class="evidence-label" id="current-item-name">UNKOWN ITEM</div>
+                    </div>
+
+                    <!-- Item Description -->
+                    <div id="item-desc"
+                        style="margin-top: 10px; text-align: center; color: #777; font-style: italic; font-size: 0.9rem; padding: 0 10px;">
+
+                    </div>
+
+                    <div id="status-log">
+                        > Sistema connectat.<br>
+                        > Esperant dades...
+                    </div>
+                </div>
+
+                <div id="right-panel">
+                    <!-- Phase 1: Travel -->
+                    <div id="phase-travel" class="phase-container">
+                        <h2>DESTÍ DEL VIATGE</h2>
+                        <div class="grid-options" id="travel-options">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Phase 2: Disguise -->
+                    <div id="phase-disguise" class="phase-container hidden">
+                        <h2>PROTOCOL DE CAMUFLATGE</h2>
+                        <div class="wardrobe-grid" id="disguise-options">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Phase 3: Result -->
+                    <div id="phase-result" class="phase-container hidden">
+                        <h2>INFORME DE MISSIÓ</h2>
+                        <div id="result-msg"></div>
+                        <button class="btn-start" onclick="nextTurn()">ARXIU SEGÜENT</button>
+                    </div>
+
+                    <div id="character"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA WITH IMAGES ---
+        const DB = {
+            edat_mitjana: {
+                name: "Edat Mitjana",
+                items: [
+                    { name: "Llaüt", img: "img/llautmedieval.jpg", desc: "Instrument de corda polsada, popular a la cort." },
+                    { name: "Viola de Roda", img: "img/violaderoda.jpg", desc: "Instrument mecànic de corda fregada per una roda." },
+                    { name: "Partitura Neumes", img: "img/neumes.jpg", desc: "Notació musical primitiva utilitzada als monestirs." },
+                    { name: "Saltiri", img: "img/saltiri.jpg", desc: "Caixa de ressonància amb cordes percutides o polsades." },
+                    { name: "Flauta de Bec", img: "img/flautadebec.jpg", desc: "Instrument de vent fusta senzill i popular." }
+                ],
+                disguise: { name: "Túnica de Monjo", img: "img/robaedtamitjana.jpg" }
+            },
+            renaixement: {
+                name: "Renaixement",
+                items: [
+                    { name: "Viola da Gamba", img: "img/violadegamba.jpg", desc: "Instrument de corda fregada que es toca entre les cames." },
+                    { name: "Impremta", img: "img/imprempta.jpg", desc: "Revolució tecnològica que va permetre difondre partitures." },
+                    { name: "Madrigal", img: "img/madrigals.jpg", desc: "Composició vocal polifònica profana molt popular." },
+                    { name: "Llaüt Renaixentista", img: "img/llautrenaixentista.jpg", desc: "Evolució del llaüt amb més ordres de cordes." },
+                    { name: "Sacabutx", img: "img/sacabutx.jpg", desc: "Avantpassat del trombó, utilitzat en música sacra." }
+                ],
+                disguise: { name: "Vestit de Cortesà", img: "img/robarenaixement.jpg" }
+            },
+            barroc: {
+                name: "Barroc",
+                items: [
+                    { name: "Clavicèmbal", img: "img/clave.jpg", desc: "Teclat on les cordes són pinçades, so metàl·lic i brillant." },
+                    { name: "Perruca", img: "img/perruca.jpg", desc: "Símbol d'estatus i moda extravagant de l'època." },
+                    { name: "Violí Stradivarius", img: "img/stradivarius.jpg", desc: "El cim de la lutieria italiana, so perfecte." },
+                    { name: "Partitura Fuga", img: "img/fuga.jpg", desc: "Forma musical complexa basada en el contrapunt." },
+                    { name: "Orgue", img: "img/tuborgue.jpg", desc: "El rei dels instruments, omnipresent a les esglésies." }
+                ],
+                disguise: { name: "Casaca i Perruca", img: "img/robabarroc.jpg" }
+            },
+            classicisme: {
+                name: "Classicisme",
+                items: [
+                    { name: "Pianoforte", img: "img/pianoforte.jpg", desc: "Precursor del piano modern, amb macells de pell." },
+                    { name: "Clarinet", img: "img/clarinet.jpg", desc: "Nou instrument de vent fusta que va enamorar Mozart." },
+                    { name: "Metrònom", img: "img/metronom.jpg", desc: "Invenció per mesurar el tempo amb precisió." },
+                    { name: "Partitura Sonata", img: "img/sonata.jpg", desc: "Estructura musical clara i equilibrada típica de l'època." },
+                    { name: "Trompa Natural", img: "img/trompa.jpg", desc: "Instrument de metall sense vàlvules, so pur." }
+                ],
+                disguise: { name: "Elegància Sòbria", img: "img/robaclassicisme.jpg" }
+            },
+            romanticisme: {
+                name: "Romanticisme",
+                items: [
+                    { name: "Gran Piano", img: "img/granpiano.jpg", desc: "Instrument poderós capaç de gran expressivitat emocional." },
+                    { name: "Tuba", img: "img/tuba.jpg", desc: "Baix de metall inventat per reforçar les orquestres gegants." },
+                    { name: "Carta d'Amor", img: "img/cartaamor.jpg", desc: "Expressió de la passió i l'individu romàntic." },
+                    { name: "Lied Alemany", img: "img/lied.jpg", desc: "Cançó per a veu i piano basada en poemes." },
+                    { name: "Batuta", img: "img/batuta.jpg", desc: "Eina del director d'orquestra, figura clau del període." }
+                ],
+                disguise: { name: "Levita Bohèmia", img: "img/robaromanticisme.jpg" }
+            },
+            segle_xx: {
+                name: "Segle XX",
+                items: [
+                    { name: "Guitarra Elèctrica", img: "img/guiatrraelectrica.jpg", desc: "Símbol de la revolució del Rock i la música amplificada." },
+                    { name: "Vinil", img: "img/vinil.jpg", desc: "Format físic que va popularitzar la música enregistrada." },
+                    { name: "Sintetitzador", img: "img/sintetitzador.jpg", desc: "Instrument electrònic capaç de crear nous sons." },
+                    { name: "Micròfon", img: "img/microfon.jpg", desc: "Tecnologia clau per als 'crooners' i la ràdio." },
+                    { name: "Taula de Mescles", img: "img/taulademescles.jpg", desc: "Eina per manipular i combinar sons en l'era digital." }
+                ],
+                disguise: { name: "Roba Urbana", img: "img/robasegleXX.jpg" }
+            }
+        };
+
+        const ERAS = Object.keys(DB);
+
+        // --- GAME STATE ---
+        let money = 0;
+        let lives = 3;
+        let turn = 1;
+        let successCount = 0;
+        let currentItem = null;
+        let selectedEra = null;
+        let selectedDisguise = null;
+
+        // --- AUDIO ---
+        // Simple Audio Playback
+        const bgMusic = document.getElementById('bg-music');
+        bgMusic.volume = 0.3;
+
+        // Sound Effects using AudioContext (Legacy support)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'woosh') {
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'coins') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(2000, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'siren') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.linearRampToValueAtTime(800, now + 0.3);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            }
+        }
+
+        // --- LOGIC ---
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('interface').classList.remove('hidden');
+
+            // Start Music
+            bgMusic.play().catch(e => console.log("Audio autoplay check", e));
+
+            money = 0;
+            lives = 3;
+            turn = 1;
+            successCount = 0;
+            updateHUD();
+            nextTurn();
+        }
+
+        function nextTurn() {
+            // Reset UI for new Turn
+            document.getElementById('phase-travel').classList.remove('hidden');
+            document.getElementById('phase-travel').style.opacity = '1'; // Ensure visible logic
+            document.getElementById('phase-disguise').classList.add('hidden');
+            document.getElementById('phase-result').classList.add('hidden');
+
+            // Generate new item
+            const randomEra = ERAS[Math.floor(Math.random() * ERAS.length)];
+            const eraData = DB[randomEra];
+            const randomItem = eraData.items[Math.floor(Math.random() * eraData.items.length)];
+
+            currentItem = {
+                name: randomItem.name,
+                img: randomItem.img,
+                desc: randomItem.desc,
+                originEra: randomEra
+            };
+
+            // Display Evidence
+            document.getElementById('current-item-name').textContent = currentItem.name.toUpperCase();
+            document.getElementById('current-item-img').src = currentItem.img;
+
+            // Update Description
+            const descEl = document.getElementById('item-desc');
+            if (descEl) descEl.textContent = `"${currentItem.desc}"`;
+
+            log(`NOU CAS OBERT: ${currentItem.name}`);
+
+            // Generate Travel Buttons
+            const travelContainer = document.getElementById('travel-options');
+            travelContainer.innerHTML = '';
+            ERAS.forEach(era => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.textContent = DB[era].name.toUpperCase();
+                btn.onclick = () => chooseEra(era);
+                travelContainer.appendChild(btn);
+            });
+
+            turn++;
+            document.getElementById('turn-count').textContent = turn;
+        }
+
+        function chooseEra(era) {
+            selectedEra = era;
+            playSound('woosh');
+            log(`Iniciant salt temporal a: ${DB[era].name}...`);
+
+            document.getElementById('phase-travel').classList.add('hidden');
+            document.getElementById('phase-disguise').classList.remove('hidden');
+
+            // Generate Disguise Buttons
+            const disguiseContainer = document.getElementById('disguise-options');
+            disguiseContainer.innerHTML = '';
+
+            ERAS.forEach(e => {
+                const disguise = DB[e].disguise;
+                const div = document.createElement('div');
+                div.className = 'disguise-card';
+                div.innerHTML = `<img class="disguise-img" src="${disguise.img}" alt="${disguise.name}"><div class="disguise-name">${disguise.name}</div>`;
+                div.onclick = () => chooseDisguise(e);
+                disguiseContainer.appendChild(div);
+            });
+        }
+
+        function chooseDisguise(disguiseEra) {
+            selectedDisguise = disguiseEra;
+
+            // Resolve Turn
+            document.getElementById('phase-disguise').classList.add('hidden');
+            document.getElementById('phase-result').classList.remove('hidden');
+
+            const msgEl = document.getElementById('result-msg');
+
+            // --- REVISED LOGIC: STRICTER FAILURE ---
+
+            if (selectedDisguise !== selectedEra) {
+                // FAILURE 1: WRONG DISGUISE
+                lives--;
+                playSound('siren');
+                msgEl.innerHTML = `<span style="color:var(--alert-red); font-weight:bold; font-size:1.5em">INFILTRACIÓ FALLIDA</span><br><br>Disfressa incorrecta! Els guàrdies t'han detectat immediatament.`;
+                log("ATENCIÓ: Agent compromès per vestimenta.");
+            } else if (selectedEra !== currentItem.originEra) {
+                // FAILURE 2: WRONG ERA (ITEM ANACHRONISM)
+                lives--; // Now penalizes lives too!
+                playSound('siren');
+                msgEl.innerHTML = `<span style="color:var(--alert-red); font-weight:bold; font-size:1.5em">ERROR D'ÈPOCA</span><br><br>Has portat un objecte anacrònic a aquesta era. T'han acusat de bruixeria/espionatge!`;
+                log("ATENCIÓ: Error temporal. Agent compromès.");
+            } else {
+                // SUCCESS: RIGHT DISGUISE AND RIGHT ERA
+                const profit = 500;
+                money += profit;
+                successCount++;
+                playSound('coins');
+                msgEl.innerHTML = `<span style="color:var(--success-green); font-weight:bold; font-size:1.5em">VENDA EXITOSA</span><br><br>Operació neta. El contacte ha pagat ${profit}₻ i ningú sospita res.`;
+                log("Transacció completada.");
+            }
+
+            updateHUD();
+            checkGameOver();
+        }
+
+        function updateHUD() {
+            document.getElementById('money').textContent = money;
+            document.getElementById('lives').textContent = lives;
+            const successEl = document.getElementById('success-count');
+            if (successEl) successEl.textContent = successCount;
+        }
+
+        function checkGameOver() {
+            if (lives <= 0) {
+                setTimeout(() => {
+                    alert("EXPEDIENT TANCAT.\nAgent detingut permanentment.");
+                    location.reload();
+                }, 1000);
+            } else if (money >= 5000) {
+                setTimeout(() => {
+                    alert("MISSIÓ COMPLERTA!\nJubilació assegurada al Carib.");
+                    location.reload();
+                }, 1000);
+            }
+        }
+
+        function log(text) {
+            const logEl = document.getElementById('status-log');
+            logEl.innerHTML = `> ${text}<br>` + logEl.innerHTML;
+        }
+
+    </script>
+</body>
+
+</html>

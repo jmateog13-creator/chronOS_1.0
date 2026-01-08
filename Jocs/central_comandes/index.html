@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Comandes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
+
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --dark-bg: #0a0a12;
+            --panel-bg: rgba(20, 20, 30, 0.9);
+            --alert-red: #ff3333;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--dark-bg);
+            background-image:
+                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            color: white;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 3rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin-bottom: 20px;
+        }
+
+        .start-btn {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Chakra Petch', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .start-btn:hover {
+            background: var(--neon-green);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-green);
+        }
+
+        /* Game Interface */
+        #interface {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* HUD */
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--neon-blue);
+            border-bottom: 1px solid var(--neon-blue);
+            padding-bottom: 10px;
+            align-items: center;
+            /* Handle vertical align with slider */
+        }
+
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: var(--neon-blue);
+        }
+
+        #volume-slider {
+            width: 100px;
+            accent-color: var(--neon-blue);
+            cursor: pointer;
+        }
+
+        /* Riders Grid (Drop Zones) */
+        #riders-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            flex: 2;
+        }
+
+        .rider-zone {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .rider-zone.highlight {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+            background: rgba(57, 255, 20, 0.1);
+        }
+
+        .rider-avatar {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .rider-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rider-name {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 0.9rem;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+        }
+
+        /* Ticket Queue (Spawn Area) */
+        #queue-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px dashed #666;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: row;
+            /* Horizontal layout */
+            align-items: center;
+            justify-content: flex-start;
+            /* Align start */
+            gap: 10px;
+            /* Space between tickets */
+            position: relative;
+            overflow-x: auto;
+            /* Scrollable if many penalties */
+            overflow-y: hidden;
+        }
+
+        .ticket {
+            width: 180px;
+            height: 100px;
+            background: white;
+            color: black;
+            border-left: 5px solid var(--neon-pink);
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: grab;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+            /* Not absolute */
+            flex-shrink: 0;
+            /* Don't shrink */
+            margin-right: 5px;
+            transition: transform 0.2s;
+            animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop-in {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .ticket:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        .ticket-header {
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .ticket-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        /* Queue Meter */
+        #queue-meter-container {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            margin-top: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #queue-meter {
+            height: 100%;
+            width: 0%;
+            background: var(--neon-green);
+            transition: width 0.5s, background-color 0.5s;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            display: none;
+        }
+
+        #feedback-msg {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>CENTRAL DE COMANDES</h1>
+            <p>Arrossega el tiquet <b>DE MÉS A L'ESQUERRA</b> (el primer de la fila) cap al Rider correcte!</p>
+            <p style="font-size: 0.9rem; color: #888; margin-top:5px;">Evita que la cua col·lapsi!</p>
+            <button class="start-btn" onclick="startGame()">INICIAR SISTEMA</button>
+        </div>
+
+        <!-- Interface -->
+        <div id="interface" class="hidden">
+            <div id="hud">
+                <span>COMANDES: <span id="score">0</span>/30</span>
+                <span>CUA: <span id="queue-count">0</span>/10</span>
+                <div id="volume-control">
+                    <span>🔊</span>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.3">
+                </div>
+            </div>
+
+            <div id="riders-grid">
+                <div class="rider-zone" data-era="edat_mitjana">
+                    <div class="rider-avatar"><img src="img/edatmitjana.jpg" alt="Edat Mitjana"></div>
+                    <div class="rider-name">Edat Mitjana</div>
+                </div>
+                <div class="rider-zone" data-era="renaixement">
+                    <div class="rider-avatar"><img src="img/renaixement.jpg" alt="Renaixement"></div>
+                    <div class="rider-name">Renaixement</div>
+                </div>
+                <div class="rider-zone" data-era="barroc">
+                    <div class="rider-avatar"><img src="img/barroc.jpg" alt="Barroc"></div>
+                    <div class="rider-name">Barroc</div>
+                </div>
+                <div class="rider-zone" data-era="classicisme">
+                    <div class="rider-avatar"><img src="img/classicisme.jpg" alt="Classicisme"></div>
+                    <div class="rider-name">Classicisme</div>
+                </div>
+                <div class="rider-zone" data-era="romanticisme">
+                    <div class="rider-avatar"><img src="img/romanticisme.jpg" alt="Romanticisme"></div>
+                    <div class="rider-name">Romanticisme</div>
+                </div>
+                <div class="rider-zone" data-era="segle_xx">
+                    <div class="rider-avatar"><img src="img/segleXX.jpg" alt="Segle XX"></div>
+                    <div class="rider-name">Segle XX</div>
+                </div>
+            </div>
+
+            <div id="queue-area">
+                <!-- Tickets spawn here -->
+            </div>
+
+            <div id="queue-meter-container">
+                <div id="queue-meter"></div>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <div id="feedback-msg"></div>
+            <button class="start-btn" onclick="location.reload()">REINICIAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: ["Monodia", "Cant Gregorià", "Trobador", "Neumes", "Guido d'Arezzo", "Viola de Roda", "Ars Nova", "Leonin", "Perotin", "Missa"],
+            renaixement: ["Polifonia", "Humanisme", "Impremta", "Madrigal", "Palestrina", "Josquin", "Viola da Gamba", "Llaüt", "Coral", "Ensalada"],
+            barroc: ["Baix Continu", "Clavecí", "Bach", "Vivaldi", "Händel", "Òpera", "Fuga", "Contrast", "Ornamentació", "Castrato"],
+            classicisme: ["Mozart", "Haydn", "Beethoven", "Sonata", "Equilibri", "Clarinet", "Piano", "Simfonia", "Quartet", "Senzillesa"],
+            romanticisme: ["Wagner", "Chopin", "Verdi", "Lied", "Rubato", "Passió", "Poema Simfònic", "Virtuosisme", "Tuba", "Nacionalisme"],
+            segle_xx: ["Atonalitat", "Dodecafonisme", "Stravinsky", "John Cage", "Sintetitzador", "Jazz", "Minimalisme", "Soroll", "Aleatòria", "Electrònica"]
+        };
+
+        // --- GAME STATE ---
+        let score = 0;
+        let queue = [];
+        let gameActive = false;
+        let spawnRate = 3000;
+        let spawnInterval = null;
+        let maxQueue = 10;
+
+        // --- AUDIO ---
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        const bgMusic = new Audio('audio/Midnight Grill Runway.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'new_ticket') {
+                // Notification ping
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'success') {
+                // Success chime
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.setValueAtTime(800, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'fail') {
+                // Error buzz
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- LOGIC ---
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('interface').classList.remove('hidden');
+
+            score = 0;
+            queue = [];
+            spawnRate = 3000;
+            gameActive = true;
+
+            updateHUD();
+
+            // Start Music
+            bgMusic.play().catch(e => console.log("Audio play failed:", e));
+
+            spawnTicket(); // Immediate first ticket
+            spawnInterval = setTimeout(spawnLoop, spawnRate);
+        }
+
+        function spawnLoop() {
+            if (!gameActive) return;
+            spawnTicket();
+            // Increase difficulty
+            if (score > 5) spawnRate = 2500;
+            if (score > 15) spawnRate = 2000;
+            if (score > 25) spawnRate = 1500;
+
+            spawnInterval = setTimeout(spawnLoop, spawnRate);
+        }
+
+        function spawnTicket() {
+            if (queue.length >= maxQueue) {
+                endGame(false);
+                return;
+            }
+
+            const eras = Object.keys(DB);
+            const randomEra = eras[Math.floor(Math.random() * eras.length)];
+            const concept = DB[randomEra][Math.floor(Math.random() * DB[randomEra].length)];
+
+            const ticketData = {
+                id: Date.now(),
+                era: randomEra,
+                concept: concept
+            };
+
+            queue.push(ticketData);
+            renderQueue();
+            playSound('new_ticket');
+            updateHUD();
+        }
+
+        function renderQueue() {
+            const container = document.getElementById('queue-area');
+            container.innerHTML = ''; // Clear
+
+            // Only render the top ticket as draggable, others stacked behind
+            // Or render all but only top is interactive?
+            // Let's render them as a stack.
+
+            queue.forEach((ticket, index) => {
+                const el = document.createElement('div');
+                el.className = 'ticket';
+                el.innerHTML = `
+                    <div class="ticket-header">
+                        <span>#${ticket.id.toString().slice(-4)}</span>
+                        <span>🕒 NOW</span>
+                    </div>
+                    <div class="ticket-body">${ticket.concept}</div>
+                `;
+
+                // Visual stacking
+                // Horizontal Layout Logic
+                // No translation needed, flex handles it.
+                // Z-index not strictly needed but good for overlay effects if any
+                el.style.zIndex = maxQueue - index;
+
+                // Highlight penalties
+                if (ticket.isPenalty) {
+                    el.style.borderLeftColor = "var(--alert-red)";
+                    el.style.background = "#fff0f0";
+                    el.querySelector('.ticket-body').style.color = "red";
+                    // Add "PENALITZACIÓ" label or keep concept?
+                    // User wants to see the concept.
+                    // Let's add a small warning badge
+                    el.innerHTML += `<div style="position:absolute; top:2px; right:5px; color:red; font-size:0.6rem; font-weight:bold;">PENALITZACIÓ</div>`;
+                }
+
+                // Only the first one (index 0) is draggable
+                if (index === 0) {
+                    el.draggable = true;
+                    el.style.cursor = 'grab';
+
+                    el.addEventListener('dragstart', e => {
+                        e.dataTransfer.setData('text/plain', JSON.stringify(ticket));
+                        el.style.opacity = '0.5';
+                    });
+
+                    el.addEventListener('dragend', () => {
+                        el.style.opacity = '1';
+                    });
+
+                    // Touch support
+                    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+                    el.addEventListener('touchend', handleTouchEnd);
+                } else {
+                    el.style.filter = 'brightness(0.8)';
+                }
+
+                container.appendChild(el);
+            });
+        }
+
+        // Drop Zones
+        document.querySelectorAll('.rider-zone').forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('highlight');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('highlight');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('highlight');
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                handleAssignment(data, zone.dataset.era);
+            });
+        });
+
+        function handleAssignment(ticketData, targetEra) {
+            // Remove from queue (it should be the first one)
+            if (queue.length > 0 && queue[0].id === ticketData.id) {
+                queue.shift();
+            } else {
+                return; // Should not happen
+            }
+
+            if (ticketData.era === targetEra) {
+                score++;
+                playSound('success');
+            } else {
+                // Penalty? Maybe add a dummy ticket to queue or just sound
+                playSound('fail');
+                // Add penalty ticket to queue to make it harder
+                if (queue.length < maxQueue) {
+                    // Penalty reuse logic: REUSE the failing concept!
+                    // User said: "cambia el concepto que antes llevaba" - they want the SAME concept.
+                    queue.push({
+                        id: Date.now() + 1,
+                        era: ticketData.era, // Reuse era
+                        concept: ticketData.concept, // Reuse concept
+                        isPenalty: true
+                    });
+                }
+            }
+
+            renderQueue();
+            updateHUD();
+            checkGameOver();
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('queue-count').textContent = queue.length;
+
+            const meter = document.getElementById('queue-meter');
+            const percentage = (queue.length / maxQueue) * 100;
+            meter.style.width = percentage + '%';
+
+            if (percentage > 70) meter.style.backgroundColor = 'var(--alert-red)';
+            else meter.style.backgroundColor = 'var(--neon-green)';
+        }
+
+        function checkGameOver() {
+            if (score >= 30) {
+                endGame(true);
+            }
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            clearTimeout(spawnInterval);
+
+            const overlay = document.getElementById('feedback-overlay');
+            const msg = document.getElementById('feedback-msg');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                msg.textContent = "SISTEMA ESTABILITZAT. BONA FEINA!";
+                msg.style.color = "var(--neon-green)";
+            } else {
+                msg.textContent = "COL·LAPSE DEL SISTEMA! GAME OVER.";
+                msg.style.color = "var(--alert-red)";
+            }
+        }
+
+        // Touch Logic
+        let touchClone = null;
+        let touchOffset = { x: 0, y: 0 };
+        let touchTicket = null;
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = this.getBoundingClientRect();
+            touchOffset.x = touch.clientX - rect.left;
+            touchOffset.y = touch.clientY - rect.top;
+
+            touchTicket = queue[0]; // Assuming we only touch the first one
+
+            touchClone = this.cloneNode(true);
+            touchClone.style.position = 'fixed';
+            touchClone.style.zIndex = 1000;
+            touchClone.style.width = rect.width + 'px';
+            touchClone.style.height = rect.height + 'px';
+            touchClone.style.opacity = 0.9;
+            document.body.appendChild(touchClone);
+
+            moveTouchClone(touch);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (touchClone) {
+                moveTouchClone(e.touches[0]);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (touchClone) {
+                const touch = e.changedTouches[0];
+
+                // Check collision with zones
+                const zones = document.querySelectorAll('.rider-zone');
+                let dropped = false;
+
+                zones.forEach(zone => {
+                    const rect = zone.getBoundingClientRect();
+                    if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                        touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                        handleAssignment(touchTicket, zone.dataset.era);
+                        dropped = true;
+                    }
+                });
+
+                touchClone.remove();
+                touchClone = null;
+            }
+        }
+
+        function moveTouchClone(touch) {
+            touchClone.style.left = (touch.clientX - touchOffset.x) + 'px';
+            touchClone.style.top = (touch.clientY - touchOffset.y) + 'px';
+        }
+
+    </script>
+</body>
+
+</html>

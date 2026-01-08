@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bushido: La Senda del Ronin Musical</title>
+    <!-- Using a Google Font that looks like brush strokes -->
+    <link href="https://fonts.googleapis.com/css2?family=Potta+One&family=Noto+Serif+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --paper: #f4e4bc;
+            --ink: #111;
+            --red-seal: #b71c1c;
+            --bamboo: #33691e;
+            --sakura: #f8bbd0;
+            --font-brush: 'Potta One', cursive;
+            --font-serif: 'Noto Serif JP', serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #222;
+            font-family: var(--font-serif);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 1200px;
+            height: 800px;
+            background-color: var(--paper);
+            background-image: url('https://www.transparenttextures.com/patterns/rice-paper-2.png');
+            position: relative;
+            border: 15px solid #3e2723;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 0;
+            /* Creates stacking context for child z-index:-1 */
+        }
+
+        /* --- VISUALS --- */
+        .ink-splash {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            filter: blur(20px);
+            z-index: 1;
+        }
+
+        #scene {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 1s;
+        }
+
+        /* CHARACTERS */
+        #hermit-sprite {
+            position: absolute;
+            bottom: 250px;
+            right: 50px;
+            height: 350px;
+            width: auto;
+            filter: drop-shadow(5px 5px 0 rgba(0, 0, 0, 0.5));
+            z-index: 50;
+            transition: all 0.5s;
+            display: none;
+        }
+
+        /* COMBAT STATE FOR PLAYER */
+        #hermit-sprite.combat-mode {
+            height: 200px;
+            bottom: 20px;
+            right: auto;
+            left: 20px;
+            transform: scaleX(-1);
+        }
+
+        /* COMBAT MODE */
+        #combat-scene {
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-around;
+            padding-bottom: 0;
+            position: relative;
+        }
+
+        .enemy-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+            transition: opacity 1s, transform 1s;
+            z-index: 60;
+            margin-left: 200px;
+        }
+
+        #enemy-sprite {
+            height: 400px;
+            width: auto;
+            width: auto;
+            filter: drop-shadow(5px 5px 0 rgba(0, 0, 0, 0.3));
+            transition: transform 0.2s;
+        }
+
+        #enemy-dash-fx {
+            position: absolute;
+            width: 200%;
+            height: 5px;
+            background: white;
+            top: 50%;
+            left: -50%;
+            opacity: 0;
+            z-index: 20;
+        }
+
+        #slash-fx {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+        }
+
+        .slash-line {
+            position: absolute;
+            background: white;
+            box-shadow: 0 0 10px white;
+        }
+
+        /* VOLUME CONTROL */
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--ink);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-brush);
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        /* UI LAYER */
+        #hud {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-brush);
+            font-size: 28px;
+            color: var(--ink);
+            z-index: 200;
+            /* background: rgba(255,255,255,0.5); Removed to show BG */
+            pointer-events: none;
+        }
+
+        #life-display {
+            color: var(--red-seal);
+            text-shadow: 2px 2px 0 #fff;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+        }
+
+        #level-name {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 5px 15px;
+            border-radius: 5px;
+            text-align: left;
+            /* Ensure left alignment */
+        }
+
+        /* RPG DIALOGUE BOX */
+        #rpg-box {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.85);
+            border-top: 5px solid var(--red-seal);
+            color: #fff;
+            padding: 30px;
+            box-sizing: border-box;
+            z-index: 300;
+            display: none;
+            font-family: var(--font-serif);
+        }
+
+        #rpg-title {
+            font-family: var(--font-brush);
+            font-size: 28px;
+            /* Slightly larger for names */
+            color: var(--sakura);
+            margin-bottom: 10px;
+        }
+
+        #rpg-text {
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        #rpg-next-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            background: var(--red-seal);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: var(--font-brush);
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .btn-ink {
+            background: var(--ink);
+            color: #fff;
+            padding: 15px 40px;
+            font-family: var(--font-brush);
+            font-size: 24px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transform: rotate(-2deg);
+            transition: 0.2s;
+        }
+
+        .btn-ink:hover {
+            transform: scale(1.1) rotate(0deg);
+            background: var(--red-seal);
+        }
+
+        /* COMBAT UI (QUESTIONS) */
+        #combat-ui {
+            width: 80%;
+            position: absolute;
+            bottom: 20px;
+            z-index: 350;
+            /* Above RPG box */
+            display: none;
+        }
+
+        .bamboo-panel {
+            background: #fdf5e6;
+            /* Beige like old paper */
+            border: 4px solid #3e2723;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #q-text {
+            font-size: 26px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #3e2723;
+            font-family: var(--font-serif);
+        }
+
+        #ans-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .bamboo-btn {
+            background: #fff;
+            border: 2px solid #2e7d32;
+            /* Green border */
+            color: #2e7d32;
+            padding: 15px;
+            font-size: 18px;
+            font-family: var(--font-serif);
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .bamboo-btn:hover {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        /* MODAL FOR GAME OVER */
+        #game-over-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--paper);
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .japan-title {
+            font-family: var(--font-brush);
+            font-size: 80px;
+            color: var(--ink);
+            text-shadow: 3px 3px 0 #aaa;
+            margin: 0;
+        }
+
+        .seal {
+            width: 100px;
+            height: 100px;
+            border: 3px solid var(--red-seal);
+            color: var(--red-seal);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            font-weight: bold;
+            transform: rotate(10deg);
+            margin: 20px;
+        }
+
+        /* ANIMATIONS */
+        .shake-screen {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(-10px, 0);
+            }
+
+            75% {
+                transform: translate(10px, 0);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        .cut-anim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0.8;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            animation: flashCut 0.2s forwards;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        @keyframes flashCut {
+            0% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* FADE IN ENEMY */
+        .appear-in {
+            animation: appear 1.5s ease-out forwards;
+        }
+
+        @keyframes appear {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- AUDIO SYSTEM -->
+        <audio id="bgm" loop>
+            <source src="audio/musicafons.m4a" type="audio/mpeg">
+        </audio>
+
+        <!-- VOLUME CONTROL -->
+        <div id="volume-control">
+            <span style="font-size:20px;">🔊</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- BACKGROUND IMAGE LAYER -->
+        <img id="bg-layer" src="img/fonsnormal.jpg"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1; opacity:0.8;">
+
+        <!-- START SCREEN -->
+        <div id="start-screen">
+            <h1 class="japan-title">BUSHIDO</h1>
+            <h2 style="font-family:var(--font-serif); font-size:30px; margin-top:-10px; color:#333;">L'ASCENS DEL
+                SAMURAI</h2>
+            <div class="seal">武士</div>
+            <p style="font-family:var(--font-serif); font-size:20px; max-width:600px; margin:20px;">
+                Torneig dels Sis Sons. <br>Derrota els mestres de cada època per convertir-te en Capità.
+            </p>
+            <button class="btn-ink" onclick="startGame()">ENTRAR AL DOJO</button>
+        </div>
+
+        <div id="hud">
+            <div id="level-name">DOJO</div>
+            <div id="life-display">❤️❤️❤️</div>
+        </div>
+
+        <!-- SCENE -->
+        <div id="scene">
+
+            <!-- SAMURAI PLAYER -->
+            <img id="hermit-sprite" src="img/personatge.png" alt="Samurai Player">
+
+            <!-- COMBAT MODE -->
+            <div id="combat-scene">
+                <div class="enemy-container" id="enemy-container">
+                    <img id="enemy-sprite" src="" alt="Enemy Sprite">
+                    <!-- Name hidden, moved to HUD -->
+                    <div id="enemy-name" style="display:none;"></div>
+                </div>
+
+                <div id="combat-ui" class="bamboo-panel">
+                    <div id="q-text">Pregunta...</div>
+                    <div id="ans-container"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- GAME OVER MODAL -->
+        <div id="game-over-modal">
+            <h1 class="japan-title" style="color:red; font-size:60px;">HAS CAIGUT!</h1>
+            <p style="font-size:24px; margin:20px;">L'honor es recupera amb persistència.</p>
+            <button class="btn-ink" onclick="retryLevel()">TORNAR-HO A PROVAR</button>
+        </div>
+
+        <!-- RPG DIALOGUE BOX -->
+        <div id="rpg-box">
+            <div id="rpg-title">Speaker Name</div>
+            <div id="rpg-text">...</div>
+            <button id="rpg-next-btn" onclick="nextDialogue()">SEGÜENT >></button>
+        </div>
+
+    </div>
+
+    <!-- AUDIO Placeholder -->
+    <!-- <audio id="koto-bgm"></audio> -->
+
+    <script>
+        // --- DATA ---
+        const BUSHIDO_DATA = [
+            {
+                id: "era1", type: "combat", name: "EDAT MITJANA", enemy: "Ashigaru (Soldat Ras)", icon: "img/bossmitjana.png",
+                intro_title: "El Primer Repte",
+                intro_text: "Sóc un simple Ashigaru. La meva llança és com la *Monodia*: una sola línia, directa i sense distraccions. Aquí tot és Déu i servei. Preparat per la cruesa de l'inici?",
+                boss_msg: "Simple... però efectiu...",
+                bg_style: "img/fonsnormal.jpg",
+                pool: [
+                    // ... (questions remain same, not repeating to save space if possible, but replace tool needs full block usually)
+                    { q: "On es feia la música culta?", options: ["Als Monestirs", "A les Discoteques", "Als Stadis"], correct: 0 },
+                    { q: "Quin idioma cantaven?", options: ["Llatí", "Català", "Èlfic"], correct: 0 },
+                    { q: "Com era la textura inicial?", options: ["Una sola veu (Monodia)", "Orquestra", "Rock"], correct: 0 },
+                    { q: "Cant sense instruments?", options: ["A Cappella", "Instrumental", "Karaoke"], correct: 0 },
+                    { q: "Músics dels carrers?", options: ["Trobadors", "Monjos", "DJs"], correct: 0 },
+                    { q: "Tema dels Trobadors?", options: ["Amor i Cavallers", "Religió", "Ciència"], correct: 0 },
+                    { q: "Dona compositora?", options: ["Hildegard von Bingen", "Beyoncé", "Maria Callas"], correct: 0 },
+                    { q: "Instrument dels Trobadors?", options: ["Llaüt/Arpa", "Piano", "Guitarra Elèctrica"], correct: 0 },
+                    { q: "Nom de l'escriptura musical?", options: ["Neumes", "Tabs", "Jeroglífics"], correct: 0 },
+                    { q: "Visió del món?", options: ["Teocentrisme (Déu)", "Humanisme", "Tecnologia"], correct: 0 }
+                ]
+            },
+            {
+                id: "era2", type: "combat", name: "RENAIXEMENT", enemy: "Hatamoto (Guardia)", icon: "img/bossrenaixement.png",
+                intro_title: "El Segon Repte",
+                intro_text: "Sóc un Hatamoto. El meu art és la *Polifonia*: moltes veus, moltes espases, totes en harmonia. L'Home és el centre del combat ara. Podràs seguir totes les meves fulles?",
+                boss_msg: "Tanta complexitat... superada...",
+                bg_style: "img/fonsnormal.jpg",
+                pool: [
+                    { q: "Visió del món?", options: ["Humanisme (L'Home)", "Déu", "Robots"], correct: 0 },
+                    { q: "Gran invent per difondre?", options: ["Impremta", "Internet", "Telèfon"], correct: 0 },
+                    { q: "Textura principal?", options: ["Polifonia (Veus)", "Soroll", "Monodia"], correct: 0 },
+                    { q: "Veu femenina aguda?", options: ["Soprano", "Baix", "Tenor"], correct: 0 },
+                    { q: "Mestre religiós?", options: ["Palestrina", "Mozart", "Elvis"], correct: 0 },
+                    { q: "Gènere religiós?", options: ["Missa", "Òpera", "Rap"], correct: 0 },
+                    { q: "Gènere profà (diversió)?", options: ["Madrigal", "Cant Gregorià", "Simfonia"], correct: 0 },
+                    { q: "Instrument de corda rei?", options: ["Llaüt", "Guitarra", "Violí Elèctric"], correct: 0 },
+                    { q: "On treballava Palestrina?", options: ["Roma/Vaticà", "París", "Nova York"], correct: 0 },
+                    { q: "Música instrumental?", options: ["Danses", "Heavy Metal", "Trap"], correct: 0 }
+                ]
+            },
+            {
+                id: "era3", type: "combat", name: "BARROC", enemy: "Kabuki (Actor)", icon: "img/bossbarroc.png",
+                intro_title: "El Tercer Repte",
+                intro_text: "Drama! Contrast! Sóc un guerrer Kabuki. La meva tècnica és plena d'ornaments i sorpreses. Llum i foscor! Fort i fluix! La teva ment simple no podrà amb el meu *Baix Continu*.",
+                boss_msg: "El teló... cau...",
+                bg_style: "img/fonsnormal.jpg",
+                pool: [
+                    { q: "Paraula clau del Barroc?", options: ["Contrast", "Simplitat", "Avorriment"], correct: 0 },
+                    { q: "Estètica?", options: ["Recarregada/Or", "Minimalista", "Negra"], correct: 0 },
+                    { q: "Gran gènere teatral?", options: ["Òpera", "Cinema", "Circ"], correct: 0 },
+                    { q: "Teclat principal?", options: ["Clavicèmbal", "Piano", "Sintetitzador"], correct: 0 },
+                    { q: "Mestre del contrapunt?", options: ["J.S. Bach", "Beethoven", "Chopin"], correct: 0 },
+                    { q: "Concert famós Vivaldi?", options: ["4 Estacions", "5a Simfonia", "Titanic"], correct: 0 },
+                    { q: "Base rítmica constant?", options: ["Baix Continu", "Bateria", "Silenci"], correct: 0 },
+                    { q: "Instrument solista Vivaldi?", options: ["Violí", "Flauta", "Trompeta"], correct: 0 },
+                    { q: "El Rei Sol vivia a...?", options: ["Versalles", "Buckingham", "La Moncloa"], correct: 0 },
+                    { q: "Sentiment?", options: ["Dramàtic", "Relaxat", "Pla"], correct: 0 }
+                ]
+            },
+            {
+                id: "era4", type: "combat", name: "CLASSICISME", enemy: "Bugyo (Magistrat)", icon: "img/bossclasssic.png",
+                intro_title: "El Quart Repte",
+                intro_text: "Sóc l'Administrador de la Llei. El meu combat és perfecte: Equilibri, Raó i Ordre. Res sobra. Una estocada neta sobre una defensa sòlida. La passió no té lloc aquí, només la perfecció formal.",
+                boss_msg: "L'estructura... s'enfonsa...",
+                bg_style: "img/fonsnormal.jpg",
+                pool: [
+                    { q: "Valors principals?", options: ["Raó, Ordre, Equilibri", "Caos i Foscor", "Màgia"], correct: 0 },
+                    { q: "Capital musical?", options: ["Viena", "París", "Tòquio"], correct: 0 },
+                    { q: "Nou instrument rei?", options: ["Piano", "Orgue", "Llaüt"], correct: 0 },
+                    { q: "Per què 'Forte-Piano'?", options: ["Dinàmica (Fort/Fluix)", "Sona malament", "És car"], correct: 0 },
+                    { q: "Nen prodigi?", options: ["Mozart", "Bach", "Salieri"], correct: 0 },
+                    { q: "Papa de la Simfonia?", options: ["Haydn", "Beethoven", "Wagner"], correct: 0 },
+                    { q: "Textura?", options: ["Melodia Acompanyada", "Polifonia Complexa", "Soroll"], correct: 0 },
+                    { q: "Música de Mozart?", options: ["Elegant i Alegre", "Trista i Fosca", "Atonal"], correct: 0 },
+                    { q: "Compositor sord (final)?", options: ["Beethoven", "Mozart", "Haydn"], correct: 0 },
+                    { q: "Formació estàndard?", options: ["Orquestra Simfònica", "Banda de Rock", "Solista"], correct: 0 }
+                ]
+            },
+            {
+                id: "era5", type: "combat", name: "ROMANTICISME", enemy: "Ronin (Sense Amo)", icon: "img/bossromantic.png",
+                intro_title: "El Cinquè Repte",
+                intro_text: "AAAARGH! No em parlis de lleis! Sóc un Ronin guiat només per la Passió! L'amor, la mort, la natura... el meu *Rubato* és imprevisibe. Lluito amb el cor, no amb el cap!",
+                boss_msg: "La passió... m'ha consumit...",
+                bg_style: "img/fonsnormal.jpg",
+                pool: [
+                    { q: "Què domina?", options: ["Sentiments/Passió", "Raó/Ordre", "Diners"], correct: 0 },
+                    { q: "Musa principal?", options: ["Natura/Amor/Mort", "Déu", "Fàbriques"], correct: 0 },
+                    { q: "Instrument protagonista?", options: ["Piano", "Clavicèmbal", "Flauta"], correct: 0 },
+                    { q: "Pianista poeta?", options: ["Chopin", "Bach", "Elvis"], correct: 0 },
+                    { q: "Òpera gegant?", options: ["Wagner", "Mozart", "Vivaldi"], correct: 0 },
+                    { q: "Què és Rubato?", options: ["Temps flexible", "Robar diners", "Temps rígid"], correct: 0 },
+                    { q: "Ballet famós?", options: ["Trencanous (Tchaikovsky)", "Macarena", "Sardana"], correct: 0 },
+                    { q: "Artista?", options: ["Lliure/Geni incompresa", "Criat", "Funcionari"], correct: 0 },
+                    { q: "Obra de Wagner?", options: ["Valkiries", "4 Estacions", "Petita Serenata"], correct: 0 },
+                    { q: "Simfonia de Beethoven?", options: ["5a i 9a", "La 100", "Cap"], correct: 0 }
+                ]
+            },
+            {
+                id: "era6", type: "combat", name: "SEGLE XX", enemy: "Shinobi (Ninja)", icon: "img/bosssegleXX.png",
+                intro_title: "El Sisè Repte",
+                intro_text: "Sóc una ombra. Trenco totes les regles del Bushido. Dissonàncies, soroll, nous instruments... no em veuràs venir. La tradició ha mort. Benvingut al caos.",
+                boss_msg: "Error... de... càlcul...",
+                bg_style: "img/fonsnormal.jpg",
+                pool: [
+                    { q: "Norma principal?", options: ["Trencar regles", "Seguir tradició", "Copiar"], correct: 0 },
+                    { q: "Nou mitjà?", options: ["Enregistrament/Ràdio", "Impremta", "Pergamí"], correct: 0 },
+                    { q: "Estil com un somni?", options: ["Impressionisme", "Realisme", "Barroc"], correct: 0 },
+                    { q: "Estil del crit/por?", options: ["Expressionisme", "Pop", "Jazz"], correct: 0 },
+                    { q: "Compositor atonal?", options: ["Schönberg", "Mozart", "Vivaldi"], correct: 0 },
+                    { q: "Dodecafonisme?", options: ["12 notes matemàtiques", "12 violins", "Música de 12 minuts"], correct: 0 },
+                    { q: "Tecnologia nova?", options: ["Sintetitzadors", "Violins", "Flautes"], correct: 0 },
+                    { q: "Inspiració Debussy?", options: ["Aigua/Llum", "Guerra", "Matemàtiques"], correct: 0 },
+                    { q: "Què és Dissonància?", options: ["Tensió/Xoc sonor", "Pau/Harmonia", "Silenci"], correct: 0 },
+                    { q: "Jazz?", options: ["Ritme i Improvisació", "Partitura estricta", "Música religiosa"], correct: 0 }
+                ]
+            }
+        ];
+
+        // --- LOGIC ---
+        const elStart = document.getElementById('start-screen');
+        const elContainer = document.getElementById('game-container');
+        const elHermit = document.getElementById('hermit-sprite'); // Now IMG
+        const elHud = document.getElementById('hud');
+        const elInfoLevel = document.getElementById('level-name');
+        const elInfoLives = document.getElementById('life-display');
+        const elBgLayer = document.getElementById('bg-layer');
+        const elCombatScene = document.getElementById('combat-scene');
+        const elEnemyContainer = document.getElementById('enemy-container');
+        const elEnemySprite = document.getElementById('enemy-sprite'); // Now IMG
+        const elEnemyName = document.getElementById('enemy-name');
+        const elCombatUI = document.getElementById('combat-ui');
+        const elQText = document.getElementById('q-text');
+        const elAnsContainer = document.getElementById('ans-container');
+
+        // AUDIO & VOLUME
+        const elBgm = document.getElementById('bgm');
+        const elVolSlider = document.getElementById('volume-slider');
+
+        // Volume Listener
+        if (elVolSlider) {
+            elVolSlider.addEventListener('input', (e) => {
+                elBgm.volume = e.target.value;
+            });
+        }
+
+        const elRpgBox = document.getElementById('rpg-box');
+        const elRpgTitle = document.getElementById('rpg-title');
+        const elRpgText = document.getElementById('rpg-text');
+        const elRpgBtn = document.getElementById('rpg-next-btn');
+
+        let currentLevel = 0;
+        let lives = 3;
+        let currentPool = [];
+        let qIndex = 0;
+        let enemyHP = 5;
+
+        // RPG State
+        let rpgQueue = [];
+        let rpgIndex = 0;
+        let isTyping = false;
+
+        function startGame() {
+            elStart.style.display = 'none';
+            elHermit.style.display = 'block'; // Show Samurai
+            // Start Audio
+            elBgm.volume = elVolSlider.value;
+            elBgm.play().catch(e => console.log("Audio block", e));
+
+            currentLevel = 0;
+            lives = 3;
+            updateLives();
+            startPrologue();
+        }
+
+        function startPrologue() {
+            elCombatUI.style.display = 'none';
+            elRpgBox.style.display = 'block';
+
+            rpgQueue = [
+                { speaker: "Samurai sense Nom", text: "He entrenat tota la meva vida per aquest moment. El Torneig dels Sis Sons." },
+                { speaker: "Samurai sense Nom", text: "Vull ser el Capità de la Guàrdia del Shogun. Però per aconseguir-ho, he de derrotar els mestres de cada estil." },
+                { speaker: "Samurai sense Nom", text: "Des de la senzillesa antiga fins al caos modern. He de demostrar que domino l'Harmonia de totes les eres." },
+                { speaker: "Oficial del Torneig", text: "Aspirant! El teu primer oponent t'espera. Un soldat ras de l'Edat Antiga. Endavant!" },
+                { action: "callback", fn: () => loadLevel() }
+            ];
+
+            rpgIndex = 0;
+            processNextRpg();
+        }
+
+        function updateLives() {
+            elInfoLives.innerText = "VIDES: " + lives;
+        }
+
+        function loadLevel() {
+            if (currentLevel >= 6) {
+                // BOSS
+                startBossLevel();
+            } else {
+                startNormalLevel(BUSHIDO_DATA[currentLevel]);
+            }
+        }
+
+        function startNormalLevel(data) {
+            // BG Image
+            if (elBgLayer) elBgLayer.src = data.bg_style;
+            // Update HUD with Name AND Enemy
+            elInfoLevel.innerHTML = `<span style="font-size:1.2em; font-weight:bold;">${data.name}</span><br><span style="font-size:0.8em;">${data.enemy}</span>`;
+
+            // Audio: Ensure normal BGM
+            if (!elBgm.src.includes("musicafons.m4a")) {
+                elBgm.src = "audio/musicafons.m4a";
+                elBgm.play().catch(e => console.log(e));
+            }
+
+            // Prepare Combat Data
+            enemyHP = 5;
+            currentPool = [...data.pool].sort(() => Math.random() - 0.5);
+            qIndex = 0;
+            // Clean name formatting
+            elEnemyName.innerText = data.name + "\n" + data.enemy;
+
+            // Set Enemy Image
+            elEnemySprite.src = data.icon;
+            // elEnemySprite.innerText = "";  // No longer needed for IMG tag
+
+            // 1. Show Narrative (RPG Style)
+            startDialogueSequence(data);
+        }
+
+        function startBossLevel() {
+            if (elBgLayer) elBgLayer.src = "img/fonsbossfinal.jpg";
+            elInfoLevel.innerText = "BOSS FINAL";
+
+            // BGM Switch
+            elBgm.src = "audio/musicabossfinal.m4a";
+            elBgm.play().catch(e => console.log(e));
+
+            // Boss Data Setup
+            let bossPool = [];
+            BUSHIDO_DATA.forEach(d => {
+                let r = d.pool[Math.floor(Math.random() * d.pool.length)];
+                bossPool.push(r);
+            });
+            bossPool.sort(() => Math.random() - 0.5);
+            currentPool = bossPool;
+            enemyHP = 6;
+            qIndex = 0;
+            elEnemyName.innerText = "SHOGUN SUPREM";
+            elEnemySprite.src = "img/bossfinal.png";
+
+            // Boss Dialogue
+            const bossData = {
+                intro_title: "El Gran General",
+                intro_text: "Impressionant. Has vençut tots els meus deixebles. Però per liderar la meva Guàrdia, has de superar-me a MI.\n\nJo sóc la música sencera. El passat, el present i el futur. Defensa't!"
+            };
+            startDialogueSequence(bossData);
+        }
+
+        function startDialogueSequence(data) {
+            // Hide Combat UI
+            elCombatUI.style.display = 'none';
+            elCombatScene.style.display = 'flex';
+            elEnemyContainer.style.opacity = 0;
+
+            // Move Player to Combat Logic
+            elHermit.classList.add('combat-mode');
+
+            rpgQueue = [];
+
+            // 1. Enemy appears
+            rpgQueue.push({ action: "appear" });
+
+            // 2. Enemy speaks
+            rpgQueue.push({ speaker: data.enemy || "Oponent", text: data.intro_text });
+
+            rpgIndex = 0;
+            elRpgBox.style.display = 'block';
+            processNextRpg();
+        }
+
+        function processNextRpg() {
+            if (rpgIndex >= rpgQueue.length) {
+                elRpgBox.style.display = 'none';
+                runCombatMode();
+                return;
+            }
+
+            const item = rpgQueue[rpgIndex];
+
+            if (item.action === "callback") {
+                item.fn();
+                return;
+            }
+
+            if (item.action === "appear") {
+                elEnemyContainer.style.opacity = 1;
+                elEnemyContainer.classList.add('appear-in');
+                setTimeout(() => {
+                    elEnemyContainer.classList.remove('appear-in');
+                }, 1000);
+                rpgIndex++;
+                processNextRpg();
+                return;
+            }
+
+            // Show Text
+            elRpgTitle.innerText = item.speaker;
+            elRpgText.innerHTML = "";
+            isTyping = true;
+            elRpgBtn.style.display = 'none';
+
+            let charIndex = 0;
+            let fullText = item.text;
+
+            function typeChar() {
+                if (!isTyping) return; // Stop if skipped
+
+                if (charIndex < fullText.length) {
+                    elRpgText.innerHTML += fullText.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeChar, 25);
+                } else {
+                    isTyping = false;
+                    elRpgBtn.style.display = 'block';
+                }
+            }
+            typeChar();
+        }
+
+        function nextDialogue() {
+            if (isTyping) {
+                // Instant Finish
+                isTyping = false;
+                const item = rpgQueue[rpgIndex];
+                if (item && item.text) {
+                    elRpgText.innerHTML = item.text;
+                }
+                elRpgBtn.style.display = 'block';
+                return;
+            }
+            rpgIndex++;
+            processNextRpg();
+        }
+
+        // --- COMBAT ---
+        function runCombatMode() {
+            // Ensure Zen/Modals hidden
+            elRpgBox.style.display = 'none';
+            if (document.getElementById('zen-garden')) document.getElementById('zen-garden').style.display = 'none';
+
+            elCombatScene.style.display = 'flex';
+            elCombatUI.style.display = 'block';
+
+            elEnemySprite.style.opacity = 1;
+            askQuestion();
+        }
+
+        function askQuestion() {
+            if (enemyHP <= 0) {
+                // Determine completion
+                if (currentLevel < 6) {
+                    // Small dialogue before next
+                    rpgQueue = [
+                        { speaker: "Narrador", text: BUSHIDO_DATA[currentLevel].boss_msg },
+                        { speaker: "Oficial del Torneig", text: "Has passat la prova. Ara et toca el següent..." }
+                    ];
+                    rpgIndex = 0;
+
+                    // Hook the end of this dialogue to loading next level
+                    // We need to modify processNextRpg or make a flexible callback
+                    // Quick fix: overriding processNextRpg temporarily or adding a "onComplete" property to the queue manager.
+                    // Let's keep it simple: We'll add a 'callback' action to the queue.
+
+                    rpgQueue.push({
+                        action: "callback", fn: () => {
+                            currentLevel++;
+                            loadLevel();
+                        }
+                    });
+
+                    // Hide combat UI, show RPG Box
+                    elCombatUI.style.display = 'none';
+                    elRpgBox.style.display = 'block';
+                    processNextRpg();
+
+                } else {
+                    gameComplete();
+                }
+                return;
+            }
+
+            // If we run out of questions but enemy still alive (shouldn't happen if logic is tight, but safety)
+            if (qIndex >= currentPool.length) {
+                // Recycle
+                currentPool = currentPool.concat([...currentPool].sort(() => Math.random() - 0.5));
+            }
+
+            const q = currentPool[qIndex];
+            elQText.innerText = q.q;
+            elAnsContainer.innerHTML = "";
+
+            const opts = q.options.map((t, i) => ({ txt: t, isC: i === q.correct }));
+            opts.sort(() => Math.random() - 0.5);
+
+            opts.forEach(o => {
+                const b = document.createElement('button');
+                b.className = 'bamboo-btn';
+                b.innerText = o.txt;
+                b.onclick = () => handleSlash(o.isC, b);
+                elAnsContainer.appendChild(b);
+            });
+        }
+
+        function handleSlash(isCorrect, btn) {
+            // Disable all
+            const all = document.querySelectorAll('.bamboo-btn');
+            all.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                // Slash Anim
+                const slash = document.createElement('div');
+                slash.className = 'cut-anim';
+                elContainer.appendChild(slash);
+                setTimeout(() => slash.remove(), 200);
+
+                // Hit Enemy
+                elEnemySprite.style.transform = "translateX(50px) rotate(20deg)";
+                setTimeout(() => elEnemySprite.style.transform = "none", 200);
+
+                btn.style.background = "#27ae60";
+                btn.style.color = "#fff";
+
+                setTimeout(() => {
+                    enemyHP--;
+                    qIndex++;
+                    askQuestion();
+                }, 800);
+
+            } else {
+                // Take Damage
+                elContainer.classList.add('shake-screen');
+                lives--;
+                updateLives();
+                btn.style.background = "#c0392b";
+                btn.style.color = "#fff";
+
+                setTimeout(() => elContainer.classList.remove('shake-screen'), 500);
+
+                if (lives <= 0) {
+                    showGameOver();
+                } else {
+                    setTimeout(() => {
+                        qIndex++;
+                        askQuestion();
+                    }, 1000);
+                }
+            }
+        }
+
+        function showGameOver() {
+            document.getElementById('game-over-modal').style.display = 'flex';
+        }
+
+        function retryLevel() {
+            document.getElementById('game-over-modal').style.display = 'none';
+            lives = 3;
+            updateLives();
+            // Reuse loadLevel to restart current
+            loadLevel();
+        }
+
+        function gameComplete() {
+            // RPG Ending
+            rpgQueue = [
+                { speaker: "Shogun", text: "Increïble... Has demostrat un domini absolut de l'Harmonia Musical." },
+                { speaker: "Shogun", text: "Aixeca't, Samurai. Ja no ets un Ronin sense nom." },
+                { speaker: "Narrador (Oficial)", text: "Des d'avui, ets el CAPITÀ SUPREM DE LA GUÀRDIA IMPERIAL DEL SO." },
+                { speaker: "Joc", text: "VICTÒRIA! Enhorabona, has completat l'ascens. (Prem Següent per reiniciar)" },
+                { action: "callback", fn: () => location.reload() }
+            ];
+            rpgIndex = 0;
+            elCombatUI.style.display = 'none';
+            elRpgBox.style.display = 'block';
+            processNextRpg();
+        }
+        // End of logic
+
+    </script>
+</body>
+
+</html>

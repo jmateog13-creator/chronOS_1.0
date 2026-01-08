@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Caos al Camerino</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Limelight&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            /* Colors */
+            --gold: #FFD700;
+            --velvet: #800020;
+            --dark-bg: #1a1a1a;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            background-image: url('img/bg_camerino.png');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Playfair Display', serif;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Menu Screen */
+        #menu-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            /* Semi-transparent overlay over BG */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        h1 {
+            font-family: 'Limelight', cursive;
+            font-size: 3.5rem;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 0px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .level-btn {
+            background: linear-gradient(135deg, #2c3e50, #000);
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Limelight', cursive;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .level-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(135deg, #34495e, #1a1a1a);
+        }
+
+        /* Game UI */
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .hud-panel {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--gold);
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .hud-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+
+        .hud-value {
+            font-family: 'Limelight', cursive;
+            font-size: 1.8rem;
+            color: var(--gold);
+        }
+
+        /* Game Canvas Area */
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            /* Constrain wide screens */
+            overflow: hidden;
+            display: none;
+            /* Hidden by default */
+        }
+
+        /* Show when active */
+        #game-container.active {
+            display: block;
+        }
+
+        /* Baskets */
+        .basket {
+            position: absolute;
+            bottom: 20px;
+            width: 160px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            z-index: 10;
+            transition: left 0.1s linear;
+            /* Smooth movement */
+        }
+
+        /* Using Images for Baskets */
+        .basket img {
+            width: 100%;
+            height: auto;
+            position: absolute;
+            bottom: 0;
+            pointer-events: none;
+            /* HACK: Multiply blend mode makes white background transparent */
+            mix-blend-mode: multiply;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.6));
+            z-index: 15;
+            /* Ensure image is above items if items are z-index 5 */
+        }
+
+        /* Labels above baskets */
+        /* Labels above baskets */
+        .basket-label-container {
+            position: absolute;
+            bottom: 120px;
+            /* Higher up */
+            min-width: 200px;
+            text-align: center;
+            background: linear-gradient(to bottom, #222, #000);
+            border: 2px solid var(--gold);
+            padding: 8px 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+
+        .basket-title {
+            font-family: 'Limelight', cursive;
+            color: var(--gold);
+            font-size: 1.2rem;
+            /* Larger */
+            line-height: 1.2;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .basket-key {
+            font-size: 0.9rem;
+            color: #fff;
+            font-family: monospace;
+            border: 1px solid #444;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #333;
+        }
+
+
+
+        /* Falling Items */
+        /* Falling Items */
+        .item {
+            position: absolute;
+            width: 130px;
+            /* Much Larger */
+            height: 130px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #eee);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            font-weight: bold;
+            text-align: center;
+            text-align: center;
+            z-index: 5;
+            /* Behind the basket image which is 10/15 */
+            border: 4px solid #fff;
+            overflow: hidden;
+            transition: transform 0.2s;
+            /* Smooth scale out */
+        }
+
+        /* Sticker look */
+        .item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 50%);
+            pointer-events: none;
+        }
+
+        .item-icon {
+            font-size: 4.5rem;
+            /* Larger Icon */
+            line-height: 1;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+            margin-bottom: 5px;
+        }
+
+        .item-text {
+            font-size: 0.95rem;
+            /* Larger Text */
+            color: #222;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3px 8px;
+            border-radius: 6px;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            z-index: 2;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+
+
+        /* Feedback */
+        #feedback-overlay {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Limelight', cursive;
+            font-size: 4rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 50;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Game Over Modal */
+        #game-over-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            color: var(--gold);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            border: 4px solid var(--gold);
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.2);
+        }
+
+        .modal-content h2 {
+            font-family: 'Limelight', cursive;
+            font-size: 2.5rem;
+            margin-top: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Menu Screen -->
+    <div id="menu-screen">
+        <h1>CAOS AL CAMERINO</h1>
+        <p class="subtitle">Ordena l'attrezzo abans de la funció!</p>
+        <div class="level-grid" id="level-grid">
+            <!-- Buttons generated by JS -->
+        </div>
+    </div>
+
+    <!-- Game UI -->
+    <div id="game-ui" style="display:none;">
+        <div class="hud-panel">
+            <div class="hud-label">Punts</div>
+            <div class="hud-value" id="score">0</div>
+        </div>
+        <div class="hud-panel">
+            <div class="hud-label">Vides</div>
+            <div class="hud-value" id="lives">❤️❤️❤️❤️❤️</div>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="game-container">
+
+        <!-- Basket A (Category A) -->
+        <div class="basket" id="basket-a">
+            <div class="basket-label-container">
+                <div class="basket-title" id="label-a">Cat A</div>
+                <div class="basket-key">Tecles: A / D</div>
+            </div>
+            <!-- Vintage Trunk Image -->
+            <img src="img/trunk_vintage.png" alt="Trunk">
+        </div>
+
+        <!-- Basket B (Category B) -->
+        <div class="basket" id="basket-b">
+            <div class="basket-label-container">
+                <div class="basket-title" id="label-b">Cat B</div>
+                <div class="basket-key">Tecles: ⬅️ / ➡️</div>
+            </div>
+            <!-- Elegant Case Image -->
+            <img src="img/case_elegant.png" alt="Case">
+        </div>
+
+        <div id="feedback-overlay"></div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal">
+        <div class="modal-content">
+            <h2 id="modal-title">FI DE L'ASSAIG</h2>
+            <p>Puntuació final: <span id="final-score" style="font-weight:bold; color:white;">0</span></p>
+            <button class="level-btn" onclick="location.reload()">TORNAR A COMENÇAR</button>
+        </div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const GAME_DATA = {
+            "EDAT MITJANA": {
+                catA: { name: "Música Religiosa" },
+                catB: { name: "Música Profana" },
+                itemsA: [
+                    { icon: "🙏", text: "Monjos" },
+                    { icon: "⛪", text: "Cant Gregorià" },
+                    { icon: "📜", text: "Llatí" },
+                    { icon: "🎹", text: "Orgue" }
+                ],
+                itemsB: [
+                    { icon: "🎸", text: "Trobadors" },
+                    { icon: "🤹", text: "Joglars" },
+                    { icon: "🏰", text: "Castell" },
+                    { icon: "💘", text: "Amor Cortès" }
+                ]
+            },
+            "RENAIXEMENT": {
+                catA: { name: "Música Vocal" },
+                catB: { name: "Música Instrumental" },
+                itemsA: [
+                    { icon: "⛪", text: "Missa" },
+                    { icon: "🎶", text: "Motet" },
+                    { icon: "🗣️", text: "Cor" },
+                    { icon: "🎼", text: "Palestrina" }
+                ],
+                itemsB: [
+                    { icon: "🎸", text: "Llaüt" },
+                    { icon: "🎻", text: "Viola da Gamba" },
+                    { icon: "💃", text: "Pavana" },
+                    { icon: "🕺", text: "Gallarda" }
+                ]
+            },
+            "BARROC": {
+                catA: { name: "Concert" },
+                catB: { name: "Òpera" },
+                itemsA: [
+                    { icon: "🎻", text: "Vivaldi" },
+                    { icon: "🍂", text: "4 Estacions" },
+                    { icon: "🎻", text: "Violí" },
+                    { icon: "🎹", text: "Bach" }
+                ],
+                itemsB: [
+                    { icon: "🎭", text: "Monteverdi" },
+                    { icon: "🎤", text: "Castrati" },
+                    { icon: "🏛️", text: "Escenari" },
+                    { icon: "🎵", text: "Aria" }
+                ]
+            },
+            "CLASSICISME": {
+                catA: { name: "Simfonia" },
+                catB: { name: "Música de Cambra" },
+                itemsA: [
+                    { icon: "👨‍", text: "Haydn" },
+                    { icon: "🎼", text: "Director" },
+                    { icon: "🏛️", text: "Gran Sala" },
+                    { icon: "🥁", text: "Timbales" }
+                ],
+                itemsB: [
+                    { icon: "🎻", text: "Quartet" },
+                    { icon: "🎹", text: "Piano Solista" },
+                    { icon: "🏠", text: "Saló" },
+                    { icon: "🎼", text: "Mozart" }
+                ]
+            },
+            "ROMANTICISME": {
+                catA: { name: "Virtuosisme" },
+                catB: { name: "Nacionalisme" },
+                itemsA: [
+                    { icon: "🎻", text: "Paganini" },
+                    { icon: "🎹", text: "Liszt" },
+                    { icon: "⚡", text: "Velocitat" },
+                    { icon: "🎹", text: "Piano de Cua" }
+                ],
+                itemsB: [
+                    { icon: "💃", text: "Folklore" },
+                    { icon: "🌾", text: "Dansa Popular" },
+                    { icon: "🚩", text: "Himnes" },
+                    { icon: "🏞️", text: "Paisatge" }
+                ]
+            },
+            "SEGLE XX": {
+                catA: { name: "Impressionisme" },
+                catB: { name: "Expressionisme" },
+                itemsA: [
+                    { icon: "🌊", text: "Debussy" },
+                    { icon: "🎨", text: "Color" },
+                    { icon: "🌫️", text: "Atmosfera" },
+                    { icon: "😴", text: "Somni" }
+                ],
+                itemsB: [
+                    { icon: "🎼", text: "Schönberg" },
+                    { icon: "😱", text: "Crit" },
+                    { icon: "💥", text: "Dissonància" },
+                    { icon: "😨", text: "Por" }
+                ]
+            }
+        };
+
+        // --- GAME STATE ---
+        let currentStageKey = null;
+        let currentStageData = null;
+        let score = 0;
+        let lives = 5;
+        let gameActive = false;
+        let items = [];
+        let gameInterval;
+        let spawnDelay = 2000;
+
+        // Position State
+        let basketAX = window.innerWidth * 0.25;
+        let basketBX = window.innerWidth * 0.75;
+        const basketWidth = 160;
+        const moveSpeed = 12; // Slightly faster
+
+        // Input State
+        const keys = {
+            a: false,
+            d: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+
+        // --- DOM REFERENCE ---
+        const menuScreen = document.getElementById('menu-screen');
+        const gameUI = document.getElementById('game-ui');
+        const gameContainer = document.getElementById('game-container');
+        const basketA = document.getElementById('basket-a');
+        const basketB = document.getElementById('basket-b');
+        const labelA = document.getElementById('label-a');
+        const labelB = document.getElementById('label-b');
+        const scoreDisplay = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives');
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const gameOverModal = document.getElementById('game-over-modal');
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'good') {
+                // Magical sparkle sound
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                osc.frequency.exponentialRampToValueAtTime(1800, now + 0.2);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'bad') {
+                // Low thud
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- INIT ---
+        function initMenu() {
+            const grid = document.getElementById('level-grid');
+            Object.keys(GAME_DATA).forEach(key => {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                btn.textContent = key;
+                btn.onclick = () => startGame(key);
+                grid.appendChild(btn);
+            });
+        }
+
+        function startGame(stageKey) {
+            currentStageKey = stageKey;
+            currentStageData = GAME_DATA[stageKey];
+
+            // Setup UI
+            menuScreen.style.display = 'none';
+            gameUI.style.display = 'flex';
+            gameContainer.classList.add('active'); // Show Game Area
+            score = 0;
+            lives = 5;
+            spawnDelay = 2000;
+            updateUI();
+
+            // Setup Labels
+            labelA.textContent = currentStageData.catA.name;
+            labelB.textContent = currentStageData.catB.name;
+
+            // Clear items
+            items.forEach(i => i.element.remove());
+            items = [];
+            gameActive = true;
+
+            // Reset Positions - Start centered
+            basketAX = (window.innerWidth / 3) - (basketWidth / 2);
+            basketBX = (window.innerWidth * 2 / 3) - (basketWidth / 2);
+            spawnDelay = 2500; // Reset to slower speed
+            updateBasketPositions();
+
+            // Start Loops
+            requestAnimationFrame(gameLoop);
+            clearInterval(gameInterval);
+            scheduleNextSpawn();
+        }
+
+        // Variable spawn rate
+        function scheduleNextSpawn() {
+            if (!gameActive) return;
+            gameInterval = setTimeout(() => {
+                spawnItem();
+                // Speed up as score increases - MUCH SLOWER PROGRESSION & CAP
+                const factor = Math.max(0.6, 1 - (score / 10000)); // Cap at 60% delay (was 40%)
+                spawnDelay = Math.max(1200, 2500 * factor); // Slower base delay
+                scheduleNextSpawn();
+            }, spawnDelay);
+        }
+
+        // --- INPUT ---
+        window.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
+        });
+
+        function updateBasketPositions() {
+            // Move Basket A
+            if (keys.a) basketAX -= moveSpeed;
+            if (keys.d) basketAX += moveSpeed;
+
+            // Move Basket B
+            if (keys.ArrowLeft) basketBX -= moveSpeed;
+            if (keys.ArrowRight) basketBX += moveSpeed;
+
+            // Clamping with Invisible Walls logic
+            const maxW = window.innerWidth;
+            // Prevent going off screen (assuming basketWidth is around 160)
+            basketAX = Math.max(0, Math.min(basketAX, maxW - basketWidth));
+            basketBX = Math.max(0, Math.min(basketBX, maxW - basketWidth));
+
+            // Prevent crossing (Optional, but good for gameplay)
+            // if (basketAX + basketWidth > basketBX) basketAX = basketBX - basketWidth;
+
+            basketA.style.left = basketAX + 'px';
+            basketB.style.left = basketBX + 'px';
+        }
+
+        // --- LOOP ---
+        function gameLoop() {
+            if (!gameActive) return;
+
+            updateBasketPositions();
+
+            // Update Items
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                // Move item via JS for better collision sync
+                item.y += item.speed;
+                item.element.style.top = item.y + 'px';
+
+                // Collision Check
+                const itemRect = {
+                    left: parseFloat(item.element.style.left),
+                    right: parseFloat(item.element.style.left) + 130, // Updated width
+                    top: item.y,
+                    bottom: item.y + 130, // Updated height
+                    width: 130,
+                    height: 130
+                };
+
+                const basketARect = basketA.getBoundingClientRect();
+                const basketBRect = basketB.getBoundingClientRect();
+
+                // Check collisions
+                // Check if item is roughly inside the basket opening
+                // Basket image is bottom aligned. Opening is roughly top 30%
+
+                // Simple overlap check
+                if (checkCollision(itemRect, basketARect)) {
+                    resolveCollision(i, item.category === 'A');
+                    continue;
+                }
+                if (checkCollision(itemRect, basketBRect)) {
+                    resolveCollision(i, item.category === 'B');
+                    continue;
+                }
+
+                // Missed
+                if (item.y > window.innerHeight) {
+                    items.splice(i, 1);
+                    item.element.remove();
+                    loseLife();
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function checkCollision(item, basket) {
+            // Hitbox logic: permissive overlap
+            // We want to catch the item when it's "mostly" inside the basket opening.
+
+            // Define Detecting Box for the Basket (The "Mouth")
+            // Basket is ~120px tall. Mouth is roughly top half.
+            const basketMouthTop = basket.top + 20; // Allow it slightly above visual top
+            const basketMouthBottom = basket.bottom - 40; // Stop before bottom
+            const basketLeft = basket.left + 20;
+            const basketRight = basket.right - 20;
+
+            // Define Item Point (Bottom Center - the part that enters first)
+            const itemBottomY = item.top + item.height - 20;
+            const itemCenterX = item.left + (item.width / 2);
+
+            // Check if Item's bottom is within the vertical mouth zone
+            // We widen the bottom check to prevent "passing through"
+            if (itemBottomY >= basketMouthTop && itemBottomY <= (basketMouthBottom + 40)) {
+                // Check if Item's center is within horizontal bounds
+                if (itemCenterX >= basketLeft && itemCenterX <= basketRight) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function spawnItem() {
+            if (!gameActive) return;
+
+            const isCatA = Math.random() > 0.5;
+            const category = isCatA ? 'A' : 'B';
+            const sourceArray = isCatA ? currentStageData.itemsA : currentStageData.itemsB;
+            const itemData = sourceArray[Math.floor(Math.random() * sourceArray.length)];
+
+            const el = document.createElement('div');
+            el.className = 'item';
+            el.innerHTML = `<div class="item-icon">${itemData.icon}</div><div class="item-text">${itemData.text}</div>`;
+
+            // Random X
+            const x = Math.random() * (window.innerWidth - 100);
+            el.style.left = x + 'px';
+            el.style.top = '-100px';
+
+            gameContainer.appendChild(el);
+
+            // Speed increases with score - REDUCED
+            const baseSpeed = 2; // Was 3
+            const speedVar = score / 2000; // Slower accel
+            const speed = baseSpeed + Math.min(3, speedVar); // Max speed 5
+
+            items.push({
+                element: el,
+                category: category,
+                y: -150,
+                speed: speed,
+                width: 130, // track width
+                height: 130
+            });
+        }
+
+        function resolveCollision(index, isCorrect) {
+            const item = items[index];
+            items.splice(index, 1);
+
+            // Animate disappearance
+            item.element.style.transform = "scale(0)";
+            item.element.style.opacity = "0";
+            setTimeout(() => item.element.remove(), 200);
+
+            if (isCorrect) {
+                score += 100;
+                playSound('good');
+                showFeedback("CORRECTE!", "var(--gold)");
+                if (score >= 2000) winGame(); // Win condition
+            } else {
+                loseLife();
+                showFeedback("ERROR!", "#ff4444");
+            }
+            updateUI();
+        }
+
+        function loseLife() {
+            lives--;
+            playSound('bad');
+            updateUI();
+            if (lives <= 0) gameOver();
+        }
+
+        function showFeedback(text, color) {
+            feedbackOverlay.textContent = text;
+            feedbackOverlay.style.color = color;
+            feedbackOverlay.style.opacity = 1;
+            feedbackOverlay.style.transform = "translate(-50%, -50%) scale(1.2)";
+            setTimeout(() => {
+                feedbackOverlay.style.opacity = 0;
+                feedbackOverlay.style.transform = "translate(-50%, -50%) scale(1)";
+            }, 500);
+        }
+
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            let hearts = "";
+            for (let i = 0; i < lives; i++) hearts += "❤️";
+            livesDisplay.textContent = hearts;
+        }
+
+        function gameOver() {
+            gameActive = false;
+            clearTimeout(gameInterval);
+            document.getElementById('modal-title').textContent = "FI DE L'ASSAIG";
+            document.getElementById('final-score').textContent = score;
+            gameOverModal.style.display = 'flex';
+        }
+
+        function winGame() {
+            gameActive = false;
+            clearTimeout(gameInterval);
+            document.getElementById('modal-title').textContent = "CAMERINO LLEST!";
+            document.getElementById('modal-title').style.color = "var(--gold)";
+            document.getElementById('final-score').textContent = score;
+            gameOverModal.style.display = 'flex';
+
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'camerino_master',
+                    'Mestre de Vestuari',
+                    'Has deixat el camerino impecable per a l\'estrena.',
+                    '../../img/card_camerino.png'
+                );
+            }
+        }
+
+        initMenu();
+
+    </script>
+</body>
+
+</html>

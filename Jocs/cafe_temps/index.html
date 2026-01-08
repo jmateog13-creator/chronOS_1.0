@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Cafè del Temps</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rye&family=Roboto+Mono:wght@400;700&display=swap');
+
+        :root {
+            --coffee-dark: #3E2723;
+            --coffee-light: #D7CCC8;
+            --copper: #b87333;
+            --copper-light: #d49156;
+            --brass: #D4AF37;
+            --brass-dark: #88701F;
+            --wood: #4E342E;
+            --steam: rgba(230, 230, 230, 0.7);
+            --bg-dark: #1a1a1a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--bg-dark);
+            color: var(--copper);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        /* Fons de fusta i engranatges (simulat amb pattern) */
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            background:
+                radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%),
+                repeating-linear-gradient(45deg, #2d1e18 0, #2d1e18 10px, #3e2723 10px, #3e2723 20px);
+            border: 15px solid var(--wood);
+            border-image: linear-gradient(to right, #3e2723, #5d4037, #3e2723) 1;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 5, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Rye', cursive;
+            font-size: 5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom, var(--brass), var(--copper));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+        }
+
+        p.subtitle {
+            font-size: 1.5rem;
+            color: var(--coffee-light);
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .btn-era {
+            background: linear-gradient(to bottom, #4e342e, #2d1e18);
+            border: 3px solid var(--copper);
+            color: var(--brass);
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: 'Rye', cursive;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1a100c, 0 10px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-transform: uppercase;
+        }
+
+        .btn-era:hover {
+            filter: brightness(1.2);
+        }
+
+        .btn-era:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #1a100c, 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Cafe Interface */
+        #cafe {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            font-family: 'Rye', cursive;
+            font-size: 1.5rem;
+            color: var(--brass);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border: 2px solid var(--copper);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 0 black;
+        }
+
+        /* Steampunk Machine (Shelf Style) */
+        #machine-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background-color: #1a110f;
+            /* Shelf aesthetic */
+            border-top: 8px solid var(--copper);
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        #machine-container .pipe.h {
+            top: 5px;
+            width: 100%;
+        }
+
+        #taps-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            width: 100%;
+            z-index: 20;
+            /* Ensure on top */
+            min-height: 180px;
+            /* Guarantee visibility */
+        }
+
+        /* Decorative Pipes */
+        .pipe {
+            position: absolute;
+            background: linear-gradient(to right, #8d6e63, #d7ccc8, #8d6e63);
+            border: 1px solid #3e2723;
+            z-index: 0;
+        }
+
+        .pipe.h {
+            height: 10px;
+            width: 100%;
+            top: 10px;
+            left: 0;
+        }
+
+        .pipe.v {
+            width: 10px;
+            height: 100%;
+            top: 0;
+            left: 10px;
+        }
+
+        .tap {
+            width: 110px;
+            height: 160px;
+            background: linear-gradient(135deg, #424242, #212121);
+            border: 4px solid var(--brass);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+            padding: 5px;
+        }
+
+        .tap:active {
+            transform: translateY(3px);
+        }
+
+        .tap.selected {
+            border-color: #fff;
+            box-shadow: 0 0 15px var(--brass);
+        }
+
+        .tap-knob {
+            display: none;
+            /* Hide knob */
+        }
+
+        .tap-label {
+            font-size: 0.9rem;
+            color: var(--copper-light);
+            text-align: center;
+            font-weight: bold;
+            background: transparent;
+            /* Cleaner look */
+            padding: 5px;
+            width: 100%;
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            /* Fill space */
+        }
+
+        /* Layout Containers */
+        #client-area {
+            flex: 2;
+            display: flex;
+            flex-direction: row;
+            /* Horizontal layout */
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            gap: 20px;
+            /* Space between portrait and quote */
+        }
+
+        #service-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        /* Cup Area */
+        #cup-area {
+            position: relative;
+            width: 140px;
+            height: 120px;
+            margin-bottom: 10px;
+        }
+
+
+        #cup {
+            width: 100px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 0 0 40px 40px;
+            position: absolute;
+            bottom: 0px;
+            left: 20px;
+            border: 2px solid #ddd;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        /* Cup Handle */
+        #cup::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: -25px;
+            width: 30px;
+            height: 35px;
+            border: 6px solid rgba(255, 255, 255, 0.9);
+            border-radius: 0 20px 20px 0;
+            z-index: 0;
+        }
+
+        #liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #3e2723, #5d4037);
+            transition: height 0.5s ease-out;
+        }
+
+        /* Steam & Effects */
+        #steam-container {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .steam-cloud {
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.6);
+            animation: rise 2s infinite ease-in;
+            opacity: 0;
+            position: absolute;
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-40px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        #client-tag {
+            background: var(--brass-dark);
+            color: white;
+            padding: 5px 20px;
+            border: 2px solid var(--brass);
+            border-radius: 5px;
+            font-family: 'Rye', cursive;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        #client-tag::before,
+        #client-tag::after {
+            content: '•';
+            color: var(--brass);
+            margin: 0 10px;
+        }
+
+        #client-portrait {
+            width: 160px;
+            /* Larger */
+            height: 160px;
+            border-radius: 50%;
+            border: 4px solid var(--copper);
+            background: #e8dcc5;
+            overflow: hidden;
+            /* margin-bottom removed */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            /* Prevent shrinking */
+        }
+
+        #client-portrait img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Mix-blend-mode removed for debug/visibility reliability */
+            mix-blend-mode: normal;
+            filter: sepia(0.5) contrast(1.2);
+        }
+
+        #client-quote {
+            position: relative;
+            /* Static position in flow */
+            bottom: auto;
+            left: auto;
+            transform: none;
+            background: #fff8e1;
+            color: #3e2723;
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-family: 'Rye', cursive;
+            font-size: 1.1rem;
+            /* Slightly larger */
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--brass);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Bubble tail pointing left to portrait */
+        #client-quote::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -12px;
+            transform: translateY(-50%);
+            border-width: 12px 12px 12px 0;
+            border-style: solid;
+            border-color: transparent var(--brass) transparent transparent;
+        }
+
+        #volume-control {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid var(--copper);
+        }
+
+        #bgm-slider {
+            width: 100px;
+            accent-color: var(--copper);
+            cursor: pointer;
+        }
+
+        #btn-serve {
+            margin-top: 30px;
+            padding: 15px 50px;
+            font-size: 1.8rem;
+            background: radial-gradient(circle, var(--copper-light), var(--copper));
+            color: #2d1e18;
+            border: 4px solid var(--wood);
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Rye', cursive;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+            transition: transform 0.1s;
+        }
+
+        #btn-serve:active {
+            transform: scale(0.95);
+        }
+
+        #btn-serve:disabled {
+            filter: grayscale(1);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Feedback styling */
+        #feedback-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            color: var(--brass);
+            text-align: center;
+        }
+
+        #end-msg {
+            font-size: 1.5rem;
+            margin: 20px;
+            color: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>EL CAFÈ DEL TEMPS</h1>
+            <p class="subtitle">Serveix als grans genis de la història.</p>
+            <button class="btn-era" id="btn-start-game">OBRIR LA CAFETERIA</button>
+        </div>
+
+        <!-- Cafe -->
+        <div id="cafe" class="hidden">
+            <div id="hud">
+                <span>TASSES: <span id="score">0</span>/10</span>
+                <span>INTOXICATS: <span id="fails">0</span>/3</span>
+            </div>
+
+            <!-- Client Area (Top) -->
+            <div id="client-area">
+                <div id="client-portrait">
+                    <img id="client-img" src="" alt="Client">
+                </div>
+                <div id="client-tag">CLIENT: <span id="client-name">SR. BACH</span></div>
+                <div id="client-quote">"Una frase de prova..."</div>
+            </div>
+
+            <!-- Service Area (Middle) -->
+            <div id="service-area">
+                <div id="cup-area">
+                    <div id="steam-container">
+                        <div class="steam-cloud">☁️</div>
+                        <div class="steam-cloud" style="animation-delay: 1s;">☁️</div>
+                    </div>
+                    <div id="cup">
+                        <div id="liquid"></div>
+                    </div>
+                </div>
+                <button id="btn-serve" onclick="serve()">SERVIR CAFÈ</button>
+            </div>
+
+            <!-- Machine/Options Area (Bottom) -->
+            <div id="machine-container">
+                <div class="pipe h"></div>
+                <div id="taps-container">
+                    <!-- 6 Taps generated by JS -->
+                </div>
+            </div>
+
+            <!-- Audio Elements -->
+            <audio id="bgm-player" loop>
+                <source src="audio/Warm Cup Chronicles.m4a" type="audio/mpeg">
+            </audio>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="end-title"></h2>
+            <p id="end-msg"></p>
+            <button class="btn-era" onclick="location.reload()">OBRIR DE NOU</button>
+        </div>
+
+        <div id="volume-control">
+            <span style="font-size: 1.2rem;">🔊</span>
+            <input type="range" id="bgm-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Single correct coffee per Era.
+        const DB = {
+            edat_mitjana: "Espresso Gregorià",
+            renaixement: "Polifonia Moca",
+            barroc: "Baix Continu Bombó",
+            classicisme: "Equilibri Expresso",
+            romanticisme: "Lied Irlandès",
+            segle_xx: "Atonalitat Negra"
+        };
+
+        // The fixed menu of 6 coffees
+        const MENU = Object.values(DB);
+
+        const CLIENTS = [
+            // Edat Mitjana
+            { name: "Hildegard von Bingen", era: "edat_mitjana", img: "img/hildegard.jpg", quote: "Les meves visions necessiten claredat... i cafeïna." },
+            { name: "Guido d'Arezzo", era: "edat_mitjana", img: "img/guido.jpg", quote: "La meva mà et guiarà... espero que no desafinis." },
+            // Renaixement
+            { name: "Palestrina", era: "renaixement", img: "img/palestrina.jpg", quote: "Busco la puresa perfecta en aquesta tassa." },
+            { name: "C. Monteverdi", era: "renaixement", img: "img/monteverdi.jpg", quote: "Trenquem les regles! Vull una 'seconda pratica'." },
+            // Barroc
+            { name: "J.S. Bach", era: "barroc", img: "img/bach.jpg", quote: "L'ordre diví es troba en un cafè ben equilibrat." },
+            { name: "A. Vivaldi", era: "barroc", img: "img/vivaldi.jpg", quote: "Ràpid! Les estacions canvien, i la meva set també." },
+            { name: "G.F. Händel", era: "barroc", img: "img/haendel.jpg", quote: "Vull una mescla reial, digna d'uns focs artificials!" },
+            // Classicisme
+            { name: "W.A. Mozart", era: "classicisme", img: "img/mozart.jpg", quote: "Massa notes? Mai! Però posa-li molt de sucre!" },
+            { name: "F.J. Haydn", era: "classicisme", img: "img/haydn.jpg", quote: "Una sorpresa al final de la tassa, si us plau!" },
+            // Romanticisme
+            { name: "L.V. Beethoven", era: "romanticisme", img: "img/beethoven.jpg", quote: "El destí truca a la porta... i vol un cafè fort!" },
+            { name: "F. Chopin", era: "romanticisme", img: "img/chopin.jpg", quote: "Una melodia nocturna per a una ànima cansada..." },
+            { name: "R. Wagner", era: "romanticisme", img: "img/wagner.jpg", quote: "Aquesta mescla ha de durar tota una tetralogia!" },
+            // Segle XX
+            { name: "I. Stravinsky", era: "segle_xx", img: "img/stravinsky.jpg", quote: "Preparat per a un ritme salvatge? Res convencional." },
+            { name: "A. Schoenberg", era: "segle_xx", img: "img/schoemberg.jpg", quote: "Emancipa la dissonància d'aquest cafè!" },
+            { name: "John Cage", era: "segle_xx", img: "img/cage.jpg", quote: "..." }
+        ];
+
+        let deck = [];
+        let score = 0;
+        let fails = 0;
+        let selectedCoffee = null; // Changed from array to single value
+        let currentTarget = null; // Single string target
+        let isServing = false;
+        let currentClient = null;
+        let totalClients = CLIENTS.length;
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        const bgm = document.getElementById('bgm-player');
+        bgm.volume = 0.5;
+        document.getElementById('bgm-slider').oninput = (e) => {
+            bgm.volume = e.target.value;
+        };
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'pour') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.5);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'steam') {
+                // "Tu-ruun" Success Sound
+                osc.type = 'sine';
+
+                // Start C5
+                osc.frequency.setValueAtTime(523.25, now);
+                gainNode.gain.setValueAtTime(0.1, now);
+
+                // Slide up to C6 quickly
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.1);
+
+                // Decay
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } else if (type === 'spit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+
+        // --- LOGIC ---
+        document.getElementById('btn-start-game').addEventListener('click', startGame);
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('cafe').classList.remove('hidden');
+
+            score = 0;
+            fails = 0;
+
+            // Build Deck and Shuffle
+            deck = [...CLIENTS].sort(() => Math.random() - 0.5);
+            totalClients = deck.length;
+
+            // Start Music
+            bgm.play().catch(e => console.log("Audio play failed interaction needed:", e));
+
+            updateHUD();
+            nextOrder();
+        }
+
+        function nextOrder() {
+            try {
+                if (score >= 10) {
+                    endGame(true);
+                    return;
+                }
+
+                isServing = false;
+                selectedCoffee = null;
+                const liquid = document.getElementById('liquid');
+                if (liquid) liquid.style.height = '0%';
+
+                const steam = document.getElementById('steam-container');
+                if (steam) steam.style.opacity = 0;
+
+                const btn = document.getElementById('btn-serve');
+                if (btn) btn.disabled = true;
+
+                // 1. Pick Client
+                const randIndex = Math.floor(Math.random() * CLIENTS.length);
+                currentClient = CLIENTS[randIndex];
+
+                if (!currentClient) throw new Error("Client logic failure: No client picked");
+
+                const nameEl = document.getElementById('client-name');
+                if (nameEl) nameEl.textContent = currentClient.name;
+
+                const imgEl = document.getElementById('client-img');
+                if (imgEl) {
+                    imgEl.src = currentClient.img;
+                    imgEl.style.display = 'block';
+                }
+
+                const quoteEl = document.getElementById('client-quote');
+                if (quoteEl) {
+                    quoteEl.textContent = `"${currentClient.quote}"`;
+                    quoteEl.style.opacity = 1;
+                }
+
+                // 2. Setup Taps
+                const currentEra = currentClient.era;
+                // DB is now just a map: era -> coffeeName
+                currentTarget = DB[currentEra];
+
+                if (!currentTarget) throw new Error(`DB missing for era: ${currentEra}`);
+
+                // ALWAYS show the same 6 options (shuffled)
+                let taps = [...MENU].sort(() => Math.random() - 0.5);
+
+                const tapsContainer = document.getElementById('taps-container');
+                if (!tapsContainer) throw new Error("CRITICAL: #taps-container missing from DOM");
+
+                tapsContainer.innerHTML = '';
+
+                taps.forEach(label => {
+                    const el = document.createElement('div');
+                    el.className = 'tap';
+                    // Simplify: just label, no knob div
+                    el.innerHTML = `<div class="tap-label">${label}</div>`;
+                    el.onclick = () => toggleTap(el, label);
+                    tapsContainer.appendChild(el);
+                });
+            } catch (e) {
+                console.error(e);
+                const feedback = document.getElementById('feedback-overlay');
+                if (feedback) {
+                    feedback.style.display = 'flex';
+                    document.getElementById('end-title').textContent = "ERROR TÈCNIC";
+                    document.getElementById('end-msg').textContent = e.message;
+                }
+            }
+        }
+
+        function toggleTap(el, label) {
+            if (isServing) return;
+
+            // Deselect all
+            const allTaps = document.querySelectorAll('.tap');
+            allTaps.forEach(t => t.classList.remove('selected'));
+
+            // Select clicked
+            el.classList.add('selected');
+            selectedCoffee = label;
+            playSound('pour');
+
+            // Update liquid visual (Full because single selection)
+            document.getElementById('liquid').style.height = '80%';
+            document.getElementById('btn-serve').disabled = false;
+        }
+
+        function serve() {
+            if (isServing) return;
+            isServing = true;
+
+            // Check correctness
+            const isPerfect = (selectedCoffee === currentTarget);
+
+            const steamClouds = document.querySelectorAll('.steam-cloud');
+
+            if (isPerfect) {
+                playSound('steam');
+                steamClouds.forEach(el => el.textContent = "❤️");
+                document.getElementById('steam-container').style.opacity = 1;
+                score++;
+                updateHUD();
+                setTimeout(nextOrder, 1500);
+            } else {
+                playSound('spit');
+                steamClouds.forEach(el => el.textContent = "🤮");
+                document.getElementById('steam-container').style.opacity = 1;
+                fails++;
+                updateHUD();
+
+                if (fails >= 3) {
+                    setTimeout(() => endGame(false), 1000);
+                } else {
+                    setTimeout(nextOrder, 1500);
+                }
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            // Target is total clients
+            document.querySelector('#hud span:first-child').innerHTML = `TASSES: <span id="score">${score}</span>/${CLIENTS.length}`;
+            document.getElementById('fails').textContent = fails;
+        }
+
+        function endGame(win) {
+            const overlay = document.getElementById('feedback-overlay');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                title.textContent = "BARISTA MESTRE!";
+                title.style.color = "var(--copper)";
+                msg.textContent = "Has servit la història en tassa.";
+            } else {
+                title.textContent = "TANCAT PER SANITAT";
+                title.style.color = "red";
+                msg.textContent = "Has intoxicat als clients.";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simfonia de Bombolles</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap');
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #ec4899;
+            --background: #0f172a;
+            --text: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            /* Limit width on large screens */
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* UI Screens */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            transition: opacity 0.5s ease, visibility 0.5s;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #c084fc, #6366f1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #e2e8f0;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #cbd5e1;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* Era Grid */
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        @media (min-width: 600px) {
+            .era-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .era-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .era-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 5;
+            pointer-events: none;
+            /* Let clicks pass through to canvas */
+        }
+
+        .hud-item {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lives {
+            color: #ef4444;
+        }
+
+        .score {
+            color: #fbbf24;
+        }
+
+        #back-btn {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        #back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Stats in Game Over / Win */
+        .stats-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .stat-row:last-child {
+            margin-bottom: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-top: 1px solid var(--glass-border);
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- HUD -->
+        <div id="hud" class="hidden">
+            <button id="back-btn">✕</button>
+            <div class="hud-group" style="display: flex; gap: 1rem;">
+                <div class="hud-item score">
+                    <span>★</span> <span id="score-display">0</span>
+                </div>
+                <div class="hud-item lives">
+                    <span id="lives-display">❤❤❤</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>Simfonia de Bombolles</h1>
+            <p>Explota només les bombolles de l'època correcta!<br>Evita els intrusos i no deixis escapar els teus
+                compositors.</p>
+            <button id="play-btn" class="btn">JUGAR</button>
+        </div>
+
+        <!-- Era Select Screen -->
+        <div id="era-screen" class="screen hidden">
+            <h2>Tria una Època</h2>
+            <div class="era-grid" id="era-grid">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen hidden">
+            <h1>Fi del Joc</h1>
+            <div class="stats-container">
+                <div class="stat-row">
+                    <span>Època:</span>
+                    <span id="final-era">-</span>
+                </div>
+                <div class="stat-row">
+                    <span>Puntuació Final:</span>
+                    <span id="final-score">0</span>
+                </div>
+            </div>
+            <button id="menu-btn" class="btn">TORNAR AL MENÚ</button>
+        </div>
+
+        <!-- Win Screen -->
+        <div id="win-screen" class="screen hidden">
+            <h1>¡ENHORABONA!</h1>
+            <p>Has completat la Simfonia de Bombolles!</p>
+            <div class="stats-container">
+                <div class="stat-row">
+                    <span>Època:</span>
+                    <span id="win-era">-</span>
+                </div>
+                <div class="stat-row">
+                    <span>Puntuació:</span>
+                    <span id="win-score">1000</span>
+                </div>
+            </div>
+            <button id="win-menu-btn" class="btn">TORNAR AL MENÚ</button>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const COMPOSERS_DB = {
+            "EDAT MITJANA": ["Hildegard von Bingen", "Bernart de Ventadorn", "Guido d'Arezzo", "Pérotin", "Machaut", "Alfons X el Savi"],
+            "RENAIXEMENT": ["Palestrina", "Josquin des Prez", "Victoria", "Monteverdi (inici)", "Orlando di Lasso", "Juan del Encina"],
+            "BARROC": ["J.S. Bach", "Vivaldi", "Händel", "Purcell", "Pachelbel", "Scarlatti"],
+            "CLASSICISME": ["Mozart", "Haydn", "Beethoven (inici)", "Gluck", "C.P.E. Bach", "Salieri"],
+            "ROMANTICISME": ["Chopin", "Wagner", "Verdi", "Txaikovski", "Schubert", "Liszt", "Brahms", "Schumann"],
+            "SEGLE XX": ["Stravinsky", "Debussy", "Schönberg", "Gershwin", "John Cage", "The Beatles", "Elvis"]
+        };
+
+        const ERAS = Object.keys(COMPOSERS_DB);
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'pop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'miss') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // --- GAME ENGINE ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let animationId;
+        let lastTime = 0;
+
+        // Game State
+        const state = {
+            screen: 'start', // start, era, game, gameover, win
+            currentEra: null,
+            score: 0,
+            lives: 3,
+            bubbles: [],
+            particles: [],
+            floatingTexts: [],
+            spawnTimer: 0,
+            spawnInterval: 2000, // ms
+            difficultyMultiplier: 1,
+            gameTime: 0,
+            targetScore: 1000
+        };
+
+        // Resize Canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- CLASSES ---
+        class Bubble {
+            constructor(text, isCorrect) {
+                this.radius = 40 + Math.random() * 20;
+                this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                this.y = canvas.height + this.radius;
+                this.speed = (100 + Math.random() * 50) * state.difficultyMultiplier; // pixels per second
+                this.text = text;
+                this.isCorrect = isCorrect;
+                this.wobbleOffset = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = 2 + Math.random() * 2;
+                this.wobbleAmp = 20 + Math.random() * 10;
+                this.popped = false;
+            }
+
+            update(dt) {
+                if (this.popped) return;
+
+                // Move up
+                this.y -= this.speed * dt;
+
+                // Horizontal wobble
+                const wobble = Math.sin(state.gameTime * this.wobbleSpeed + this.wobbleOffset) * this.wobbleAmp;
+
+                // Check bounds
+                if (this.y < -this.radius) {
+                    this.popped = true;
+                    if (this.isCorrect) {
+                        handleMiss();
+                    }
+                }
+            }
+
+            draw(ctx) {
+                if (this.popped) return;
+
+                const wobble = Math.sin(state.gameTime * this.wobbleSpeed + this.wobbleOffset) * this.wobbleAmp;
+                const drawX = this.x + wobble;
+
+                ctx.save();
+                ctx.translate(drawX, this.y);
+
+                // Bubble Body
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+
+                // Glassy Bubble Gradient
+                const grad = ctx.createRadialGradient(-this.radius * 0.3, -this.radius * 0.3, this.radius * 0.1, 0, 0, this.radius);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+                grad.addColorStop(0.8, 'rgba(255, 255, 255, 0.1)');
+                grad.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
+                ctx.fillStyle = grad;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                // Shine
+                ctx.beginPath();
+                ctx.arc(-this.radius * 0.4, -this.radius * 0.4, this.radius * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.fill();
+
+                // Text
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `500 ${Math.max(12, this.radius / 2.5)}px Outfit`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // Word wrap logic for names
+                const words = this.text.split(' ');
+                if (words.length > 1 && ctx.measureText(this.text).width > this.radius * 1.6) {
+                    // Simple split for 2 lines
+                    const mid = Math.floor(words.length / 2);
+                    const line1 = words.slice(0, mid + (words.length % 2)).join(' ');
+                    const line2 = words.slice(mid + (words.length % 2)).join(' ');
+                    ctx.fillText(line1, 0, -this.radius * 0.15);
+                    ctx.fillText(line2, 0, this.radius * 0.25);
+                } else {
+                    ctx.fillText(this.text, 0, 0);
+                }
+
+                ctx.restore();
+            }
+
+            checkClick(mx, my) {
+                if (this.popped) return false;
+                const wobble = Math.sin(state.gameTime * this.wobbleSpeed + this.wobbleOffset) * this.wobbleAmp;
+                const dx = mx - (this.x + wobble);
+                const dy = my - this.y;
+                // Increased hit radius by 20% to make clicking easier
+                return (dx * dx + dy * dy) < (this.radius * 1.2 * this.radius * 1.2);
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 100 + 50;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.life = 1.0;
+                this.decay = Math.random() * 2 + 1;
+                this.color = color;
+                this.size = Math.random() * 4 + 2;
+            }
+
+            update(dt) {
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                this.life -= this.decay * dt;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        class FloatingText {
+            constructor(x, y, text, color) {
+                this.x = x;
+                this.y = y;
+                this.text = text;
+                this.color = color;
+                this.life = 1.0;
+                this.vy = -50; // Move up
+            }
+
+            update(dt) {
+                this.y += this.vy * dt;
+                this.life -= dt;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.font = 'bold 24px Outfit';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.text, this.x, this.y);
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // --- LOGIC ---
+
+        function spawnBubble() {
+            const isCorrect = Math.random() < 0.6;
+            let text;
+
+            if (isCorrect) {
+                const list = COMPOSERS_DB[state.currentEra];
+                text = list[Math.floor(Math.random() * list.length)];
+            } else {
+                // Pick random intruder era
+                const otherEras = ERAS.filter(e => e !== state.currentEra);
+                const intruderEra = otherEras[Math.floor(Math.random() * otherEras.length)];
+                const list = COMPOSERS_DB[intruderEra];
+                text = list[Math.floor(Math.random() * list.length)];
+            }
+
+            state.bubbles.push(new Bubble(text, isCorrect));
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                state.particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function handlePop(bubble) {
+            bubble.popped = true;
+            playSound('pop');
+            state.score += 100;
+            updateHUD();
+
+            // Visuals
+            const wobble = Math.sin(state.gameTime * bubble.wobbleSpeed + bubble.wobbleOffset) * bubble.wobbleAmp;
+            createExplosion(bubble.x + wobble, bubble.y, '#a855f7'); // Purple explosion
+            state.floatingTexts.push(new FloatingText(bubble.x + wobble, bubble.y, '+100', '#fbbf24'));
+
+            if (state.score >= state.targetScore) {
+                winGame();
+            }
+        }
+
+        function handleError(bubble) {
+            bubble.popped = true;
+            playSound('error');
+            state.lives--;
+            state.score = Math.max(0, state.score - 200); // Penalty for clicking wrong
+            updateHUD();
+
+            // Visuals
+            const wobble = Math.sin(state.gameTime * bubble.wobbleSpeed + bubble.wobbleOffset) * bubble.wobbleAmp;
+            createExplosion(bubble.x + wobble, bubble.y, '#ef4444'); // Red explosion
+            state.floatingTexts.push(new FloatingText(bubble.x + wobble, bubble.y, '-200', '#ef4444'));
+
+            if (state.lives <= 0) {
+                endGame();
+            }
+        }
+
+        function handleMiss() {
+            playSound('miss');
+            state.score = Math.max(0, state.score - 50); // Reduced penalty for missing
+            updateHUD();
+            // Show missed text at top
+            state.floatingTexts.push(new FloatingText(canvas.width / 2, 100, 'Missed! -50', '#ef4444'));
+        }
+
+        function updateHUD() {
+            document.getElementById('score-display').textContent = state.score;
+            let hearts = '';
+            for (let i = 0; i < 3; i++) {
+                hearts += i < state.lives ? '❤' : '♡';
+            }
+            document.getElementById('lives-display').textContent = hearts;
+        }
+
+        function gameLoop(timestamp) {
+            if (state.screen !== 'game') return;
+
+            const dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            state.gameTime += dt;
+
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Difficulty Ramp
+            state.difficultyMultiplier = 1 + (state.gameTime / 60) * 0.5; // Increase speed by 50% every minute
+            const currentInterval = Math.max(500, state.spawnInterval - (state.gameTime * 20));
+
+            // Spawn
+            state.spawnTimer += dt * 1000;
+            if (state.spawnTimer > currentInterval) {
+                spawnBubble();
+                state.spawnTimer = 0;
+            }
+
+            // Update & Draw Bubbles
+            for (let i = state.bubbles.length - 1; i >= 0; i--) {
+                const b = state.bubbles[i];
+                b.update(dt);
+                if (b.popped) {
+                    state.bubbles.splice(i, 1);
+                } else {
+                    b.draw(ctx);
+                }
+            }
+
+            // Update & Draw Particles
+            for (let i = state.particles.length - 1; i >= 0; i--) {
+                const p = state.particles[i];
+                p.update(dt);
+                if (p.life <= 0) {
+                    state.particles.splice(i, 1);
+                } else {
+                    p.draw(ctx);
+                }
+            }
+
+            // Update & Draw Floating Texts
+            for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
+                const t = state.floatingTexts[i];
+                t.update(dt);
+                if (t.life <= 0) {
+                    state.floatingTexts.splice(i, 1);
+                } else {
+                    t.draw(ctx);
+                }
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame(era) {
+            state.currentEra = era;
+            state.score = 0;
+            state.lives = 3;
+            state.bubbles = [];
+            state.particles = [];
+            state.floatingTexts = [];
+            state.gameTime = 0;
+            state.spawnTimer = 0;
+            state.difficultyMultiplier = 1;
+
+            updateHUD();
+            showScreen('game');
+            document.getElementById('hud').classList.remove('hidden');
+
+            lastTime = performance.now();
+            gameLoop(lastTime);
+        }
+
+        function endGame() {
+            cancelAnimationFrame(animationId);
+            state.screen = 'gameover';
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('final-era').textContent = state.currentEra;
+            document.getElementById('final-score').textContent = state.score;
+            showScreen('gameover');
+        }
+
+        function winGame() {
+            cancelAnimationFrame(animationId);
+            state.screen = 'win';
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('win-era').textContent = state.currentEra;
+            document.getElementById('win-score').textContent = state.score;
+            showScreen('win');
+
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'bombolles_mix',
+                    'Director de Bombolles',
+                    'Has completat la simfonia de bombolles!',
+                    '../../img/card_bombolles.png'
+                );
+            }
+        }
+
+        // --- INPUT ---
+        function handleInput(e) {
+            if (state.screen !== 'game') return;
+            e.preventDefault(); // Prevent default touch/click behavior
+
+            const rect = canvas.getBoundingClientRect();
+            let mx, my;
+
+            // Handle Pointer Events (covers mouse and touch)
+            mx = e.clientX - rect.left;
+            my = e.clientY - rect.top;
+
+            // Check bubbles (reverse order to hit top ones first)
+            for (let i = state.bubbles.length - 1; i >= 0; i--) {
+                const b = state.bubbles[i];
+                if (b.checkClick(mx, my)) {
+                    if (b.isCorrect) {
+                        handlePop(b);
+                    } else {
+                        handleError(b);
+                    }
+                    return; // Only pop one at a time
+                }
+            }
+        }
+
+        canvas.addEventListener('pointerdown', handleInput);
+
+        // --- UI NAVIGATION ---
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            document.getElementById('hud').classList.add('hidden');
+
+            if (id === 'game') {
+                // Canvas is always visible behind, just hide screens
+            } else {
+                document.getElementById(id + '-screen').classList.remove('hidden');
+            }
+            state.screen = id;
+        }
+
+        // Init Era Grid
+        const eraGrid = document.getElementById('era-grid');
+        ERAS.forEach(era => {
+            const btn = document.createElement('button');
+            btn.className = 'era-btn';
+            btn.textContent = era;
+            btn.onclick = () => startGame(era);
+            eraGrid.appendChild(btn);
+        });
+
+        // Buttons
+        document.getElementById('play-btn').onclick = () => showScreen('era');
+        document.getElementById('back-btn').onclick = () => {
+            cancelAnimationFrame(animationId);
+            showScreen('era');
+        };
+        document.getElementById('menu-btn').onclick = () => showScreen('start');
+        document.getElementById('win-menu-btn').onclick = () => showScreen('start');
+
+        // Initial State
+        showScreen('start');
+    </script>
+</body>
+
+</html>

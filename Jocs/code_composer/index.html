@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Composer - VS Code Edition</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --sidebar: #252526;
+            --activity-bar: #333333;
+            --tab-bg: #2d2d2d;
+            --text: #d4d4d4;
+            --accent: #007acc;
+            --string: #ce9178;
+            --keyword: #569cd6;
+            --comment: #6a9955;
+            --number: #b5cea8;
+            --function: #dcdcaa;
+            --variable: #9cdcfe;
+            --error-bg: rgba(255, 0, 0, 0.2);
+            --success-bg: rgba(0, 255, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 18px;
+            /* Increased font size */
+        }
+
+        /* Activity Bar (Leftmost) */
+        .activity-bar {
+            width: 60px;
+            background: var(--activity-bar);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15px;
+        }
+
+        .icon {
+            font-size: 28px;
+            margin-bottom: 25px;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .icon.active {
+            opacity: 1;
+            border-left: 3px solid white;
+        }
+
+        /* Sidebar (Explorer) */
+        .sidebar {
+            width: 300px;
+            background: var(--sidebar);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #000;
+            font-size: 16px;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .file-tree {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tree-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tree-item:hover {
+            background: #2a2d2e;
+        }
+
+        .tree-item.active {
+            background: #37373d;
+        }
+
+        .tree-item.completed {
+            color: #4caf50;
+        }
+
+        .tree-item.completed .file-icon {
+            content: '✔';
+        }
+
+        .folder {
+            font-weight: bold;
+            color: #ccc;
+            margin-top: 10px;
+        }
+
+        .file {
+            padding-left: 30px;
+            color: #aaa;
+        }
+
+        .file-icon {
+            width: 18px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        /* Main Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-dark);
+        }
+
+        /* Tabs */
+        .tabs-bar {
+            height: 45px;
+            background: var(--sidebar);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 0 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            background: var(--tab-bg);
+            border-right: 1px solid #1e1e1e;
+            cursor: pointer;
+            min-width: 150px;
+            font-size: 16px;
+        }
+
+        .tab.active {
+            background: var(--bg-dark);
+            border-top: 2px solid var(--accent);
+        }
+
+        .tab-close {
+            margin-left: auto;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            padding: 8px 20px;
+            font-size: 14px;
+            color: #888;
+            border-bottom: 1px solid #333;
+        }
+
+        /* Code View */
+        .code-container {
+            flex: 1;
+            padding: 30px;
+            overflow: auto;
+            position: relative;
+            line-height: 1.8;
+        }
+
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 30px;
+            width: 50px;
+            text-align: right;
+            padding-right: 15px;
+            color: #858585;
+            user-select: none;
+            font-size: 18px;
+        }
+
+        .code-content {
+            margin-left: 50px;
+            white-space: pre;
+            font-size: 20px;
+            /* Bigger code */
+        }
+
+        /* Syntax Highlighting */
+        .kwd {
+            color: var(--keyword);
+        }
+
+        .str {
+            color: var(--string);
+        }
+
+        .com {
+            color: var(--comment);
+        }
+
+        .num {
+            color: var(--number);
+        }
+
+        .fun {
+            color: var(--function);
+        }
+
+        .var {
+            color: var(--variable);
+        }
+
+        /* Interactive Values */
+        .interactive-val {
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 0 2px;
+            transition: background 0.2s;
+        }
+
+        .interactive-val:hover {
+            background: rgba(255, 255, 255, 0.1);
+            outline: 1px solid #555;
+        }
+
+        .bug-spot {
+            border-bottom: 2px wavy red;
+        }
+
+        .bug-spot.fixed {
+            border-bottom: none;
+            color: var(--string);
+            animation: flashSuccess 0.5s;
+        }
+
+        @keyframes flashSuccess {
+            0% {
+                background: var(--success-bg);
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        /* Fix Modal (Centered) */
+        .fix-modal-content {
+            background: #252526;
+            padding: 30px;
+            border: 1px solid #454545;
+            min-width: 400px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+        }
+
+        .fix-modal-content h2 {
+            margin-top: 0;
+            color: var(--accent);
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .fix-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .fix-btn {
+            background: #3c3c3c;
+            color: #d4d4d4;
+            border: 1px solid #555;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fix-btn:hover {
+            background: #007acc;
+            color: white;
+            border-color: #007acc;
+            transform: translateX(5px);
+        }
+
+        .fix-btn span {
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* Toast Feedback */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 200;
+            font-size: 16px;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 30px;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 14px;
+            justify-content: space-between;
+        }
+
+        /* Run Button */
+        .run-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .run-btn:hover {
+            background: #0062a3;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #252526;
+            padding: 50px;
+            border: 1px solid #454545;
+            max-width: 700px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal h1 {
+            color: var(--accent);
+            font-family: 'Courier New', monospace;
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        .modal p {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            font-size: 18px;
+        }
+
+        .start-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .start-btn:hover {
+            background: #45a049;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Intro Modal -->
+    <div id="intro-modal" class="modal-overlay">
+        <div class="modal">
+            <h1>> SYSTEM_INIT: MUSIC_HISTORY_DEBUGGER</h1>
+            <p>
+                Benvingut, Desenvolupador.<br>
+                El codi font de la Història de la Música està corrupte.<br><br>
+                La teva missió:<br>
+                1. Obre els arxius de cada època.<br>
+                2. Busca valors sospitosos (anacronismes).<br>
+                3. Fes clic a la variable incorrecta per arreglar-la.<br>
+                4. Si fas clic a una variable correcta, el sistema t'avisarà.
+            </p>
+            <button class="start-btn" onclick="game.start()">[ START_HACKING ]</button>
+        </div>
+    </div>
+
+    <!-- Fix Modal -->
+    <div id="fix-modal" class="modal-overlay hidden">
+        <div class="fix-modal-content">
+            <h2>> SELECT_PATCH_VERSION</h2>
+            <div id="fix-options-container" class="fix-buttons">
+                <!-- Buttons injected by JS -->
+            </div>
+            <button onclick="document.getElementById('fix-modal').classList.add('hidden')"
+                style="margin-top:20px; background:none; border:none; color:#777; cursor:pointer;">[ CANCEL_OPERATION
+                ]</button>
+        </div>
+    </div>
+
+    <!-- Audio -->
+    <audio id="bg-music" loop src="Midnight Compile.m4a"></audio>
+
+    <!-- Layout -->
+    <div class="activity-bar">
+        <div class="icon active">📄</div>
+        <div class="icon">🔍</div>
+        <div class="icon">🌿</div>
+        <div class="icon">🐞</div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-header">EXPLORER</div>
+        <div class="file-tree" id="file-tree">
+            <!-- Generated by JS -->
+        </div>
+    </div>
+
+    <div class="editor-area">
+        <div class="tabs-bar" id="tabs-bar">
+            <!-- Tabs generated by JS -->
+        </div>
+        <div class="breadcrumbs" id="breadcrumbs">src > history > ...</div>
+
+        <div class="code-container">
+            <div class="line-numbers" id="line-numbers"></div>
+            <div class="code-content" id="code-content"></div>
+            <button class="run-btn" onclick="game.runCode()">▶ RUN CODE</button>
+        </div>
+
+        <div class="status-bar">
+            <div id="status-msg">Ready</div>
+            <div style="display:flex; gap:20px; align-items:center;">
+                <div id="audio-control" style="cursor:pointer; display:flex; align-items:center; gap:5px;"
+                    onclick="game.toggleAudio()">
+                    <span>🔊</span> Music: OFF
+                </div>
+                <div>Ln 1, Col 1</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Aquest valor sembla correcte.</div>
+
+    <script>
+        const CODE_CHALLENGES = {
+            "Edat Mitjana": [
+                {
+                    file: "monestir.js",
+                    difficulty: "Fàcil",
+                    lang: "javascript",
+                    code: `const texture = "Monodia";\nconst language = "Llatí";\nconst place = "Discoteca";`,
+                    bugLine: 2,
+                    bugToken: '"Discoteca"',
+                    options: ['"Església / Monestir"', '"Discoteca"', '"Estadi"'],
+                    correct: '"Església / Monestir"'
+                },
+                {
+                    file: "guido_arezzo.py",
+                    difficulty: "Difícil",
+                    lang: "python",
+                    code: `def create_notation():\n    notes = ["Ut", "Re", "Mi", "Fa", "Sol", "La"]\n    staff_lines = 5\n    hand_guide = "Mà Guidoniana"`,
+                    bugLine: 2,
+                    bugToken: '5',
+                    options: ['4', '5', '6'],
+                    correct: '4'
+                }
+            ],
+            "Renaixement": [
+                {
+                    file: "humanisme.json",
+                    difficulty: "Fàcil",
+                    lang: "json",
+                    code: `{\n    "focus": "L'ésser humà",\n    "art": "Equilibri",\n    "texture": "Soroll Blanc"\n}`,
+                    bugLine: 3,
+                    bugToken: '"Soroll Blanc"',
+                    options: ['"Polifonia"', '"Soroll Blanc"', '"Monodia"'],
+                    correct: '"Polifonia"'
+                },
+                {
+                    file: "impremta.config",
+                    difficulty: "Difícil",
+                    lang: "ini",
+                    code: `method = Petrucci_Press\ncost = Cheap\naudience = "Només el Rei"`,
+                    bugLine: 2,
+                    bugToken: '"Només el Rei"',
+                    options: ['"Burgesia i Nobles"', '"Només el Rei"', '"Camperols"'],
+                    correct: '"Burgesia i Nobles"'
+                }
+            ],
+            "Barroc": [
+                {
+                    file: "opera.java",
+                    difficulty: "Fàcil",
+                    lang: "java",
+                    code: `public class Opera {\n    boolean drama = true;\n    String star = "Castrato";\n    String accompaniment = "Sintetitzador";\n}`,
+                    bugLine: 3,
+                    bugToken: '"Sintetitzador"',
+                    options: ['"Orquestra i Clavecí"', '"Sintetitzador"', '"Bateria"'],
+                    correct: '"Orquestra i Clavecí"'
+                },
+                {
+                    file: "concerto.js",
+                    difficulty: "Difícil",
+                    lang: "javascript",
+                    code: `let dynamics = "Crescendo Progressiu";\nlet form = "Ritornello";`,
+                    bugLine: 0,
+                    bugToken: '"Crescendo Progressiu"',
+                    options: ['"Contrast Fort/Fluix"', '"Crescendo Progressiu"', '"Pla"'],
+                    correct: '"Contrast Fort/Fluix"'
+                }
+            ],
+            "Classicisme": [
+                {
+                    file: "mozart.py",
+                    difficulty: "Fàcil",
+                    lang: "python",
+                    code: `def compose():\n    clarity = True\n    melody = "Senzilla"\n    instrument = "Guitarra Elèctrica"`,
+                    bugLine: 3,
+                    bugToken: '"Guitarra Elèctrica"',
+                    options: ['"Piano"', '"Guitarra Elèctrica"', '"Synthesizer"'],
+                    correct: '"Piano"'
+                },
+                {
+                    file: "orchestra.cpp",
+                    difficulty: "Difícil",
+                    lang: "cpp",
+                    code: `struct Orchestra {\n    bool strings = true;\n    bool winds = true;\n    bool harpsichord = true;\n};`,
+                    bugLine: 3,
+                    bugToken: 'true',
+                    options: ['false', 'true', '"Solo"'],
+                    correct: 'false'
+                }
+            ],
+            "Romanticisme": [
+                {
+                    file: "wagner.xml",
+                    difficulty: "Fàcil",
+                    lang: "xml",
+                    code: `<opera>\n    <size>Gegantina</size>\n    <duration>3 minuts</duration>\n</opera>`,
+                    bugLine: 2,
+                    bugToken: '3 minuts',
+                    options: ['4-5 hores', '3 minuts', '30 segons'],
+                    correct: '4-5 hores'
+                },
+                {
+                    file: "virtuoso.js",
+                    difficulty: "Difícil",
+                    lang: "javascript",
+                    code: `const paganini = {\n    instrument: "Violí",\n    skill: "Human",\n    legend: "Pacte amb el diable"\n};`,
+                    bugLine: 2,
+                    bugToken: '"Human"',
+                    options: ['"Sobrenatural"', '"Human"', '"Dolent"'],
+                    correct: '"Sobrenatural"'
+                }
+            ],
+            "Segle XX": [
+                {
+                    file: "atonal.m",
+                    difficulty: "Difícil",
+                    lang: "matlab",
+                    code: `tonality = 0;\nmelody = "Enganxosa";\nseries = "Dodecafònica";`,
+                    bugLine: 1,
+                    bugToken: '"Enganxosa"',
+                    options: ['"Trencada / Abstracta"', '"Enganxosa"', '"Pop"'],
+                    correct: '"Trencada / Abstracta"'
+                },
+                {
+                    file: "studio.c",
+                    difficulty: "Fàcil",
+                    lang: "c",
+                    code: `char* input = "Micròfon";\nchar* effect = "Autotune";\nchar* instrument = "Guitarra Elèctrica";`,
+                    bugLine: 1,
+                    bugToken: '"Autotune"',
+                    options: ['"Distorsió"', '"Autotune"', '"Reverb Natural"'],
+                    correct: '"Distorsió"'
+                }
+            ]
+        };
+
+        class Game {
+            constructor() {
+                this.currentFile = null;
+                this.currentData = null;
+                this.fixedBugs = new Set();
+                this.completedFiles = new Set();
+                this.isPlaying = false;
+                this.initExplorer();
+            }
+
+            start() {
+                document.getElementById('intro-modal').classList.add('hidden');
+                this.toggleAudio(); // Auto-start audio
+            }
+
+            toggleAudio() {
+                const audio = document.getElementById('bg-music');
+                const control = document.getElementById('audio-control');
+
+                if (audio.paused) {
+                    audio.play().then(() => {
+                        this.isPlaying = true;
+                        control.innerHTML = '<span>🔊</span> Music: ON';
+                        control.style.opacity = '1';
+                    }).catch(e => console.log("Audio autoplay prevented"));
+                } else {
+                    audio.pause();
+                    this.isPlaying = false;
+                    control.innerHTML = '<span>🔇</span> Music: OFF';
+                    control.style.opacity = '0.7';
+                }
+            }
+
+            initExplorer() {
+                const tree = document.getElementById('file-tree');
+                tree.innerHTML = '';
+
+                for (const [era, files] of Object.entries(CODE_CHALLENGES)) {
+                    const folder = document.createElement('div');
+                    folder.className = 'tree-item folder';
+                    folder.innerHTML = `<span>📁</span> ${era}`;
+                    tree.appendChild(folder);
+
+                    files.forEach(fileData => {
+                        const file = document.createElement('div');
+                        file.className = 'tree-item file';
+                        if (this.completedFiles.has(fileData.file)) { // Check completedFiles
+                            file.classList.add('completed');
+                            file.innerHTML = `<span class="file-icon">✔</span> ${fileData.file} <span style="opacity:0.6; font-size:0.8em;">(Solucionat)</span>`;
+                        } else {
+                            file.innerHTML = `<span class="file-icon">📄</span> ${fileData.file} <span style="opacity:0.6; font-size:0.8em;">(${fileData.difficulty})</span>`;
+                        }
+
+                        // Active check
+                        if (this.currentFile === fileData.file) file.classList.add('active');
+
+                        file.onclick = () => this.openFile(fileData, file);
+                        tree.appendChild(file);
+                    });
+                }
+            }
+
+            openFile(fileData, fileElement) {
+                this.currentData = fileData;
+                this.currentFile = fileData.file;
+
+                // Update Sidebar Active State
+                document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+                fileElement.classList.add('active');
+
+                // Update Tabs
+                const tabs = document.getElementById('tabs-bar');
+                tabs.innerHTML = `
+                    <div class="tab active">
+                        <span class="file-icon">📄</span> ${fileData.file}
+                        <span class="tab-close">✕</span>
+                    </div>
+                `;
+
+                // Update Breadcrumbs
+                document.getElementById('breadcrumbs').textContent = `src > history > ${fileData.file}`;
+
+                // Render Code
+                this.renderCode(fileData);
+            }
+
+            renderCode(fileData) {
+                const container = document.getElementById('code-content');
+                const lineNums = document.getElementById('line-numbers');
+                container.innerHTML = '';
+                lineNums.innerHTML = '';
+
+                let code = fileData.code;
+
+                const lines = code.split('\n');
+
+                lines.forEach((line, index) => {
+                    // Line Number
+                    const num = document.createElement('div');
+                    num.textContent = index + 1;
+                    lineNums.appendChild(num);
+
+                    // Code Line (Swap content if fixed)
+                    let displayLine = line;
+                    const isFixed = this.fixedBugs.has(fileData.file) && index === fileData.bugLine;
+
+                    if (isFixed) {
+                        // Replace the bug token with the correct one for display
+                        // Note: simple replacement
+                        displayLine = line.replace(fileData.bugToken, fileData.correct);
+                    }
+
+                    const lineDiv = document.createElement('div');
+
+                    // Parse line to find interactive values
+                    // If fixed, we want to highlight the CORRECT value as 'fixed' styling
+                    // We need a slightly different regex approach or just basic splitting
+
+                    const tokenRegex = /(".*?"|'.*?'|\b\d+\b|\btrue\b|\bfalse\b)/g;
+                    const parts = displayLine.split(tokenRegex);
+
+                    parts.forEach(part => {
+                        if (part.match(tokenRegex)) {
+                            // This is a value
+                            const span = document.createElement('span');
+                            span.className = 'interactive-val';
+                            span.textContent = part;
+
+                            // LOGIC:
+                            // If NOT fixed yet: bug_spot if matches bugToken
+                            // If FIXED: fixed_spot if matches correct token
+
+                            const isBugSpot = (!this.fixedBugs.has(fileData.file) && index === fileData.bugLine && part === fileData.bugToken);
+                            const isFixedSpot = (this.fixedBugs.has(fileData.file) && index === fileData.bugLine && part === fileData.correct);
+
+                            if (isBugSpot) {
+                                span.classList.add('bug-spot');
+                                span.onclick = (e) => this.showFixModal(fileData);
+                            } else if (isFixedSpot) {
+                                span.classList.add('fixed');
+                                // No click action
+                            } else {
+                                // Normal value
+                                if (!isFixedSpot) span.onclick = (e) => this.showToast("Aquest valor sembla correcte.");
+                            }
+
+                            // Syntax color
+                            if (part.startsWith('"') || part.startsWith("'")) span.classList.add('str');
+                            else if (part.match(/\d+/)) span.classList.add('num');
+                            else span.classList.add('kwd');
+
+                            lineDiv.appendChild(span);
+                        } else {
+                            // Non-value text
+                            const span = document.createElement('span');
+                            span.innerHTML = this.highlightSyntax(part);
+                            lineDiv.appendChild(span);
+                        }
+                    });
+
+                    container.appendChild(lineDiv);
+                });
+            }
+
+            highlightSyntax(text) {
+                // Very basic highlighter
+                let html = text
+                    .replace(/\b(const|let|var|def|class|public|struct|int|bool|string|char)\b/g, '<span class="kwd">$1</span>') // Keywords
+                    .replace(/(\/\/.*$|#.*$|;.*$|%.*$|< !--.*- ->)/g, '<span class="com">$1</span>'); // Comments
+                return html;
+            }
+
+            showFixModal(fileData) {
+                const modal = document.getElementById('fix-modal');
+                const container = document.getElementById('fix-options-container');
+                container.innerHTML = '';
+
+                fileData.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'fix-btn';
+                    btn.innerHTML = `<span>>_</span> ${opt}`;
+                    btn.onclick = () => {
+                        this.applyFix(opt, fileData);
+                        modal.classList.add('hidden');
+                    };
+                    container.appendChild(btn);
+                });
+
+                modal.classList.remove('hidden');
+            }
+
+            applyFix(selected, fileData) {
+                if (selected === fileData.correct) {
+                    this.fixedBugs.add(fileData.file);
+                    this.renderCode(fileData);
+                    document.getElementById('status-msg').textContent = "Bug Fixed! Ready to Run.";
+                    document.getElementById('status-msg').style.color = "#4caf50";
+                } else {
+                    this.showToast("Error: Aquest valor no és històricament correcte!");
+                }
+            }
+
+            showToast(msg) {
+                const toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+
+            runCode() {
+                if (!this.currentFile) return;
+
+                if (this.fixedBugs.has(this.currentFile)) {
+                    this.completedFiles.add(this.currentFile);
+                    this.initExplorer();
+                    alert(`COMPILACIÓ EXITOSA!\nArxiu ${this.currentFile} restaurat correctament.`);
+                } else {
+                    alert("ERROR DE COMPILACIÓ: Encara hi ha bugs al codi!");
+                }
+            }
+        }
+
+        const game = new Game();
+
+        // Remove click outside listener as we use modal now
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") document.getElementById('fix-modal').classList.add('hidden');
+        });
+
+    </script>
+</body>
+
+</html>
