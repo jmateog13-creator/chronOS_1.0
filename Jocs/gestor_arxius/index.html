@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Gestor d'Arxius Històrics</title>
+    <style>
+        :root {
+            --bg-color: #008080;
+            /* Windows 95 teal */
+            --window-bg: #c0c0c0;
+            --window-text: #000;
+            --highlight: #000080;
+            --highlight-text: #fff;
+            --border-light: #fff;
+            --border-dark: #404040;
+            --font-ui: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: var(--font-ui);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Window Frame */
+        .window {
+            width: 95%;
+            height: 90%;
+            background: var(--window-bg);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #000080, #1084d0);
+            color: white;
+            padding: 5px 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-controls button {
+            background: var(--window-bg);
+            border: 1px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            width: 20px;
+            height: 20px;
+            font-weight: bold;
+            line-height: 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .menu-bar {
+            padding: 5px 10px;
+            border-bottom: 1px solid var(--border-dark);
+            display: flex;
+            gap: 15px;
+        }
+
+        .menu-item {
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Content */
+        .content-area {
+            flex: 1;
+            display: flex;
+            padding: 5px;
+            gap: 5px;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: #fff;
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+        }
+
+        .folder-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .folder-item:hover {
+            background-color: #eee;
+        }
+
+        .folder-item.active {
+            background-color: var(--highlight);
+            color: var(--highlight-text);
+        }
+
+        .folder-icon {
+            width: 20px;
+            height: 20px;
+            background: #ffd700;
+            /* Gold folder */
+            border: 1px solid #b8860b;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .folder-icon::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 0;
+            width: 8px;
+            height: 4px;
+            background: #ffd700;
+            border: 1px solid #b8860b;
+            border-bottom: none;
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* File Grid */
+        .file-grid {
+            flex: 1;
+            background: #fff;
+            border: 2px solid;
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-auto-rows: 100px;
+            gap: 10px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .file-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-align: center;
+            gap: 5px;
+        }
+
+        .file-item:hover {
+            background-color: #e0e0e0;
+        }
+
+        .file-item.selected {
+            background-color: var(--highlight);
+            color: var(--highlight-text);
+            border: 1px dotted #fff;
+        }
+
+        .file-icon {
+            font-size: 2.5rem;
+        }
+
+        .file-name {
+            font-size: 0.85rem;
+            word-break: break-word;
+            max-width: 100%;
+        }
+
+        /* Trash Bin */
+        .trash-bin {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .trash-icon {
+            font-size: 3rem;
+        }
+
+        .trash-bin.drag-over {
+            transform: scale(1.1);
+        }
+
+        .trash-bin.drag-over .trash-icon {
+            filter: drop-shadow(0 0 5px red);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            border-top: 1px solid var(--border-dark);
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        /* Feedback Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-window {
+            background: var(--window-bg);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            padding: 2px;
+            width: 300px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title-bar {
+            background: #000080;
+            color: white;
+            padding: 3px 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .modal-icon {
+            font-size: 2.5rem;
+        }
+
+        .modal-btn {
+            padding: 5px 20px;
+            background: var(--window-bg);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .modal-btn:active {
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            transform: translate(1px, 1px);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Context Menu */
+        #context-menu {
+            position: absolute;
+            background: var(--window-bg);
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            padding: 2px;
+            min-width: 150px;
+            z-index: 100;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .ctx-item {
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .ctx-item:hover {
+            background: var(--highlight);
+            color: var(--highlight-text);
+        }
+
+        .ctx-separator {
+            border-top: 1px solid #888;
+            border-bottom: 1px solid #fff;
+            margin: 2px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="window">
+        <div class="title-bar">
+            <span>Explorador d'Arxius - C:/Història_Música</span>
+            <div class="title-controls">
+                <button>_</button>
+                <button>□</button>
+                <button>X</button>
+            </div>
+        </div>
+        <div class="menu-bar">
+            <span class="menu-item">Arxiu</span>
+            <span class="menu-item">Edició</span>
+            <span class="menu-item">Veure</span>
+            <span class="menu-item">Ajuda</span>
+        </div>
+        <div class="content-area">
+            <div class="sidebar" id="folder-list">
+                <!-- Folders generated by JS -->
+            </div>
+            <div class="file-grid" id="file-grid">
+                <!-- Files generated by JS -->
+                <div class="trash-bin" id="trash-bin">
+                    <div class="trash-icon">🗑️</div>
+                    <span>Paperera</span>
+                </div>
+            </div>
+        </div>
+        <div class="status-bar">
+            <span id="status-msg">Selecciona una carpeta...</span>
+            <span id="score-display">Punts: 0 | Vida: 100%</span>
+        </div>
+    </div>
+
+    <div id="context-menu" class="hidden">
+        <div class="ctx-item" onclick="game.deleteSelected()">Eliminar</div>
+        <div class="ctx-separator"></div>
+        <div class="ctx-item" onclick="game.inspectSelected()">Propietats</div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-window">
+            <div class="modal-title-bar">
+                <span id="modal-title">Missatge del Sistema</span>
+                <button class="title-controls" onclick="game.closeModal()">X</button>
+            </div>
+            <div class="modal-content">
+                <div class="modal-icon" id="modal-icon">⚠️</div>
+                <p id="modal-msg">Text del missatge</p>
+                <button class="modal-btn" onclick="game.closeModal()">Acceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const ERAS = [
+            {
+                id: 'middle_ages',
+                name: 'Edat Mitjana',
+                correct: ['Cant Gregorià.wav', 'Monjos.jpg', 'Neumes.png', 'Llaüt.m4a', 'Cant Pla.wav', 'Pergamí.doc', 'Guido Arezzo.txt', 'Trobador.jpg', 'Viola Roda.png', 'Saltiri.jpg', 'Arpa Gòtica.png', 'Missa.wav', 'Organum.m4a', 'Còdex.pdf', 'Flauta Bec.wav'],
+                virus: ['Piano.exe', 'Violí.m4a', 'Òpera.avi', 'Simfonia.wav', 'Guitarra Elèctrica.png']
+            },
+            {
+                id: 'renaissance',
+                name: 'Renaixement',
+                correct: ['Polifonia.wav', 'Madrigal.m4a', 'Viola da Gamba.png', 'Josquin.txt', 'Palestrina.wav', 'Llaüt Renaixentista.jpg', 'Impremta.exe', 'Motet.wav', 'Consort.m4a', 'Dansa Pavana.avi', 'Galliard.wav', 'Sacabutx.png', 'Cornetto.jpg', 'Virginal.wav', 'Tomás Luis Victoria.doc'],
+                virus: ['Orquestra Simfònica.wav', 'Tuba.png', 'Jazz.m4a', 'Wagner.exe', 'Sintetitzador.vst']
+            },
+            {
+                id: 'baroque',
+                name: 'Barroc',
+                correct: ['Bach.m4a', 'Clavecí.wav', 'Òpera.avi', 'Vivaldi.m4a', 'Händel.doc', 'Baix Continu.txt', 'Fuga.wav', 'Oratori.m4a', 'Castrato.jpg', 'Violí Barroc.png', 'Concerto Grosso.wav', 'Suite.m4a', 'Tocata.wav', 'Ornamentació.txt', 'Teorba.jpg'],
+                virus: ['Clarinet.wav', 'Jazz.m4a', 'Rock.avi', 'Piano Cua.png', 'Debussy.m4a']
+            },
+            {
+                id: 'classicism',
+                name: 'Classicisme',
+                correct: ['Mozart.m4a', 'Haydn.doc', 'Sonata.wav', 'Clarinet.png', 'Simfonia.m4a', 'Quartet Corda.wav', 'Beethoven (Jove).jpg', 'Equilibri.txt', 'Pianoforte.wav', 'Òpera Bufa.avi', 'Rondo.m4a', 'Minuet.wav', 'Orquestra Clàssica.jpg', 'Concert Piano.wav', 'Forma Sonata.doc'],
+                virus: ['Sintetitzador.exe', 'Baix Continu.txt', 'Poema Simfònic.wav', 'Techno.m4a', 'Llaüt.jpg']
+            },
+            {
+                id: 'romanticism',
+                name: 'Romanticisme',
+                correct: ['Wagner.exe', 'Piano Virtuós.wav', 'Chopin.m4a', 'Gran Orquestra.jpg', 'Lied.wav', 'Schubert.doc', 'Verdi.avi', 'Poema Simfònic.m4a', 'Nacionalisme.txt', 'Tuba.png', 'Arpa.jpg', 'Vals.wav', 'Brahms.m4a', 'Liszt.exe', 'Puccini.avi'],
+                virus: ['Clavecí.wav', 'Techno.m4a', 'Cant Gregorià.wav', 'Viola da Gamba.png', 'Rap.m4a']
+            },
+            {
+                id: '20th_century',
+                name: 'Segle XX',
+                correct: ['Jazz.m4a', 'Atonalisme.txt', 'Stravinsky.wav', 'Electrònica.vst', 'Dodecafonisme.doc', 'Minimalisme.m4a', 'Rock.avi', 'Beatles.jpg', 'Sintetitzador.png', 'Cinema.avi', 'Gershwin.m4a', 'John Cage.exe', 'Musica Concreta.wav', 'Theremin.wav', 'Stockhausen.m4a'],
+                virus: ['Castrato.jpg', 'Viola da Gamba.png', 'Mozart.m4a', 'Llaüt.jpg', 'Clavecí.wav']
+            }
+        ];
+
+        const ICONS = {
+            'mp3': '🎵', 'wav': '🔊', 'jpg': '🖼️', 'png': '🖼️', 'doc': '📄', 'txt': '📝', 'exe': '⚙️', 'avi': '🎬', 'pdf': '📕', 'vst': '🎹'
+        };
+
+        // --- GAME ENGINE ---
+        class Game {
+            constructor() {
+                this.currentEra = null;
+                this.files = [];
+                this.score = 0;
+                this.life = 100;
+                this.selectedFileId = null;
+                this.completedEras = new Set();
+
+                this.initSidebar();
+                this.setupDragDrop();
+                this.setupContextMenu();
+            }
+
+            initSidebar() {
+                const list = document.getElementById('folder-list');
+                ERAS.forEach(era => {
+                    const el = document.createElement('div');
+                    el.className = 'folder-item';
+                    el.innerHTML = `<div class="folder-icon"></div><span>${era.name}</span>`;
+                    el.onclick = () => this.loadEra(era);
+                    list.appendChild(el);
+                });
+            }
+
+            loadEra(era) {
+                if (this.completedEras.has(era.id)) {
+                    this.showModal('Info', 'Aquesta carpeta ja està neta!', '✅');
+                    return;
+                }
+
+                this.currentEra = era;
+
+                // Highlight sidebar
+                document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+
+                // Generate files
+                this.files = [];
+                era.correct.forEach(name => this.files.push({ name, type: 'correct', id: Math.random() }));
+                era.virus.forEach(name => this.files.push({ name, type: 'virus', id: Math.random() }));
+
+                // Shuffle
+                this.files.sort(() => Math.random() - 0.5);
+
+                this.renderFiles();
+                this.updateStatus(`Carpeta oberta: ${era.name}. Troba els 5 intrusos!`);
+            }
+
+            renderFiles() {
+                const grid = document.getElementById('file-grid');
+                // Keep trash bin
+                const trash = document.getElementById('trash-bin');
+                grid.innerHTML = '';
+                grid.appendChild(trash);
+
+                this.files.forEach(file => {
+                    const ext = file.name.split('.').pop();
+                    const icon = ICONS[ext] || '📄';
+
+                    const el = document.createElement('div');
+                    el.className = 'file-item';
+                    el.draggable = true;
+                    el.dataset.id = file.id;
+                    el.innerHTML = `<div class="file-icon">${icon}</div><div class="file-name">${file.name}</div>`;
+
+                    el.onclick = (e) => {
+                        e.stopPropagation();
+                        this.selectFile(el, file.id);
+                    };
+
+                    el.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        this.selectFile(el, file.id);
+                        this.showContextMenu(e.clientX, e.clientY);
+                    };
+
+                    el.ondragstart = (e) => {
+                        e.dataTransfer.setData('text/plain', file.id);
+                        el.classList.add('dragging');
+                    };
+
+                    el.ondragend = () => el.classList.remove('dragging');
+
+                    grid.appendChild(el);
+                });
+            }
+
+            selectFile(el, id) {
+                document.querySelectorAll('.file-item').forEach(i => i.classList.remove('selected'));
+                el.classList.add('selected');
+                this.selectedFileId = id;
+                document.getElementById('context-menu').classList.add('hidden');
+            }
+
+            setupDragDrop() {
+                const trash = document.getElementById('trash-bin');
+
+                trash.ondragover = (e) => {
+                    e.preventDefault();
+                    trash.classList.add('drag-over');
+                };
+
+                trash.ondragleave = () => trash.classList.remove('drag-over');
+
+                trash.ondrop = (e) => {
+                    e.preventDefault();
+                    trash.classList.remove('drag-over');
+                    const id = parseFloat(e.dataTransfer.getData('text/plain'));
+                    this.deleteFile(id);
+                };
+
+                // Click outside to deselect
+                document.getElementById('file-grid').onclick = (e) => {
+                    if (e.target.id === 'file-grid') {
+                        document.querySelectorAll('.file-item').forEach(i => i.classList.remove('selected'));
+                        this.selectedFileId = null;
+                        document.getElementById('context-menu').classList.add('hidden');
+                    }
+                };
+            }
+
+            setupContextMenu() {
+                document.onclick = () => document.getElementById('context-menu').classList.add('hidden');
+            }
+
+            showContextMenu(x, y) {
+                const menu = document.getElementById('context-menu');
+                menu.style.left = `${x}px`;
+                menu.style.top = `${y}px`;
+                menu.classList.remove('hidden');
+            }
+
+            deleteSelected() {
+                if (this.selectedFileId) {
+                    this.deleteFile(this.selectedFileId);
+                    document.getElementById('context-menu').classList.add('hidden');
+                }
+            }
+
+            inspectSelected() {
+                if (this.selectedFileId) {
+                    const file = this.files.find(f => f.id === this.selectedFileId);
+                    const type = file.type === 'virus' ? 'Fitxer Sospitós' : 'Fitxer de Sistema';
+                    this.showModal('Propietats', `Nom: ${file.name}<br>Tipus: ${type}<br>Mida: ${Math.floor(Math.random() * 1000)} KB`, 'ℹ️');
+                    document.getElementById('context-menu').classList.add('hidden');
+                }
+            }
+
+            deleteFile(id) {
+                const fileIndex = this.files.findIndex(f => f.id === id);
+                if (fileIndex === -1) return;
+
+                const file = this.files[fileIndex];
+
+                if (file.type === 'virus') {
+                    // Correct deletion
+                    this.score += 100;
+                    this.files.splice(fileIndex, 1);
+                    this.renderFiles();
+                    this.updateStatus(`Virus eliminat: ${file.name}`);
+                    this.checkWin();
+                } else {
+                    // Incorrect deletion
+                    this.life -= 20;
+                    this.updateStatus(`ERROR! Has esborrat un arxiu històric: ${file.name}`);
+                    this.showModal('Error Crític', `Has eliminat dades històriques importants!<br>${file.name} pertany a aquesta època.`, '❌');
+                    this.checkGameOver();
+                }
+                this.updateUI();
+            }
+
+            checkWin() {
+                const remainingViruses = this.files.filter(f => f.type === 'virus').length;
+                if (remainingViruses === 0) {
+                    this.completedEras.add(this.currentEra.id);
+                    this.showModal('Carpeta Neta', `Has eliminat tots els virus de l'època ${this.currentEra.name}!<br>Bona feina!`, '🎉');
+                    this.updateStatus('Carpeta completada.');
+                }
+            }
+
+            checkGameOver() {
+                if (this.life <= 0) {
+                    this.showModal('SYSTEM FAILURE', 'El sistema ha col·lapsat per pèrdua de dades històriques.<br>Reiniciant...', '💀');
+                    setTimeout(() => location.reload(), 3000);
+                }
+            }
+
+            updateStatus(msg) {
+                document.getElementById('status-msg').textContent = msg;
+            }
+
+            updateUI() {
+                document.getElementById('score-display').textContent = `Punts: ${this.score} | Vida: ${this.life}%`;
+            }
+
+            showModal(title, msg, icon) {
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-msg').innerHTML = msg;
+                document.getElementById('modal-icon').textContent = icon;
+                document.getElementById('modal-overlay').classList.remove('hidden');
+            }
+
+            closeModal() {
+                document.getElementById('modal-overlay').classList.add('hidden');
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

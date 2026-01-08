@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Frogger: Creuant la Història</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background-color: #111;
+            /* USER REQUESTED BACKGROUND */
+            background-image: url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Overlay to darken background slightly */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            /* Tint */
+            z-index: -1;
+        }
+
+        /* Arcade Cabinet Bezel */
+        #arcade-cabinet {
+            background: #222;
+            padding: 20px 20px 40px 20px;
+            border-radius: 20px;
+            box-shadow:
+                0 0 0 10px #444,
+                0 0 50px rgba(0, 0, 0, 0.8),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 4px solid #f72585;
+            position: relative;
+        }
+
+        #game-container {
+            position: relative;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #000;
+            border: 2px solid #333;
+        }
+
+        /* Custom Modal */
+        #game-modal {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        canvas {
+            background: #222;
+            display: block;
+        }
+
+        /* UI Overlay */
+        #ui {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(2px);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            pointer-events: none;
+            z-index: 20;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Start Screen */
+        #layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+
+        h1 {
+            color: #4cc9f0;
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 5px;
+            text-shadow: 0 5px 0 #3a0ca3;
+            font-family: 'Courier New', monospace;
+            letter-spacing: -2px;
+        }
+
+        p {
+            max-width: 600px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #bde0fe;
+        }
+
+        .controls-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #4cc9f0;
+        }
+
+        button {
+            padding: 15px 50px;
+            background: #f72585;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #b5179e;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        button:hover {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #b5179e;
+            background: #ff4cc2;
+        }
+
+        button:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 #b5179e;
+        }
+
+        #level-indicator {
+            color: #f72585;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        #lives-display {
+            color: #4cc9f0;
+            font-size: 1em;
+        }
+
+        /* Audio Control */
+        #audio-control {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        input[type=range] {
+            accent-color: #f72585;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="position:relative;">
+        <div id="audio-control">
+            <span style="font-size: 20px;">🔊</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" style="width: 100px;">
+        </div>
+
+        <div id="arcade-cabinet">
+            <div style="text-align:center; margin-bottom:10px; color:#bbb; font-size:0.8rem; letter-spacing:3px;">••
+                CHRONOS ARCADE ••</div>
+
+            <div id="game-container">
+                <canvas id="gameCanvas" width="720" height="720"></canvas>
+
+                <div id="ui">
+                    <div id="level-indicator">ÈPOCA: PREPARANT...</div>
+                    <div id="lives-display">VIDES: <span id="lives">3</span></div>
+                </div>
+
+                <!-- CUSTOM GAME OVER / VICTORY MODAL -->
+                <div id="game-modal">
+                    <h2 id="modal-title"
+                        style="color:#f72585; font-size:3rem; margin-bottom:10px; text-shadow:0 0 10px #f72585; text-align: center;">
+                        GAME OVER</h2>
+                    <p id="modal-msg"
+                        style="color:white; font-size:1.5rem; margin-bottom:30px; text-align: center; max-width: 80%;">
+                        Has perdut totes les vides!</p>
+                    <button onclick="location.reload()">NOVA PARTIDA</button>
+                </div>
+
+                <div id="layer">
+                    <h1>FROGGER HISTÒRIC</h1>
+
+                    <p>Ajuda al compositor a recuperar la seva inspiració!</p>
+
+                    <div class="controls-box">
+                        <h3 style="color:#f72585; margin:0 0 5px 0;">CONTROLS</h3>
+                        <div style="font-size: 2.5rem;">⬆️ ⬇️ ⬅️ ➡️</div>
+                    </div>
+
+                    <p style="font-size: 0.9rem; opacity: 0.8; line-height: 1.5;">
+                        1. Esquiva els objectes moderns.<br>
+                        2. <b>Salta sobre troncs de la teva època.</b><br>
+                        (Ex: A l'Edat Mitjana cerca "Gregorià" o "Monjos")
+                    </p>
+
+                    <button onclick="startGame()">INSERIR CRÈDIT (JUGAR)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Pixel%20Philharmonic.m4a" type="audio/mpeg">
+    </audio>
+
+    <div style="display:none;">
+        <img id="img-player" src="img/personatge.png">
+        <img id="img-log" src="img/tronco.png">
+        <img id="img-water" src="img/fonsaigua.jpg">
+        <img id="obs-taxi" src="img/taxi.png">
+        <img id="obs-guitar" src="img/guitarra.png">
+        <img id="obs-synth" src="img/sinte.png">
+        <img id="obs-boom" src="img/boombap.png">
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Modal Elements
+        const gameModal = document.getElementById('game-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMsg = document.getElementById('modal-msg');
+
+        function showModal(title, msg) {
+            modalTitle.textContent = title;
+            modalMsg.textContent = msg;
+            gameModal.style.display = 'flex';
+        }
+
+        // Images
+        const imgPlayer = document.getElementById('img-player');
+        const imgLog = document.getElementById('img-log');
+        const imgWater = document.getElementById('img-water');
+        const obstaclesImgs = [
+            document.getElementById('obs-taxi'),
+            document.getElementById('obs-guitar'),
+            document.getElementById('obs-synth'),
+            document.getElementById('obs-boom')
+        ];
+
+        // Audio
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        bgMusic.volume = 0.5;
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+            if (bgMusic.paused && bgMusic.volume > 0) bgMusic.play();
+        });
+
+        // GAME DATA
+        const ORIGINAL_ERAS = [
+            { name: "EDAT MITJANA", valid: ["Cant Gregorià", "Neumes", "Monjos", "A capella", "Sacra"], invalid: ["Vivaldi", "Piano", "Òpera", "Jazz"] },
+            { name: "RENAIXEMENT", valid: ["Madrigal", "Polifonia", "Llaüt", "Impremta", "Humanisme"], invalid: ["Simfonia", "Baix Elèctric", "Tecno"] },
+            { name: "BARROC", valid: ["Fuga", "Suite", "Clavecí", "Concert", "Ornament"], invalid: ["Lied", "Saxofon", "Atonalisme"] },
+            { name: "CLASSICISME", valid: ["Sonata", "Simfonia", "Quartet", "Clarinet", "Equilibri"], invalid: ["Sinte", "Rap", "Gregorià"] },
+            { name: "ROMANTICISME", valid: ["Lied", "Nocturn", "Poema Simfònic", "Sentiment"], invalid: ["Fuga", "Neumes", "House"] },
+            { name: "SEGLE XX", valid: ["Atonal", "Jazz", "Minimalisme", "Electrònica", "Dissonància"], invalid: ["Sonata", "Suite", "Madrigal"] }
+        ];
+
+        let gameEras = [];
+
+        // CONFIG
+        const GRID = 60;
+        const ROWS = 12;
+        const COLS = 12;
+
+        // State
+        let currentLevel = 0;
+        let lives = 3;
+        let gameState = 'START';
+        let player = { x: 6 * GRID, y: 11 * GRID, w: 40, h: 48 };
+
+        // Objects
+        let cars = [];
+        let logs = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initLevel(idx) {
+            if (idx >= gameEras.length) {
+                showModal("FELICITATS!", "Has completat tota la història musical!");
+                return;
+            }
+            currentLevel = idx;
+            const era = gameEras[idx];
+
+            document.getElementById('level-indicator').textContent = `${era.name} (Nivell ${idx + 1}/6)`;
+            document.getElementById('lives').textContent = lives;
+
+            resetPlayer();
+
+            cars = [];
+            logs = [];
+
+            // River Rows (2-6) - EASIER
+            for (let r = 2; r <= 6; r++) {
+                let speed = (Math.random() * 1.5 + 0.8) * (r % 2 === 0 ? 1 : -1);
+                speed *= (1 + idx * 0.1);
+
+                let count = 3 + Math.floor(Math.random() * 2);
+                let laneWidth = canvas.width;
+                let gap = laneWidth / count;
+
+                for (let c = 0; c < count; c++) {
+                    let isValid = Math.random() > 0.2;
+                    let text = isValid ?
+                        era.valid[Math.floor(Math.random() * era.valid.length)] :
+                        era.invalid[Math.floor(Math.random() * era.invalid.length)];
+
+                    let w = Math.max(130, text.length * 15 + 40);
+                    let startX = (c * gap) + Math.random() * 50;
+
+                    logs.push({
+                        x: startX,
+                        y: r * GRID + 5,
+                        w: w,
+                        h: GRID - 10,
+                        speed: speed,
+                        text: text,
+                        isValid: isValid
+                    });
+                }
+            }
+
+            // Road Rows (8-10) - EASIER
+            for (let r = 8; r <= 10; r++) {
+                let speed = (Math.random() * 2 + 1.5) * (r % 2 === 0 ? -1 : 1);
+                speed *= (1 + idx * 0.1);
+
+                let count = 2;
+                let gap = canvas.width / count;
+
+                for (let c = 0; c < count; c++) {
+                    let obsImg = obstaclesImgs[Math.floor(Math.random() * obstaclesImgs.length)];
+
+                    cars.push({
+                        x: c * gap + Math.random() * 50,
+                        y: r * GRID + 5,
+                        w: GRID * 1.5,
+                        h: GRID - 10,
+                        speed: speed,
+                        img: obsImg
+                    });
+                }
+            }
+
+            gameState = 'PLAY';
+            animate();
+        }
+
+        function resetPlayer() {
+            player.x = 6 * GRID + 10;
+            player.y = 11 * GRID + 5;
+        }
+
+        document.addEventListener('keydown', e => {
+            if (gameState !== 'PLAY') return;
+
+            if (bgMusic.paused && parseFloat(volSlider.value) > 0) bgMusic.play();
+
+            const move = GRID;
+            if (e.key === 'ArrowUp') player.y -= move;
+            if (e.key === 'ArrowDown') player.y += move;
+            if (e.key === 'ArrowLeft') player.x -= move;
+            if (e.key === 'ArrowRight') player.x += move;
+        });
+
+        function update() {
+            if (gameState !== 'PLAY') return;
+
+            [...cars, ...logs].forEach(obj => {
+                obj.x += obj.speed;
+                if (obj.speed > 0 && obj.x > canvas.width) {
+                    obj.x = -obj.w;
+                }
+                if (obj.speed < 0 && obj.x + obj.w < 0) {
+                    obj.x = canvas.width;
+                }
+            });
+
+            // Bounds
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.w) player.x = canvas.width - player.w;
+            if (player.y > canvas.height - player.h) player.y = canvas.height - player.h;
+
+            let centerY = player.y + player.h / 2;
+            let r = Math.floor(centerY / GRID);
+
+            // WIN
+            if (r === 0 || r === 1) {
+                gameState = 'LEVEL_END';
+                setTimeout(() => initLevel(currentLevel + 1), 1000);
+                return;
+            }
+
+            // ROAD (8-10)
+            if (r >= 8 && r <= 10) {
+                let hit = cars.some(c => rectIntersect(player, c));
+                if (hit) doDeath("ATROPELLAT!");
+            }
+
+            // RIVER (2-6)
+            if (r >= 2 && r <= 6) {
+                let onLog = logs.find(l => rectIntersect(player, l));
+                if (!onLog) {
+                    doDeath("A L'AIGUA!");
+                } else {
+                    player.x += onLog.speed;
+                    if (!onLog.isValid) {
+                        doDeath("ERROR HISTÒRIC!");
+                    }
+                }
+            }
+        }
+
+        function doDeath(reason) {
+            gameState = 'DEAD';
+            lives--;
+            document.getElementById('lives').textContent = lives;
+
+            draw();
+
+            // Death overlay
+            ctx.fillStyle = "rgba(0,0,0,0.6)";
+            if (!ctx.roundRect) ctx.roundRect = function (x, y, w, h, r) { ctx.rect(x, y, w, h); };
+            ctx.roundRect(50, canvas.height / 2 - 60, canvas.width - 100, 120, 20);
+            ctx.fill();
+
+            ctx.fillStyle = "#ff4444";
+            ctx.font = "bold 35px 'Fredoka'";
+            ctx.textAlign = "center";
+            ctx.fillText(reason, canvas.width / 2, canvas.height / 2 + 15);
+
+            if (lives <= 0) {
+                setTimeout(() => {
+                    showModal("GAME OVER", "T'has quedat sense vides.");
+                }, 1000);
+            } else {
+                setTimeout(() => {
+                    resetPlayer();
+                    gameState = 'PLAY';
+                }, 2000);
+            }
+        }
+
+        function rectIntersect(p, o) {
+            const padding = 12;
+            return p.x + padding < o.x + o.w &&
+                p.x + p.w - padding > o.x &&
+                p.y + padding < o.y + o.h &&
+                p.y + p.h - padding > o.y;
+        }
+
+        function draw() {
+            // Clear
+            ctx.fillStyle = '#2d3436';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Water
+            if (imgWater.complete) {
+                ctx.drawImage(imgWater, 0, 2 * GRID, canvas.width, 5 * GRID);
+            } else {
+                ctx.fillStyle = '#0984e3';
+                ctx.fillRect(0, 2 * GRID, canvas.width, 5 * GRID);
+            }
+
+            // Median / Start / End
+            ctx.fillStyle = '#636e72';
+            ctx.fillRect(0, 7 * GRID, canvas.width, GRID);
+            ctx.fillRect(0, 11 * GRID, canvas.width, GRID);
+
+            // Goal Area
+            ctx.fillStyle = '#ffeaa7';
+            ctx.fillRect(0, 0, canvas.width, GRID);
+            ctx.fillStyle = '#2d3436';
+            ctx.textAlign = "center";
+            ctx.font = "bold 30px 'Fredoka'";
+            ctx.fillText("DESTÍ", canvas.width / 2, 42);
+
+            // Logs
+            ctx.textAlign = "center";
+            logs.forEach(l => {
+                ctx.drawImage(imgLog, l.x, l.y, l.w, l.h);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 4;
+                ctx.fillText(l.text, l.x + l.w / 2, l.y + 35);
+                ctx.shadowBlur = 0;
+            });
+
+            // Cars
+            cars.forEach(c => {
+                ctx.drawImage(c.img, c.x, c.y, c.w, c.h);
+            });
+
+            // Player
+            ctx.drawImage(imgPlayer, player.x, player.y, player.w, player.h);
+        }
+
+        function animate() {
+            if (gameState === 'PLAY' || gameState === 'DEAD') {
+                update();
+                draw();
+                requestAnimationFrame(animate);
+            }
+        }
+
+        function startGame() {
+            document.getElementById('layer').style.display = 'none';
+            if (parseFloat(volSlider.value) > 0) {
+                bgMusic.play().catch(() => { });
+            }
+            gameEras = shuffleArray([...ORIGINAL_ERAS]);
+            initLevel(0);
+        }
+    </script>
+</body>
+
+</html>

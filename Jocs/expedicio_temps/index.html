@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Expedició del Temps</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Roboto:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+
+        :root {
+            --wood-dark: #3e2723;
+            --wood-light: #8d6e63;
+            --canvas: #f5f5dc;
+            --passport-blue: #1a237e;
+            --stamp-bg: #fffbf0;
+            --primary-color: #0288d1;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--wood-dark);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), var(--wood-light);
+            border: 10px solid #2d1e18;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Intro Screen */
+        #intro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            text-align: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        #intro-screen h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 3rem;
+            color: var(--wood-dark);
+            margin-bottom: 20px;
+        }
+
+        #intro-text {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.2rem;
+            color: #3e2723;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            background: #fffbf0;
+            /* Stamp bg */
+            padding: 20px;
+            border: 2px dashed #8d6e63;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+            transform: rotate(-1deg);
+        }
+
+        /* Era Selection Screen (formerly start-screen) */
+        #era-selection-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            text-align: center;
+            display: none;
+            /* Hidden strictly by default, shown by JS */
+        }
+
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-size: 4rem;
+            color: var(--wood-dark);
+            margin-bottom: 20px;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-era {
+            background: var(--wood-dark);
+            border: 2px solid var(--canvas);
+            color: var(--canvas);
+            padding: 15px 25px;
+            font-size: 1.5rem;
+            font-family: 'Caveat', cursive;
+            cursor: pointer;
+            transform: rotate(-2deg);
+            transition: transform 0.2s;
+        }
+
+        .btn-era:hover {
+            transform: rotate(2deg) scale(1.1);
+            background: #5d4037;
+        }
+
+        /* Room Interface */
+        #room {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #workspace {
+            flex: 1;
+            position: relative;
+            display: flex;
+            width: 100%;
+            overflow: visible;
+        }
+
+        #messy-floor {
+            flex: 3;
+            /* 75% approx */
+            position: relative;
+            border-bottom: 5px solid #2d1e18;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        #side-table {
+            flex: 1;
+            /* 25% approx */
+            background: rgba(62, 39, 35, 0.4);
+            border-left: 5px solid #3e2723;
+            border-bottom: 5px solid #2d1e18;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            /* Push box to bottom */
+            padding-top: 50px;
+            padding-bottom: 20px;
+        }
+
+        #side-table::before {
+            content: "TAULA DE TREBALL";
+            position: absolute;
+            top: 10px;
+            color: #fff;
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            opacity: 0.7;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        #discard-box {
+            width: 80%;
+            /* Smaller */
+            height: 120px;
+            /* Reduced height */
+            background: #5d4037;
+            border: 4px solid #3e2723;
+            border-radius: 2px;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        #discard-box::after {
+            content: "ALTRES ÈPOQUES";
+            /* Shorter text */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.2);
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.0rem;
+            pointer-events: none;
+        }
+
+        /* Items are now children of 'workspace' conceptually, but we put them in messy-floor for coordinates? 
+           Actually, better to have a single container for items to avoid parent-switching issues.
+           Let's put items in #items-layer overlaying everything.
+        */
+
+        #items-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Let clicks pass through if not on item */
+            z-index: 10;
+        }
+
+        .item {
+            position: absolute;
+            width: 180px;
+            /* ENLARGED */
+            height: 180px;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: transform 0.2s, z-index 0s;
+            padding: 0;
+            overflow: visible;
+            z-index: 5;
+            filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.3));
+            pointer-events: auto;
+            /* Re-enable for items */
+        }
+
+        .item:hover {
+            transform: scale(1.2) !important;
+            /* REDUCED SCALE (just a little bit) */
+            z-index: 1000 !important;
+            filter: drop-shadow(5px 10px 10px rgba(0, 0, 0, 0.5));
+            cursor: grab;
+        }
+
+        .item.dragging {
+            opacity: 0.5;
+            transform: scale(1.2);
+            cursor: grabbing;
+        }
+
+        .item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .item:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .item-icon {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-name {
+            position: absolute;
+            bottom: -30px;
+            /* Position below the item */
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            /* Dark wood semi-transparent */
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            /* Keep it small but readable */
+            font-family: 'Courier Prime', monospace;
+            text-transform: uppercase;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 101;
+        }
+
+        .item:hover .item-name {
+            opacity: 1;
+        }
+
+        #passport-area {
+            height: 250px;
+            background: #5d4037;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #passport {
+            width: 300px;
+            height: 220px;
+            background: var(--passport-blue);
+            border-radius: 5px;
+            border: 2px solid #aaa;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 5px 5px 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #ffd700;
+            font-family: 'Courier Prime', monospace;
+        }
+
+        #passport::before {
+            content: 'PASSPORT';
+            position: absolute;
+            top: 20px;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            font-weight: bold;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 5px;
+        }
+
+        #passport::after {
+            content: '🗺️';
+            font-size: 5rem;
+            opacity: 0.3;
+            position: absolute;
+        }
+
+        #passport-lbl {
+            margin-top: 40px;
+            font-size: 1rem;
+        }
+
+        #backpack-count {
+            font-size: 3rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            color: #3e2723;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 15px;
+            border-radius: 5px;
+            transform: rotate(-2deg);
+        }
+
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            display: none;
+            color: white;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Audio -->
+    <audio id="bg-music" loop>
+        <source src="audio/bg_music.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="game-container">
+        <!-- Intro Screen -->
+        <div id="intro-screen">
+            <h1>L'EXPEDICIÓ DEL TEMPS</h1>
+            <h2>Benvingut, explorador!</h2>
+            <div id="intro-text">
+                <p>Has estat seleccionat per a una missió molt important: recuperar els objectes perduts de la història
+                    de la música.</p>
+                <p>Hauràs de viatjar a través de 6 èpoques deferents i trobar 15 elements amagats en cadascuna. Però
+                    compte! Hi ha objectes impostors que no pertanyen a l'època.</p>
+                <p>Aparta els objectes incorrectes al <strong>Calaix d'Altres Èpoques</strong> i col·lecciona els
+                    segells correctes al teu <strong>Passaport Musical</strong>.</p>
+            </div>
+            <button class="btn-era" id="btn-show-menu">COMENÇAR L'AVENTURA</button>
+        </div>
+
+        <!-- Era Selection Screen (Main Menu) -->
+        <div id="era-selection-screen">
+            <h1>L'EXPEDICIÓ DEL TEMPS</h1>
+            <p>Tria una època per començar la teva recerca:</p>
+            <div class="era-grid" id="era-buttons">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Room -->
+        <div id="room" class="hidden">
+            <div id="hud">
+                ERRORS: <span id="fails">0</span>/3
+            </div>
+
+            <div id="workspace">
+                <div id="messy-floor"></div>
+                <div id="side-table">
+                    <div id="discard-box"></div>
+                </div>
+                <div id="items-layer"></div> <!-- Items go here -->
+            </div>
+
+            <div id="passport-area">
+                <div id="passport">
+                    <div id="passport-lbl">SEGELLS:</div>
+                    <div id="backpack-count">0/15</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="end-title"></h2>
+            <p id="end-msg"></p>
+            <button class="btn-era" onclick="location.reload()">NOVA EXPEDICIÓ</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: ["Cant Gregorià", "Guido d'Arezzo", "Trobador", "Ars Nova", "Perotin", "Viola de Roda", "Cantigas", "Llibre Vermell", "Saltiri", "Neumes", "Misteri d'Elx", "Flauta de Bec", "Monestir", "Sacbut", "Hildegard von Bingen"],
+            renaixement: ["Impremta", "Palestrina", "Madrigal", "Llaüt", "Monteverdi", "Humanisme", "Viola da Gamba", "Josquin des Prez", "Sacabutx", "Coral", "Dansa Cortesana", "Virginal", "Tomás Luis de Victoria", "Xirimia", "Ensalada Musical"],
+            barroc: ["J.S. Bach", "Clavicèmbal", "Vivaldi", "Händel", "Òpera", "Stradivarius", "Rei Sol (Lully)", "Orgue", "Purcell", "Castrato", "Baix Continu", "Telemann", "Fuga", "Trompeta Barroca", "Concert de Brandenburg"],
+            classicisme: ["Mozart", "Piano", "Haydn", "Vicent Martí i Soler", "Clarinet", "Quartet de Corda", "Mètode i Ordre", "Òpera Buffa", "Gluck", "Director d'Orquestra", "Salieri", "Trompa Natural", "Nen Prodigi", "Minuet", "Sinfonia"],
+            romanticisme: ["Wagner", "Tuba", "Chopin", "Verdi", "Ballet (Txaikovski)", "Virtuosisme", "Lied (Schubert)", "Passió i Tempesta", "Nacionalisme", "Beethoven", "Brahms", "Saxofon (Adolphe Sax)", "Puccini", "Gran Teatre del Liceu", "Paganini"],
+            segle_xx: ["Jazz", "Stravinsky", "Atonalitat", "Sintetitzador", "Gershwin", "Guitarra Elèctrica", "Minimalisme", "Cage", "Cinema (Williams)", "Dodecafonisme", "Rock & Roll", "Disc de Vinil", "Pau Casals", "Música Electrònica", "Musical (Broadway)"]
+        };
+
+        const ICONS = {
+            // Edat Mitjana
+            "Cant Gregorià": "cant_gregoria.png",
+            "Guido d'Arezzo": "guido_darezzo.png",
+            "Trobador": "trobador.png",
+            "Ars Nova": "ars_nova.png",
+            "Perotin": "perotin.png",
+            "Viola de Roda": "viola_de_roda.png",
+            "Cantigas": "cantigas.png",
+            "Llibre Vermell": "llibre_vermell.png",
+            "Saltiri": "saltiri.png",
+            "Neumes": "neumes.png",
+            "Misteri d'Elx": "misteri_delx.png",
+            "Flauta de Bec": "flauta_de_bec.png",
+            "Monestir": "monestir.png",
+            "Sacbut": "sacbut.png",
+            "Hildegard von Bingen": "hildegard_von_bingen.png",
+
+            // Renaixement
+            "Impremta": "impremta.png",
+            "Palestrina": "palestrina.png",
+            "Madrigal": "madrigal.png",
+            "Llaüt": "llaut.png",
+            "Monteverdi": "monteverdi.png",
+            "Humanisme": "humanisme.png",
+            "Viola da Gamba": "viola_da_gamba.png",
+            "Josquin des Prez": "josquin_des_prez.png",
+            "Sacabutx": "sacabutx.png",
+            "Coral": "coral.png",
+            "Dansa Cortesana": "dansa_cortesana.png",
+            "Virginal": "virginal.png",
+            "Tomás Luis de Victoria": "tomas_luis_de_victoria.png",
+            "Xirimia": "xirimia.png",
+            "Ensalada Musical": "ensalada_musical.png",
+
+            // Barroc
+            "J.S. Bach": "bach.png",
+            "Clavicèmbal": "clavicembal.png",
+            "Vivaldi": "vivaldi.png",
+            "Händel": "haendel.png",
+            "Òpera": "opera.png",
+            "Stradivarius": "stradivarius.png",
+            "Rei Sol (Lully)": "reisol.png",
+            "Orgue": "orgue.png",
+            "Purcell": "purcell.png",
+            "Castrato": "castratto.png",
+            "Baix Continu": "baixcontinuo.png",
+            "Telemann": "telemann.png",
+            "Fuga": "fuga.png",
+            "Trompeta Barroca": "trompeta.png",
+            "Concert de Brandenburg": "concertbranderburgo.png",
+
+            // Classicisme
+            "Mozart": "mozart.png",
+            "Piano": "piano.png",
+            "Haydn": "papahaydn.png",
+            "Vicent Martí i Soler": "martiisoler.png",
+            "Clarinet": "clarinet.png",
+            "Quartet de Corda": "quartet.png",
+            "Mètode i Ordre": "ordre.png",
+            "Òpera Buffa": "buffa.png",
+            "Gluck": "gluck.png",
+            "Director d'Orquestra": "director.png",
+            "Salieri": "salieri.png",
+            "Trompa Natural": "trompa.png",
+            "Nen Prodigi": "prodigio.png",
+            "Minuet": "minuetto.png",
+            "Sinfonia": "simfonia.png",
+
+            // Romanticisme
+            "Wagner": "wagner.png",
+            "Tuba": "tuba.png",
+            "Chopin": "chopin.png",
+            "Verdi": "verdi.png",
+            "Ballet (Txaikovski)": "tchaikosvky.png",
+            "Virtuosisme": "virtuosisme.png",
+            "Lied (Schubert)": "schubert.png",
+            "Passió i Tempesta": "passioitempesta.png",
+            "Nacionalisme": "nacionalisme.png",
+            "Beethoven": "beethoven.png",
+            "Brahms": "brahms.png",
+            "Saxofon (Adolphe Sax)": "saxofon.png",
+            "Puccini": "puccini.png",
+            "Gran Teatre del Liceu": "liceu.png",
+            "Paganini": "pagannini.png",
+
+            // Segle XX
+            "Jazz": "jazz.png",
+            "Stravinsky": "stravinsky.png",
+            "Atonalitat": "atonalitat.png",
+            "Sintetitzador": "sintetitzador.png",
+            "Gershwin": "gershwin.png",
+            "Guitarra Elèctrica": "electricguitarra.png",
+            "Minimalisme": "minimalisme.png",
+            "Cage": "cage.png",
+            "Cinema (Williams)": "cinema.png",
+            "Dodecafonisme": "dodecafonisme.png",
+            "Rock & Roll": "rockandroll.png",
+            "Disc de Vinil": "vinil.png",
+            "Pau Casals": "casals.png",
+            "Música Electrònica": "electronica.png",
+            "Musical (Broadway)": "teatremusical.png"
+        };
+
+        function getIconContent(name) {
+            if (ICONS[name]) {
+                return `<img src="img/stamps/${ICONS[name]}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" alt="${name}"><span style="display:none; font-size:2rem;">📦</span>`;
+            }
+            return `<span style="font-size:2rem;">📦</span>`;
+        }
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let packedCount = 0;
+        let fails = 0;
+        let completedEras = [];
+
+        // --- AUDIO ---
+        const bgMusic = document.getElementById('bg-music');
+        if (bgMusic) bgMusic.volume = 0.5;
+
+        // Intentar desbloquear audio en la primera interacción
+        document.body.addEventListener('click', () => {
+            if (bgMusic && bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio play failed", e));
+            }
+        }, { once: true });
+
+        // Renderizar botones de épocas
+        function renderEraButtons() {
+            const container = document.getElementById('era-buttons');
+            container.innerHTML = '';
+            const eras = [
+                { id: "edat_mitjana", label: "Edat Mitjana" },
+                { id: "renaixement", label: "Renaixement" },
+                { id: "barroc", label: "Barroc" },
+                { id: "classicisme", label: "Classicisme" },
+                { id: "romanticisme", label: "Romanticisme" },
+                { id: "segle_xx", label: "Segle XX" }
+            ];
+
+            eras.forEach(era => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-era';
+                btn.textContent = era.label;
+                if (completedEras.includes(era.id)) btn.classList.add('completed');
+                btn.onclick = () => {
+                    currentEra = era.id;
+                    startGame();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // Lógica del botón inicial
+        document.getElementById('btn-show-menu').addEventListener('click', () => {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('era-selection-screen').style.display = 'flex';
+            renderEraButtons();
+        });
+
+        function playSound(type) {
+            // Sonidos básicos con Web Audio API para no depender de archivos externos
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'zip') {
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+            } else {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            }
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function startGame() {
+            document.getElementById('era-selection-screen').style.display = 'none';
+            document.getElementById('room').classList.remove('hidden');
+            packedCount = 0;
+            fails = 0;
+            updateHUD();
+            spawnItems();
+
+            // Configurar zonas de soltar (Drag & Drop)
+            const discardBox = document.getElementById('discard-box');
+            discardBox.ondragover = e => e.preventDefault();
+            discardBox.ondrop = e => {
+                const draggingEl = document.querySelector('.dragging');
+                if (draggingEl) {
+                    playSound('reject');
+                    draggingEl.remove();
+                }
+            };
+
+            const passport = document.getElementById('passport');
+            passport.ondragover = e => e.preventDefault();
+            passport.ondrop = handleDrop;
+        }
+
+        function spawnItems() {
+            const layer = document.getElementById('items-layer');
+            layer.innerHTML = '';
+            const floor = document.getElementById('messy-floor');
+            floor.innerHTML = ''; // Limpiar fondo
+
+            const correct = DB[currentEra];
+            let others = [];
+            Object.keys(DB).forEach(e => { if (e !== currentEra) others = others.concat(DB[e]); });
+            others = others.sort(() => 0.5 - Math.random()).slice(0, 15);
+
+            const pool = [...correct, ...others].sort(() => 0.5 - Math.random());
+
+            pool.forEach(name => {
+                const el = document.createElement('div');
+                el.className = 'item';
+                el.draggable = true;
+                el.innerHTML = `<div class="item-icon">${getIconContent(name)}</div><div class="item-name">${name}</div>`;
+                el.style.left = (Math.random() * 70 + 5) + '%';
+                el.style.top = (Math.random() * 60 + 5) + '%';
+                el.style.transform = `rotate(${Math.random() * 40 - 20}deg)`;
+
+                el.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', name);
+                    el.classList.add('dragging');
+                });
+                el.addEventListener('dragend', () => el.classList.remove('dragging'));
+                layer.appendChild(el);
+            });
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const name = e.dataTransfer.getData('text/plain');
+            const draggingEl = document.querySelector('.dragging');
+            if (!draggingEl) return;
+
+            if (DB[currentEra].includes(name)) {
+                playSound('zip');
+                draggingEl.remove();
+                packedCount++;
+                if (packedCount >= 15) endGame(true);
+            } else {
+                playSound('reject');
+                fails++;
+                document.getElementById('passport').classList.add('shake');
+                setTimeout(() => document.getElementById('passport').classList.remove('shake'), 500);
+                if (fails >= 3) endGame(false);
+            }
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('backpack-count').textContent = `${packedCount}/15`;
+            document.getElementById('fails').textContent = fails;
+        }
+
+        function endGame(win) {
+            const overlay = document.getElementById('feedback-overlay');
+            overlay.style.display = 'flex';
+            document.getElementById('end-title').textContent = win ? "ENHORABONA!" : "EXPEDICIÓ FALLIDA";
+            document.getElementById('end-msg').textContent = win ? "Has completat l'època amb èxit!" : "Has comès masses errors històrics.";
+            if (win && !completedEras.includes(currentEra)) completedEras.push(currentEra);
+        }
+    </script>
+</body>
+
+</html>

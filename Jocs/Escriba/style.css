@@ -1,0 +1,64 @@
+body {
+    background: #f3f6fa;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px 24px 24px 24px;
+    text-align: center;
+}
+
+h1 {
+    color: #2a3a5e;
+    margin-bottom: 12px;
+}
+
+.instruccions {
+    color: #4a5a7a;
+    margin-bottom: 24px;
+}
+
+.definicio {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    color: #2a3a5e;
+    min-height: 60px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    width: 80%;
+    border: 1px solid #b0b8c1;
+    border-radius: 6px;
+    font-size: 1em;
+    margin-bottom: 12px;
+}
+
+button {
+    background: #2a3a5e;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 24px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 8px 0;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #405080;
+}
+
+#missatge {
+    margin-top: 16px;
+    font-weight: bold;
+    min-height: 24px;
+}

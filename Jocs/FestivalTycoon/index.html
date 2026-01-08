@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos Festival: Cartell Definitiu</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=Montserrat:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f0c1a;
+            --stage-floor: #1a1528;
+            --accent: #ff0055;
+            --gold: #ffcc00;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            /* Stage Spotlight Background */
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(120, 50, 255, 0.3) 0%, transparent 60%),
+                linear-gradient(to bottom, #0f0c1a 0%, #1a1528 100%);
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* HEADER - Neon Sign Style */
+        header {
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Permanent Marker', cursive;
+            /* Graffiti / Festival Font */
+            font-size: 2.5rem;
+            margin: 0;
+            color: #fff;
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px #ff00de,
+                0 0 20px #ff00de,
+                0 0 40px #ff00de;
+            transform: rotate(-2deg);
+        }
+
+        .status-bar {
+            font-family: 'Anton', sans-serif;
+            font-size: 1.2rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* GAME AREA - The Stages */
+        #festival-grounds {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px 40px;
+            perspective: 1000px;
+            /* For 3D poster effect */
+        }
+
+        /* STAGE POSTERS */
+        .poster {
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            /* Default Dark Glass */
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .poster:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .poster.drag-over {
+            transform: scale(1.05);
+            border: 2px solid white;
+            box-shadow: 0 0 20px white;
+        }
+
+        .poster-header {
+            padding: 15px;
+            text-align: center;
+            font-family: 'Anton', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* ERA THEMES (Backgrounds) */
+        .info-era {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            font-family: 'Montserrat';
+            letter-spacing: 0;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* Medieval: Stone/Torch */
+        .era-medieval {
+            background: linear-gradient(to bottom, #2c1e14, #1a1005);
+            border-top: 5px solid #bd7b2c;
+        }
+
+        .era-medieval .poster-header {
+            background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), #3d2b1f;
+            color: #f0e68c;
+        }
+
+        /* Renaissance: Velvet/Gold */
+        .era-renaissance {
+            background: linear-gradient(to bottom, #3a001e, #1a000d);
+            border-top: 5px solid #d4af37;
+        }
+
+        .era-renaissance .poster-header {
+            background: #55002a;
+            color: #d4af37;
+        }
+
+        /* Baroque: Deep Blue/Ornate */
+        .era-baroque {
+            background: linear-gradient(to bottom, #001a33, #000d1a);
+            border-top: 5px solid #87ceeb;
+        }
+
+        .era-baroque .poster-header {
+            background: #00264d;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Classicism: Marble/Clean */
+        .era-classicism {
+            background: linear-gradient(to bottom, #d9d9d9, #b3b3b3);
+            border-top: 5px solid #777;
+            color: #222;
+        }
+
+        .era-classicism .poster-header {
+            background: #f0f0f0;
+            color: #222;
+        }
+
+        .era-classicism .lineup-slots {
+            color: #222;
+        }
+
+        /* Dark text for light bg */
+
+        /* Romanticism: Stormy/Red */
+        .era-romanticism {
+            background: linear-gradient(to bottom, #4a0e0e, #220505);
+            border-top: 5px solid #ff4d4d;
+        }
+
+        .era-romanticism .poster-header {
+            background: #660000;
+            color: #ff9999;
+        }
+
+        /* 20th: Cyber/Neon */
+        .era-20th {
+            background: linear-gradient(to bottom, #111, #000);
+            border-top: 5px solid #00ff00;
+        }
+
+        .era-20th .poster-header {
+            background: #000;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+
+        .lineup-slots {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            /* Inner shadow for depth */
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ARTIST CARD - "Backstage Pass" Style */
+        .artist-card {
+            background: #fff;
+            color: #000;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: 800;
+            cursor: grab;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            /* Lanyard hole visual */
+            clip-path: polygon(0% 0%,
+                    45% 0%, 50% 10%, 55% 0%,
+                    100% 0%,
+                    100% 100%,
+                    0% 100%);
+            margin-top: -5px;
+            /* Overlap effect like stacked tickets */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .artist-card:hover {
+            transform: translateY(-2px) rotate(1deg);
+            z-index: 10;
+        }
+
+        .artist-card:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        /* Status Colors */
+        .artist-card.incorrect {
+            background: #ff3333;
+            color: white;
+            animation: shake 0.4s;
+        }
+
+        .artist-card.correct {
+            background: #00cc66;
+            color: white;
+            border-left: 5px solid #004400;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* BACKSTAGE FOOTER */
+        #backstage {
+            height: 180px;
+            background: #111;
+            background-image:
+                linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222),
+                linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            border-top: 4px solid var(--accent);
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            overflow-y: auto;
+            justify-content: center;
+            align-content: flex-start;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        #backstage::before {
+            content: "ARTIST HOLDING AREA";
+            position: absolute;
+            top: 5px;
+            left: 20px;
+            color: #444;
+            font-weight: 900;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        #backstage .artist-card {
+            max-width: none;
+            width: auto;
+            flex: 0 1 auto;
+            clip-path: none;
+            /* Regular rectangle in backstage */
+            border-radius: 30px;
+            /* Pill shape in backstage */
+            background: white;
+            margin-top: 0;
+            border: 2px solid black;
+        }
+
+        #backstage .artist-card:hover {
+            background: var(--accent);
+            color: white;
+            border-color: white;
+        }
+
+        /* BUTTONS & OVERLAYS */
+        #check-btn {
+            position: absolute;
+            bottom: 210px;
+            right: 30px;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 4px solid white;
+            color: white;
+            font-family: 'Anton';
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--accent);
+            z-index: 500;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        #check-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+            background: white;
+            color: var(--accent);
+        }
+
+        #win-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 12, 26, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        #win-overlay h2 {
+            font-family: 'Permanent Marker';
+            font-size: 5rem;
+            color: var(--gold);
+            text-shadow: 0 0 20px var(--gold);
+            margin-bottom: 10px;
+            transform: rotate(-3deg);
+        }
+
+        #btn-reset {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: transparent;
+            border: 3px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-family: 'Anton';
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        #btn-reset:hover {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 30px var(--neon-blue);
+        }
+    </style>
+    <style>
+        /* ADDED STYLES FOR START SCREEN & AUDIO */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 12, 26, 0.98);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+
+        .start-title {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 5rem;
+            color: white;
+            text-shadow: 0 0 20px #ff00de;
+            margin-bottom: 20px;
+            transform: rotate(-3deg);
+        }
+
+        .start-desc {
+            font-size: 1.5rem;
+            color: #ddd;
+            margin-bottom: 40px;
+            font-family: 'Montserrat';
+        }
+
+        .rules-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--neon-blue);
+            margin-bottom: 40px;
+            max-width: 600px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+        }
+
+        .rules-box h3 {
+            color: var(--neon-green);
+            font-family: 'Anton';
+            font-size: 2rem;
+            margin-top: 0;
+        }
+
+        .rules-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        #btn-start {
+            padding: 20px 60px;
+            font-size: 2rem;
+            font-family: 'Anton';
+            background: var(--neon-pink);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-pink);
+            transition: all 0.2s;
+            animation: pulse-btn 1.5s infinite;
+        }
+
+        #btn-start:hover {
+            transform: scale(1.1);
+            background: white;
+            color: var(--neon-pink);
+        }
+
+        @keyframes pulse-btn {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 255, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(255, 0, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 255, 0);
+            }
+        }
+
+        #audio-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+            accent-color: var(--neon-blue);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1 class="start-title">CHRONOS FESTIVAL</h1>
+        <p class="start-desc">Benvingut al festival de música més gran de la història.</p>
+        <div class="rules-box">
+            <h3>🎵 INSTRUCCIONS 🎵</h3>
+            <p>1. Tens <strong>18 Artistes</strong> històrics al Backstage.</p>
+            <p>2. Arrossega cadascú al seu <strong>Escenari d'Època</strong> correcte.</p>
+            <p>3. Pulsa <strong>SOUNDCHECK</strong> per validar el teu cartell.</p>
+            <p>4. Si aconsegueixes el <strong>Sold Out</strong>, guanyes!</p>
+        </div>
+        <button id="btn-start" onclick="startGame()">OBRIR PORTES</button>
+    </div>
+
+    <header>
+        <!-- AUDIO UI -->
+        <div id="audio-panel">
+            <span id="audio-icon">🔊</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.3">
+        </div>
+        <audio id="bg-music" loop>
+            <source src="audio/Pixel Empire Tycoon.m4a" type="audio/mpeg">
+        </audio>
+
+        <h1>CHRONOS FESTIVAL</h1>
+        <div class="status-bar" id="status-msg">Organitza el cartell definitiu!</div>
+    </header>
+
+    <div id="festival-grounds">
+        <!-- Posters -->
+        <div class="poster era-medieval" data-era="Edat Mitjana">
+            <div class="poster-header">EDAT MITJANA</div>
+            <div class="lineup-slots" id="slot-medieval"></div>
+        </div>
+        <div class="poster era-renaissance" data-era="Renaixement">
+            <div class="poster-header">RENAIXEMENT</div>
+            <div class="lineup-slots" id="slot-renaixement"></div>
+        </div>
+        <div class="poster era-baroque" data-era="Barroc">
+            <div class="poster-header">BARROC</div>
+            <div class="lineup-slots" id="slot-barroc"></div>
+        </div>
+        <div class="poster era-classicism" data-era="Classicisme">
+            <div class="poster-header">CLASSICISME</div>
+            <div class="lineup-slots" id="slot-classicisme"></div>
+        </div>
+        <div class="poster era-romanticism" data-era="Romanticisme">
+            <div class="poster-header">ROMANTICISME</div>
+            <div class="lineup-slots" id="slot-romanticisme"></div>
+        </div>
+        <div class="poster era-20th" data-era="Segle XX">
+            <div class="poster-header">SEGLE XX</div>
+            <div class="lineup-slots" id="slot-20th"></div>
+        </div>
+    </div>
+
+    <!-- VALIDATE BUTTON -->
+    <button id="check-btn" onclick="checkLineup()">SOUND<br>CHECK</button>
+
+    <div id="backstage">
+        <!-- Draggable Artists -->
+    </div>
+
+    <div id="win-overlay">
+        <h2>SOLD OUT! 🎟️</h2>
+        <p style="font-size: 1.5rem; margin-bottom: 30px; color: #ccc;">Has creat el festival perfecte.</p>
+        <button id="btn-reset" onclick="initGame()">NOU FESTIVAL</button>
+    </div>
+
+    <script>
+        const COMPOSERS = [
+            { name: "Perotin", era: "Edat Mitjana" },
+            { name: "Guillaume de Machaut", era: "Edat Mitjana" },
+            { name: "Hildegard von Bingen", era: "Edat Mitjana" },
+
+            { name: "Josquin des Prez", era: "Renaixement" },
+            { name: "Palestrina", era: "Renaixement" },
+            { name: "Tomás Luis de Victoria", era: "Renaixement" },
+
+            { name: "J.S. Bach", era: "Barroc" },
+            { name: "Vivaldi", era: "Barroc" },
+            { name: "Händel", era: "Barroc" },
+
+            { name: "Mozart", era: "Classicisme" },
+            { name: "Haydn", era: "Classicisme" },
+            { name: "Beethoven (Inici)", era: "Classicisme" },
+
+            { name: "Wagner", era: "Romanticisme" },
+            { name: "Verdi", era: "Romanticisme" },
+            { name: "Chopin", era: "Romanticisme" },
+
+            { name: "Stravinsky", era: "Segle XX" },
+            { name: "Schoenberg", era: "Segle XX" },
+            { name: "Gershwin", era: "Segle XX" }
+        ];
+
+        let draggedItem = null;
+
+        // START GAME
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            const audio = document.getElementById('bg-music');
+            audio.volume = document.getElementById('volume-slider').value;
+            audio.play().catch(e => console.log("Audio autoplay prevented"));
+        }
+
+        // Volume Slider Logic
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            const audio = document.getElementById('bg-music');
+            audio.volume = e.target.value;
+        });
+
+        function initGame() {
+            // Reset Arrays
+            const backstage = document.getElementById('backstage');
+            backstage.innerHTML = '';
+
+            // Clear Posters
+            document.querySelectorAll('.lineup-slots').forEach(slot => slot.innerHTML = '');
+            document.querySelectorAll('.poster').forEach(p => {
+                p.style.borderColor = '';
+                p.classList.remove('drag-over');
+            });
+
+            // Shuffle and Populate
+            const shuffled = [...COMPOSERS].sort(() => 0.5 - Math.random());
+
+            shuffled.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'artist-card';
+                el.draggable = true;
+                el.textContent = c.name;
+                el.dataset.era = c.era; // Store correct era
+
+                el.addEventListener('dragstart', handleDragStart);
+                el.addEventListener('dragend', handleDragEnd);
+
+                backstage.appendChild(el);
+            });
+
+            document.getElementById('win-overlay').style.display = 'none';
+            document.getElementById('status-msg').textContent = "Organitza el cartell definitiu!";
+            document.getElementById('status-msg').style.color = "var(--gold)";
+        }
+
+        // --- DRAG & DROP LOGIC ---
+
+        const dropZones = document.querySelectorAll('.lineup-slots, #backstage');
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault(); // Necessary to allow dropping
+                if (!zone.id.includes('backstage')) {
+                    zone.closest('.poster').classList.add('drag-over');
+                }
+            });
+
+            zone.addEventListener('dragleave', e => {
+                if (!zone.id.includes('backstage')) {
+                    // Check if we really left the poster
+                    zone.closest('.poster').classList.remove('drag-over');
+                }
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                const poster = zone.closest('.poster');
+                if (poster) poster.classList.remove('drag-over');
+
+                if (draggedItem) {
+                    zone.appendChild(draggedItem);
+                    // Reset styling on move
+                    draggedItem.classList.remove('correct', 'incorrect');
+                }
+            });
+        });
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            setTimeout(() => this.style.opacity = '0.5', 0);
+        }
+
+        function handleDragEnd(e) {
+            setTimeout(() => this.style.opacity = '1', 0);
+            draggedItem = null;
+            // Clear all drag-over states
+            document.querySelectorAll('.poster').forEach(p => p.classList.remove('drag-over'));
+        }
+
+        function checkLineup() {
+            let correctCount = 0;
+            let total = COMPOSERS.length;
+            let errors = 0;
+
+            document.querySelectorAll('.poster').forEach(poster => {
+                const eraTarget = poster.getAttribute('data-era');
+                const slots = poster.querySelector('.lineup-slots');
+                const cards = slots.querySelectorAll('.artist-card');
+
+                cards.forEach(card => {
+                    if (card.dataset.era === eraTarget) {
+                        card.classList.add('correct');
+                        card.classList.remove('incorrect');
+                        correctCount++;
+                    } else {
+                        card.classList.add('incorrect');
+                        card.classList.remove('correct');
+                        errors++;
+                    }
+                });
+            });
+
+            if (correctCount === total) {
+                const overlay = document.getElementById('win-overlay');
+                overlay.style.display = 'flex';
+                // Anim
+                const h2 = overlay.querySelector('h2');
+                h2.style.transform = 'scale(0.5)';
+                setTimeout(() => h2.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 10);
+                setTimeout(() => h2.style.transform = 'scale(1) rotate(-3deg)', 50);
+
+                const audio = new Audio('https://www.soundjay.com/misc/sounds/crowd-cheer-ii-6282.m4a');
+                audio.volume = 0.5;
+                audio.play().catch(e => { });
+            } else {
+                const status = document.getElementById('status-msg');
+                if (errors > 0) {
+                    status.textContent = `Tens ${errors} artistes a l'escenari equivocat! Revisa el Soundcheck. 🎤`;
+                    status.style.color = "#ff3333";
+
+                    // Shake effect
+                    const btn = document.getElementById('check-btn');
+                    btn.style.transform = 'translateX(5px)';
+                    setTimeout(() => btn.style.transform = 'translateX(-5px)', 50);
+                    setTimeout(() => btn.style.transform = 'translateX(5px)', 100);
+                    setTimeout(() => btn.style.transform = 'translateX(0)', 150);
+
+                } else if (correctCount < total) {
+                    status.textContent = `Encara falten artistes per confirmar (Backstage)!`;
+                    status.style.color = "var(--gold)";
+                }
+            }
+        }
+
+        // Init
+        initGame();
+
+    </script>
+</body>
+
+</html>

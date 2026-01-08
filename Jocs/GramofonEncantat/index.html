@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Gramòfon Encantat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Cinzel:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f0f0f;
+            --ghost-blue: rgba(100, 200, 255, 0.6);
+            --ghost-glow: 0 0 20px rgba(100, 200, 255, 0.8);
+            --text-color: #dcdcdc;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Cinzel', serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at center, #2a2a2a 0%, #000000 100%);
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-color);
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* BACKGROUND ATMOSPHERE */
+        .fog {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/img/fog1.png') repeat-x;
+            background-size: 200% 100%;
+            opacity: 0.3;
+            animation: fogMove 60s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes fogMove {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* GRAMOPHONE */
+        .gramophone-container {
+            position: relative;
+            z-index: 5;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .gramophone {
+            font-size: 8rem;
+            filter: drop-shadow(0 0 10px #000);
+            transition: transform 0.2s;
+        }
+
+        .gramophone:hover {
+            transform: scale(1.05);
+        }
+
+        .gramophone.playing {
+            animation: vibrate 0.5s infinite;
+        }
+
+        @keyframes vibrate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(2deg);
+            }
+
+            50% {
+                transform: rotate(0deg);
+            }
+
+            75% {
+                transform: rotate(-2deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        .notes {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .note {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--ghost-blue);
+            opacity: 0;
+            animation: floatNote 2s linear forwards;
+        }
+
+        @keyframes floatNote {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        /* PORTRAITS */
+        .portrait {
+            position: absolute;
+            width: 120px;
+            height: 150px;
+            border: 5px solid #4a4a4a;
+            border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+            /* Arch shape */
+            background: #222;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            transition: transform 0.3s, box-shadow 0.3s;
+            z-index: 5;
+            animation: floatFrame 4s ease-in-out infinite;
+        }
+
+        .portrait:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px var(--ghost-blue);
+            border-color: #888;
+        }
+
+        .ghost-img {
+            width: 80px;
+            height: auto;
+            opacity: 0.6;
+            filter: drop-shadow(0 0 5px var(--ghost-blue)) grayscale(80%);
+            transition: all 0.5s;
+        }
+
+        .portrait:hover .ghost-img {
+            opacity: 1;
+            filter: drop-shadow(0 0 15px var(--ghost-blue)) grayscale(0%);
+            transform: scale(1.1);
+        }
+
+        /* Positions for 6 portraits in a circle */
+        #p-medieval {
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #p-renaixement {
+            top: 25%;
+            right: 15%;
+        }
+
+        #p-barroc {
+            bottom: 25%;
+            right: 15%;
+        }
+
+        #p-classicisme {
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #p-romanticisme {
+            bottom: 25%;
+            left: 15%;
+        }
+
+        #p-segle20 {
+            top: 25%;
+            left: 15%;
+        }
+
+        @keyframes floatFrame {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            flex-direction: column;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-family: 'Creepster', cursive;
+            font-size: 4rem;
+            color: var(--ghost-blue);
+            text-shadow: 0 0 20px var(--ghost-blue);
+            margin-bottom: 20px;
+        }
+
+        .btn-start {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Cinzel', serif;
+            background: transparent;
+            color: var(--ghost-blue);
+            border: 2px solid var(--ghost-blue);
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px var(--ghost-blue);
+        }
+
+        .btn-start:hover {
+            background: var(--ghost-blue);
+            color: #000;
+            box-shadow: 0 0 30px var(--ghost-blue);
+        }
+
+        /* TIMER DISPLAY */
+        #timer-display {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 5rem;
+            color: var(--ghost-blue);
+            text-shadow: 0 0 20px var(--ghost-blue);
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+        }
+
+        /* Portrait Disabled State */
+        .portrait.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(100%);
+        }
+
+        /* VOLUME CONTROL */
+        #volume-control {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #444;
+        }
+
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            z-index: 10;
+            text-align: right;
+        }
+
+        #message-area {
+            position: absolute;
+            bottom: 50px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-screen">
+        <h1>El Gramòfon Encantat</h1>
+        <p style="font-size: 1.2rem; max-width: 600px; margin-bottom: 30px;">
+            Les ànimes dels grans compositors han quedat atrapades al gramòfon.<br>
+            Prem el gramòfon per escoltar un fragment (20s).<br>
+            Endevina l'època i clica sobre el retrat corresponent per alliberar-l'ho.
+        </p>
+        <button class="btn-start" onclick="startGame()">Invocar Esperits</button>
+    </div>
+
+    <div id="volume-control">
+        <span>🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <div class="fog"></div>
+
+    <div class="hud">
+        <div>ÀNIMES: <span id="score">0</span>/10</div>
+        <div class="lives" id="lives">🕯️🕯️🕯️</div>
+    </div>
+
+    <div id="timer-display">20</div>
+
+    <div id="game-container">
+
+        <!-- Portraits -->
+        <div class="portrait" id="p-medieval" data-era="Edat Mitjana">
+            <img src="img/mitjana.png" class="ghost-img" alt="Medieval">
+            <div class="portrait-label">Edat Mitjana</div>
+        </div>
+        <div class="portrait" id="p-renaixement" data-era="Renaixement">
+            <img src="img/renaixement.png" class="ghost-img" alt="Renaixement">
+            <div class="portrait-label">Renaixement</div>
+        </div>
+        <div class="portrait" id="p-barroc" data-era="Barroc">
+            <img src="img/barroc.png" class="ghost-img" alt="Barroc">
+            <div class="portrait-label">Barroc</div>
+        </div>
+        <div class="portrait" id="p-classicisme" data-era="Classicisme">
+            <img src="img/cllasicisme.png" class="ghost-img" alt="Classicisme">
+            <div class="portrait-label">Classicisme</div>
+        </div>
+        <div class="portrait" id="p-romanticisme" data-era="Romanticisme">
+            <img src="img/romaticisme.png" class="ghost-img" alt="Romanticisme">
+            <div class="portrait-label">Romanticisme</div>
+        </div>
+        <div class="portrait" id="p-segle20" data-era="Segle XX">
+            <img src="img/segleXX.png" class="ghost-img" alt="Segle XX">
+            <div class="portrait-label">Segle XX</div>
+        </div>
+
+        <!-- Gramophone -->
+        <div class="gramophone-container" id="gramophone">
+            <div class="gramophone">📢</div>
+            <div style="margin-top: 10px; font-size: 1.2rem;">PREM PER INVOCAR</div>
+            <div class="notes" id="notes-container"></div>
+        </div>
+
+    </div>
+
+    <div id="message-area"></div>
+
+    <audio id="audio-player"></audio>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const SPIRIT_DB = [
+            // Edat Mitjana
+            { era: "Edat Mitjana", file: "../../assets/audio_shared/Hildegard of Bingen： De Spiritu Sancto (Holy Spirit, The Quickener Of Life).m4a", title: "Hildegard von Bingen" },
+            { era: "Edat Mitjana", file: "../../assets/audio_shared/Ànonim- Organum.Tu patris sempiternu.m4a", title: "Anònim (Organum)" },
+            { era: "Edat Mitjana", file: "../../assets/audio_shared/Trobador anònim-Fi d'amor.m4a", title: "Trobador Anònim" },
+
+            // Renaixement
+            { era: "Renaixement", file: "../../assets/audio_shared/Palestrina-O bone Jesu.m4a", title: "Giovanni Pierluigi da Palestrina" },
+            { era: "Renaixement", file: "../../assets/audio_shared/Verdelot-Con soave parlar.m4a", title: "Philippe Verdelot" },
+            { era: "Renaixement", file: "../../assets/audio_shared/Ànonim-Greensleeves.m4a", title: "Anònim (Greensleeves)" },
+
+            // Barroc
+            { era: "Barroc", file: "../../assets/audio_shared/Vivaldi- Four Seasons： Winter (L'Inverno).m4a", title: "Antonio Vivaldi" },
+            { era: "Barroc", file: "../../assets/audio_shared/Bach-Toccata & Fugue D Minor, BWV 565.m4a", title: "Johann Sebastian Bach" },
+            { era: "Barroc", file: "../../assets/audio_shared/Haendel- Lascia ch'io pianga.m4a", title: "Georg Friedrich Händel" },
+
+            // Classicisme
+            { era: "Classicisme", file: "../../assets/audio_shared/Mozart-Pequeña Serenata Nocturna.m4a", title: "Wolfgang Amadeus Mozart" },
+            { era: "Classicisme", file: "../../assets/audio_shared/Franz Joseph Haydn - ＂Simfonia Sorpresa＂ (Symphony no. 94).m4a", title: "Franz Joseph Haydn" },
+            { era: "Classicisme", file: "../../assets/audio_shared/Beethoven- 5a Simfonia.m4a", title: "Ludwig van Beethoven" },
+
+            // Romanticisme
+            { era: "Romanticisme", file: "../../assets/audio_shared/Chopin - Nocturne op.9 No.2.m4a", title: "Frédéric Chopin" },
+            { era: "Romanticisme", file: "../../assets/audio_shared/Richard Wagner- Cavalcada de les Valkiries.m4a", title: "Richard Wagner" },
+            { era: "Romanticisme", file: "../../assets/audio_shared/P. Tchaikovsky - Pas de Deux ('The Nutcracker').m4a", title: "Piotr Ilitx Tchaikovsky" },
+
+            // Segle XX
+            { era: "Segle XX", file: "../../assets/audio_shared/Schoemberg-Tres piezas para piano.m4a", title: "Arnold Schönberg" },
+            { era: "Segle XX", file: "../../assets/audio_shared/Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a", title: "Jazz Standards" },
+            { era: "Segle XX", file: "../../assets/audio_shared/Jellybean Fenderson-Oscilloscope Music.m4a", title: "Música Electrònica" }
+        ];
+
+        // --- AUDIO CONTEXT ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        let masterVolume = 0.5;
+
+        // Volume Slider
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            masterVolume = parseFloat(e.target.value);
+            if (game && game.updateVolume) game.updateVolume(masterVolume);
+            else if (document.getElementById('audio-player')) document.getElementById('audio-player').volume = masterVolume;
+        });
+
+        // SFX Helper
+        function playSFX(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const vol = masterVolume;
+            const now = audioCtx.currentTime;
+
+            if (type === 'scratch') { // Click / Interaction
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+                gainNode.gain.setValueAtTime(0.3 * vol, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start();
+                osc.stop(now + 0.1);
+            } else if (type === 'magic') { // Success
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+                gainNode.gain.setValueAtTime(0.2 * vol, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start();
+                osc.stop(now + 0.5);
+            } else if (type === 'scare') { // Fail
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.4);
+                gainNode.gain.setValueAtTime(0.4 * vol, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start();
+                osc.stop(now + 0.4);
+            }
+        }
+
+        class GramophoneGame {
+            constructor() {
+                this.score = 0;
+                this.playlist = [...SPIRIT_DB].sort(() => Math.random() - 0.5);
+                this.currentRound = 0;
+                this.canClick = false;
+                this.countdownInterval = null;
+                this.isPlaying = false;
+                this.audioTimeout = null;
+
+                // DOM
+                this.audio = document.getElementById('audio-player');
+                this.gramophone = document.getElementById('gramophone');
+                this.messageArea = document.getElementById('message-area');
+                this.timerDisplay = document.getElementById('timer-display');
+                this.scoreDisplay = document.getElementById('score');
+                this.portraits = document.querySelectorAll('.portrait');
+
+                this.setupEvents();
+            }
+
+            setupEvents() {
+                // Gramophone Click -> Start Round
+                this.gramophone.addEventListener('click', () => {
+                    if (!this.isPlaying && !this.canClick) {
+                        this.startRound();
+                    }
+                });
+
+                // Portraits Click
+                this.portraits.forEach(p => {
+                    p.addEventListener('click', () => {
+                        this.handlePortraitClick(p);
+                    });
+                });
+            }
+
+            updateVolume(vol) {
+                this.audio.volume = vol;
+            }
+
+            updateHUD() {
+                this.scoreDisplay.innerText = this.score;
+            }
+
+            startRound() {
+                if (this.score >= 10) { this.headerWin(); return; }
+
+                // Reset State
+                this.isPlaying = true;
+                this.canClick = false; // Cannot click during music
+                this.timerDisplay.style.display = 'block';
+                this.timerDisplay.style.color = 'var(--ghost-blue)';
+                this.timerDisplay.innerText = "20";
+
+                this.messageArea.innerText = "Escolta la música...";
+                this.messageArea.style.color = "#dcdcdc";
+                this.gramophone.classList.add('playing');
+
+                this.togglePortraits(false); // Disable visual interaction
+
+                // Audio
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                // Cycle playlist
+                if (this.currentRound >= this.playlist.length) {
+                    this.playlist.sort(() => Math.random() - 0.5);
+                    this.currentRound = 0;
+                }
+                this.currentSpirit = this.playlist[this.currentRound];
+
+                this.audio.src = this.currentSpirit.file;
+                this.audio.currentTime = 0;
+                this.audio.volume = masterVolume;
+                this.audio.play().catch(e => console.log("Audio play error", e));
+
+                this.spawnNotes();
+
+                // 20s Countdown (Visual only, Logic handled by timeout)
+                let listenTime = 20;
+                // Clear any existing timer
+                if (this.countdownInterval) clearInterval(this.countdownInterval);
+
+                this.countdownInterval = setInterval(() => {
+                    listenTime--;
+                    this.timerDisplay.innerText = listenTime;
+                    if (listenTime <= 0) clearInterval(this.countdownInterval);
+                }, 1000);
+
+                // Stop Logic
+                if (this.audioTimeout) clearTimeout(this.audioTimeout);
+                this.audioTimeout = setTimeout(() => this.stopMusic(), 20000);
+            }
+
+            stopMusic() {
+                this.audio.pause();
+                this.isPlaying = false;
+                this.gramophone.classList.remove('playing');
+
+                this.messageArea.innerText = "ARA! Tria l'època!";
+                this.messageArea.style.color = "#f1c40f";
+                this.timerDisplay.style.color = "#f1c40f";
+
+                this.canClick = true;
+                this.togglePortraits(true);
+
+                this.startDecisionTimer();
+            }
+
+            startDecisionTimer() {
+                let timeLeft = 5;
+                this.timerDisplay.innerText = timeLeft;
+
+                if (this.countdownInterval) clearInterval(this.countdownInterval);
+                this.countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    this.timerDisplay.innerText = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(this.countdownInterval);
+                        if (this.canClick) this.handleTimeout();
+                    }
+                }, 1000);
+            }
+
+            handlePortraitClick(portrait) {
+                if (!this.canClick) return;
+
+                this.canClick = false;
+                clearInterval(this.countdownInterval);
+                this.timerDisplay.style.display = 'none';
+
+                const selectedEra = portrait.dataset.era;
+                const correct = (selectedEra === this.currentSpirit.era);
+
+                if (correct) {
+                    this.score++;
+                    playSFX('magic');
+                    this.messageArea.innerText = `Correcte! És: ${this.currentSpirit.title}`;
+                    this.messageArea.style.color = "#2ecc71";
+
+                    portrait.querySelector('.ghost-img').classList.add('success-anim');
+                    setTimeout(() => portrait.querySelector('.ghost-img').classList.remove('success-anim'), 1000);
+                } else {
+                    this.score = Math.max(0, this.score - 2); // Penalty
+                    playSFX('scare');
+                    this.messageArea.innerText = "Incorrecte! Maledicció!";
+                    this.messageArea.style.color = "#e74c3c";
+
+                    portrait.querySelector('.ghost-img').classList.add('fail-anim');
+                    setTimeout(() => portrait.querySelector('.ghost-img').classList.remove('fail-anim'), 500);
+                }
+
+                this.updateHUD();
+                this.currentRound++;
+                this.togglePortraits(false);
+
+                if (this.score >= 10) {
+                    setTimeout(() => this.winGame(), 1000);
+                } else {
+                    this.messageArea.innerText += " (Prem el gramòfon)";
+                }
+            }
+
+            handleTimeout() {
+                this.canClick = false;
+                this.timerDisplay.style.display = 'none';
+
+                this.score = Math.max(0, this.score - 2);
+                playSFX('scare');
+                this.messageArea.innerText = "Temps esgotat! (-2 Punts)";
+                this.messageArea.style.color = "#e74c3c";
+
+                this.updateHUD();
+                this.togglePortraits(false);
+                this.currentRound++;
+            }
+
+            togglePortraits(enable) {
+                this.portraits.forEach(p => {
+                    if (enable) p.classList.remove('disabled');
+                    else p.classList.add('disabled');
+                });
+            }
+
+            spawnNotes() {
+                if (!this.isPlaying) return;
+                const note = document.createElement('div');
+                note.className = 'note';
+                note.innerText = '♪';
+                note.style.left = (Math.random() * 100 - 50) + 'px';
+                document.getElementById('notes-container').appendChild(note);
+
+                setTimeout(() => note.remove(), 2000);
+                setTimeout(() => this.spawnNotes(), 500);
+            }
+
+            winGame() {
+                alert("Has alliberat tots els esperits! La mansió descansa en pau.");
+                if (window.Rewards) Rewards.unlockCard('medium_expert');
+                location.reload();
+            }
+
+            headerWin() {
+                this.winGame();
+            }
+        }
+
+        // STARTUP
+        let game;
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            game = new GramophoneGame();
+        }
+
+    </script>
+</body>
+
+</html>

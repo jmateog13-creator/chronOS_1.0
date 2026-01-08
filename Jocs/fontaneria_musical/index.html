@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fontaneria Musical: Harmonia Fluida</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --bg-dark: #1a1a2e;
+            --panel-bg: #16213e;
+            --pipe-empty: #4a4e69;
+            --pipe-active: #00ffcc;
+            /* Neon flow color */
+            --highlight: #e94560;
+            --pipe-blue: #00bcd4;
+        }
+
+        .active .pipe-content {
+            color: var(--pipe-active);
+            filter: drop-shadow(0 0 5px var(--pipe-active));
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-dark);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            color: white;
+            /* Default text color white */
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            position: relative;
+            background: #37474f;
+            border: 5px solid #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2rem;
+            color: var(--pipe-blue);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .btn-era {
+            background: #000;
+            border: 2px solid var(--pipe-blue);
+            color: var(--pipe-blue);
+            padding: 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-era:hover {
+            background: var(--pipe-blue);
+            color: #000;
+        }
+
+        /* Game Interface */
+        #grid-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 2px;
+            background: #000;
+            padding: 2px;
+        }
+
+        .cell {
+            background: #37474f;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .pipe {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pipe-content {
+            font-size: 3rem;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            color: white;
+            /* Ensure pipes are white */
+        }
+
+        .start-point {
+            background: var(--pipe-blue);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            /* Larger font */
+            padding: 5px;
+            text-align: center;
+            border: 3px solid white;
+            box-shadow: 0 0 10px var(--pipe-blue);
+            /* Glow effect */
+            z-index: 2;
+        }
+
+        .end-point {
+            background: #263238;
+            /* Darker/Empty look */
+            color: #aaa;
+            /* Dimmed text */
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.8rem;
+            padding: 5px;
+            text-align: center;
+            border: 3px dashed #555;
+            /* Dashed border for "empty" slot */
+            box-sizing: border-box;
+            z-index: 2;
+        }
+
+        .end-point.active {
+            background: var(--pipe-active) !important;
+            color: #004d40 !important;
+            border: 3px solid white !important;
+            box-shadow: 0 0 15px var(--pipe-active);
+        }
+
+        #inventory {
+            height: 100px;
+            background: #263238;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .inv-item {
+            width: 60px;
+            height: 60px;
+            background: #455a64;
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        #hud {
+            padding: 10px;
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #212121;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            display: none;
+            color: white;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>FONTANERIA MUSICAL</h1>
+            <p>Connecta la pregunta amb la resposta correcta!</p>
+            <div class="era-grid">
+                <button class="btn-era" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="btn-era" data-era="renaixement">Renaixement</button>
+                <button class="btn-era" data-era="barroc">Barroc</button>
+                <button class="btn-era" data-era="classicisme">Classicisme</button>
+                <button class="btn-era" data-era="romanticisme">Romanticisme</button>
+                <button class="btn-era" data-era="segle_xx">Segle XX</button>
+            </div>
+        </div>
+
+        <!-- Game Interface -->
+        <div id="hud" class="hidden">
+            <span>NIVELL: <span id="level">1</span>/5</span>
+            <div>
+                <button onclick="clearGrid()"
+                    style="font-family: 'Press Start 2P', cursive; cursor: pointer; padding: 10px; background: #e94560; border: none; color: white; margin-right: 10px;">ESBORRAR</button>
+                <button onclick="checkFlow()"
+                    style="font-family: 'Press Start 2P', cursive; cursor: pointer; padding: 10px; background: var(--pipe-blue); border: none; color: white;">OBRIR
+                    AIXETA</button>
+            </div>
+        </div>
+
+        <div id="grid-container" class="hidden">
+            <!-- Grid injected here -->
+        </div>
+
+
+
+        <div id="inventory" class="hidden">
+            <div class="inv-item" draggable="true" data-type="straight">║</div>
+            <div class="inv-item" draggable="true" data-type="corner">╚</div>
+            <div class="inv-item" draggable="true" data-type="cross">╬</div>
+            <div class="inv-item" draggable="true" data-type="t_shape">╩</div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="end-title"></h2>
+            <p id="end-msg"></p>
+            <button class="btn-era" id="next-btn">SEGÜENT</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Format: Question (Start) -> 3 Options (Ends), Correct Index
+        const DB = {
+            edat_mitjana: [
+                { q: "Cant monòdic religiós", options: ["Gregorià", "Rap", "Opera"], correct: 0, info: "El Cant Gregorià és la base de la música litúrgica medieval." },
+                { q: "Escriptura musical antiga", options: ["Neumes", "Tabs", "MP3"], correct: 0, info: "Els neumes indicaven l'ascens o descens de la melodia." },
+                { q: "Músics profans rics", options: ["Trobadors", "DJs", "Joglars"], correct: 0, info: "Els trobadors eren poetes i músics de la noblesa." },
+                { q: "Músics profans pobres", options: ["Joglars", "Trobadors", "Monjos"], correct: 0, info: "Els joglars viatjaven de poble en poble entretenint la gent." },
+                { q: "Instrument de corda fregada", options: ["Viola de Roda", "Guitarra", "Piano"], correct: 0, info: "La viola de roda és típica de la música medieval." }
+            ],
+            renaixement: [
+                { q: "Diverses veus alhora", options: ["Monodia", "Polifonia", "Silenci"], correct: 1, info: "La polifonia és la textura clau del Renaixement." },
+                { q: "Gran invent per difondre música", options: ["Ràdio", "Impremta", "Spotify"], correct: 1, info: "Petrucci va imprimir la primera partitura l'any 1501." },
+                { q: "Forma vocal religiosa", options: ["Missa", "Opera", "Musical"], correct: 0, info: "La Missa polifònica va ser molt important." },
+                { q: "Forma vocal profana", options: ["Madrigal", "Cant Gregorià", "Simfonia"], correct: 0, info: "El Madrigal expressa els sentiments del text." },
+                { q: "Instrument de corda polsat", options: ["Llaüt", "Saxòfon", "Bateria"], correct: 0, info: "El llaüt era l'instrument domèstic per excel·lència." }
+            ],
+            barroc: [
+                { q: "Motor rítmic i harmònic", options: ["Baix Continu", "Bateria", "Solo"], correct: 0, info: "El baix continu, sovint clavicèmbal i violoncel, sustenta l'orquestra." },
+                { q: "Compositor de les 4 Estacions", options: ["Bach", "Vivaldi", "Händel"], correct: 1, info: "Vivaldi va compondre aquests famosos concerts per a violí." },
+                { q: "Espectacle total nascut al 1600", options: ["Òpera", "Cinema", "Circ"], correct: 0, info: "L'òpera neix a Florència per recuperar la tragèdia grega." },
+                { q: "Mestre del contrapunt", options: ["Bach", "Mozart", "Beethoven"], correct: 0, info: "Bach és considerat el pare de la música moderna." },
+                { q: "Cantant estrella (home amb veu aguda)", options: ["Castrato", "Tenor", "Baríton"], correct: 0, info: "Farinelli va ser el castrato més famós." }
+            ],
+            classicisme: [
+                { q: "Estructura instrumental clau", options: ["Sonata", "Fuga", "Motet"], correct: 0, info: "La forma sonata organitza la majoria d'obres del classicisme." },
+                { q: "Geni de Salzburg", options: ["Beethoven", "Mozart", "Haydn"], correct: 1, info: "Mozart va compondre més de 600 obres." },
+                { q: "Pare de la Simfonia", options: ["Haydn", "Bach", "Chopin"], correct: 0, info: "Haydn va establir l'estructura de la simfonia." },
+                { q: "Agrupació de cambra típica", options: ["Quartet de corda", "Big Band", "Orquestra"], correct: 0, info: "El quartet consta de 2 violins, viola i violoncel." },
+                { q: "Instrument rei del piano", options: ["Pianoforte", "Clavicèmbal", "Orgue"], correct: 0, info: "El pianoforte permetia fer dinàmiques (fort-fluix)." }
+            ],
+            romanticisme: [
+                { q: "Cançó i poesia alemanya", options: ["Lied", "Aria", "Pop"], correct: 0, info: "Schubert és el gran mestre del Lied." },
+                { q: "Piano virtuós", options: ["Chopin", "Vivaldi", "Bach"], correct: 0, info: "Chopin va revolucionar la tècnica pianística." },
+                { q: "Òpera total", options: ["Wagner", "Mozart", "Lully"], correct: 0, info: "Wagner buscava l'obra d'art total." },
+                { q: "Ritme lliure expressiu", options: ["Rubato", "Metrònom", "Marxa"], correct: 0, info: "El rubato permet accelerar o frenar per expressivitat." },
+                { q: "Ballet famós de Tchaikovsky", options: ["El Llac dels Cignes", "La Traviata", "Carmen"], correct: 0, info: "Tchaikovsky va elevar la música de ballet." }
+            ],
+            segle_xx: [
+                { q: "Trencar la tonalitat", options: ["Atonalisme", "Tonalisme", "Classicisme"], correct: 0, info: "Schönberg va obrir la porta a l'atonalisme." },
+                { q: "Música repetitiva", options: ["Minimalisme", "Sorollisme", "Barroc"], correct: 0, info: "Philip Glass i Steve Reich són referents del minimalisme." },
+                { q: "Música amb sons gravats", options: ["Concreta", "Absoluta", "Religiosa"], correct: 0, info: "Pierre Schaeffer utilitzava sons reals (trens, portes)." },
+                { q: "Ritmes terces i irregulars", options: ["Stravinsky", "Mozart", "Bach"], correct: 0, info: "La Consagració de la Primavera va causar un escàndol." },
+                { q: "Silenci com a música", options: ["4'33''", "9' Symphony", "5ª Symphony"], correct: 0, info: "John Cage va demostrar que el silenci absolut no existeix." }
+            ]
+        };
+
+        const ROWS = 6;
+        const COLS = 6;
+
+        // 0: N, 1: E, 2: S, 3: W
+        const PIPES = {
+            straight: [0, 2], // North-South
+            corner: [0, 1],   // North-East
+            cross: [0, 1, 2, 3],
+            t_shape: [1, 2, 3] // E-S-W (T pointing Up, open down/left/right) -> wait, standard rotation
+            // Let's standardise: 
+            // Straight: | (N-S)
+            // Corner: L (N-E)
+            // T: T (W-S-E) ? Let's stick to standard exits for rotation 0
+        };
+        // Refined Defaults (Rotation 0)
+        // Straight: N(0), S(2)
+        // Corner: N(0), E(1) -> 'L' shape
+        // T-shape: E(1), S(2), W(3) -> 'T' shape pointing down
+        // Cross: All
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let currentLevelIndex = 0;
+        let currentLevelData = null;
+        let grid = []; // 6x6
+        let completedEras = new Set();
+
+        let startPos = { r: 0, c: 0 };
+        let endPositions = []; // Array of objects {r, c, label, isCorrect}
+
+        // ... (AUDIO) ...
+
+        // --- LOGIC ---
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            if (btn.parentElement.id === 'feedback-overlay') return;
+            btn.addEventListener('click', () => {
+                startGame(btn.dataset.era);
+            });
+        });
+
+        function startGame(era) {
+            currentEra = era;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('grid-container').classList.remove('hidden');
+            document.getElementById('inventory').classList.remove('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+
+            currentLevelIndex = 0;
+            initLevel();
+        }
+
+        function initLevel() {
+            // Get level data
+            const eraLevels = DB[currentEra] || DB['edat_mitjana'];
+
+            if (currentLevelIndex >= eraLevels.length) {
+                // Era Complete
+                completedEras.add(currentEra);
+                returnToMenu();
+                return;
+            }
+
+            currentLevelData = eraLevels[currentLevelIndex];
+
+            // Update HUD
+            document.getElementById('level').textContent = `${currentLevelIndex + 1}`;
+            document.getElementById('feedback-overlay').style.display = 'none';
+
+            createGrid();
+        }
+
+        function returnToMenu() {
+            document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('grid-container').classList.add('hidden');
+            document.getElementById('inventory').classList.add('hidden');
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('feedback-overlay').style.display = 'none';
+            updateEraButtons();
+        }
+
+        function updateEraButtons() {
+            document.querySelectorAll('.btn-era[data-era]').forEach(btn => {
+                if (completedEras.has(btn.dataset.era)) {
+                    btn.style.background = '#00ffcc';
+                    btn.style.color = '#000';
+                    if (!btn.textContent.includes('✓')) btn.textContent += ' ✓';
+                }
+            });
+        }
+
+        // ... (createGrid, handleDrop, etc.) ...
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'flow') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.5);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'click') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'fail') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.5);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // --- LOGIC ---
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            if (btn.parentElement.id === 'feedback-overlay') return;
+            btn.addEventListener('click', () => {
+                startGame(btn.dataset.era);
+            });
+        });
+
+        function startGame(era) {
+            currentEra = era;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('grid-container').classList.remove('hidden');
+            document.getElementById('inventory').classList.remove('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+
+            currentLevelIndex = 0;
+            initLevel();
+        }
+
+        function initLevel() {
+            // Get level data
+            const eraLevels = DB[currentEra] || DB['edat_mitjana'];
+
+            if (currentLevelIndex >= eraLevels.length) {
+                // Era Complete
+                completedEras.add(currentEra);
+                returnToMenu();
+                return;
+            }
+
+            currentLevelData = eraLevels[currentLevelIndex];
+
+            // Update HUD
+            document.getElementById('level').textContent = `${currentLevelIndex + 1}`;
+            document.getElementById('feedback-overlay').style.display = 'none';
+
+            createGrid();
+        }
+
+        function createGrid() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            grid = [];
+
+            // 1. Place Start Node (Top or Left usually, let's randomize slightly but keep accessible)
+            // Let's force Start at Top-Center area
+            startPos = { r: 1, c: 2 };
+
+            // 2. Place 3 End Nodes (Bottom area)
+            // Ensure they are spaced out
+            endPositions = [];
+            const cols = [0, 3, 5]; // Spread out columns
+
+            currentLevelData.options.forEach((optText, idx) => {
+                endPositions.push({
+                    r: ROWS - 2, // Near bottom
+                    c: cols[idx],
+                    label: optText,
+                    isCorrect: (idx === currentLevelData.correct)
+                });
+            });
+
+            // Init Grid Data
+            for (let r = 0; r < ROWS; r++) {
+                grid[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+
+                    let isSpecial = false;
+
+                    // START NODE
+                    if (r === startPos.r && c === startPos.c) {
+                        cell.classList.add('start-point');
+                        cell.innerText = currentLevelData.q;
+                        // Auto-pipe (Cross)
+                        grid[r][c] = { type: 'cross', rot: 0, locked: true };
+                        isSpecial = true;
+                    }
+
+                    // END NODES
+                    endPositions.forEach(end => {
+                        if (r === end.r && c === end.c) {
+                            cell.classList.add('end-point');
+                            cell.innerText = end.label;
+                            // Auto-pipe (Cross) to allow connection from any side
+                            grid[r][c] = { type: 'cross', rot: 0, locked: true, isGoal: true, isCorrect: end.isCorrect };
+                            isSpecial = true;
+                        }
+                    });
+
+                    if (!isSpecial) {
+                        grid[r][c] = null; // Empty
+                        cell.addEventListener('dragover', e => e.preventDefault());
+                        cell.addEventListener('drop', handleDrop);
+                        cell.addEventListener('click', rotatePipe);
+                    } else {
+                        // Special cells still render the pipe underneath logic, needed for connectivity
+                        // Actually we should render the pipe visual too if we want it to look connected
+                        // But CSS background covers it...
+                        // Let's leave as is, logic exists, visual is the box.
+                    }
+
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function clearGrid() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (grid[r][c] && !grid[r][c].locked) {
+                        grid[r][c] = null;
+                        const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+                        const pipe = cell.querySelector('.pipe-content');
+                        if (pipe) pipe.remove();
+                    }
+                }
+            }
+            playSound('click');
+            resetFlowViz();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const cell = e.currentTarget;
+            const r = parseInt(cell.dataset.r);
+            const c = parseInt(cell.dataset.c);
+
+            if (grid[r][c] && grid[r][c].locked) return;
+
+            const type = e.dataTransfer.getData('text/plain');
+            if (!type) return;
+
+            grid[r][c] = { type: type, rot: 0 };
+            renderCell(r, c);
+            playSound('click');
+            resetFlowViz();
+        }
+
+        function renderCell(r, c) {
+            const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+            const oldPipe = cell.querySelector('.pipe-content');
+            if (oldPipe) oldPipe.remove();
+
+            const p = grid[r][c];
+            if (!p) return;
+
+            const div = document.createElement('div');
+            div.className = `pipe-content`;
+            div.style.transform = `rotate(${p.rot}deg)`;
+            div.textContent = getPipeIcon(p.type);
+            cell.appendChild(div);
+        }
+
+        function getPipeIcon(type) {
+            if (type === 'straight') return '║';
+            if (type === 'corner') return '╚';
+            if (type === 'cross') return '╬';
+            if (type === 't_shape') return '╩';
+            return '';
+        }
+
+        function rotatePipe(e) {
+            const cell = e.currentTarget;
+            const r = parseInt(cell.dataset.r);
+            const c = parseInt(cell.dataset.c);
+
+            if (!grid[r][c] || grid[r][c].locked) return;
+
+            grid[r][c].rot = (grid[r][c].rot + 90) % 360;
+            renderCell(r, c);
+            playSound('click');
+            resetFlowViz();
+        }
+
+        document.querySelectorAll('.inv-item').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', item.dataset.type);
+            });
+        });
+
+        // --- FLOW LOGIC (BFS) ---
+        function checkFlow() {
+            resetFlowViz();
+
+            const queue = [{ r: startPos.r, c: startPos.c, fromDir: -1 }];
+            const visited = new Set();
+            visited.add(`${startPos.r},${startPos.c}`);
+
+            const activeCells = [];
+            let correctDestReached = false;
+            let incorrectDestReached = false;
+
+            while (queue.length > 0) {
+                const curr = queue.shift();
+                activeCells.push(`${curr.r},${curr.c}`);
+
+                const currPipe = grid[curr.r][curr.c];
+
+                // Check connectivity
+                if (currPipe.isGoal) {
+                    if (currPipe.isCorrect) correctDestReached = true;
+                    else incorrectDestReached = true;
+                }
+
+                const exits = getExits(currPipe.type, currPipe.rot);
+
+                // Neighbors: N(0), E(1), S(2), W(3)
+                const deltas = [
+                    { r: -1, c: 0, dir: 0 }, // N
+                    { r: 0, c: 1, dir: 1 },  // E
+                    { r: 1, c: 0, dir: 2 },  // S
+                    { r: 0, c: -1, dir: 3 }  // W
+                ];
+
+                for (let d of deltas) {
+                    // Check if current pipe has output in this direction
+                    if (!exits.includes(d.dir)) continue;
+
+                    const nr = curr.r + d.r;
+                    const nc = curr.c + d.c;
+                    const key = `${nr},${nc}`;
+
+                    if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+                    if (visited.has(key)) continue;
+
+                    const nextPipe = grid[nr][nc];
+                    if (!nextPipe) continue;
+
+                    // Check if next pipe accepts connection (Reciprocal)
+                    const requiredInput = (d.dir + 2) % 4; // Output N(0) needs Input S(2)
+                    const nextExits = getExits(nextPipe.type, nextPipe.rot);
+
+                    if (nextExits.includes(requiredInput)) {
+                        visited.add(key);
+                        queue.push({ r: nr, c: nc, fromDir: requiredInput });
+                    }
+                }
+            }
+
+            // Visual Feedback
+            activeCells.forEach(key => {
+                const [r, c] = key.split(',').map(Number);
+                const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+                if (cell) cell.classList.add('active');
+            });
+
+            // Win/Fail Logic
+            if (correctDestReached) {
+                playSound('flow');
+                setTimeout(() => endGame(true), 500);
+            } else if (incorrectDestReached) {
+                playSound('fail');
+                setTimeout(() => endGame(false, "Has connectat amb la resposta incorrecta!"), 500);
+            } else {
+                playSound('fail');
+                // Just shake button
+                const btn = document.querySelector('#hud button');
+                btn.style.background = '#e94560';
+                setTimeout(() => btn.style.background = 'var(--pipe-blue)', 200);
+            }
+        }
+
+        // Helper to get exits [0,1,2,3]
+        function getExits(type, rot) {
+            // rot is 0, 90, 180, 270. Steps = rot/90
+            const steps = rot / 90;
+            const base = PIPES[type];
+            return base.map(d => (d + steps) % 4);
+        }
+
+        function resetFlowViz() {
+            document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+        }
+
+        function endGame(win, msgOverride) {
+            const overlay = document.getElementById('feedback-overlay');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+            const btn = document.getElementById('next-btn'); // Now this ID exists
+
+            overlay.style.display = 'flex';
+            if (win) {
+                title.textContent = "CORRECTE!";
+                title.style.color = "#00ffcc";
+                msg.textContent = currentLevelData.info;
+                btn.textContent = "SEGÜENT";
+
+                // Remove old listeners to avoid stacking
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+
+                newBtn.onclick = () => {
+                    currentLevelIndex++;
+                    initLevel();
+                };
+            } else {
+                title.textContent = "INCORRECTE";
+                title.style.color = "#e94560";
+                msg.textContent = msgOverride || "L'aigua no flueix correctament.";
+                btn.textContent = "REINTENTAR";
+
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+
+                newBtn.onclick = () => {
+                    overlay.style.display = 'none';
+                    resetFlowViz();
+                };
+            }
+        } // ... Drag and Drop existing logic ...
+
+    </script>
+</body>
+
+</html>
+```

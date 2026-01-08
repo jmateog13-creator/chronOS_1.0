@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Cronològic - Història dels Gains</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --gym-color: #212121;
+            --accent: #ffeb3b;
+            --bag-bg: #424242;
+            --text-light: #eee;
+        }
+
+        body {
+            background-color: #121212;
+            color: var(--text-light);
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-family: 'Black Ops One', cursive;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 2.5rem;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            padding: 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Top Bar */
+        #top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        /* Gym Bag (Drop Zone) */
+        #gym-bag {
+            background: var(--bag-bg);
+            border: 5px solid #616161;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            /* Allow character to overlap if needed, or be container */
+        }
+
+        .bag-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: #bdbdbd;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #slot-loc-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        #slots-routine {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+            justify-items: center;
+            max-width: 600px;
+        }
+
+        .slot {
+            width: 110px;
+            height: 110px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed #9e9e9e;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 5px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot.hover {
+            background: rgba(255, 235, 59, 0.1);
+            border-color: var(--accent);
+        }
+
+        .slot.filled {
+            border-style: solid;
+            background: #333;
+        }
+
+        .slot-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .slot-img-preview {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+            margin-bottom: 5px;
+            z-index: 2;
+        }
+
+        /* Client Info */
+        #client-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 300px;
+            border-left: 4px solid var(--accent);
+            z-index: 10;
+        }
+
+        #c-img {
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            height: 350px;
+            z-index: 5;
+            filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.5));
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        /* Inventory */
+        #inventory {
+            height: 350px;
+            background: #1e1e1e;
+            border-top: 3px solid #333;
+            overflow-y: auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            /* Wider for Icon + Text */
+            gap: 15px;
+        }
+
+        .inv-item {
+            background: #424242;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: grab;
+            text-align: left;
+            font-size: 1.1rem;
+            /* Larger text */
+            border: 2px solid #555;
+            transition: transform 0.2s, background 0.2s;
+            user-select: none;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-height: 80px;
+        }
+
+        .inv-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .inv-item:hover {
+            transform: translateY(-5px);
+            background: #616161;
+            border-color: var(--accent);
+        }
+
+        .inv-item[data-type="loc"] {
+            background: #546e7a;
+            /* Slate Grey for Locations */
+            border: 1px solid #1c4a60;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Buttons */
+        button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+            align-self: center;
+        }
+
+        button:hover {
+            background: #ffee58;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: fixed;
+            background: rgba(33, 33, 33, 0.95);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            border: 1px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            max-width: 250px;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        #start-screen p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        /* Volume Control */
+        #volume-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--accent);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+        }
+
+        #volume-control input[type="range"] {
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal-hidden {
+            display: none;
+        }
+
+        #custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #212121;
+            padding: 30px;
+            border-radius: 15px;
+            border: 4px solid var(--accent);
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #modal-title {
+            color: var(--accent);
+            font-family: 'Black Ops One', cursive;
+            margin-top: 0;
+        }
+
+        #modal-message {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>GYM CRONOLÒGIC</h1>
+            <p>Benvingut a l'entrenador personal del temps.<br>
+                Els teus clients són figures històriques que volen posar-se en forma.<br>
+                Escull la <strong>LOCALITZACIÓ</strong> adequada i prepara una rutina de <strong>4 MOVIMENTS</strong>
+                que s'ajustin a la seva època.<br>
+                Fixa't en les pistes!</p>
+            <button onclick="startGameInput()">COMENÇAR WORKOUT</button>
+        </div>
+
+        <div id="top-bar">
+            <span>CLIENT: <span id="c-count">1</span>/12</span>
+            <span>BATUTS: <span id="lives">🥤🥤🥤🥤🥤</span></span>
+        </div>
+
+        <div id="gym-bag">
+            <!-- Client Image -->
+            <img id="c-img" src="" alt="Client Character">
+
+            <div id="client-overlay">
+                <h3 id="c-name" style="margin:0; color:var(--accent);">NAME</h3>
+                <p id="c-req" style="margin:10px 0 0 0;">Request text here.</p>
+            </div>
+
+            <!-- Location Section -->
+            <div class="bag-section">
+                <div class="section-title">📍 LOCALITZACIÓ</div>
+                <div id="slot-loc-container">
+                    <div class="slot" data-type="loc" id="slot-loc">
+                        <div class="slot-icon">🏟️</div>
+                        <div>LLOC</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Routine Section -->
+            <div class="bag-section">
+                <div class="section-title">💪 RUTINA (4 MOVIMENTS)</div>
+                <div id="slots-routine">
+                    <div class="slot" data-type="move" id="slot-m1">
+                        <div class="slot-icon">💪</div>
+                        <div>MOV 1</div>
+                    </div>
+                    <div class="slot" data-type="move" id="slot-m2">
+                        <div class="slot-icon">💪</div>
+                        <div>MOV 2</div>
+                    </div>
+                    <div class="slot" data-type="move" id="slot-m3">
+                        <div class="slot-icon">💪</div>
+                        <div>MOV 3</div>
+                    </div>
+                    <div class="slot" data-type="move" id="slot-m4">
+                        <div class="slot-icon">💪</div>
+                        <div>MOV 4</div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="validate()">VALIDAR RUTINA</button>
+        </div>
+
+        <div id="inventory">
+            <!-- Items populated by JS -->
+        </div>
+    </div>
+
+    <!-- Tooltip Element -->
+    <div id="tooltip"></div>
+
+    <!-- Audio & Volume Control -->
+    <audio id="bg-music" loop>
+        <source src="Iron Choir.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="volume-control">
+        <span>🔇</span>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5">
+        <span>🔊</span>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="custom-modal" class="modal-hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">TITLE</h2>
+            <p id="modal-message">Message goes here.</p>
+            <button onclick="closeModal()">TANCAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // 6 Eras, each with 1 Location and 4 Unique Moves
+        const ERA_ROUTINES = {
+            "edat_mitjana": {
+                loc: "loc_monestir",
+                moves: ["mov_resar", "mitjana2", "mitjana3", "mitjana4"]
+            },
+            "renaixement": {
+                loc: "reniaxmeent",
+                moves: ["exercisi", "renaixment2", "reniaxement3", "reniaxement4"]
+            },
+            "barroc": {
+                loc: "barroc",
+                moves: ["barroc1", "barroc2", "barroc3", "barroc4"]
+            },
+            "classicisme": {
+                loc: "classicisme",
+                moves: ["clasic1", "clasic2", "clasic3", "clasic4"]
+            },
+            "romanticisme": {
+                loc: "romanticisme",
+                moves: ["romantic1", "romantic2", "romantic3", "romantic4"]
+            },
+            "segle_xx": {
+                loc: "segleXX",
+                moves: ["segleXX1", "segleXX2", "segleXX3", "segleXX4"]
+            }
+        };
+
+        const ASSETS = [
+            // Locations (Riddles)
+            { id: "loc_monestir", label: "Monestir Fosc", type: "loc", hint: "Un refugi de pedra i silenci, on l'únic so és el cant gregorià i el gir de les pàgines dels manuscrits." },
+            { id: "reniaxmeent", label: "Cercle de Vitruvi", type: "loc", hint: "Un espai on la geometria sagrada i la anatomia s'uneixen per definir la perfecció humana." },
+            { id: "barroc", label: "Sala dels Miralls", type: "loc", hint: "Un passadís infinit de reflexos daurats i cristall, dissenyat per encegar amb la grandesa del Rei Sol." },
+            { id: "classicisme", label: "Saló de te Vianès", type: "loc", hint: "Un indret de conversa polida i porcellana fina, on l'ordre i l'elegància són la norma suprema." },
+            { id: "romanticisme", label: "Penya-segat Boirós", type: "loc", hint: "Davant la immensitat de la natura salvatge i la boira, l'home es sent petit i l'ànima es desborda." },
+            { id: "segleXX", label: "Pista Disco Neó", type: "loc", hint: "Llums estroboscòpiques, ritmes sintètics i colors que brillen en la foscor d'una nit sense fi." },
+
+            // Moves (Medieval)
+            { id: "mov_resar", label: "Sentadilla de Pregària", type: "move", hint: "Baixa el cos amb humilitat, mantenint l'esquena recta com si portessis el pes dels pecats." },
+            { id: "mitjana2", label: "Rem amb Fuet", type: "move", hint: "Un moviment rítmic i dolorós per a l'esquena, ideal per purificar la carn rebel." },
+            { id: "mitjana3", label: "Bíceps de Campaner", type: "move", hint: "Estira la corda cap avall amb tota la força per convocar els fidels a l'oració de l'àngelus." },
+            { id: "mitjana4", label: "Pes Mort amb Nap", type: "move", hint: "Aixeca els fruits de la terra amb esforç, l'aliment bàsic que sustenta la vida monàstica." },
+
+            // Moves (Renaixement)
+            { id: "exercisi", label: "Obertura Vitruviana", type: "move", hint: "Estén braços i cames buscant tocar el cercle i el quadrat imaginaris que t'envolten." },
+            { id: "renaixment2", label: "Estirament Auri", type: "move", hint: "Sigueix la corba d'una espiral perfecta amb el teu cos, imitant la proporció divina de la natura." },
+            { id: "reniaxement3", label: "Elevació de Pincell", type: "move", hint: "Un moviment delicat de canell i avantbraç, necessari per plasmar detalls en un fresc gegantí." },
+            { id: "reniaxement4", label: "Dissecció de Tríceps", type: "move", hint: "Separa i estudia cada fibra muscular amb precisió quirúrgica per comprendre la mecànica del moviment." },
+
+            // Moves (Barroc)
+            { id: "barroc1", label: "Gambada Reial", type: "move", hint: "Un pas endavant exagerat i teatral, mostrant els panxells ben formats amb mitges de seda." },
+            { id: "barroc2", label: "Gir de Minuet", type: "move", hint: "Un gir sobre si mateix ple d'ornaments innecessaris però visualment impactants, com una columna salomònica." },
+            { id: "barroc3", label: "Coll de Perruca", type: "move", hint: "Mantingues el cap ben alt i rígid per evitar que l'estructura de pols blanca es desmoroni." },
+            { id: "barroc4", label: "Estocada Frontal", type: "move", hint: "Un atac ràpid i precís, l'única forma de resoldre disputes d'honor al clarejar." },
+
+            // Moves (Classicisme)
+            { id: "clasic1", label: "Dits de Pianista", type: "move", hint: "Exercita la independència de cada dit per executar escales ràpides i trinos cristal·lins." },
+            { id: "clasic2", label: "Press de Batuta", type: "move", hint: "Marca el compàs amb autoritat i claredat, controlant una massa de músics amb un sol gest." },
+            { id: "clasic3", label: "Saltiró Elegant", type: "move", hint: "Un petit salt controlat i simètric, sense perdre la compostura ni despentinar-se." },
+            { id: "clasic4", label: "Elevació de Tassa", type: "move", hint: "Aixeca el pes lleuger amb el dit petit estirat, mostrant refinament en cada xarrup." },
+
+            // Moves (Romanticisme)
+            { id: "romantic1", label: "Crits al Buid", type: "move", hint: "Allibera tota l'angoixa existencial amb una expulsió d'aire dramàtica cap a un cel tempestuós." },
+            { id: "romantic2", label: "Esquinçament de Camisa", type: "move", hint: "Un moviment explosiu de pit i braços que simbolitza la ruptura amb les normes socials i la passió desbridada." },
+            { id: "romantic3", label: "Córrer sota la Pluja", type: "move", hint: "Un càrdio intens contra els elements, buscant la fusió amb la força incontrolable de la natura." },
+            { id: "romantic4", label: "Escriptura Furiosa", type: "move", hint: "La ploma corre sobre el paper intentant atrapar els dimonis interiors abans que s'escapin." },
+
+            // Moves (Segle XX)
+            { id: "segleXX1", label: "Jumping Jacks", type: "move", hint: "Salta obrint i tancant, seguint el ritme d'una classe massiva dissenyada per cremar calories ràpidament." },
+            { id: "segleXX2", label: "Teclat Sincopat", type: "move", hint: "Els dits ballen sobre tecles de plàstic per crear sons que no existeixen a la natura." },
+            { id: "segleXX3", label: "El Robot", type: "move", hint: "Aïlla cada articulació en moviments rígids i tallats, imitant la màquina que ha de substituir l'home." },
+            { id: "segleXX4", label: "Salt de Trampolí", type: "move", hint: "Desafia la gravetat per un instant abans de trencar la superfície de l'aigua amb tècnica olímpica." }
+        ];
+
+        // 12 Clients (2 per Era)
+        const CLIENTS = [
+            // Medieval
+            { name: "Monjo Cisterenc", era: "edat_mitjana", img: "monjo", req: "Vull entrenar l'ànima i el cos sense sortir de la cel·la." },
+            { name: "Penitent Anònim", era: "edat_mitjana", img: "penitent", req: "Necessito sofrir per guanyar el cel (i bessons)." },
+            // Renaixement
+            { name: "Leonardo", era: "renaixement", img: "davinci", req: "Busco la proporció perfecta en cada múscul." },
+            { name: "Miquel Àngel", era: "renaixement", img: "miquelangel", req: "Vull esculpir el meu cos com si fos marbre." },
+            // Barroc
+            { name: "Lluís XIV", era: "barroc", img: "lluis", req: "Les meves cames han de ser l'enveja de Versalles." },
+            { name: "Mestre de Dansa", era: "barroc", img: "mestrededansa", req: "Necessito elegància i força per la reverència final." },
+            // Classicisme
+            { name: "Mozart", era: "classicisme", img: "mozart", req: "Vull dits ràpids i ment clara. Res massa feixuc." },
+            { name: "Haydn", era: "classicisme", img: "haydn", req: "Una rutina estructurada i sense sorpreses, si us plau." },
+            // Romanticisme
+            { name: "Beethoven", era: "romanticisme", img: "beethoven", req: "Vull cridar contra el destí mentre aixeco pedres!" },
+            { name: "Poeta Maleït", era: "romanticisme", img: "poetamaleit", req: "El meu dolor interior necessita sortir en forma de suor." },
+            // Segle XX
+            { name: "Jane Fonda", era: "segle_xx", img: "janefonda", req: "Vull cremar calories amb ritme i escalfadors!" },
+            { name: "Arnold", era: "segle_xx", img: "arnold", req: "I'll be back... amb espatlles més grans." }
+        ];
+
+        // --- AUDIO LOGIC ---
+        const audio = document.getElementById('bg-music');
+        const volSlider = document.getElementById('vol-slider');
+
+        volSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        // Attempt to play on interaction
+        document.body.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.volume = volSlider.value;
+                audio.play().catch(e => console.log("Audio play failed:", e));
+            }
+        }, { once: true });
+
+        // --- GAME STATE ---
+        var queue = [];
+        var client = null;
+        var lives = 5;
+        var kit = { loc: null, moves: new Set() };
+        var solved = 0;
+
+        // NEW: Modal Function
+        function showModal(title, msg) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = msg;
+            const m = document.getElementById('custom-modal');
+            m.classList.remove('modal-hidden');
+            m.style.display = 'flex'; // Force flex
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('modal-hidden');
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        function init() {
+            // Populate Inventory
+            const inv = document.getElementById('inventory');
+            // Shuffle
+            let items = [...ASSETS].sort(() => Math.random() - 0.5);
+
+            items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'inv-item';
+
+                // Icon Image
+                const img = document.createElement('img');
+                img.src = `img/${item.id}.png`;
+                img.alt = item.label;
+                img.onerror = function () { this.style.display = 'none'; }; // Hide if missing
+                el.appendChild(img);
+
+                // Text Label
+                const span = document.createElement('span');
+                span.textContent = item.label;
+                el.appendChild(span);
+
+                el.draggable = true;
+                el.dataset.hint = item.hint;
+                el.dataset.type = item.type; // For CSS distinction
+
+                el.ondragstart = (e) => {
+                    e.dataTransfer.setData('id', item.id);
+                    e.dataTransfer.setData('type', item.type);
+                    e.dataTransfer.setData('label', item.label);
+                };
+
+                // Tooltip events
+                el.onmouseenter = showTooltip;
+                el.onmousemove = moveTooltip;
+                el.onmouseleave = hideTooltip;
+
+                inv.appendChild(el);
+            });
+
+            // Slot events
+            document.querySelectorAll('.slot').forEach(s => {
+                s.ondragover = e => { e.preventDefault(); s.classList.add('hover'); }
+                s.ondragleave = e => s.classList.remove('hover');
+                s.ondrop = handleDrop;
+            });
+        }
+
+        function startGameInput() {
+            document.getElementById('start-screen').style.display = 'none';
+            startGame();
+        }
+
+        // TOOLTIP LOGIC
+        const tooltip = document.getElementById('tooltip');
+
+        function showTooltip(e) {
+            const hint = e.target.dataset.hint;
+            if (hint) {
+                tooltip.textContent = hint;
+                tooltip.style.display = 'block';
+                moveTooltip(e);
+            }
+        }
+
+        function moveTooltip(e) {
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const s = e.target.closest('.slot');
+            s.classList.remove('hover');
+
+            const id = e.dataTransfer.getData('id');
+            const type = e.dataTransfer.getData('type');
+            const label = e.dataTransfer.getData('label');
+
+            if (!id) return;
+
+            // Logic
+            if (s.dataset.type === 'loc') {
+                if (type !== 'loc') return;
+                kit.loc = id;
+                s.querySelector('div:last-child').textContent = label;
+                s.classList.add('filled');
+
+                // Show Image in Slot
+                let img = s.querySelector('.slot-img-preview');
+                if (!img) {
+                    img = document.createElement('img');
+                    img.className = 'slot-img-preview';
+                    s.insertBefore(img, s.querySelector('.slot-icon'));
+                    s.querySelector('.slot-icon').style.display = 'none';
+                }
+                img.src = `img/${id}.png`;
+
+            } else {
+                if (type !== 'move') return;
+
+                // --- FIX VALIDATION LOGIC ---
+                // If this item is already in another slot, ignore to prevent duplicates
+                if (kit.moves.has(id)) return;
+
+                // IMPORTANT: If we are replacing an existing item in this slot, remove the old one from the Set
+                const oldId = s.dataset.id;
+                if (oldId) {
+                    kit.moves.delete(oldId);
+                }
+
+                s.dataset.id = id;
+                kit.moves.add(id);
+                s.querySelector('div:last-child').textContent = label;
+                s.classList.add('filled');
+
+                // Show Image in Slot
+                let img = s.querySelector('.slot-img-preview');
+                if (!img) {
+                    img = document.createElement('img');
+                    img.className = 'slot-img-preview';
+                    s.insertBefore(img, s.querySelector('.slot-icon'));
+                    s.querySelector('.slot-icon').style.display = 'none';
+                }
+                img.src = `img/${id}.png`;
+            }
+        }
+
+        function startGame() {
+            lives = 5;
+            solved = 0;
+            // Shuffle clients
+            queue = [...CLIENTS].sort(() => Math.random() - 0.5);
+            next();
+        }
+
+        function next() {
+            // Close modal if open
+            closeModal();
+
+            if (lives <= 0 || queue.length === 0) {
+                const msg = lives > 0 ? "HAS GUANYAT EL MR. OLYMPIA HISTÒRIC!" : "T'han tancat el gimnàs.";
+                showModal("GAME OVER", msg);
+                // Loop to restart after delay
+                setTimeout(startGame, 4000);
+                return;
+            }
+            client = queue.pop();
+            document.getElementById('c-name').textContent = client.name;
+            document.getElementById('c-req').textContent = client.req;
+            document.getElementById('c-img').src = `img/${client.img}.png`; // Update Image
+            document.getElementById('lives').textContent = "🥤".repeat(lives);
+            document.getElementById('c-count').textContent = solved + 1;
+
+            // Reset Slots
+            kit = { loc: null, moves: new Set() };
+            document.querySelectorAll('.slot').forEach(s => {
+                s.classList.remove('filled');
+                s.dataset.id = '';
+                s.querySelector('div:last-child').textContent = s.dataset.type === 'loc' ? 'LLOC' : 'MOV';
+
+                // Reset Icon Visibility
+                const img = s.querySelector('.slot-img-preview');
+                if (img) img.remove();
+                s.querySelector('.slot-icon').style.display = 'block';
+            });
+        }
+
+        function validate() {
+            // Debug Log
+            console.log("Validating...", kit);
+
+            if (!kit.loc || kit.moves.size < 4) {
+                showModal("ATENCIÓ!", "Completa la rutina! (1 Lloc + 4 Moviments)");
+                return;
+            }
+
+            // Get correct solution for this era
+            const solution = ERA_ROUTINES[client.era];
+
+            // Check Location
+            if (kit.loc !== solution.loc) {
+                wrong("Lloc incorrecte! La localització no quadra amb l'època.");
+                return;
+            }
+
+            // Check Moves (must have all 4)
+            let correctMoves = 0;
+            solution.moves.forEach(m => {
+                if (kit.moves.has(m)) correctMoves++;
+            });
+
+            if (correctMoves === 4) {
+                showModal("LIGHT WEIGHT BABY!", "Correcte! Has encertat l'entrenament.");
+                solved++;
+                setTimeout(next, 2000); // Auto next after success
+            } else {
+                wrong("Moviments incorrectes! Repassa les pistes.");
+            }
+        }
+
+        function wrong(msg) {
+            lives--;
+            document.getElementById('lives').textContent = "🥤".repeat(lives);
+            showModal("ZERO GAINS!", msg);
+            if (lives <= 0) setTimeout(next, 2000);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

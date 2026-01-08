@@ -1,0 +1,74 @@
+# PROMPTS PER A FROGGER HISTÒRIC
+Estil general: Pixel Art retro, vista top-down (zenital), colors vibrants tipus arcade 8-bit.
+Mida suggerida per sprite: 64x64px (Personatge) / 128x64px (Cotxes/Troncs).
+
+## 1. PERSONATGE PRINCIPAL
+**Fitxer:** `player_frogger.png`
+**Prompt:**
+> 2d pixel art character sprite, top-down view, generic classical music composer, holding a music sheet, wearing 18th century clothes, cute chibi style, white background.
+
+---
+
+## 2. OBSTACLES (ANACRONISMES - Carretera)
+Aquests substitueixen els cotxes. Han de semblar objectes moderns que no pinten res a la història.
+
+**Fitxer:** `car_synth.png`
+**Prompt:**
+> 2d pixel art synthesizer keyboard, top-down view, arcade game obstacle, colorful buttons, retro style, white background.
+
+**Fitxer:** `car_boombox.png`
+**Prompt:**
+> 2d pixel art 80s boombox radio, top-down view, arcade game obstacle, metallic grey, speakers, white background.
+
+**Fitxer:** `car_taxi.png`
+**Prompt:**
+> 2d pixel art yellow taxi cab, top-down view, arcade game obstacle, black and white checkers, simple shape, white background.
+
+**Fitxer:** `car_guitar.png`
+**Prompt:**
+> 2d pixel art electric guitar, red stratocaster style, top-down view, arcade game style, white background.
+
+---
+
+## 3. PLATAFORMES (Troncs - Riu)
+Sobre aquests sprites es posarà el text, així que han de ser allargats i tenir una superfície més o menys llisa.
+
+**Fitxer:** `log_wood.png`
+**Prompt:**
+> 2d pixel art wooden log floating in water, top-down view, long horizontal shape, textured wood, arcade game platform, white background.
+
+**Fitxer:** `log_scroll.png` (Opcional, com a pergamí antic)
+**Prompt:**
+> 2d pixel art ancient paper scroll unrolled horizontally, top-down view, parchment texture, arcade game platform, white background.
+
+**Fitxer:** `log_piano.png` (Opcional, tecles de piano flotant)
+**Prompt:**
+> 2d pixel art long piano keys floating, top-down view, horizontal orientation, black and white keys, arcade game platform, white background.
+
+---
+
+## 4. FONS (Backgrounds)
+Encara que el fons és bàsicament negre/blau, pots generar textures per a l'aigua o la carretera.
+
+**Fitxer:** `bg_water_tile.png`
+**Prompt:**
+> 2d pixel art water texture, dark blue, seamless pattern, arcade style, top-down game background.
+
+**Fitxer:** `bg_road_tile.png`
+**Prompt:**
+> 2d pixel art asphalt road texture, dark grey, seamless pattern, arcade style, top-down game background.
+
+---
+
+## 5. MÚSICA & FX
+**Fitxer de Música:** `frogger_music.mp3`
+**Prompt:**
+> Fast paced 8-bit chiptune arcade music loop, mashup of famous classical melodies (like Beethoven's 5th or Mozart) played in a retro video game style, energetic and fun.
+
+**SFX Salt:** `jump.mp3`
+**Prompt:**
+> Retro 8-bit jump sound effect.
+
+**SFX Mort:** `gameover.mp3`
+**Prompt:**
+> Retro 8-bit crash or splash sound effect followed by a sad melody.

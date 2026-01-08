@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Gran Hotel de la Música</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --hotel-red: #b71c1c;
+            --gold: #ffd700;
+            --cream: #fff8e1;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #222;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            background: url('img/bg 1.30.15.jpg') no-repeat center center;
+            background-size: cover;
+            border: 10px solid #4e342e;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Lobby Scene */
+        #lobby {
+            flex: 1;
+            display: flex;
+            position: relative;
+            background: transparent;
+            /* Background is on container */
+        }
+
+        /* SIDEBAR KEYS (Vertical) */
+        #keys-sidebar {
+            width: 140px;
+            background: rgba(62, 39, 35, 0.9);
+            border-right: 5px solid var(--gold);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 50;
+        }
+
+        .key {
+            width: 100px;
+            height: 120px;
+            background: var(--gold);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #3e2723;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s;
+            border: 2px solid #5d4037;
+        }
+
+        .key:hover {
+            transform: scale(1.05);
+            background: #fff59d;
+        }
+
+        .key:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .key-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        /* MAIN AREA (Reception + Elevator) */
+        #main-area {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        /* Reception Desk */
+        #reception {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        #desk {
+            width: 80%;
+            height: 150px;
+            background: #4e342e;
+            border-top: 10px solid var(--gold);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Elevator */
+        #elevator-area {
+            flex: 1;
+            background: rgba(51, 51, 51, 0.95);
+            border-left: 5px solid var(--gold);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        #elevator-doors {
+            width: 150px;
+            height: 250px;
+            background: #555;
+            border: 5px solid var(--gold);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px black;
+        }
+
+        .door {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: var(--hotel-red);
+            border: 1px solid #333;
+            transition: width 0.5s;
+            background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.1) 75%, transparent 75%, transparent);
+            background-size: 20px 20px;
+        }
+
+        .door.left {
+            left: 0;
+            border-right: 2px solid #333;
+        }
+
+        .door.right {
+            right: 0;
+            border-left: 2px solid #333;
+        }
+
+        .doors-open .door {
+            width: 0;
+        }
+
+        #floor-indicator {
+            width: 100px;
+            height: 40px;
+            background: #000;
+            color: red;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            border: 4px solid #333;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: 0 0 10px red;
+        }
+
+        /* Guest */
+        #guest-area {
+            position: absolute;
+            bottom: 160px;
+            /* Above desk */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 5;
+            pointer-events: none;
+            /* Let drops pass through if needed, drop is on reception area */
+        }
+
+        /* Enable pointer events for drop target */
+        #reception {
+            pointer-events: all;
+        }
+
+        #guest-img {
+            width: 250px;
+            height: auto;
+            max-height: 350px;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.6));
+            transition: opacity 0.5s, transform 0.5s;
+            opacity: 0;
+        }
+
+        #guest-name {
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--gold);
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            border: 1px solid var(--gold);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #bubble {
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.1rem;
+            max-width: 300px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent;
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            z-index: 20;
+            text-shadow: 2px 2px 4px black;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--gold);
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px var(--hotel-red);
+        }
+
+        #start-screen p {
+            font-size: 1.5rem;
+            color: #ccc;
+            margin-bottom: 40px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            padding: 15px 40px;
+            font-size: 2rem;
+            font-family: 'Cinzel', serif;
+            background: var(--hotel-red);
+            color: white;
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--gold);
+            transition: transform 0.2s;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.1);
+            background: #d32f2f;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            display: none;
+            color: white;
+            text-align: center;
+        }
+
+        #end-title {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        #end-msg {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>El Gran Hotel de la Música</h1>
+            <p>Benvingut, nou conserge!<br>
+                La teva feina és assignar cada hoste a la seva planta corresponent segons la seva època musical.<br>
+                Arrossega la clau correcta cap al client!</p>
+            <button class="btn-start" onclick="startGame()">Obrir Portes</button>
+        </div>
+
+        <div id="lobby">
+
+            <!-- Sidebar Keys -->
+            <div id="keys-sidebar">
+                <div class="key" draggable="true" data-era="edat_mitjana"><img src="img/mitjana.png" class="key-img">P1
+                </div>
+                <div class="key" draggable="true" data-era="renaixement"><img src="img/renaixement.png"
+                        class="key-img">P2</div>
+                <div class="key" draggable="true" data-era="barroc"><img src="img/barroc.png" class="key-img">P3</div>
+                <div class="key" draggable="true" data-era="classicisme"><img src="img/clasicisme.png"
+                        class="key-img">P4</div>
+                <div class="key" draggable="true" data-era="romanticisme"><img src="img/romnticisme.png"
+                        class="key-img">P5</div>
+                <div class="key" draggable="true" data-era="segle_xx"><img src="img/segleXX.png" class="key-img">P6
+                </div>
+            </div>
+
+            <!-- Main Scene -->
+            <div id="main-area">
+                <div id="hud">
+                    NIVELL: <span id="level">1</span>/8 | CLIENTS: <span id="score">0</span>/<span id="target">3</span>
+                    |
+                    VIDES: <span id="lives">3</span>
+                </div>
+
+                <div id="reception">
+                    <div id="guest-area">
+                        <div id="bubble">...</div>
+                        <div id="guest-name">Unknown</div>
+                        <img id="guest-img" src="" alt="Guest">
+                    </div>
+
+                    <div id="desk">RECEPCIÓ</div>
+                </div>
+
+                <div id="elevator-area">
+                    <div id="floor-indicator">P0</div>
+                    <div id="elevator-doors">
+                        <div class="door left"></div>
+                        <div class="door right"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="end-title"></h2>
+            <p id="end-msg"></p>
+            <button class="btn-start" onclick="location.reload()" style="font-size: 1.5rem;">Alta de Client</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA (Punny Names) ---
+        const GUESTS = [
+            // Edat Mitjana (P1)
+            { era: "edat_mitjana", img: "img/monjo.png", name: "Fra Cantus", text: "Vull resar en un monestir tranquil." },
+            { era: "edat_mitjana", img: "img/neumes.png", name: "Neu Mina", text: "Porto pergamins antics." },
+            { era: "edat_mitjana", img: "img/trobador.png", name: "Trob Adoret", text: "Canto a l'amor cortès." },
+            // Renaixement (P2)
+            { era: "renaixement", img: "img/humanisme.png", name: "Huma Nista", text: "L'home és el centre de tot." },
+            { era: "renaixement", img: "img/madrigal.png", name: "Madri Gal", text: "Som quatre veus en una." },
+            { era: "renaixement", img: "img/palestrina.png", name: "Pales Trina", text: "Busco la polifonia perfecta." },
+            // Barroc (P3)
+            { era: "barroc", img: "img/clave.png", name: "Clavi Cèmbal", text: "Acompanyo amb el baix continu." },
+            { era: "barroc", img: "img/ornaments.png", name: "Orna Ment", text: "M'encanta decorar les melodies." },
+            { era: "barroc", img: "img/handel.png", name: "Sr. Händel", text: "Vull música per als reials focs." },
+            // Classicisme (P4)
+            { era: "classicisme", img: "img/senzillesa.png", name: "Senzill Esa", text: "Res de complicacions, si us plau." },
+            { era: "classicisme", img: "img/haydn.png", name: "Papa Haydn", text: "He tingut una idea simfònica!" },
+            { era: "classicisme", img: "img/sonata.png", name: "Sona Tore", text: "Tinc una estructura molt clara." },
+            // Romanticisme (P5)
+            { era: "romanticisme", img: "img/sentiments.png", name: "Senti Ment", text: "Sento una passió desbordant!" },
+            { era: "romanticisme", img: "img/chopin.png", name: "Frederic Xop", text: "El piano plora amb mi." },
+            { era: "romanticisme", img: "img/wagner.png", name: "Wag Neri", text: "Vull l'obra d'art total." },
+            // Segle XX (P6)
+            { era: "segle_xx", img: "img/segleXX.png", name: "Arnold S.", text: "Trenquem amb la tonalitat!" },
+            { era: "segle_xx", img: "img/cage.png", name: "Silenciós Cage", text: "..." },
+            { era: "segle_xx", img: "img/jazz.png", name: "Dizzy Jazz", text: "Tinc ritme a les venes." }
+        ];
+
+        // --- GAME STATE ---
+        let level = 1;
+        let score = 0;
+        let target = 3;
+        let lives = 3;
+        let currentGuest = null;
+        let isProcessing = false;
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'ding') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            } else if (type === 'elevator') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(300, now + 1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 1);
+                osc.start(now);
+                osc.stop(now + 1);
+            } else if (type === 'angry') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        // --- LOGIC ---
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            init();
+        }
+
+        function init() {
+            startLevel();
+
+            // Drag and Drop
+            document.querySelectorAll('.key').forEach(key => {
+                key.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', key.dataset.era);
+                });
+            });
+
+            // Allow dropping on the reception area itself
+            // We attach listener to reception div so dropping anywhere near the desk works
+            const dropZone = document.getElementById('reception');
+            dropZone.addEventListener('dragover', (e) => e.preventDefault());
+            dropZone.addEventListener('drop', handleDrop);
+        }
+
+        function startLevel() {
+            score = 0;
+            target = 2 + level;
+            document.getElementById('level').textContent = level;
+            document.getElementById('score').textContent = score;
+            document.getElementById('target').textContent = target;
+            document.getElementById('lives').textContent = lives;
+
+            spawnGuest();
+        }
+
+        function spawnGuest() {
+            if (lives <= 0) {
+                endGame(false);
+                return;
+            }
+
+            isProcessing = false;
+            // Random guest
+            currentGuest = GUESTS[Math.floor(Math.random() * GUESTS.length)];
+
+            const img = document.getElementById('guest-img');
+            const bubble = document.getElementById('bubble');
+            const name = document.getElementById('guest-name');
+
+            // Reset
+            img.style.opacity = 0;
+            bubble.style.opacity = 0;
+            name.style.opacity = 0;
+
+            // Set content
+            img.src = currentGuest.img;
+            name.textContent = currentGuest.name;
+            bubble.textContent = currentGuest.text;
+            bubble.style.color = "black";
+
+            // Sequence: Image -> Name -> Bubble
+            setTimeout(() => {
+                img.style.opacity = 1;
+                // Pop effect
+                img.style.transform = "scale(1.1)";
+                setTimeout(() => img.style.transform = "scale(1)", 200);
+
+                setTimeout(() => {
+                    name.style.opacity = 1;
+
+                    setTimeout(() => {
+                        playSound('ding');
+                        bubble.style.opacity = 1;
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+
+        function handleDrop(e) {
+            if (isProcessing) return;
+            e.preventDefault();
+            const era = e.dataTransfer.getData('text/plain');
+            if (!era) return;
+
+            isProcessing = true;
+
+            const bubble = document.getElementById('bubble');
+
+            if (era === currentGuest.era) {
+                // Correct
+                bubble.textContent = "Gràcies! Pujo a l'habitació.";
+                bubble.style.color = "green";
+                score++;
+                document.getElementById('score').textContent = score;
+
+                // Elevator animation
+                setTimeout(() => {
+                    document.getElementById('guest-img').style.opacity = 0;
+                    document.getElementById('guest-name').style.opacity = 0;
+                    bubble.style.opacity = 0;
+                    openElevator();
+                }, 1000);
+            } else {
+                // Incorrect
+                bubble.textContent = "Això no és el que he demanat!";
+                bubble.style.color = "red";
+                lives--;
+                document.getElementById('lives').textContent = lives;
+                playSound('angry');
+
+                setTimeout(() => {
+                    document.getElementById('guest-img').style.opacity = 0;
+                    document.getElementById('guest-name').style.opacity = 0;
+                    bubble.style.opacity = 0;
+                    setTimeout(spawnGuest, 1000);
+                }, 1500);
+            }
+        }
+
+        function openElevator() {
+            const doors = document.getElementById('elevator-doors');
+            doors.classList.add('doors-open');
+            playSound('ding');
+
+            setTimeout(() => {
+                doors.classList.remove('doors-open');
+                playSound('elevator');
+                // Floor indicator animation
+                const ind = document.getElementById('floor-indicator');
+                let floor = 0;
+                const interval = setInterval(() => {
+                    floor++;
+                    ind.textContent = "P" + floor;
+                    if (floor >= 6) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            ind.textContent = "P0";
+                            checkLevelProgress();
+                        }, 1000);
+                    }
+                }, 200);
+            }, 1000);
+        }
+
+        function checkLevelProgress() {
+            if (score >= target) {
+                if (level >= 8) {
+                    endGame(true);
+                } else {
+                    level++;
+                    startLevel();
+                }
+            } else {
+                spawnGuest();
+            }
+        }
+
+        function endGame(win) {
+            const overlay = document.getElementById('feedback-overlay');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                title.textContent = "CONSERGE DE L'ANY!";
+                title.style.color = "var(--gold)";
+                msg.textContent = "Has gestionat l'hotel amb elegància suprema.";
+            } else {
+                title.textContent = "ACOMIADAT";
+                title.style.color = "red";
+                msg.textContent = "Massa reclamacions. L'hotel ha perdut les estrelles.";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

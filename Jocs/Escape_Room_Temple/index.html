@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Temple del Sol</title>
+    <!-- FONTS -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Metamorphous&family=MedievalSharp&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-stone: #1a1815;
+            --text-gold: #f1c40f;
+            --text-stone: #a8a29e;
+            --overlay-black: rgba(0, 0, 0, 0.8);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-stone);
+            color: var(--text-stone);
+            font-family: 'MedievalSharp', cursive;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+
+        /* ATMOSPHERE OVERLAY */
+        .torch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 40%, black 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* NARRATOR BOX (Top) */
+        #narrator-box {
+            position: absolute;
+            top: 20px;
+            width: 80%;
+            max-width: 900px;
+            background: rgba(20, 18, 15, 0.95);
+            border: 2px solid #5a5652;
+            border-radius: 10px;
+            padding: 25px;
+            z-index: 10;
+            box-shadow: 0 5px 20px black;
+            text-align: center;
+            display: none;
+            /* Shown via JS */
+        }
+
+        .narrator-text {
+            color: #d4c49c;
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        /* MAIN GAME AREA */
+        #game-area {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SPIRIT ENCOUNTER - NEW LAYOUT */
+        #spirit-container {
+            display: flex;
+            flex-direction: row;
+            /* Side by Side */
+            align-items: center;
+            /* Center vertically */
+            gap: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 50px;
+            border-radius: 20px;
+            border: 4px double var(--text-gold);
+            backdrop-filter: blur(8px);
+            max-width: 1100px;
+            width: 90%;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 1s;
+        }
+
+        #spirit-container.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .spirit-avatar {
+            width: 300px;
+            height: 300px;
+            /* MUCH BIGGER */
+            flex-shrink: 0;
+            background: #333;
+            border-radius: 50%;
+            border: 6px solid var(--text-gold);
+            box-shadow: 0 0 40px var(--text-gold);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .spirit-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .spirit-name {
+            font-family: 'Metamorphous';
+            color: var(--text-gold);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+        }
+
+        .question-text {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px black;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .stone-btn {
+            background: linear-gradient(to bottom, #4a4742, #2c2a25);
+            border: 2px outset #6b665f;
+            color: #d4c49c;
+            padding: 20px;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+            text-align: center;
+        }
+
+        .stone-btn:hover {
+            filter: brightness(1.2);
+            border-color: var(--text-gold);
+            color: var(--text-gold);
+        }
+
+        .stone-btn.correct {
+            background: #27ae60;
+            border-color: #2ecc71;
+            color: white;
+        }
+
+        .stone-btn.wrong {
+            background: #c0392b;
+            border-color: #e74c3c;
+            animation: shake 0.5s;
+            color: white;
+        }
+
+        /* RELIC ROOM (FINAL) */
+        #relic-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 20;
+        }
+
+        .relic-glow {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, gold, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 3s infinite;
+            margin-bottom: 30px;
+        }
+
+        .win-title {
+            font-family: 'Cinzel';
+            font-size: 4rem;
+            color: var(--text-gold);
+            text-shadow: 0 0 30px gold;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: url('img/start_bg.jpg');
+            background-size: cover;
+        }
+
+        .title-main {
+            font-family: 'Cinzel';
+            font-size: 5rem;
+            color: var(--text-gold);
+            text-shadow: 0 0 30px black;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .start-btn {
+            font-size: 2rem;
+            padding: 20px 60px;
+            background: var(--text-gold);
+            color: black;
+            border: none;
+            font-family: 'Cinzel';
+            cursor: pointer;
+            box-shadow: 0 0 30px gold;
+            margin-top: 40px;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            #spirit-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .spirit-content {
+                text-align: center;
+            }
+
+            .spirit-avatar {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="torch-overlay"></div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1 class="title-main">EL TEMPLE DEL SOL</h1>
+        <div
+            style="max-width: 800px; text-align: center; background: rgba(0,0,0,0.7); padding: 30px; border-radius: 10px; border: 1px solid #444;">
+            <p style="color:#ddd; font-size:1.4rem; margin-bottom:10px;">
+                La llegenda diu que al centre del temple s'amaga la <strong>Relíquia Eterna</strong>.
+            </p>
+            <p style="color:#aaa; font-size:1.2rem;">
+                Per aconseguir-la, hauràs de travessar les <strong>6 Sales del Temps</strong> i demostrar el teus
+                coneixements musicals davant dels <strong>Esperits Guardians</strong>.
+            </p>
+        </div>
+        <button class="start-btn" onclick="GAME.init()">ENTRAR AL TEMPLE</button>
+    </div>
+
+    <!-- NARRATOR -->
+    <div id="narrator-box">
+        <div class="narrator-text" id="narrator-text">...</div>
+    </div>
+
+    <!-- MAIN GAME AREA -->
+    <div id="game-area">
+        <div id="spirit-container">
+            <div class="spirit-avatar" id="spirit-img"></div>
+            <!-- WRAP CONTENT FOR LAYOUT -->
+            <div class="spirit-content">
+                <div class="spirit-name" id="spirit-name">ESPERIT</div>
+                <div class="question-text" id="q-text">Pregunta...</div>
+                <div class="options-grid" id="q-options"></div>
+            </div>
+        </div>
+
+        <div id="relic-screen">
+            <div class="relic-glow"></div>
+            <h1 class="win-title">TRESOR ACONSEGUIT!</h1>
+            <p style="color:white; font-size:1.5rem;">Has superat totes les proves del temps.</p>
+            <button class="start-btn" onclick="location.reload()" style="margin-top:30px;">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <!-- AUDIO PLAYER -->
+    <div id="audio-controls"
+        style="position:fixed; top:20px; right:20px; z-index:200; display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.5); padding:10px; border-radius:30px; border:1px solid #555;">
+        <span style="font-size:1.5rem;">🔊</span>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"
+            style="accent-color: var(--text-gold);">
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Temple of Hidden Riddles.m4a" type="audio/mp3">
+    </audio>
+
+    <script>
+        // GAME DATA with REAL ASSETS
+        const DATA = [
+            {
+                roomName: "SALA 1: ELS ORÍGENS",
+                bg: "img/fonsmitjana.jpg",
+                narrator: "La teva missió comença aquí. Has de superar les 6 proves per arribar a la Relíquia final. Entres a la primera sala: una cripta fosca i humida d'un antic monestir...",
+                spirit: "Esperit del Savi (Edat Mitjana)",
+                spiritImg: "img/esperitmitjana.jpg",
+                intro: "Benvingut viatger. Els monjos com jo dedicàvem la vida a pregar. Saps quin era l'únic idioma digne per parlar amb Déu?",
+                success: "La teva ànima és pura. El Llatí és la llengua sagrada. Pots passar.",
+                q: { t: "En quin idioma cantaven els monjos el Cant Gregorià?", opts: ["Català", "Llatí", "Francès", "Grec"], c: 1 }
+            },
+            {
+                roomName: "SALA 2: LA LLUM DEL SABER",
+                bg: "img/fonsrenaixement.jpg",
+                narrator: "Surts de la foscor cap a una sala il·luminada pel sol. Hi ha llibres i taules de pedra. Un home amb plomes de Quetzal t'observa...",
+                spirit: "Esperit del Cronista (Renaixement)",
+                spiritImg: "img/esperitrenaixement.jpg",
+                intro: "La llum de la raó ens il·lumina. Ara podem imprimir llibres! Però, quin efecte busca la nostra música polifònica?",
+                success: "Exacte. Busquem la bellesa i l'equilibri, no el caos. Endavant.",
+                q: { t: "Quin efecte buscava la música del Renaixement?", opts: ["Fer por", "Ser caòtica", "Ser equilibrada i bonica", "Ser molt ràpida"], c: 2 }
+            },
+            {
+                roomName: "SALA 3: LA CAMBRA D'OR",
+                bg: "img/fonsbarroc.jpg",
+                narrator: "Aquesta sala brilla amb or i jade per tot arreu. És un lloc de luxe exagerat. Un rei amb joies pesades t'atura.",
+                spirit: "Esperit del Rei (Barroc)",
+                spiritImg: "img/esperitbarroc.jpg",
+                intro: "Mireu el meu palau! Tot és luxe i or! Digues-me, com vivim els reis d'aquesta època?",
+                success: "Sí! Tenim tot el poder. Monarquia Absoluta! El luxe és necessari. Passa.",
+                q: { t: "Com vivien els Reis al Barroc (Monarquia Absoluta)?", opts: ["Humils i pobres", "Amb tot el poder i molt luxe", "Com la gent normal", "Sense casa"], c: 1 }
+            },
+            {
+                roomName: "SALA 4: L'ALTAR PERFECTE",
+                bg: "img/fonsclassicisme.jpg",
+                narrator: "Arribes a un altar perfectament simètric i net. Tot està en ordre i equilibri. Un sacerdot rígid t'espera.",
+                spirit: "Esperit de l'Arquitecte (Classicisme)",
+                spiritImg: "img/esperitclassic.jpg",
+                intro: "L'ordre és la clú. Viena és la nostra capital. Qui és el Nen Prodigi més famós que va viure allà?",
+                success: "Mozart... quin geni! La seva música és l'exemple perfecte de l'ordre. Pots procedir.",
+                q: { t: "Qui va ser el Nen Prodigi més famós de la història (Classicisme)?", opts: ["Haydn", "Mozart", "Beethoven", "Bach"], c: 1 }
+            },
+            {
+                roomName: "SALA 5: LA TEMPESTA",
+                bg: "img/fonsromanticisme.jpg",
+                narrator: "El temple s'obre a la selva sota una tempesta terrible. Trons, crits i passió. Un guerrer jaguar et barra el pas!",
+                spirit: "Esperit del Guerrer (Romanticisme)",
+                spiritImg: "img/esperitromantic.jpg",
+                intro: "Jo sento la tempesta! Quina és l'única cosa que importa als romàntics com jo? La raó o el cor?",
+                success: "El Cor! Els sentiments! Això és viure! Corre, lliure com el vent!",
+                q: { t: "Què és el més important per als artistes romàntics?", opts: ["La Raó i les Matemàtiques", "Els Diners", "Els Sentiments i l'Emoció", "L'Ordre"], c: 2 }
+            },
+            {
+                roomName: "SALA 6: EL TRENCAMENT",
+                bg: "img/fonssegleXX.jpg",
+                narrator: "Arribes al santuari interior, però està trencat. Esquerdes brillants i caos. Un xaman boig riu histèricament.",
+                spirit: "Esperit del Xaman (Segle XX)",
+                spiritImg: "img/esperitsegleXX.jpg",
+                intro: "Tot canvia! L'art ha de ser lliure! Saps quin estil s'inspira en els somnis i l'atmòsfera borrosa?",
+                success: "Impressionisme... com un somni. La veritat té moltes formes. La Relíquia és teva!",
+                q: { t: "Quin estil del Segle XX busca crear una atmòsfera borrosa i de somni (com Debussy)?", opts: ["Expressionisme", "Impressionisme", "Realisme", "Pop"], c: 1 }
+            }
+        ];
+
+        const GAME = {
+            level: 0,
+
+            init: function () {
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('narrator-box').style.display = 'block';
+                this.initAudio();
+                this.loadLevel(0);
+            },
+
+            initAudio: function () {
+                const audio = document.getElementById('bg-music');
+                const slider = document.getElementById('vol-slider');
+                audio.volume = slider.value;
+                audio.play().catch(e => console.log("Audio autoplay block: user must interact first"));
+
+                slider.oninput = function () {
+                    audio.volume = this.value;
+                }
+            },
+
+            loadLevel: function (idx) {
+                if (idx >= DATA.length) {
+                    this.victory();
+                    return;
+                }
+                this.level = idx;
+                const d = DATA[idx];
+
+                // Setup Room
+                document.body.style.backgroundImage = `url('${d.bg}')`;
+                // Ensure bg covers and doesn't repeat
+                document.body.style.backgroundSize = "cover";
+
+                // 1. Narrator Phase
+                const spiritBox = document.getElementById('spirit-container');
+                spiritBox.classList.remove('visible');
+                spiritBox.style.display = 'none'; // Ensure it is hidden
+
+                const narrText = document.getElementById('narrator-text');
+                narrText.textContent = "";
+                narrText.style.opacity = 1;
+
+                this.typeWriter(d.narrator, narrText, () => {
+                    setTimeout(() => {
+                        this.showSpiritIntro(d);
+                    }, 1500);
+                });
+            },
+
+            typeWriter: function (text, element, callback) {
+                let i = 0;
+                element.textContent = "";
+                const speed = 25;
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        if (callback) callback();
+                    }
+                }
+                type();
+            },
+
+            // PHASE 2A: Spirit Intro
+            showSpiritIntro: function (data) {
+                const box = document.getElementById('spirit-container');
+                document.getElementById('spirit-name').textContent = data.spirit;
+                document.getElementById('spirit-img').style.backgroundImage = `url('${data.spiritImg}')`;
+
+                // Show Intro Text first
+                const txt = document.getElementById('q-text');
+                txt.textContent = data.intro;
+                txt.style.fontStyle = "italic";
+                txt.style.color = "#bdc3c7";
+
+                // Hide Options, Show Continue Btn
+                const opts = document.getElementById('q-options');
+                opts.innerHTML = '';
+                const btn = document.createElement('button');
+                btn.className = 'stone-btn';
+                btn.textContent = "ESCOLTAR EL DESAFIAMENT";
+                btn.style.width = "100%";
+                btn.style.gridColumn = "1 / -1"; // Span full width
+                btn.onclick = () => this.showSpiritQuestion(data);
+                opts.appendChild(btn);
+
+                box.style.display = 'flex';
+                // Force reflow
+                void box.offsetWidth;
+                box.classList.add('visible');
+            },
+
+            // PHASE 2B: Spirit Question
+            showSpiritQuestion: function (data) {
+                const txt = document.getElementById('q-text');
+                // Fade out text slightly to transition
+                txt.style.opacity = 0;
+
+                setTimeout(() => {
+                    txt.textContent = data.q.t;
+                    txt.style.fontStyle = "normal";
+                    txt.style.color = "white";
+                    txt.style.opacity = 1;
+
+                    const opts = document.getElementById('q-options');
+                    opts.innerHTML = '';
+
+                    data.q.opts.forEach((opt, i) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'stone-btn';
+                        btn.textContent = opt;
+                        btn.onclick = () => this.check(i, btn, data.q.c, data);
+                        opts.appendChild(btn);
+                    });
+                }, 300);
+            },
+
+            check: function (idx, btn, correct, data) {
+                if (idx === correct) {
+                    btn.classList.add('correct');
+                    // Disable all buttons
+                    const allBtns = document.querySelectorAll('.stone-btn');
+                    allBtns.forEach(b => b.disabled = true);
+
+                    // Show Success Message
+                    setTimeout(() => {
+                        const txt = document.getElementById('q-text');
+                        txt.textContent = data.success;
+                        txt.style.color = "gold";
+                        txt.style.textShadow = "0 0 10px gold";
+
+                        const opts = document.getElementById('q-options');
+                        opts.innerHTML = '';
+
+                        const nextBtn = document.createElement('button');
+                        nextBtn.className = 'stone-btn';
+                        nextBtn.textContent = "CONTINUAR EL VIATGE";
+                        nextBtn.style.width = "100%";
+                        nextBtn.style.gridColumn = "1 / -1";
+                        nextBtn.onclick = () => this.loadLevel(this.level + 1);
+                        opts.appendChild(nextBtn);
+                    }, 1000);
+
+                } else {
+                    btn.classList.add('wrong');
+                    document.body.animate([
+                        { transform: 'translateX(0)' },
+                        { transform: 'translateX(-10px)' },
+                        { transform: 'translateX(10px)' },
+                        { transform: 'translateX(0)' }
+                    ], { duration: 300 });
+                }
+            },
+
+            victory: function () {
+                // Final BG
+                document.body.style.backgroundImage = "url('img/fonsfinal.jpg')";
+
+                document.getElementById('spirit-container').style.display = 'none';
+                document.getElementById('narrator-box').style.display = 'none';
+                document.getElementById('relic-screen').style.display = 'flex';
+            }
+        };
+    </script>
+</body>

@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Frontera Musical 🛂</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-office: #3e4a4f;
+            --desk: #5d4037;
+            --paper: #f5f5f5;
+            --ink: #212121;
+            --stamp-red: #b71c1c;
+            --stamp-green: #2e7d32;
+            --led-red: #ff3333;
+            --led-green: #33ff33;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier Prime', monospace;
+            background-color: #111;
+            color: var(--paper);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Game Container (The Desk) */
+        #desk {
+            width: 100%;
+            height: 100%;
+            background: url('img/bg.jpg') no-repeat center center/cover;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Top View (Window/Booth) */
+        #booth {
+            width: 100%;
+            height: 65%;
+            /* Increased from 40% to lower the character */
+            background: transparent;
+            /* border-bottom: 10px solid #1a1a1a; Removed to blend with bg */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #character {
+            width: 250px;
+            /* Adjust size for images */
+            height: auto;
+            margin-bottom: 0px;
+            transition: transform 0.5s;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .char-enter {
+            animation: slideInChar 0.5s forwards;
+        }
+
+        .char-leave {
+            animation: slideOutChar 0.5s forwards;
+        }
+
+        @keyframes slideInChar {
+            from {
+                transform: translateX(-100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutChar {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(100%);
+            }
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ccc;
+            z-index: 10;
+        }
+
+        .stat-box {
+            background: #000;
+            padding: 5px 10px;
+            border: 1px solid #555;
+        }
+
+        /* Timer */
+        #timer-box {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #000;
+            color: var(--led-red);
+            font-family: 'Special Elite', monospace;
+            font-size: 2rem;
+            padding: 5px 15px;
+            border: 2px solid #333;
+            box-shadow: 0 0 10px var(--led-red);
+        }
+
+        /* Workspace */
+        #workspace {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Document */
+        #document {
+            width: 500px;
+            height: 350px;
+            background: var(--paper);
+            color: var(--ink);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: rotate(-1deg);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+
+        #doc-header {
+            border-bottom: 2px solid #000;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #doc-photo {
+            width: 80px;
+            height: 100px;
+            background: #ddd;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #doc-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%);
+            /* Passport style */
+        }
+
+        #doc-info {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .doc-label {
+            font-size: 0.8rem;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        .doc-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        #doc-statement {
+            flex: 1;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px dashed #999;
+        }
+
+        /* Stamps */
+        #stamp-area {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+        }
+
+        .stamp-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-family: 'Special Elite', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stamp-deny {
+            background: #b71c1c;
+            border: 5px solid #8e0000;
+        }
+
+        .stamp-approve {
+            background: #2e7d32;
+            border: 5px solid #1b5e20;
+        }
+
+        .stamp-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Stamp Mark on Paper */
+        .stamp-mark {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Special Elite', monospace;
+            font-size: 3rem;
+            border: 5px solid;
+            padding: 5px 10px;
+            transform: rotate(-15deg);
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        .mark-approved {
+            color: var(--stamp-green);
+            border-color: var(--stamp-green);
+        }
+
+        .mark-denied {
+            color: var(--stamp-red);
+            border-color: var(--stamp-red);
+        }
+
+        /* Animations */
+        @keyframes stampEffect {
+            0% {
+                transform: scale(2) rotate(-15deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1) rotate(-15deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1) rotate(-15deg);
+                opacity: 0.8;
+            }
+        }
+
+        /* Feedback Overlay */
+        #feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 6rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px black;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            border: 10px solid;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        @keyframes feedbackAnim {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(-15deg) scale(2);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) rotate(-15deg) scale(1);
+            }
+
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) rotate(-15deg) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) rotate(-15deg) scale(1.5);
+            }
+        }
+
+        /* Modal */
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background: #222;
+            border: 2px solid #555;
+            padding: 2rem;
+            text-align: center;
+            max-width: 500px;
+            color: #ccc;
+        }
+
+        .btn-start {
+            background: #555;
+            color: white;
+            border: 1px solid #777;
+            padding: 10px 20px;
+            font-family: 'Courier Prime', monospace;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .btn-start:hover {
+            background: #777;
+        }
+
+        /* Victory Modal specific styles */
+        #victory-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            display: none;
+            /* Hidden by default */
+        }
+
+        .victory-box {
+            background: #1b5e20;
+            /* Green bg */
+            border: 4px solid #4caf50;
+            padding: 3rem;
+            text-align: center;
+            max-width: 600px;
+            color: white;
+            box-shadow: 0 0 50px rgba(76, 175, 80, 0.5);
+        }
+
+        .victory-box h1 {
+            font-family: 'Special Elite', cursive;
+            color: #a5d6a7;
+            text-transform: uppercase;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .btn-victory {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-victory:hover {
+            background: #66bb6a;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="desk">
+        <div id="hud">
+            <div class="stat-box">Punts: <span id="score">0</span></div>
+            <div class="stat-box">Vides: <span id="lives">4</span></div>
+        </div>
+        <div id="timer-box">10</div>
+
+        <div id="booth">
+            <img id="character" src="" alt="Character">
+        </div>
+
+        <div id="workspace">
+            <div id="document">
+                <div id="doc-header">
+                    <div id="doc-photo"><img id="doc-photo-img" src="" alt="Photo"></div>
+                    <div id="doc-info">
+                        <div class="doc-label">Nom</div>
+                        <div class="doc-value" id="doc-name">Nom Cognom</div>
+                        <div class="doc-label">Època</div>
+                        <div class="doc-value" id="doc-era">Època</div>
+                    </div>
+                </div>
+                <div class="doc-label">DECLARACIÓ:</div>
+                <div id="doc-statement">"..."</div>
+
+                <div id="stamp-mark" class="stamp-mark">APROVAT</div>
+            </div>
+        </div>
+
+        <div id="stamp-area">
+            <button class="stamp-btn stamp-deny" onclick="stamp('deny')">DENEGAR</button>
+            <button class="stamp-btn stamp-approve" onclick="stamp('approve')">PERMETRE</button>
+        </div>
+
+        <div id="feedback"></div>
+    </div>
+
+    <div id="modal">
+        <div class="modal-box">
+            <h1>LA FRONTERA MUSICAL</h1>
+            <p>Inspector, la seva feina és verificar les declaracions dels músics.</p>
+            <p>Si diuen la <strong>VERITAT</strong>, permeti el pas.</p>
+            <p>Si diuen una <strong>MENTIDA</strong> (anacronisme), denegui el pas.</p>
+            <button class="btn-start" onclick="startGame()">COMENÇAR TORN</button>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal">
+        <div class="victory-box">
+            <h1>EXCEL·LÈNCIA EN EL SERVEI</h1>
+            <p style="font-size: 1.2rem; line-height: 1.6;">Enhorabona, Inspector.<br>Ha processat correctament 10
+                subjectes.<br>La Glòria d'Arstotzka brilla gràcies a vostè.</p>
+            <div style="margin: 20px 0; font-size: 2rem;">⭐⭐⭐⭐⭐</div>
+            <button class="btn-victory" onclick="location.reload()">NOU TORN</button>
+        </div>
+    </div>
+
+    <!-- Background Music -->
+    <audio id="bg-music" loop>
+        <source src="audio/Checkpoint Window.m4a" type="audio/mpeg">
+    </audio>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const BORDER_DB = {
+            'Edat Mitjana': {
+                composers: ['Hildegard von Bingen', 'Guillaume de Machaut', 'Alfons X el Savi', 'Perotin'],
+                truths: [
+                    "La música és per lloar a Déu.",
+                    "Escric monodia, una sola línia melòdica.",
+                    "Utilitzem neumes per escriure la música.",
+                    "El cant gregorià és la base de tot."
+                ],
+                lies: [
+                    "Toco la guitarra elèctrica a missa.",
+                    "M'encanta l'òpera italiana.",
+                    "Utilitzo un piano de cua per compondre.",
+                    "La meva música sona a la ràdio."
+                ]
+            },
+            'Renaixement': {
+                composers: ['Josquin des Prez', 'Palestrina', 'Tomás Luis de Victoria', 'Monteverdi'],
+                truths: [
+                    "La polifonia és l'art de combinar veus.",
+                    "L'home és el centre de l'univers (Humanisme).",
+                    "Busco l'equilibri i la proporció.",
+                    "Escric misses i motets per a cor."
+                ],
+                lies: [
+                    "El meu instrument preferit és el saxòfon.",
+                    "M'agrada el caos i la dissonància extrema.",
+                    "Gravo els meus discos a Londres.",
+                    "Utilitzo sintetitzadors analògics."
+                ]
+            },
+            'Barroc': {
+                composers: ['Bach', 'Vivaldi', 'Händel', 'Purcell'],
+                truths: [
+                    "El baix continu és fonamental.",
+                    "M'agrada l'ornamentació i el contrast.",
+                    "L'òpera és un espectacle total.",
+                    "El clavecí és el rei dels instruments."
+                ],
+                lies: [
+                    "Odio els ornaments, vull simplicitat total.",
+                    "El piano és millor que el clavecí.",
+                    "Toco jazz als clubs de Leipzig.",
+                    "La meva música és minimalista."
+                ]
+            },
+            'Classicisme': {
+                composers: ['Mozart', 'Haydn', 'Martín i Soler', 'Gluck'],
+                truths: [
+                    "La forma sonata és l'estructura perfecta.",
+                    "Busco la claredat i la melodia senzilla.",
+                    "La raó ha de dominar sobre l'emoció.",
+                    "El piano (pianoforte) comença a ser popular."
+                ],
+                lies: [
+                    "El baix continu encara s'usa molt.",
+                    "M'agrada la foscor i el terror en la música.",
+                    "Utilitzo guitarres distorsionades.",
+                    "No m'importa la forma, només el sentiment."
+                ]
+            },
+            'Romanticisme': {
+                composers: ['Beethoven', 'Chopin', 'Wagner', 'Schubert'],
+                truths: [
+                    "L'emoció és més important que la forma.",
+                    "El piano és l'instrument de l'ànima.",
+                    "La natura i la nit m'inspiren.",
+                    "L'orquestra és cada vegada més gran."
+                ],
+                lies: [
+                    "La raó és el més important.",
+                    "No m'agrada expressar els meus sentiments.",
+                    "Utilitzo ordinadors per compondre.",
+                    "El clavecí és el meu instrument favorit."
+                ]
+            },
+            'Segle XX': {
+                composers: ['Debussy', 'Stravinsky', 'Schönberg', 'Cage'],
+                truths: [
+                    "Trenquem amb les regles del passat.",
+                    "La dissonància no s'ha de resoldre.",
+                    "Busquem nous sons i textures.",
+                    "El silenci també és música."
+                ],
+                lies: [
+                    "Volem tornar a la polifonia del Renaixement.",
+                    "La tonalitat clàssica és l'única veritat.",
+                    "No ens agrada experimentar.",
+                    "La música ha de ser sempre bonica i agradable."
+                ]
+            }
+        };
+
+        const AVATARS = [
+            'img/1.png', 'img/2.png', 'img/3.png',
+            'img/4.png', 'img/5.png', 'img/6.png',
+            'img/7.png', 'img/8.png', 'img/9.png'
+        ];
+
+        // --- STATE ---
+        let score = 0;
+        let lives = 4;
+        let timeLeft = 10;
+        let timerInterval;
+        let currentCase = null;
+        let gameActive = false;
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'stamp') {
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'alarm') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+
+        // --- LOGIC ---
+
+        function startGame() {
+            document.getElementById('modal').style.display = 'none';
+            score = 0;
+            lives = 4;
+            updateHUD();
+            gameActive = true;
+
+            // Start Music
+            const music = document.getElementById('bg-music');
+            music.volume = 0.5;
+            music.play().catch(e => console.log("Audio play blocked"));
+
+            nextCase();
+        }
+
+        function nextCase() {
+            if (!gameActive) return;
+
+            // Reset Visuals
+            document.getElementById('stamp-mark').style.opacity = 0;
+            document.getElementById('stamp-mark').style.animation = 'none';
+            document.getElementById('document').style.transform = 'rotate(-1deg) translateY(0)';
+
+            // Generate Case
+            const eras = Object.keys(BORDER_DB);
+            const era = eras[Math.floor(Math.random() * eras.length)];
+            const data = BORDER_DB[era];
+            const composer = data.composers[Math.floor(Math.random() * data.composers.length)];
+
+            // Decide Truth or Lie
+            const isLie = Math.random() > 0.5;
+            let statement;
+            if (isLie) {
+                statement = data.lies[Math.floor(Math.random() * data.lies.length)];
+            } else {
+                statement = data.truths[Math.floor(Math.random() * data.truths.length)];
+            }
+
+            currentCase = { era, composer, statement, isLie };
+
+            // Render
+            document.getElementById('doc-name').textContent = composer;
+            document.getElementById('doc-era').textContent = era;
+            document.getElementById('doc-statement').textContent = `"${statement}"`;
+            document.getElementById('doc-name').textContent = composer;
+            document.getElementById('doc-era').textContent = era;
+            document.getElementById('doc-statement').textContent = `"${statement}"`;
+
+            // Random Image
+            const randomImg = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+            document.getElementById('character').src = randomImg;
+            document.getElementById('doc-photo-img').src = randomImg;
+
+            // Animation
+            document.getElementById('character').classList.remove('char-leave');
+            document.getElementById('character').classList.add('char-enter');
+
+            // Timer
+            timeLeft = 10;
+            document.getElementById('timer-box').textContent = timeLeft;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-box').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    timeout();
+                }
+            }, 1000);
+        }
+
+        function stamp(decision) {
+            if (!gameActive) return;
+            clearInterval(timerInterval);
+
+            const mark = document.getElementById('stamp-mark');
+            mark.textContent = decision === 'approve' ? 'PERMETRE' : 'DENEGAR';
+            mark.className = `stamp-mark ${decision === 'approve' ? 'mark-approved' : 'mark-denied'}`;
+            mark.style.animation = 'stampEffect 0.3s forwards';
+
+            playSound('stamp');
+
+            // Check Logic
+            let correct = false;
+            if (decision === 'approve' && !currentCase.isLie) correct = true;
+            if (decision === 'deny' && currentCase.isLie) correct = true;
+
+            if (correct) {
+                score += 100;
+                playSound('success');
+                showFeedback('CORRECTE', 'green');
+
+                if (score >= 1000) {
+                    victory();
+                    return;
+                }
+            } else {
+                lives--;
+                playSound('alarm');
+                showFeedback('ERROR', 'red');
+            }
+
+            updateHUD();
+
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                setTimeout(nextCase, 1500);
+            }
+        }
+
+        function timeout() {
+            lives--;
+            playSound('alarm');
+            showFeedback('TEMPS!', 'red');
+            updateHUD();
+            if (lives <= 0) gameOver();
+            else setTimeout(nextCase, 1500);
+        }
+
+        function showFeedback(text, color) {
+            const fb = document.getElementById('feedback');
+            fb.textContent = text;
+            fb.style.color = color;
+            fb.style.borderColor = color;
+            fb.style.opacity = 0; // Reset
+
+            // Force reflow
+            void fb.offsetWidth;
+
+            fb.style.animation = 'feedbackAnim 2s forwards';
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function gameOver() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            document.querySelector('.modal-box h1').textContent = "EXPEDIENT TANCAT";
+            document.querySelector('.modal-box p').innerHTML = `Puntuació Final: <strong>${score}</strong><br>Has estat acomiadat.`;
+            document.querySelector('.btn-start').textContent = "TORNAR A APLICAR";
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function victory() {
+            gameActive = false;
+            clearInterval(timerInterval);
+
+            // Show new Victory Modal
+            document.getElementById('victory-modal').style.display = 'flex';
+
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'frontera_mix',
+                    'Inspector de Duanes',
+                    'Has protegit la integritat històrica amb 10 encerts!',
+                    '../../img/card_frontera.png'
+                );
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

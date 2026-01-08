@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Gira Europea - Risk Musical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Caveat:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-ocean: #1a2b45;
+            --land-color: #3a506b;
+            --highlight: #5bc0be;
+            --accent: #ff6b6b;
+            --text-light: #f0f5f9;
+            --success: #6bff6b;
+            --error: #ff4d4d;
+            --ink-color: #1a237e;
+            /* Deep Indigo Ink */
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-ocean);
+            color: var(--text-light);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header & HUD */
+        header {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--highlight);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hud {
+            display: flex;
+            gap: 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            color: var(--highlight);
+        }
+
+        /* Game Area - Map */
+        #game-area {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #map-container {
+            position: relative;
+            width: 90%;
+            height: 80%;
+            background: url('img/mapa_vintage.png') no-repeat center center;
+            background-size: 100% 100%;
+            /* Stretch to fill for full map view */
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            border: 4px solid #3e2723;
+        }
+
+        /* Volume Control */
+        #volume-control {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 150;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #volume-slider {
+            width: 80px;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            flex-direction: column;
+            color: #fff;
+            text-align: center;
+        }
+
+        .start-card {
+            background: #fff3e0;
+            padding: 3rem;
+            border-radius: 15px;
+            border: 4px solid #3e2723;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            max-width: 500px;
+            color: #3e2723;
+        }
+
+        .start-card h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Caveat', cursive;
+        }
+
+        .instructions {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        /* Countries / Drop Zones - STYLE: Paper Note */
+        .country-zone {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            /* Background Paper */
+            background: url('img/postit.png') no-repeat center center;
+            background-size: contain;
+
+            /* Typography */
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ink-color);
+            text-align: center;
+            line-height: 1;
+            padding: 25px;
+
+            filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
+            transform: rotate(-2deg);
+            opacity: 1;
+        }
+
+        .country-zone:hover {
+            transform: scale(1.1) rotate(0deg);
+            z-index: 20;
+            filter: drop-shadow(5px 10px 10px rgba(0, 0, 0, 0.4));
+        }
+
+        .country-zone.active-drop {
+            transform: scale(1.15) rotate(2deg);
+            filter: drop-shadow(0 0 10px var(--highlight));
+            z-index: 25;
+        }
+
+        .country-name {
+            pointer-events: none;
+        }
+
+        /* Approximate Locations */
+        #zone-es {
+            left: 12%;
+            top: 68%;
+            transform: rotate(-5deg);
+        }
+
+        #zone-fr {
+            left: 28%;
+            top: 52%;
+            transform: rotate(2deg);
+        }
+
+        #zone-uk {
+            left: 23%;
+            top: 32%;
+            transform: rotate(-3deg);
+        }
+
+        #zone-de {
+            left: 44%;
+            top: 45%;
+            transform: rotate(1deg);
+        }
+
+        #zone-it {
+            left: 45%;
+            top: 68%;
+            transform: rotate(-4deg);
+        }
+
+        #zone-at {
+            left: 54%;
+            top: 55%;
+            transform: rotate(3deg);
+        }
+
+        #zone-ru {
+            left: 75%;
+            top: 25%;
+            transform: rotate(-2deg);
+        }
+
+        /* The Suitcase (Draggable) */
+        #suitcase-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            perspective: 1000px;
+        }
+
+        .suitcase {
+            width: 220px;
+            height: 140px;
+            background: #8d6e63;
+            border-radius: 15px;
+            border: 4px solid #5d4037;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .suitcase:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .tag {
+            background: #fff3e0;
+            color: #3e2723;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transform: rotate(-2deg);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 90%;
+            border: 1px dashed #3e2723;
+        }
+
+        .handle {
+            width: 60px;
+            height: 20px;
+            border: 4px solid #3e2723;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Feedback Animations */
+        @keyframes flyOut {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.1) translateY(-500px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .flying {
+            animation: flyOut 0.8s ease-in forwards;
+        }
+
+        .rejected {
+            animation: shake 0.5s ease-in-out;
+            border-color: var(--error);
+        }
+
+        /* Game Over Modal */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal {
+            background: white;
+            color: #333;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 0 50px rgba(91, 192, 190, 0.5);
+        }
+
+        .btn {
+            background: var(--highlight);
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #map-container {
+                width: 100%;
+                height: 70%;
+            }
+
+            .country-name {
+                display: none;
+            }
+
+            /* Hide names on small screens, keep flags */
+            .suitcase {
+                width: 160px;
+                height: 100px;
+            }
+
+            .tag {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-screen">
+        <div class="start-card">
+            <h2>🌍 La Gira Europea</h2>
+            <div class="instructions">
+                <p>Benvingut a la teva gira musical!</p>
+                <p>Arrossega la maleta al país correcte segons l'artista, obra o estil que aparegui a l'etiqueta.</p>
+                <p>Aconsegueix <strong>10 encerts</strong> per guanyar!</p>
+            </div>
+            <button class="btn" onclick="startGame()">Començar Viatge</button>
+        </div>
+    </div>
+
+    <!-- Volume Control -->
+    <div id="volume-control">
+        <span>🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <header>
+        <h1>La Gira Europea 🌍</h1>
+        <div class="hud">
+            <div class="stat">
+                <span class="stat-icon">✈️</span>
+                <span class="stat-value" id="score">0</span>
+                <span>milles</span>
+            </div>
+            <div class="stat">
+                <span class="stat-icon">⚠️</span>
+                <span class="stat-value" id="errors">0</span>
+                <span>/ 3</span>
+            </div>
+        </div>
+    </header>
+
+    <div id="game-area">
+        <div id="map-container">
+            <!-- Drop Zones (Ink Style, No Flags) -->
+            <div class="country-zone" id="zone-es" data-country="es">Espanya</div>
+            <div class="country-zone" id="zone-fr" data-country="fr">França</div>
+            <div class="country-zone" id="zone-uk" data-country="uk">Regne Unit</div>
+            <div class="country-zone" id="zone-de" data-country="de">Alemanya</div>
+            <div class="country-zone" id="zone-it" data-country="it">Itàlia</div>
+            <div class="country-zone" id="zone-at" data-country="at">Àustria</div>
+            <div class="country-zone" id="zone-ru" data-country="ru">Rússia</div>
+        </div>
+
+        <div id="suitcase-container">
+            <div id="current-suitcase" class="suitcase" draggable="true">
+                <div class="handle"></div>
+                <div class="tag" id="suitcase-label">...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal">
+            <h2>🛂 Viatge Finalitzat!</h2>
+            <p>La teva gira ha acabat a la duana.</p>
+            <p>Milles totals: <strong id="final-score" style="color: var(--highlight); font-size: 1.5rem;">0</strong>
+            </p>
+            <p>Rècord Personal: <strong id="high-score">0</strong></p>
+            <button class="btn" onclick="restartGame()">Tornar a començar</button>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const TOUR_DB = [
+            { id: 'it', items: ['Vivaldi', 'Monteverdi', 'Òpera', 'Verdi', 'Rossini', 'Barroc Italià', 'Puccini', 'La Scala', 'Venècia'] },
+            { id: 'de', items: ['Bach', 'Beethoven', 'Wagner', 'Brahms', 'Schumann', 'Lied', 'Reforma Protestant', 'Orgue Barroc'] },
+            { id: 'at', items: ['Mozart', 'Haydn', 'Schubert', 'Viena', 'Simfonia Clàssica', 'Mahler', 'Vals', 'Nen Cantors'] },
+            { id: 'fr', items: ['Debussy', 'Ravel', 'Berlioz', 'Bizet', 'Impressionisme', 'Trobadors', 'Versalles', 'Lully'] },
+            { id: 'es', items: ['Falla', 'Albéniz', 'Granados', 'Tomás Luis de Victoria', 'Flamenc', 'Sarsuela', 'Guitarra', 'Rodrigo'] },
+            { id: 'uk', items: ['Händel', 'Purcell', 'The Beatles', 'Elgar', 'Britten', 'Westminster', 'Pop-Rock'] },
+            { id: 'ru', items: ['Txaikovski', 'Stravinsky', 'Rimski-Kórsakov', 'Mussorgski', 'Rakhmàninov', 'Ballet Rus', 'Xostakóvitx'] }
+        ];
+
+        // --- STATE ---
+        let score = 0;
+        let hits = 0; // Count correct answers
+        const TARGET_HITS = 10;
+        let errors = 0;
+        const MAX_ERRORS = 3;
+        let currentItem = null;
+        let gameActive = true;
+        let masterVolume = 0.5;
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Volume Slider Logic
+        const volumeSlider = document.getElementById('volume-slider');
+        volumeSlider.addEventListener('input', (e) => {
+            masterVolume = parseFloat(e.target.value);
+        });
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const t = audioCtx.currentTime;
+            const vol = masterVolume;
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, t);
+                osc.frequency.exponentialRampToValueAtTime(800, t + 0.1);
+                gain.gain.setValueAtTime(0.3 * vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+                osc.start(t); osc.stop(t + 0.5);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, t);
+                osc.frequency.linearRampToValueAtTime(50, t + 0.3);
+                gain.gain.setValueAtTime(0.3 * vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+                osc.start(t); osc.stop(t + 0.3);
+            } else if (type === 'win') {
+                // Victory Fanfare
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, t);
+                osc.frequency.setValueAtTime(554, t + 0.2); // C#
+                osc.frequency.setValueAtTime(659, t + 0.4); // E
+                gain.gain.setValueAtTime(0.2 * vol, t);
+                gain.gain.linearRampToValueAtTime(0, t + 1.5);
+                osc.start(t); osc.stop(t + 1.5);
+            }
+        }
+
+        // --- DOM ELEMENTS ---
+        const suitcaseEl = document.getElementById('current-suitcase');
+        const labelEl = document.getElementById('suitcase-label');
+        const scoreEl = document.getElementById('score');
+        const errorsEl = document.getElementById('errors');
+        const zones = document.querySelectorAll('.country-zone');
+        const modal = document.getElementById('modal-overlay');
+
+        // --- LOGIC ---
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            initGame();
+        }
+
+        function initGame() {
+            score = 0;
+            hits = 0;
+            errors = 0;
+            gameActive = true;
+            updateHUD();
+            spawnSuitcase();
+            modal.style.display = 'none';
+
+            // Load High Score
+            const saved = localStorage.getItem('gira_highscore');
+            if (saved) document.getElementById('high-score').textContent = saved;
+        }
+
+        // ... existing handleDrop, updateHUD ...
+
+        // ... existing rest of file ...
+
+        function spawnSuitcase() {
+            if (!gameActive) return;
+
+            // Pick random country
+            const countryObj = TOUR_DB[Math.floor(Math.random() * TOUR_DB.length)];
+            // Pick random item from that country
+            const item = countryObj.items[Math.floor(Math.random() * countryObj.items.length)];
+
+            currentItem = {
+                name: item,
+                targetId: countryObj.id
+            };
+
+            labelEl.textContent = currentItem.name;
+
+            // Reset visual state
+            suitcaseEl.classList.remove('flying', 'rejected');
+            suitcaseEl.style.opacity = '1';
+            suitcaseEl.style.transform = 'translate(0, 0)';
+            suitcaseEl.style.left = '';
+            suitcaseEl.style.top = '';
+        }
+
+        function handleDrop(countryId) {
+            if (!gameActive) return;
+
+            if (countryId === currentItem.targetId) {
+                // Success
+                playSound('success');
+                hits++;
+                score += 100;
+                suitcaseEl.classList.add('flying');
+
+                // Check Win Condition
+                if (hits >= TARGET_HITS) {
+                    winGame();
+                } else {
+                    setTimeout(spawnSuitcase, 800);
+                }
+
+            } else {
+                // Fail
+                playSound('error');
+                errors++;
+                suitcaseEl.classList.add('rejected');
+                setTimeout(() => suitcaseEl.classList.remove('rejected'), 500);
+
+                if (errors >= MAX_ERRORS) {
+                    gameOver();
+                }
+            }
+            updateHUD();
+        }
+
+        function updateHUD() {
+            scoreEl.textContent = `${hits}/${TARGET_HITS}`; // Show progress instead of generic score
+            errorsEl.textContent = errors;
+        }
+
+        function winGame() {
+            gameActive = false;
+            playSound('win');
+
+            const modalContent = document.querySelector('.modal');
+            modalContent.querySelector('h2').textContent = "🎉 Gira Completada!";
+            modalContent.querySelector('p').textContent = "Has completat la teva gira amb èxit.";
+
+            document.getElementById('final-score').textContent = score; // points
+
+            // Check reward
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'gira_mix',
+                    'Viatger Musical',
+                    'Has completat la gran gira europea!',
+                    '../../img/card_gira.png'
+                );
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function gameOver() {
+            gameActive = false;
+            // playSound('error'); already played on last miss
+
+            const modalContent = document.querySelector('.modal');
+            modalContent.querySelector('h2').textContent = "🛂 Viatge Finalitzat";
+            modalContent.querySelector('p').textContent = "Massa errors a la duana.";
+
+            document.getElementById('final-score').textContent = score;
+
+            // Save High Score
+            const currentHigh = localStorage.getItem('gira_highscore') || 0;
+            if (score > currentHigh) {
+                localStorage.setItem('gira_highscore', score);
+                document.getElementById('high-score').textContent = score;
+            } else {
+                document.getElementById('high-score').textContent = currentHigh;
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        // --- DRAG & DROP EVENTS ---
+
+        // Desktop Drag
+        suitcaseEl.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', 'suitcase');
+            setTimeout(() => suitcaseEl.style.opacity = '0.5', 0);
+        });
+
+        suitcaseEl.addEventListener('dragend', (e) => {
+            suitcaseEl.style.opacity = '1';
+        });
+
+        zones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Allow drop
+                zone.classList.add('active-drop');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('active-drop');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('active-drop');
+                const countryId = zone.getAttribute('data-country');
+                handleDrop(countryId);
+            });
+        });
+
+        // Mobile Touch Drag
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        suitcaseEl.addEventListener('touchstart', (e) => {
+            if (!gameActive) return;
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }, { passive: false });
+
+        suitcaseEl.addEventListener('touchmove', (e) => {
+            if (!gameActive) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartX;
+            const deltaY = touch.clientY - touchStartY;
+            suitcaseEl.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+            // Highlight zones under finger
+            const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+            const zone = elementUnder ? elementUnder.closest('.country-zone') : null;
+            zones.forEach(z => z.classList.remove('active-drop'));
+            if (zone) zone.classList.add('active-drop');
+
+        }, { passive: false });
+
+        suitcaseEl.addEventListener('touchend', (e) => {
+            if (!gameActive) return;
+            const touch = e.changedTouches[0];
+            const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+            const zone = elementUnder ? elementUnder.closest('.country-zone') : null;
+
+            if (zone) {
+                handleDrop(zone.getAttribute('data-country'));
+            } else {
+                suitcaseEl.style.transform = 'translate(0, 0)';
+            }
+            zones.forEach(z => z.classList.remove('active-drop'));
+        });
+
+        // Start button logic handles initGame()
+    </script>
+
+</body>
+
+</html>

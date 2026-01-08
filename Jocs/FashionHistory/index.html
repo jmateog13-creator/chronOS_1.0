@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion History: L'Armari del Temps</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --primary: #222;
+            --accent: #d4af37;
+            /* Gold accent */
+            --border-color: #ddd;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 95vw;
+            height: 90vh;
+            max-width: 1400px;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* HEADER */
+        header {
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .mission-details {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+
+        .mission-client {
+            font-weight: bold;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        /* MAIN CONTENT SPLIT */
+        #content-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* LEFT: STAGE */
+        #stage-area {
+            width: 40%;
+            background: #fafafa;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #mannequin-wrapper {
+            position: relative;
+            height: 80%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #mannequin-base {
+            height: 100%;
+            opacity: 0.2;
+        }
+
+        .equipped-item {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            object-fit: contain;
+        }
+
+        /* Adjustment for Layers */
+        .layer-shoes {
+            z-index: 5;
+            bottom: 0%;
+            height: 18%;
+            width: 40%;
+        }
+
+        .layer-body {
+            z-index: 10;
+            top: 22%;
+            height: 48%;
+            width: 55%;
+        }
+
+        .layer-head {
+            z-index: 20;
+            top: 2%;
+            height: 25%;
+            width: 35%;
+        }
+
+        .layer-accessory {
+            z-index: 30;
+            top: 35%;
+            left: 60%;
+            height: 30%;
+            width: 30%;
+        }
+
+        #action-bar {
+            margin-top: 20px;
+            z-index: 100;
+            display: none;
+            /* Hidden strictly initially */
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            background: #000;
+        }
+
+        /* RIGHT: WARDROBE */
+        #wardrobe-area {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        /* TABS */
+        #tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f9f9f9;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-right: 1px solid #eee;
+        }
+
+        .tab:hover {
+            background: #eee;
+        }
+
+        .tab.active {
+            background: white;
+            color: var(--accent);
+            border-bottom: 4px solid var(--accent);
+        }
+
+        /* GRID */
+        #wardrobe-grid {
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .clothing-item {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            background: #fff;
+            padding: 10px;
+        }
+
+        .clothing-item:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .clothing-item.selected {
+            border: 3px solid var(--primary);
+            background: #fdfdfd;
+        }
+
+        .clothing-item img {
+            width: 100%;
+            height: 150px;
+            /* Fixed height for consistency */
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            font-size: 0.9rem;
+            color: #555;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* GLOBAL TOOLTIP STYLE */
+        #global-tooltip {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            max-width: 250px;
+            text-align: left;
+            pointer-events: none;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #444;
+        }
+
+        /* SCREENS */
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #start-screen {
+            z-index: 3000;
+        }
+
+        #feedback-overlay {
+            z-index: 4000;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #feedback-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Volume Control */
+        #volume-control {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5000;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+
+        <div id="volume-control">
+            🎵 <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- HEADER -->
+        <header>
+            <div style="flex: 1; text-align:left;">
+                <h1 id="event-name">EVENT TITLE</h1>
+                <div class="mission-info">Missió <span id="mission-num">1</span>/6</div>
+            </div>
+            <div class="mission-details" style="flex: 1; text-align: center;">
+                <div style="font-size: 0.7rem; color: #888; letter-spacing: 1px;">CLIENT</div>
+                <span id="client-name" class="mission-client" style="font-size: 1rem;">NAME</span>
+            </div>
+            <div style="flex: 1;">
+                <!-- Space for Volume Control (absolute) -->
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <div id="content-area">
+
+            <!-- STAGE -->
+            <div id="stage-area">
+                <div id="mannequin-wrapper">
+                    <img id="mannequin-base" src="img/mannequin_silhouette.png">
+
+                    <img id="equip-shoes" class="equipped-item layer-shoes" src="" style="display:none">
+                    <img id="equip-body" class="equipped-item layer-body" src="" style="display:none">
+                    <img id="equip-head" class="equipped-item layer-head" src="" style="display:none">
+                    <img id="equip-acc" class="equipped-item layer-accessory" src="" style="display:none">
+                </div>
+
+                <div id="action-bar">
+                    <button class="btn-main" onclick="validateLook()">DESFILAR</button>
+                </div>
+            </div>
+
+            <!-- WARDROBE -->
+            <div id="wardrobe-area">
+                <div id="tabs">
+                    <div class="tab" onclick="switchTab('head')">CAP</div>
+                    <div class="tab" onclick="switchTab('body')">COS</div>
+                    <div class="tab" onclick="switchTab('shoes')">SABATES</div>
+                    <div class="tab" onclick="switchTab('acc')">ACCESSORIS</div>
+                </div>
+
+                <div id="wardrobe-grid">
+                    <!-- Items go here -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen-overlay">
+            <h1 style="font-size: 3rem; margin-bottom: 20px;">Fashion History</h1>
+            <p style="font-size: 1.2rem; max-width: 600px; color: #666; margin-bottom: 40px;">
+                Ets l'estilista del temps. Vesteix el maniquí segons l'època i el client.
+                <br>Assegura't de triar els 4 elements correctes!
+            </p>
+            <button class="btn-main" onclick="initGame()">COMENÇAR</button>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="feedback-overlay" class="screen-overlay">
+            <div style="font-size: 5rem; margin-bottom: 20px;" id="fb-emoji">👏</div>
+            <h2 id="fb-title" style="font-size: 2.5rem; font-family:'Playfair Display'">Perfecte!</h2>
+            <p id="fb-msg" style="font-size: 1.2rem; color: #555; margin-bottom: 30px;">Text here</p>
+            <button class="btn-main" onclick="nextLevel()">SEGÜENT</button>
+        </div>
+
+    </div>
+
+    <!-- GLOBAL TOOLTIP -->
+    <div id="global-tooltip"></div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/bg_music.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // --- DATA ---
+        const MISSIONS = [
+            { id: 1, era: "EDAT MITJANA", client: "Trobador", event: "Cançó a la Plaça", required: ["head_featherhat", "body_tunic", "shoes_sandals", "acc_lute"] },
+            { id: 2, era: "RENAIXEMENT", client: "Noble", event: "Ball de Cort", required: ["head_flatcap", "body_doublet", "shoes_ren_boots", "acc_ruff"] },
+            { id: 3, era: "BARROC", client: "J.S. Bach", event: "Concert d'Orgue", required: ["head_wig_short", "body_coat_dark", "shoes_heels", "acc_cane"] },
+            { id: 4, era: "CLASSICISME", client: "Dama Vienesa", event: "Òpera de Mozart", required: ["head_wig_pony", "body_empire_dress", "shoes_flat", "acc_fan"] },
+            { id: 5, era: "ROMANTICISME", client: "Valquíria", event: "Drama Wagnerià", required: ["head_horned_helmet", "body_warrior_dress", "shoes_boots_black", "acc_spear"] },
+            { id: 6, era: "SEGLE XX", client: "Jazzman", event: "Nit a New Orleans", required: ["head_fedora", "body_suit_stripes", "shoes_shoes_black", "acc_trumpet"] }
+        ];
+
+        const CLOSET = [
+            // HEAD
+            { id: "head_featherhat", cat: "head", img: "img/head_featherhat.png", name: "Barret Ploma", desc: "Barret amb ploma de faisà típic dels trobadors medievals." },
+            { id: "head_flatcap", cat: "head", img: "img/head_flatcap.png", name: "Barret Pla", desc: "Barret pla de vellut, molt comú entre la noblesa del Renaixement." },
+            { id: "head_wig_short", cat: "head", img: "img/head_wig_short.png", name: "Perruca Bach", desc: "Perruca curta i blanca, austera com l'estil de J.S. Bach (Barroc)." },
+            { id: "head_wig_pony", cat: "head", img: "img/head_wig_pony.png", name: "Perruca Cua", desc: "Perruca amb cua, símbol d'elegància i ordre del Classicisme." },
+            { id: "head_horned_helmet", cat: "head", img: "img/head_horned_helmet.png", name: "Casc Valquíria", desc: "Casc amb banyes icònic de les òperes èpiques de Wagner." },
+            { id: "head_fedora", cat: "head", img: "img/head_fedora.png", name: "Fedora", desc: "Barret de feltre clàssic associated als músics de Jazz del segle XX." },
+
+            // BODY
+            { id: "body_tunic", cat: "body", img: "img/body_tunic.png", name: "Túnica", desc: "Túnica senzilla i pràctica per viatjar de castell en castell." },
+            { id: "body_doublet", cat: "body", img: "img/body_doublet.png", name: "Gibó", desc: "Gibó ajustat i decorat, reflex de l'humanisme i la moda renaixentista." },
+            { id: "body_coat_dark", cat: "body", img: "img/body_coat_dark.png", name: "Casaca Fosca", desc: "Casaca llarga i seriosa, pròpia de l'època del Barroc." },
+            { id: "body_empire_dress", cat: "body", img: "img/body_empire_dress.png", name: "Vestit Imperi", desc: "Vestit d'estil imperi, inspirat en l'antiguitat clàssica." },
+            { id: "body_warrior_dress", cat: "body", img: "img/body_warrior_dress.png", name: "Armadura", desc: "Vestimenta guerrera per a personatges mitològics romàntics." },
+            { id: "body_suit_stripes", cat: "body", img: "img/body_suit_stripes.png", name: "Trage Ratlles", desc: "Vestit elegant de ratlles, típic de l'era del Swing i el Jazz." },
+
+            // SHOES
+            { id: "shoes_sandals", cat: "shoes", img: "img/shoes_sandals.png", name: "Sandàlies", desc: "Calçat còmode i obert, ideal per a l'Edat Mitjana." },
+            { id: "shoes_ren_boots", cat: "shoes", img: "img/shoes_ren_boots.png", name: "Botes de Pell", desc: "Botes resistents de cuir treballat del Renaixement." },
+            { id: "shoes_heels", cat: "shoes", img: "img/shoes_heels.png", name: "Talons Vermells", desc: "Sabates amb taló, popularitzades per la cort de Lluís XIV (Barroc)." },
+            { id: "shoes_flat", cat: "shoes", img: "img/shoes_flat.png", name: "Sabates Planes", desc: "Sabates delicades i planes, buscant la naturalitat clàssica." },
+            { id: "shoes_boots_black", cat: "shoes", img: "img/shoes_heels.png", name: "Botes Negres", filter: "grayscale(100%) brightness(10%)", desc: "Botes negres i robustes per a trepitjar fort en el Romanticisme." },
+            { id: "shoes_shoes_black", cat: "shoes", img: "img/shoes_shoes_black.png", name: "Sabates de Vestir", desc: "Sabates de xarol brillants per ballar al ritme del segle XX." },
+
+            // ACC
+            { id: "acc_lute", cat: "acc", img: "img/acc_lute.png", name: "Llaüt", desc: "Instrument de corda indispensable per a qualsevol trobador." },
+            { id: "acc_ruff", cat: "acc", img: "img/acc_ruff.png", name: "Gorguera", desc: "Collaret emmidonat i prisat, molt de moda al Renaixement." },
+            { id: "acc_cane", cat: "acc", img: "img/acc_cane.png", name: "Bastó Reial", desc: "Bastó de comandament o de passeig, símbol d'estatus barroc." },
+            { id: "acc_fan", cat: "acc", img: "img/acc_fan.png", name: "Vano", desc: "Vano elegant per refrescar-se a l'òpera o als salons vienesos." },
+            { id: "acc_spear", cat: "acc", img: "img/acc_spear.png", name: "Llança", desc: "Arma escènica per a les heroïnes de les òperes de Wagner." },
+            { id: "acc_trumpet", cat: "acc", img: "img/acc_trumpet.png", name: "Trompeta", desc: "Instrument de metall rei del Jazz i la música moderna." }
+        ];
+
+        let currentMission = 0;
+        let activeTab = 'head';
+        let equipped = { head: null, body: null, shoes: null, acc: null };
+        let currentPool = [];
+
+        // Global Tooltip Logic
+        const tooltipEl = document.getElementById('global-tooltip');
+
+        function showTooltip(e, text) {
+            tooltipEl.innerText = text;
+            tooltipEl.style.display = 'block';
+            moveTooltip(e);
+        }
+
+        function moveTooltip(e) {
+            // Add offset to avoid cursor covering text
+            const x = e.clientX + 15;
+            const y = e.clientY + 15;
+
+            // Check bounds to prevent overflow right/bottom
+            // Simple logic: if x > window width - 200, move left
+            // if y > window height - 50, move up
+            // For now, simple standard follow is usually fine with "fixed"
+
+            tooltipEl.style.left = x + 'px';
+            tooltipEl.style.top = y + 'px';
+        }
+
+        function hideTooltip() {
+            tooltipEl.style.display = 'none';
+        }
+
+        function initGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('action-bar').style.display = 'block';
+
+            // Audio
+            const bg = document.getElementById('bg-music');
+            if (bg && bg.paused) bg.play().catch(e => console.log(e));
+
+            // Randomize Missions
+            MISSIONS.sort(() => Math.random() - 0.5);
+            currentMission = 0;
+            loadMission();
+        }
+
+        function loadMission() {
+            const m = MISSIONS[currentMission];
+            document.getElementById('mission-num').innerText = currentMission + 1;
+            document.getElementById('event-name').innerText = m.event;
+            document.getElementById('client-name').innerText = m.client + " (" + m.era + ")";
+
+            // Reset Mannequin
+            equipped = { head: null, body: null, shoes: null, acc: null };
+            ['head', 'body', 'shoes', 'acc'].forEach(type => {
+                const el = document.getElementById('equip-' + type);
+                el.src = "";
+                el.style.display = 'none';
+                el.style.filter = "none";
+            });
+
+            switchTab(activeTab);
+        }
+
+        function switchTab(cat) {
+            activeTab = cat;
+
+            // Tab Styles
+            const map = { 'head': 0, 'body': 1, 'shoes': 2, 'acc': 3 };
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                if (i === map[cat]) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('wardrobe-grid');
+            grid.innerHTML = "";
+
+            let items = CLOSET.filter(i => i.cat === activeTab);
+            // Random sort
+            items = items.sort(() => Math.random() - 0.5);
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "clothing-item";
+                if (equipped[activeTab] === item.id) card.classList.add('selected');
+
+                card.onclick = () => equip(item);
+
+                // Tooltip Events
+                card.onmouseenter = (e) => showTooltip(e, item.desc || item.name);
+                card.onmousemove = (e) => moveTooltip(e);
+                card.onmouseleave = hideTooltip;
+
+                const img = document.createElement('img');
+                img.src = item.img;
+                if (item.filter) img.style.filter = item.filter;
+
+                const title = document.createElement('div');
+                title.className = "item-name";
+                title.innerText = item.name;
+
+                card.appendChild(img);
+                card.appendChild(title);
+                grid.appendChild(card);
+            });
+        }
+
+        function equip(item) {
+            equipped[item.cat] = item.id;
+
+            // Render on Mannequin
+            const el = document.getElementById('equip-' + item.cat);
+            el.src = item.img;
+            el.style.display = 'block';
+            el.style.filter = item.filter || 'none';
+
+            // Update selection visually without full re-render
+            const grid = document.getElementById('wardrobe-grid');
+            Array.from(grid.children).forEach(child => {
+                const name = child.querySelector('.item-name').innerText;
+                if (name === item.name) child.classList.add('selected');
+                else if (child.classList.contains('selected') && CLOSET.find(c => c.name === name).cat === item.cat) {
+                    child.classList.remove('selected');
+                }
+            });
+        }
+
+        function validateLook() {
+            const m = MISSIONS[currentMission];
+            let correct = 0;
+            m.required.forEach(req => {
+                // Find which cat this req belongs to
+                const def = CLOSET.find(c => c.id === req);
+                if (equipped[def.cat] === req) correct++;
+            });
+
+            const fb = document.getElementById('feedback-overlay');
+            const emoji = document.getElementById('fb-emoji');
+            const title = document.getElementById('fb-title');
+            const msg = document.getElementById('fb-msg');
+
+            if (correct === 4) {
+                fb.classList.add('active');
+                emoji.innerText = "🌟";
+                title.innerText = "IMPECABLE!";
+                title.style.color = "gold";
+                msg.innerText = "Has captat perfectament l'essència de l'època.";
+                document.querySelector('#feedback-overlay button').onclick = nextLevel;
+                document.querySelector('#feedback-overlay button').innerText = "SEGÜENT";
+            } else {
+                fb.classList.add('active');
+                emoji.innerText = "🤔";
+                title.innerText = "Mmmm...";
+                title.style.color = "#333";
+                msg.innerText = "Alguna peça no acaba d'encaixar. Revisa les pistes!";
+                document.querySelector('#feedback-overlay button').onclick = () => { fb.classList.remove('active'); };
+                document.querySelector('#feedback-overlay button').innerText = "TORNAR-HI";
+            }
+        }
+
+        function nextLevel() {
+            document.getElementById('feedback-overlay').classList.remove('active');
+            currentMission++;
+            if (currentMission >= MISSIONS.length) {
+                alert("JOC COMPLETAT! Ets el mestre de la moda històrica!");
+                location.reload();
+            } else {
+                loadMission();
+            }
+        }
+
+        // Initial Volume
+        const volSlider = document.getElementById('volume-slider');
+        const bgMusic = document.getElementById('bg-music');
+        if (volSlider && bgMusic) {
+            volSlider.addEventListener('input', (e) => {
+                bgMusic.volume = e.target.value;
+            });
+            bgMusic.volume = 0.5;
+        }
+
+        // Trigger on click
+        document.body.addEventListener('click', () => {
+            if (bgMusic && bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio play failed", e));
+            }
+        }, { once: true });
+
+    </script>
+</body>
+
+</html>

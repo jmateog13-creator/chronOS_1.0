@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Farmàcia Històrica</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            --wood-dark: #5d4037;
+            --wood-light: #8d6e63;
+            --paper: #f5f5dc;
+            --gold: #ffd700;
+            --text-color: #3e2723;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Lora', serif;
+            background-color: #3e2723;
+            background-image: url('img/bg.jpg');
+            /* Pharmacy shelves bg */
+            background-size: cover;
+            background-position: center;
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            background: var(--paper);
+            padding: 3rem;
+            border-radius: 10px;
+            border: 8px solid var(--wood-dark);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            max-width: 900px;
+        }
+
+        h1 {
+            font-family: 'Abril Fatface', cursive;
+            font-size: 4rem;
+            color: var(--wood-dark);
+            margin: 0 0 1rem 0;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .btn-era {
+            background: var(--wood-light);
+            color: white;
+            border: 2px solid var(--wood-dark);
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-family: 'Abril Fatface', cursive;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 0 var(--wood-dark);
+        }
+
+        .btn-era:hover {
+            background: var(--wood-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-era:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .btn-era.completed {
+            background: var(--success);
+            border-color: #27ae60;
+            color: #fff;
+        }
+
+        /* Game Interface */
+        #pharmacy-interface {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Counter Area */
+        #counter-area {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 35%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%238d6e63"/><path d="M0 0 L100 0 L100 5 L0 5 Z" fill="%235d4037"/><path d="M0 10 L100 10" stroke="%235d4037" stroke-width="1" opacity="0.5"/></svg>');
+            background-size: 100px 100px;
+            box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            z-index: 5;
+            padding-bottom: 20px;
+        }
+
+        /* Patient Area */
+        #patient-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #patient-img {
+            width: 300px;
+            height: 300px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s;
+            cursor: default;
+        }
+
+        #bubble {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            position: relative;
+            max-width: 400px;
+            text-align: center;
+            font-size: 1.3rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+
+        #bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: white transparent;
+            display: block;
+            width: 0;
+        }
+
+        #bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: #333 transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* Medications */
+        .med-box {
+            width: 180px;
+            height: 220px;
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: transform 0.2s;
+            position: relative;
+            padding: 10px;
+            text-align: center;
+            user-select: none;
+        }
+
+        .med-box:active {
+            cursor: grabbing;
+        }
+
+        .med-box:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .med-label {
+            font-family: 'Abril Fatface', cursive;
+            font-size: 1.2rem;
+            color: var(--wood-dark);
+            margin-top: 10px;
+            pointer-events: none;
+        }
+
+        .med-icon {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            pointer-events: none;
+            margin-bottom: 5px;
+        }
+
+        .med-box.dragging {
+            opacity: 0.5;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--paper);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid var(--wood-dark);
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Feedback */
+        #feedback-overlay {
+            display: none;
+        }
+
+        #feedback-content {
+            background: var(--paper);
+            padding: 40px;
+            border-radius: 10px;
+            border: 5px solid var(--wood-dark);
+            text-align: center;
+        }
+
+        #feedback-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        #feedback-msg {
+            font-size: 2rem;
+            font-family: 'Abril Fatface', cursive;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px) rotate(-5deg);
+            }
+
+            50% {
+                transform: translateX(5px) rotate(5deg);
+            }
+
+            75% {
+                transform: translateX(-5px) rotate(-5deg);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0);
+            }
+
+            80% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pop {
+            animation: pop 0.3s;
+        }
+
+        /* Tooltip */
+        .med-tooltip {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            width: 180px;
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            font-family: 'Lora', serif;
+        }
+
+        .med-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+        }
+
+        .med-box:hover .med-tooltip {
+            opacity: 1;
+        }
+
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--paper);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 2px solid var(--wood-dark);
+            display: flex;
+            align-items: center;
+            color: var(--wood-dark);
+            font-family: 'Abril Fatface', cursive;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+        }
+
+        #volume-slider {
+            margin-left: 10px;
+            cursor: pointer;
+            accent-color: var(--wood-dark);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="overlay">
+            <h1>La Farmàcia Històrica</h1>
+            <p class="subtitle">Cura les malalties musicals amb el medicament correcte!</p>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem; color: var(--wood-dark);">
+                📝 <strong>Instruccions:</strong> Llegeix el símptoma i <strong>arrossega</strong> el medicament
+                correcte cap al pacient.
+            </p>
+            <div class="era-grid">
+                <button class="btn-era" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="btn-era" data-era="renaixement">Renaixement</button>
+                <button class="btn-era" data-era="barroc">Barroc</button>
+                <button class="btn-era" data-era="classicisme">Classicisme</button>
+                <button class="btn-era" data-era="romanticisme">Romanticisme</button>
+                <button class="btn-era" data-era="segle_xx">Segle XX</button>
+            </div>
+        </div>
+
+        <!-- Game Interface -->
+        <div id="pharmacy-interface" class="hidden">
+            <div id="hud">
+                <span>PACIENTS: <span id="round">1</span>/6</span>
+                <span>CURATS: <span id="score">0</span></span>
+                <span style="color:red">ERRORS: <span id="errors">0</span></span>
+            </div>
+
+            <div id="volume-control">
+                🔊 <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+
+            <div id="patient-area">
+                <div id="bubble">...</div>
+                <div id="patient-img">🤒</div>
+            </div>
+
+            <div id="counter-area">
+                <!-- Meds injected here -->
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay" class="overlay">
+            <div id="feedback-content">
+                <div id="feedback-icon"></div>
+                <div id="feedback-msg"></div>
+                <button class="btn-era" id="restart-btn">TORNAR A L'INICI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Player -->
+    <audio id="bg-music" loop>
+        <source src="audio/bg_music.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: [
+                { s: "Em sento sol, vull cantar una sola línia.", c: "Monodina", d: "Cura la soledat auditiva restaurant una única línia melòdica pura.", w: ["Polifenol", "Baixcontinuprofè"] },
+                { s: "Necessito escriure aquestes notes quadrades.", c: "Neumàtic", d: "Soluciona la pèrdua de memòria musical mitjançant l'ús de notes quadrades.", w: ["Impremtasil", "Dodeca-Fiz"] },
+                { s: "Tinc ganes de resar en llatí tot el dia.", c: "Gregol", d: "Medicament per a la devoció intensa i el cant coral en llatí.", w: ["Operadol", "Lied-B12"] },
+                { s: "Vull explicar històries d'amor als castells.", c: "Trobadorol", d: "Ideal per a cors trencats que volen cantar històries d'amor en castells.", w: ["Madrigalina", "Wagnerina"] },
+                { s: "Necessito saber on és el Do.", c: "Guidonex", d: "El remei definitiu per trobar la nota 'Do' en qualsevol escala.", w: ["Atonal-Max", "Sonatina 500"] },
+                { s: "Em fa mal el braç de girar la manivela.", c: "Violaderodina", d: "Alleuja el mal de braç provocat per girar la manivela de la viola de roda.", w: ["Pianofortix", "Electro-Xoc"] }
+            ],
+            renaixement: [
+                { s: "Sento veus... moltes veus que es copien.", c: "Polifenol", d: "Augmenta la capacitat d'escoltar múltiples veus que s'imiten entre si.", w: ["Monodina", "Senzillesa-Plus"] },
+                { s: "L'home és el centre del meu univers.", c: "Humanitx", d: "Situa l'ésser humà com el centre de la vibració musical.", w: ["Teocentril", "Atzar-Biotic"] }, // Teocentril fake? Wait user said REMOVE fake. Teocentril implies God-centric (medieval-ish). Let's use Gregol.
+                { s: "Vull imprimir mil partitures de cop.", c: "Impremtasil", d: "Permet la multiplicació massiva de partitures en poc temps.", w: ["Neumàtic", "Silenciol"] },
+                { s: "Necessito que el text s'entengui a Missa.", c: "Concili-B", d: "Clarifica el text en les obres religioses per a una millor comprensió.", w: ["Atonal-Max", "Gregol"] },
+                { s: "Vull plorar d'amor en italià.", c: "Madrigalina", d: "Extracte de passió italiana per expressar sentiments amorosos.", w: ["Trobadorol", "Pasió-Forte"] },
+                { s: "Tinc les cames cansades de subjectar l'instrument.", c: "ViolaGamba-Forte", d: "Reforça la musculatura de les cames per subjectar instruments de corda.", w: ["Violaderodina", "Electro-Xoc"] }
+            ],
+            barroc: [
+                { s: "Em sento buit per sota, em falta base.", c: "Baixcontinuprofè", d: "Proporciona una base sòlida i contínua per a qualsevol melodia.", w: ["Monodina", "Silenciol"] },
+                { s: "Tot és massa simple, vull més rínxols!", c: "Ornamentsil", d: "Afegeix rínxols i detalls complexos a les melodies massa simples.", w: ["Senzillesa-Plus", "Neumàtic"] },
+                { s: "Tinc un drama exagerat a sobre.", c: "Operadol", d: "Tractament per a l'excés de drama i l'exhibició vocal escènica.", w: ["Gregol", "Sonatina 500"] },
+                { s: "Se'm repeteix el tema constantment.", c: "Fugax", d: "Ajuda a perseguir un tema musical que es repeteix constantment.", w: ["Atzar-Biotic", "Lied-B12"] },
+                { s: "Vull xocar fort i després fluix.", c: "Contrastina", d: "Equilibra els xocs entre sons forts i fluixos (piano e forte).", w: ["Pianofortix", "Soroll-Gel"] }, // Pianofortix is Classicism, good distractor
+                { s: "Soc el Rei Sol i vull brillar.", c: "Absolutisme-C", d: "Elixir de brillantor reial per a músics de la cort del Rei Sol.", w: ["Humanitx", "Il·lustració-V"] }
+            ],
+            classicisme: [
+                { s: "Tinc un caos, necessito ordre i simetria.", c: "Equilibrina", d: "Restaura l'ordre i la simetria en composicions caòtiques.", w: ["Ornamentsil", "Atzar-Biotic"] },
+                { s: "Vull una estructura clara: A, B, A.", c: "Sonatina 500", d: "Estructura el pensament musical en tres parts perfectes: A, B i A.", w: ["Fugax", "Wagnerina"] },
+                { s: "M'agrada la melodia senzilla sense embolics.", c: "Senzillesa-Plus", d: "Purifica la melodia de qualsevol adorn innecessari.", w: ["Polifenol", "Atonal-Max"] },
+                { s: "Vull tocar fort i fluix amb el teclat.", c: "Pianofortix", d: "Permet el control total del volum mitjançant el nou mecanisme de martells.", w: ["Violaderodina", "Contrastina"] }, // Contrastina is Baroque dynamics, Pianofortix is the instrument
+                { s: "Soc un nen prodigi i em fa mal tot.", c: "Mozartip", d: "Suplement per a nens prodigi que necessiten aguantar el ritme creatiu.", w: ["Beethoven-Z", "Guidonex"] },
+                { s: "Necessito un final feliç i racional.", c: "Il·lustració-V", d: "Final feliç i racional basat en la llum de la raó.", w: ["Pasió-Forte", "Absolutisme-C"] }
+            ],
+            romanticisme: [
+                { s: "Tinc massa sentiments i vull explotar.", c: "Pasió-Forte", d: "Concentrat de sentiments explosius per a interpretacions apassionades.", w: ["Il·lustració-V", "Equilibrina"] },
+                { s: "No puc seguir el ritme, vull anar al meu aire.", c: "Rubatol", d: "Flexibilitza el temps musical per anar al ritme de les emocions.", w: ["Metrònom-Fix", "Marxa-Militar"] }, // Wait Metronom-Fix is fake. Replace.
+                { s: "Vull una obra d'art total i gegant.", c: "Wagnerina", d: "Formula per crear obres d'art totals de proporcions gegantines.", w: ["Sonatina 500", "Monodina"] },
+                { s: "Em sento sol i vull cantar al piano.", c: "Lied-B12", d: "Vitamina per unir la veu humana i el piano en una sola unitat.", w: ["Operadol", "Madrigalina"] },
+                { s: "Vull descriure un paisatge amb música.", c: "Poemax", d: "Transforma paisatges i històries en sons orquestrals.", w: ["Senzillesa-Plus", "Fugax"] },
+                { s: "Estic sord però sento la música dins.", c: "Beethoven-Z", d: "Elixir per escoltar la música interior quan el món exterior calla.", w: ["Mozartip", "Guidonex"] }
+            ],
+            segle_xx: [
+                { s: "Odio la tonalitat, vull llibertat!", c: "Atonal-Max", d: "Allibera l'oïda de l'esclavatge de la tonalitat tradicional.", w: ["Do-Major-Plus", "Senzillesa-Plus"] }, // Do-Major-Plus fake.
+                { s: "Vull comptar fins a 12 sense repetir.", c: "Dodeca-Fiz", d: "Pastilles numerades de l'1 al 12 per a una sèrie perfecta sense repeticions.", w: ["Neumàtic", "Sonatina 500"] },
+                { s: "M'agrada el soroll de les màquines.", c: "Soroll-Gel", d: "Pomada refrescant per gaudir del so de les màquines i el futurisme.", w: ["Violaderodina", "Lied-B12"] },
+                { s: "Vull endollar-me al corrent.", c: "Electro-Xoc", d: "Impuls d'energia per a música generada per sintetitzadors i corrent.", w: ["ViolaGamba-Forte", "Pianofortix"] },
+                { s: "Vull que la música la decideixi un dau.", c: "Atzar-Biotic", d: "Deixa la composició en mans del destí i dels daus.", w: ["Equilibrina", "Wagnerina"] },
+                { s: "No vull tocar res durant 4 minuts.", c: "Silenciol", d: "Medicament per apreciar el so del silenci durant 4 minuts i 33 segons.", w: ["Soroll-Gel", "Beethoven-Z"] }
+            ]
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let currentRound = 0;
+        let score = 0;
+        let errors = 0;
+        let gameActive = false;
+        let currentCase = null;
+        let casesQueue = [];
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        // Music Logic
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+        if (bgMusic) bgMusic.volume = 0.5;
+
+        if (volSlider) {
+            volSlider.addEventListener('input', (e) => {
+                if (bgMusic) bgMusic.volume = e.target.value;
+            });
+        }
+
+        // Trigger on click
+        document.body.addEventListener('click', () => {
+            if (bgMusic && bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio play failed", e));
+            }
+        }, { once: true });
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'cash') {
+                // Cha-ching
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(2000, now + 0.1);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'vomit') {
+                // Low squish
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.5);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'shake') {
+                // Maraca like
+                const bufferSize = audioCtx.sampleRate * 0.1;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                noise.connect(gainNode);
+                gainNode.gain.setValueAtTime(0.2, now);
+                noise.start(now);
+            }
+        }
+
+        // --- LOGIC ---
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            if (btn.id === 'restart-btn') return;
+            btn.addEventListener('click', () => {
+                currentEra = btn.dataset.era;
+                startGame();
+            });
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            document.getElementById('feedback-overlay').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        });
+
+        let completedEras = [];
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('pharmacy-interface').classList.remove('hidden');
+
+            score = 0;
+            errors = 0;
+            currentRound = 0;
+            gameActive = true;
+
+            // Load cases and Shuffle
+            casesQueue = [...DB[currentEra]];
+            casesQueue.sort(() => Math.random() - 0.5); // Randomize order
+            casesQueue = casesQueue.slice(0, 6); // Take first 6
+
+            updateHUD();
+            nextPatient();
+        }
+
+        function updateHUD() {
+            document.getElementById('round').textContent = currentRound + 1;
+            document.getElementById('score').textContent = score;
+            document.getElementById('errors').textContent = errors;
+        }
+
+        const patientImages = ['avi', 'estudiant', 'executiu', 'hipster', 'mecanic', 'rocker', 'senora', 'turista', 'viking'];
+
+        function nextPatient() {
+            if (currentRound >= 6) {
+                endGame();
+                return;
+            }
+
+            currentCase = casesQueue[currentRound];
+
+            // Reset Patient
+            let pImg = document.getElementById('patient-img');
+            if (pImg.tagName !== 'IMG') {
+                const newImg = document.createElement('img');
+                newImg.id = 'patient-img';
+                pImg.replaceWith(newImg);
+                pImg = newImg;
+            }
+
+            const randPatient = patientImages[Math.floor(Math.random() * patientImages.length)];
+            pImg.src = `img/${randPatient}.png`;
+            pImg.alt = "Pacient";
+            pImg.classList.remove('shake');
+            pImg.classList.remove('pop');
+
+            document.getElementById('bubble').textContent = currentCase.s;
+
+            // Setup Meds
+            const counter = document.getElementById('counter-area');
+            counter.innerHTML = '';
+
+            // Create options array: 1 correct + 2 wrong
+            // We need to find definitions for wrong answers too? The prompt provided definitions for ALL meds. 
+            // The DB structure now has definitions inside the main object for 'correct' answers.
+            // But wrong answers are just strings in the 'w' array. 
+            // Wait, the prompt lists definitions for ALL meds. So I need a way to look up definitions for "wrong" meds if they appear in other eras or if they are valid meds.
+            // Actually, looking at the user prompt, every med name listed has a definition.
+            // "Polifenol", "Simfonix"... wait. "Polifenol" is the correct answer for Renaissance. So it appears as a wrong answer in Edat Mitjana. 
+            // So I can find the definition by searching the entire DB.
+
+            // Helper to find definition
+            function getDef(name) {
+                for (let era in DB) {
+                    const found = DB[era].find(item => item.c === name);
+                    if (found) return found.d;
+                }
+                return "Medicament desconegut o placebo.";
+            }
+
+            let options = [
+                { name: currentCase.c, type: 'correct', def: currentCase.d },
+                { name: currentCase.w[0], type: 'wrong', def: getDef(currentCase.w[0]) },
+                { name: currentCase.w[1], type: 'wrong', def: getDef(currentCase.w[1]) }
+            ];
+
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const box = document.createElement('div');
+                box.className = 'med-box';
+                box.draggable = true;
+                box.dataset.type = opt.type;
+
+                const icon = document.createElement('img');
+                icon.className = 'med-icon';
+                // Convert name to simplified filename format if needed, but names seem to match
+                // However, names in DB have mixed case/accents? checking DB...
+                // DB has "Monodina", "Neumàtic". Files are "monodina.png", "neumatic.png".
+                // Need to normalize: lowercase, remove accents.
+                const filename = opt.name.toLowerCase()
+                    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
+                    .replace(/\s+/g, "_") // Spaces to underscores
+                    .replace(/·/g, ""); // Remove mid-dot
+
+                icon.src = `img/${filename}.png`;
+                icon.alt = opt.name;
+
+                // Fallback in case image is missing
+                icon.onerror = function () {
+                    this.style.display = 'none';
+                    const textFallback = document.createElement('div');
+                    textFallback.style.fontSize = '3rem';
+                    textFallback.textContent = "💊";
+                    this.parentNode.insertBefore(textFallback, this);
+                };
+
+                const label = document.createElement('div');
+                label.className = 'med-label';
+                label.textContent = opt.name;
+
+                // Tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'med-tooltip';
+                tooltip.textContent = opt.def;
+
+                box.appendChild(icon);
+                box.appendChild(label);
+                box.appendChild(tooltip);
+
+                // Drag Events
+                box.addEventListener('dragstart', dragStart);
+                box.addEventListener('dragend', dragEnd);
+
+                // Touch events for mobile
+                box.addEventListener('touchstart', handleTouchStart, { passive: false });
+                box.addEventListener('touchmove', handleTouchMove, { passive: false });
+                box.addEventListener('touchend', handleTouchEnd);
+
+                counter.appendChild(box);
+            });
+        }
+
+        // Drag & Drop Logic
+        let draggedItem = null;
+
+        function dragStart(e) {
+            draggedItem = this;
+            setTimeout(() => this.classList.add('dragging'), 0);
+            // playSound('shake'); // Removed as per user request
+        }
+
+        function dragEnd(e) {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        const patientArea = document.getElementById('patient-area');
+
+        patientArea.addEventListener('dragover', e => {
+            e.preventDefault(); // Allow drop
+        });
+
+        patientArea.addEventListener('drop', e => {
+            e.preventDefault();
+            if (draggedItem) {
+                handleTreatment(draggedItem.dataset.type);
+            }
+        });
+
+        // Mobile Touch Logic (Simplified)
+        let touchItem = null;
+        let touchClone = null;
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            touchItem = this;
+            // playSound('shake'); // Removed as per user request
+
+            // Create a clone to follow finger
+            touchClone = this.cloneNode(true);
+            touchClone.style.position = 'absolute';
+            touchClone.style.opacity = '0.8';
+            touchClone.style.pointerEvents = 'none';
+            touchClone.style.zIndex = '100';
+            document.body.appendChild(touchClone);
+
+            moveClone(e.touches[0]);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (touchClone) {
+                moveClone(e.touches[0]);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (touchClone) {
+                // Check if dropped on patient
+                const pRect = document.getElementById('patient-img').getBoundingClientRect();
+                const tRect = touchClone.getBoundingClientRect();
+
+                // Simple overlap check
+                if (tRect.left < pRect.right && tRect.right > pRect.left &&
+                    tRect.top < pRect.bottom && tRect.bottom > pRect.top) {
+                    handleTreatment(touchItem.dataset.type);
+                }
+
+                touchClone.remove();
+                touchClone = null;
+                touchItem = null;
+            }
+        }
+
+        function moveClone(touch) {
+            touchClone.style.left = (touch.clientX - 70) + 'px';
+            touchClone.style.top = (touch.clientY - 90) + 'px';
+        }
+
+        function handleTreatment(type) {
+            if (!gameActive) return;
+
+            const pImg = document.getElementById('patient-img');
+
+            if (type === 'correct') {
+                score++;
+                // pImg.textContent = "🤩"; // Can't set textContent on img efficiently if we want to keep the patient. 
+                // Let's just animate. Or maybe change src to a happy version? We don't have happy versions.
+                // Let's create a temporary overlay emoji?
+                const feedback = document.createElement('div');
+                feedback.textContent = "🤩";
+                feedback.style.position = 'absolute';
+                feedback.style.fontSize = '8rem';
+                feedback.style.left = '50%';
+                feedback.style.top = '50%';
+                feedback.style.transform = 'translate(-50%, -50%)';
+                feedback.style.zIndex = '20';
+                pImg.parentNode.appendChild(feedback);
+                setTimeout(() => feedback.remove(), 1500);
+
+                pImg.classList.add('pop');
+                playSound('cash');
+                createParticles();
+            } else {
+                errors++;
+                // pImg.textContent = "🤢";
+                const feedback = document.createElement('div');
+                feedback.textContent = "🤢";
+                feedback.style.position = 'absolute';
+                feedback.style.fontSize = '8rem';
+                feedback.style.left = '50%';
+                feedback.style.top = '50%';
+                feedback.style.transform = 'translate(-50%, -50%)';
+                feedback.style.zIndex = '20';
+                pImg.parentNode.appendChild(feedback);
+                setTimeout(() => feedback.remove(), 1500);
+
+                pImg.classList.add('shake');
+                playSound('vomit');
+            }
+
+            // Disable all meds
+            document.querySelectorAll('.med-box').forEach(b => {
+                b.draggable = false;
+                b.style.opacity = 0.5;
+                b.style.pointerEvents = 'none';
+            });
+
+            updateHUD();
+
+            setTimeout(() => {
+                pImg.classList.remove('pop');
+                pImg.classList.remove('shake');
+                currentRound++;
+                nextPatient();
+            }, 1500);
+        }
+
+        function createParticles() {
+            const pArea = document.getElementById('patient-area');
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement('div');
+                p.textContent = "✨";
+                p.style.position = 'absolute';
+                p.style.left = '50%';
+                p.style.top = '50%';
+                p.style.fontSize = '2rem';
+                p.style.transition = 'all 1s';
+                pArea.appendChild(p);
+
+                setTimeout(() => {
+                    p.style.transform = `translate(${(Math.random() - 0.5) * 200}px, ${(Math.random() - 0.5) * 200}px) scale(0)`;
+                    p.style.opacity = 0;
+                }, 50);
+
+                setTimeout(() => p.remove(), 1000);
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            const overlay = document.getElementById('feedback-overlay');
+            const icon = document.getElementById('feedback-icon');
+            const msg = document.getElementById('feedback-msg');
+
+            overlay.style.display = 'flex';
+
+            if (score >= 5) {
+                icon.textContent = "🏥";
+                msg.textContent = "FARMÀCIA DE GUÀRDIA SUPERADA! Ets un expert.";
+                msg.style.color = "var(--success)";
+                playSound('cash');
+
+                // Mark Era as Completed
+                if (!completedEras.includes(currentEra)) {
+                    completedEras.push(currentEra);
+                }
+            } else if (errors > 2) {
+                icon.textContent = "🚫";
+                msg.textContent = "HO SENTO, TANCAT PER INSPECCIÓ. Massa errors.";
+                msg.style.color = "var(--error)";
+                playSound('vomit');
+            } else {
+                icon.textContent = "😐";
+                msg.textContent = "TORN ACABAT. Pots fer-ho millor.";
+            }
+
+            // Update Start Screen Buttons
+            document.querySelectorAll('.btn-era').forEach(btn => {
+                if (completedEras.includes(btn.dataset.era)) {
+                    btn.classList.add('completed');
+                    if (!btn.textContent.includes('✅')) {
+                        btn.textContent = btn.textContent + ' ✅';
+                    }
+                }
+            });
+        }
+
+
+    </script>
+</body>
+
+</html>

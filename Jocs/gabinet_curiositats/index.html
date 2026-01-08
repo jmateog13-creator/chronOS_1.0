@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Gabinet de Curiositats</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap');
+
+        :root {
+            --wood-dark: #3e2723;
+            --wood-light: #5d4037;
+            --shelf-shadow: rgba(0, 0, 0, 0.6);
+            --gold-accent: #d4af37;
+            --bg-wall: #263238;
+            /* Dark wall color to make cabinet pop */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-wall);
+            background-image: radial-gradient(circle, #37474f 10%, #263238 90%);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--gold-accent);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            margin: 10px 0;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        /* SOUND CONTROLS */
+        #sound-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+        }
+
+        /* --- GAME CONTAINER --- */
+        #game-container {
+            display: grid;
+            grid-template-columns: 200px 1fr 200px;
+            grid-template-rows: 1fr 280px;
+            /* Increased bottom height for 2 rows */
+            gap: 10px;
+            width: 100%;
+            height: 90vh;
+            padding: 10px;
+            box-sizing: border-box;
+            max-width: 1400px;
+            /* Wider to allow more breathing room */
+        }
+
+        #left-zone,
+        #right-zone {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-start;
+            /* Start from top */
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            /* Prevent scrolling, force fit */
+        }
+
+        /* --- CABINET (SHELVES) --- */
+        #cabinet {
+            grid-column: 2;
+            grid-row: 1;
+            background: #4e342e;
+            border: 8px solid var(--wood-dark);
+            border-radius: 10px 10px 0 0;
+            box-shadow: inset 0 0 30px #000, 0 10px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Decorative top molding */
+        #cabinet::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -10px;
+            right: -10px;
+            height: 15px;
+            background: var(--wood-dark);
+            border-radius: 5px 5px 0 0;
+            box-shadow: 0 5px 5px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+
+        .shelf {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border-bottom: 12px solid #3e2723;
+            /* Shelf thickness */
+            background: linear-gradient(to bottom, #3e2723 0%, #4e342e 10%, #3e2723 100%);
+            position: relative;
+            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.5);
+            /* Shadow inside shelf */
+            min-height: 80px;
+            /* Ensure space for items */
+            transition: background-color 0.3s;
+        }
+
+        .shelf.highlight {
+            background-color: #5d4037;
+            /* Lighter when dragging over */
+            box-shadow: inset 0 0 20px var(--gold-accent);
+        }
+
+        .shelf-label {
+            width: 120px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: #d7ccc8;
+            text-shadow: 1px 1px 2px #000;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px;
+            border-radius: 4px;
+            text-align: center;
+            margin-right: 15px;
+            border: 1px solid #5d4037;
+            pointer-events: none;
+        }
+
+        .shelf-content {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+            /* Sit on the shelf */
+            height: 100%;
+            padding-bottom: 5px;
+        }
+
+        #bottom-zone {
+            grid-column: 1 / span 3;
+            grid-row: 2;
+            display: flex;
+            flex-wrap: wrap;
+            /* Allow wrapping for rows */
+            gap: 10px;
+            justify-content: center;
+            align-content: flex-start;
+            padding: 15px;
+            background: rgba(62, 39, 35, 0.8);
+            border-top: 5px solid #3e2723;
+            border-radius: 0 0 10px 10px;
+            overflow-y: auto;
+        }
+
+        /* --- MINIATURES --- */
+        .miniature {
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+        }
+
+        .miniature img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.2s;
+        }
+
+        .miniature:hover {
+            transform: scale(1.15) rotate(5deg);
+            z-index: 100;
+        }
+
+        .miniature:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .miniature.placed {
+            cursor: default;
+            pointer-events: none;
+            /* Lock once placed */
+            width: 60px;
+            /* Smaller when on shelf */
+            height: 60px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+            background: transparent;
+            border-radius: 0;
+        }
+
+        /* --- UNSORTED BOX --- */
+        /* #unsorted-box {
+            flex: 1;
+            background: #5d4037;
+            border: 5px solid #3e2723;
+            border-radius: 0 0 10px 10px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        #unsorted-box::after {
+            content: 'CAIXA D\'OBJECTES PERDUTS';
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+        } */
+
+        /* --- FEEDBACK --- */
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px) rotate(-5deg);
+            }
+
+            50% {
+                transform: translateX(5px) rotate(5deg);
+            }
+
+            75% {
+                transform: translateX(-5px) rotate(-5deg);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ff5252 !important;
+        }
+
+        #toast {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 100;
+            border: 1px solid #ff5252;
+        }
+
+        /* --- TIMER --- */
+        #timer-hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: #ff5252;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border: 2px solid #5d4037;
+            border-radius: 5px;
+            z-index: 50;
+        }
+
+        /* --- TOOLTIP --- */
+        #custom-tooltip {
+            position: fixed;
+            display: none;
+            background: #fff8e1;
+            /* Cream/Card style */
+            border: 1px solid #bcaaa4;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            /* Let mouse pass through */
+            z-index: 2000;
+            max-width: 200px;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        #tt-title {
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            color: var(--wood-dark);
+            border-bottom: 1px solid #d7ccc8;
+            margin-bottom: 5px;
+            padding-bottom: 3px;
+        }
+
+        #tt-desc {
+            font-family: 'Lato', sans-serif;
+            font-size: 0.85rem;
+            color: #5d4037;
+        }
+
+        /* --- START/GAME MODALS --- */
+        #start-modal,
+        #gameover-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        /* --- MODAL --- */
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            border: 4px solid var(--gold-accent);
+            box-shadow: 0 0 30px var(--gold-accent);
+        }
+
+        .modal-content h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--wood-dark);
+            margin-top: 0;
+        }
+
+        button {
+            background: var(--wood-dark);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-family: 'Lato', sans-serif;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--wood-light);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SOUND CONTROLS -->
+    <div id="sound-controls">
+        <span>🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/March of the Little Legends.m4a" type="audio/mpeg">
+    </audio>
+
+    <h1>El Gabinet de Curiositats</h1>
+
+    <div id="game-container">
+        <!-- LEFT ZONE -->
+        <div id="left-zone" class="drop-zone"></div>
+
+        <!-- CENTER CABINET -->
+        <div id="cabinet">
+            <!-- Shelves generated by JS -->
+        </div>
+
+        <!-- RIGHT ZONE -->
+        <div id="right-zone" class="drop-zone"></div>
+
+        <!-- BOTTOM ZONE -->
+        <div id="bottom-zone" class="drop-zone"></div>
+    </div>
+
+    <!-- TOAST MSG -->
+    <div id="toast">Aquest objecte no va aquí!</div>
+
+    <!-- CUSTOM TOOLTIP -->
+    <div id="custom-tooltip">
+        <div id="tt-title"></div>
+        <div id="tt-desc"></div>
+    </div>
+
+    <!-- TIMER HUD -->
+    <div id="timer-hud">03:00</div>
+
+    <!-- START MODAL (STORY) -->
+    <div id="start-modal">
+        <div class="modal-content">
+            <h2>🚨 ROBATORI NOCTURN! 🚨</h2>
+            <p>Uns lladres han entrat al <em>Gabinet de Curiositats</em> i han deixat totes les miniatures escampades
+                per terra.</p>
+            <p>La botiga obre en <strong>3 minuts</strong>. Has de col·locar cada objecte a la seva època correcta abans
+                que arribin els clients!</p>
+            <button id="btn-start">COMENÇAR TORN</button>
+        </div>
+    </div>
+
+    <!-- WIN MODAL -->
+    <div id="modal">
+        <!-- Renamed logically in code logic, but keeping ID for css compat or updating css -->
+        <div class="modal-content">
+            <h2>🏆 COL·LECCIÓ SALVADA!</h2>
+            <p>Has organitzat totes les miniatures a temps. El Gabinet llueix perfecte gràcies a tu.</p>
+            <button onclick="location.reload()">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <!-- GAMEOVER MODAL -->
+    <div id="gameover-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center;">
+        <div class="modal-content" style="border-color: #c62828; box-shadow: 0 0 30px #c62828;">
+            <h2 style="color:#c62828">⏰ S'HA ACABAT EL TEMPS!</h2>
+            <p>La botiga ha obert i tot és un caos. Els clients no troben res!</p>
+            <button onclick="location.reload()">INTENTAR-HO DE NOU</button>
+        </div>
+    </div>
+
+    <script>
+        const GAME_DATA = {
+            eras: [
+                { id: "mitjana", label: "Edat Mitjana", color: "#8d6e63" },
+                { id: "renaix", label: "Renaixement", color: "#d4af37" },
+                { id: "barroc", label: "Barroc", color: "#7b1fa2" },
+                { id: "classic", label: "Classicisme", color: "#1976d2" },
+                { id: "roman", label: "Romanticisme", color: "#c62828" },
+                { id: "sxx", label: "Segle XX", color: "#388e3c" }
+            ],
+            miniatures: [
+                // EDAT MITJANA
+                { id: "m1", name: "Cant Gregorià", img: "img/m1_monjo.png", era: "mitjana", desc: "Cant monòdic dels monjos." },
+                { id: "m2", name: "Llaüt Medieval", img: "img/m2_llaut.png", era: "mitjana", desc: "Instrument popular medieval." },
+                { id: "m3", name: "Catedral Gòtica", img: "img/m3_catedral.png", era: "mitjana", desc: "Arquitectura religiosa imponent." },
+                { id: "m4", name: "Trobador", img: "img/m4_trobador.png", era: "mitjana", desc: "Poeta i músic de la cort." },
+                { id: "m5", name: "Neumes", img: "img/m5_neumes.png", era: "mitjana", desc: "Primera notació musical." },
+
+                // RENAIXEMENT
+                { id: "r1", name: "Impremta", img: "img/r1_impremta.png", era: "renaix", desc: "Va permetre difondre les partitures." },
+                { id: "r2", name: "Llaüt Renaixentista", img: "img/r2_llaut.png", era: "renaix", desc: "L'instrument noble de l'època." },
+                { id: "r3", name: "Cúpula de Florència", img: "img/r3_cupula.png", era: "renaix", desc: "Símbol de l'Humanisme." },
+                { id: "r4", name: "Llibre de Cor", img: "img/r4_llibre_segle_or.png", era: "renaix", desc: "Partitures polifòniques gegants." },
+                { id: "r5", name: "Viola da Gamba", img: "img/r5_viola.png", era: "renaix", desc: "Elegant instrument d'arc." },
+
+                // BARROC
+                { id: "b1", name: "Clavicèmbal", img: "img/b1_clavicem.png", era: "barroc", desc: "Teclat de so brillant i metàl·lic." },
+                { id: "b2", name: "Compositor", img: "img/b2_compositor.png", era: "barroc", desc: "Amb la perruca blanca típica." },
+                { id: "b3", name: "Arpa Daurada", img: "img/b3_arpa.png", era: "barroc", desc: "Ornamentació i luxe musical." },
+                { id: "b4", name: "Rei Sol", img: "img/b4_rei_sol.png", era: "barroc", desc: "Lluís XIV ballant com Apol·lo." },
+                { id: "b5", name: "Violí Barroc", img: "img/b5_violi.png", era: "barroc", desc: "L'auge dels instruments de corda." },
+
+                // CLASSICISME
+                { id: "c1", name: "Fortepiano", img: "img/c1_piano.png", era: "classic", desc: "L'avantpassat del piano modern." },
+                { id: "c2", name: "Batuta", img: "img/c2_batuta.png", era: "classic", desc: "Ordre i direcció orquestral." },
+                { id: "c3", name: "Temple Grec", img: "img/c3_temple.png", era: "classic", desc: "Inspiració en l'equilibri clàssic." },
+                { id: "c4", name: "Clarinet", img: "img/c4_clarinet.png", era: "classic", desc: "L'instrument preferit de Mozart." },
+                { id: "c5", name: "Metrònom", img: "img/c5_metronom.png", era: "classic", desc: "Mesura exacta del tempo." },
+
+                // ROMANTICISME
+                { id: "rm1", name: "Piano de Cua", img: "img/rm1_piano.png", era: "roman", desc: "El gran vehicle de l'expressió." },
+                { id: "rm2", name: "Màscara d'Òpera", img: "img/rm2_mascara.png", era: "roman", desc: "Teatre, drama i emoció pura." },
+                { id: "rm3", name: "Ballarina", img: "img/rm3_ballarina.png", era: "roman", desc: "La delicadesa del ballet romàntic." },
+                { id: "rm4", name: "Valquíria", img: "img/rm4_valquiria.png", era: "roman", desc: "L'èpica wagneriana." },
+                { id: "rm5", name: "Rosa Vermella", img: "img/rm5_rosa.png", era: "roman", desc: "Passió i patiment artístic." },
+
+                // SEGLE XX
+                { id: "s1", name: "Saxòfon", img: "img/s1_saxo.png", era: "sxx", desc: "L'ànima del Jazz." },
+                { id: "s2", name: "Guitarra Elèctrica", img: "img/s2_guitarra.png", era: "sxx", desc: "Rock and Roll i amplificació." },
+                { id: "s3", name: "Tocadiscos", img: "img/s3_tocadiscos.png", era: "sxx", desc: "La música a casa de tothom." },
+                { id: "s4", name: "Sintetitzador", img: "img/s4_sintetitzador.png", era: "sxx", desc: "Sons electrònics i futuristes." },
+                { id: "s5", name: "Art Abstracte", img: "img/s5_caos.png", era: "sxx", desc: "Silenci i ruptura de formes." }
+            ]
+        };
+
+        const cabinet = document.getElementById('cabinet');
+        // Zones
+        const leftZone = document.getElementById('left-zone');
+        const rightZone = document.getElementById('right-zone');
+        const bottomZone = document.getElementById('bottom-zone');
+        const zones = [leftZone, rightZone, bottomZone];
+
+        const toast = document.getElementById('toast');
+        const modal = document.getElementById('modal');
+        const tooltip = document.getElementById('custom-tooltip');
+
+        // Audio
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+        bgMusic.volume = 0.5;
+        volSlider.addEventListener('input', (e) => bgMusic.volume = e.target.value);
+
+        // Timer Variables
+        let timeLeft = 180; // 3 minutes in seconds
+        let timerInterval;
+        const timerDisplay = document.getElementById('timer-hud');
+
+        let draggedItem = null;
+
+        // --- INIT ---
+        document.getElementById('btn-start').addEventListener('click', () => {
+            document.getElementById('start-modal').style.display = 'none';
+            // Start audio on user interaction
+            bgMusic.play().catch(e => console.log("Audio play prevented"));
+            initGame();
+            startTimer();
+        });
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft < 30) {
+                timerDisplay.style.color = 'red';
+                timerDisplay.style.animation = 'shake 0.5s infinite';
+            } else {
+                timerDisplay.style.color = '#ff5252'; // Reset color if it goes above 30s (e.g., if game restarts)
+                timerDisplay.style.animation = 'none';
+            }
+        }
+
+        function gameOver() {
+            document.getElementById('gameover-modal').style.display = 'flex';
+        }
+
+        function initGame() {
+            // Render Shelves
+            GAME_DATA.eras.forEach(era => {
+                const shelf = document.createElement('div');
+                shelf.className = 'shelf';
+                shelf.dataset.era = era.id;
+
+                // Keep minimal label style, maybe just text, avoiding complex objects for now as requested
+                // But Prompt asked for shelf labels.
+
+                // Label
+                const label = document.createElement('div');
+                label.className = 'shelf-label';
+                label.textContent = era.label;
+                label.style.borderColor = era.color; // Subtle hint
+
+                // Content Area
+                const content = document.createElement('div');
+                content.className = 'shelf-content';
+
+                shelf.appendChild(label);
+                shelf.appendChild(content);
+                cabinet.appendChild(shelf);
+            });
+
+            // Render Miniatures (Shuffled)
+            const shuffled = [...GAME_DATA.miniatures].sort(() => Math.random() - 0.5);
+            shuffled.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'miniature';
+                el.draggable = true;
+                // el.textContent = item.icon; // Tooltip - REMOVED NATIVE TITLE
+
+                // IMG instead of text
+                const img = document.createElement('img');
+                img.src = item.img;
+                img.style.pointerEvents = "none"; // Prevent dragging image ghost
+                el.appendChild(img);
+
+                el.dataset.id = item.id;
+                el.dataset.era = item.era;
+                el.dataset.name = item.name; // Store name for custom tooltip
+                el.dataset.desc = item.desc; // Store description for custom tooltip
+
+                el.addEventListener('dragstart', handleDragStart);
+                el.addEventListener('dragend', handleDragEnd);
+
+                // Custom Tooltip Listeners
+                el.addEventListener('mouseenter', showTooltip);
+                el.addEventListener('mousemove', moveTooltip);
+                el.addEventListener('mouseleave', hideTooltip);
+
+                // Touch support
+                el.addEventListener('touchstart', handleTouchStart, { passive: false });
+
+                // Randomly assign to a zone
+                const randomZone = zones[Math.floor(Math.random() * zones.length)];
+                randomZone.appendChild(el);
+            });
+
+            // Adding listeners to shelves now that they exist
+            const shelves = document.querySelectorAll('.shelf');
+            shelves.forEach(shelf => {
+                shelf.addEventListener('dragover', e => {
+                    e.preventDefault(); // Allow drop
+                    shelf.classList.add('highlight');
+                });
+                shelf.addEventListener('dragleave', e => {
+                    shelf.classList.remove('highlight');
+                });
+                shelf.addEventListener('drop', handleDrop);
+            });
+        }
+
+        // --- TOOLTIP LOGIC ---
+        function showTooltip(e) {
+            tooltip.style.opacity = '1';
+            tooltip.style.display = 'block';
+            tooltip.querySelector('#tt-title').textContent = this.dataset.name;
+            tooltip.querySelector('#tt-desc').textContent = this.dataset.desc;
+            moveTooltip(e);
+        }
+
+        function moveTooltip(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // Adjust to keep on screen
+            let top = y - 10;
+            let left = x + 15;
+
+            // Check if tooltip goes off right edge
+            if (left + tooltip.offsetWidth + 10 > window.innerWidth) {
+                left = x - tooltip.offsetWidth - 15; // Place to the left of cursor
+            }
+            // Check if tooltip goes off bottom edge
+            if (top + tooltip.offsetHeight + 10 > window.innerHeight) {
+                top = y - tooltip.offsetHeight - 10; // Place above cursor
+            }
+
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.opacity = '0';
+            // Use a timeout to hide display after transition
+            setTimeout(() => {
+                if (tooltip.style.opacity === '0') { // Only hide if it's still meant to be hidden
+                    tooltip.style.display = 'none';
+                }
+            }, 100); // Match transition duration
+        }
+
+        // --- DRAG & DROP LOGIC ---
+        function handleDragStart(e) {
+            hideTooltip(); // Hide tooltip while dragging
+            draggedItem = this;
+            setTimeout(() => this.style.opacity = '0.5', 0);
+
+            // Highlight shelves
+            document.querySelectorAll('.shelf').forEach(s => s.classList.add('highlight-target'));
+        }
+
+        function handleDragEnd(e) {
+            draggedItem = null;
+            this.style.opacity = '1';
+            document.querySelectorAll('.shelf').forEach(s => {
+                s.classList.remove('highlight-target');
+                s.classList.remove('highlight');
+            });
+        }
+
+        // Add Drop listeners to shelves
+        // Using delegation on Cabinet doesn't work well for drop zones if specific elements needed.
+        // Better attach to shelf element at creation or use a timeout?
+        // Actually `initGame()` will run first, so we do it inside init or after calling init.
+
+        // --- SETUP DROP ZONES ---
+        // We'll add listeners dynamically in initGame is cleaner, but let's do it via delegation or loop after init.
+
+        // Box also allows dropping back?
+        // Spec implies dropping ONLY on Correct Shelf.
+        // "If Mismatch: Animate shake and fall back into bottom box." -> So we don't drop on wrong, we revert.
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('highlight');
+
+            if (!draggedItem) return;
+
+            const targetEra = this.dataset.era;
+            const itemEra = draggedItem.dataset.era;
+
+            if (targetEra === itemEra) {
+                // CORRECT
+                playSound('click');
+                draggedItem.classList.add('placed');
+                draggedItem.draggable = false;
+
+                // remove touch listeners to stop moving
+                draggedItem.removeEventListener('touchstart', handleTouchStart);
+
+                this.querySelector('.shelf-content').appendChild(draggedItem);
+
+                checkWin();
+            } else {
+                // WRONG
+                playSound('error');
+                showToast();
+                draggedItem.classList.add('shake');
+                setTimeout(() => draggedItem.classList.remove('shake'), 500);
+            }
+        }
+
+        // --- TOUCH SUPPORT (Simple Implementation) ---
+        let touchDragItem = null;
+        let touchClone = null;
+
+        function handleTouchStart(e) {
+            e.preventDefault(); // Prevent scroll
+            touchDragItem = this;
+            hideTooltip();
+
+            // Create a drag avatar
+            touchClone = this.cloneNode(true);
+            touchClone.style.position = 'fixed';
+            touchClone.style.zIndex = '1000';
+            touchClone.style.pointerEvents = 'none';
+            touchClone.style.opacity = '0.8';
+            document.body.appendChild(touchClone);
+
+            moveAt(e.touches[0].pageX, e.touches[0].pageY);
+
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+        }
+
+        function moveAt(pageX, pageY) {
+            touchClone.style.left = pageX - touchClone.offsetWidth / 2 + 'px';
+            touchClone.style.top = pageY - touchClone.offsetHeight / 2 + 'px';
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            moveAt(e.touches[0].pageX, e.touches[0].pageY);
+
+            // Highlight shelves under finger
+            const elemBelow = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+            if (!elemBelow) return;
+
+            const droppableBelow = elemBelow.closest('.shelf');
+
+            document.querySelectorAll('.shelf').forEach(s => s.classList.remove('highlight'));
+            if (droppableBelow) {
+                droppableBelow.classList.add('highlight');
+            }
+        }
+
+        function handleTouchEnd(e) {
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+
+            // Check drop target
+            const changedTouch = e.changedTouches[0];
+            const elemBelow = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
+            const shelf = elemBelow ? elemBelow.closest('.shelf') : null;
+
+            touchClone.remove();
+            touchClone = null;
+
+            document.querySelectorAll('.shelf').forEach(s => s.classList.remove('highlight'));
+
+            if (shelf && touchDragItem) {
+                // Logic same as drop
+                const targetEra = shelf.dataset.era;
+                const itemEra = touchDragItem.dataset.era;
+
+                if (targetEra === itemEra) {
+                    playSound('click');
+                    touchDragItem.classList.add('placed');
+                    // Remove listeners
+                    touchDragItem.removeEventListener('touchstart', handleTouchStart);
+
+                    shelf.querySelector('.shelf-content').appendChild(touchDragItem);
+                    checkWin();
+                } else {
+                    playSound('error');
+                    showToast();
+                    touchDragItem.classList.add('shake');
+                    setTimeout(() => touchDragItem.classList.remove('shake'), 500);
+                }
+            }
+            touchDragItem = null;
+        }
+
+
+        // --- UTILS ---
+        function showToast() {
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 2000);
+        }
+
+        // Check Win Condition
+        function checkWin() {
+            // Win if no miniatures left in any of the 3 zones
+            if (leftZone.children.length === 0 &&
+                rightZone.children.length === 0 &&
+                bottomZone.children.length === 0) {
+
+                clearInterval(timerInterval); // STOP TIMER
+                setTimeout(() => {
+                    modal.style.display = 'flex';
+                }, 500);
+            }
+        }
+
+        // --- AUDIO (Synthesized) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                // Wood blocking sound (short low frequency thud)
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'error') {
+                // Low buzz
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Escriba del Temps</title>
+    
+    <!-- Importació de Google Fonts per a les diferents èpoques -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Great+Vibes&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Cinzel:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Estils Generals i Estructura --- */
+        :root {
+            --color-fons-base: #3e2e22;
+            --color-paper-base: #fdf6e3;
+            --color-text-base: #3d352a;
+            --color-accent: #8b4513;
+            --color-correcte: #28a745;
+            --color-incorrecte: #dc3545;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-fons-base);
+            font-family: 'EB Garamond', serif;
+            transition: background-color 0.7s ease;
+            color: var(--color-text-base);
+        }
+
+        .joc-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 15px;
+            transition: all 0.7s ease-in-out;
+            background-color: var(--color-paper-base);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid transparent;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--color-accent);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* --- Menú Principal (La Biblioteca) --- */
+        #menu-principal-container h1 {
+            color: #f0e6d6;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        #menu-principal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .llibre {
+            background-color: #5a3e2b;
+            color: #f0e6d6;
+            border: 2px solid #3c2a1e;
+            padding: 2.5rem 1.5rem;
+            width: 150px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 5px 15px 15px 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: inset -10px 0 15px rgba(0,0,0,0.4), 5px 5px 15px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .llibre:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: inset -10px 0 15px rgba(0,0,0,0.6), 10px 15px 25px rgba(0,0,0,0.5);
+        }
+
+        .llibre.completat {
+            background-color: #4a6a4f;
+            border-color: #c9bba5;
+            color: #e0f0e2;
+        }
+        
+        .llibre.completat::after {
+            content: "✓ Restaurat";
+            position: absolute;
+            bottom: 1rem;
+            left: 0;
+            right: 0;
+            font-size: 0.9em;
+            font-weight: normal;
+            color: #c9f0ce;
+        }
+
+        /* --- Pantalla de Joc (Escriptori) --- */
+        #pantalla-joc {
+            display: none; /* Amagat per defecte */
+        }
+        
+        #manuscrit-text {
+            line-height: 2.8;
+            font-size: 1.3em;
+            padding: 2rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+        }
+
+        .espai-buit {
+            display: inline-block;
+            background-color: rgba(0,0,0,0.08);
+            padding: 0.5rem 1rem;
+            border: 2px dashed rgba(0,0,0,0.4);
+            border-radius: 5px;
+            min-width: 150px;
+            text-align: center;
+            vertical-align: middle;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            color: transparent;
+            user-select: none;
+        }
+
+        .espai-buit.over {
+             background-color: rgba(0,0,0,0.2);
+             border-color: var(--color-accent);
+        }
+        
+        .espai-buit.emplenat {
+            color: var(--color-text-base);
+            background-color: transparent;
+            border-style: solid;
+            border-color: rgba(0,0,0,0.3);
+        }
+
+        .espai-buit.correcte {
+            color: var(--color-correcte);
+            border-color: var(--color-correcte);
+            font-weight: bold;
+        }
+
+        .espai-buit.incorrecte {
+            color: var(--color-incorrecte);
+            border-color: var(--color-incorrecte);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        #caixa-paraules-container {
+            padding: 1.5rem;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background-color: rgba(0,0,0,0.03);
+            transition: background-color 0.7s ease;
+        }
+
+        #caixa-paraules {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            min-height: 50px;
+        }
+
+        .paraula-arrossegable {
+            padding: 0.7rem 1.2rem;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            cursor: grab;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .paraula-arrossegable:hover {
+            transform: scale(1.05);
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
+        }
+        
+        .paraula-arrossegable.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .paraula-arrossegable.hidden {
+            display: none;
+        }
+
+        .botons-joc {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .boto {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--color-accent);
+            color: white;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .boto:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        #boto-tornar { margin-left: 1rem; }
+
+        #missatge-final {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-correcte);
+            display: none;
+        }
+
+        /* --- ESTILS TEMÀTICS PER ÈPOCA --- */
+        
+        /* Edat Mitjana */
+        .estil-mitjana {
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('https://www.transparenttextures.com/patterns/dark-leather.png'), #6b5a48;
+            color: #e0d6c5;
+            font-family: 'Uncial Antiqua', cursive;
+            border-color: #4a3c2a;
+        }
+        .estil-mitjana h2, .estil-mitjana .paraula-arrossegable, .estil-mitjana .espai-buit.emplenat { color: #3b2f24; }
+        .estil-mitjana .espai-buit { border-color: #e0d6c5; }
+        .estil-mitjana .boto { background-color: #5a4a3a; }
+        .estil-mitjana #manuscrit-text { border-color: #e0d6c5; }
+
+        /* Renaixement (ESTIL MILLORAT) */
+        .estil-renaixement {
+            background-color: #fdf8f0;
+            background-image: url("https://www.transparenttextures.com/patterns/lined-paper-2.png");
+            color: #5d4037;
+            font-family: 'EB Garamond', serif;
+            border: 1px solid #d7c6b3;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 0 15px rgba(0,0,0,0.1);
+        }
+        .estil-renaixement h2 { 
+            color: #8d6e63;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+        }
+        .estil-renaixement .boto { background-color: #a1887f; }
+        .estil-renaixement .boto:hover { background-color: #8d6e63; }
+        .estil-renaixement #caixa-paraules-container { background-color: rgba(161, 136, 127, 0.05); border-color: rgba(161, 136, 127, 0.2); }
+        .estil-renaixement .paraula-arrossegable { background-color: #fffaf2; border-color: #d7c6b3;}
+
+
+        /* Barroc */
+        .estil-barroc {
+            background: #e6d8c0 url('https://www.transparenttextures.com/patterns/subtle-grunge.png');
+            color: #5d493a;
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.2em;
+            border-color: #c8b7a1;
+        }
+        .estil-barroc h2 { color: #7a5c43; font-size: 3rem; }
+        .estil-barroc .paraula-arrossegable, .estil-barroc .espai-buit.emplenat { font-family: 'EB Garamond', serif; color: #333; }
+        .estil-barroc .boto { background-color: #7a5c43; font-family: 'EB Garamond', serif; }
+
+        /* Classicisme (ESTIL MILLORAT) */
+        .estil-classicisme {
+            background-color: #f5f5f5;
+            background-image: url("https://www.transparenttextures.com/patterns/classy-fabric.png");
+            color: #333;
+            font-family: 'Bodoni Moda', serif;
+            border: 1px solid #ddd;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+        .estil-classicisme h2 { 
+            color: #2c3e50;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 10px;
+        }
+        .estil-classicisme .boto { background-color: #34495e; }
+        .estil-classicisme .boto:hover { background-color: #2c3e50; }
+        .estil-classicisme #caixa-paraules-container { background-color: #ecf0f1; border-color: #bdc3c7; }
+        .estil-classicisme .paraula-arrossegable { border-radius: 2px; border-color: #bdc3c7; background-color: #fff;}
+
+        /* Romanticisme */
+        .estil-romanticisme {
+            background: #f4f1ea url('https://www.transparenttextures.com/patterns/worn-dots.png');
+            color: #4c4239;
+            font-family: 'Cinzel', serif;
+            border-color: #d2c8bc;
+        }
+        .estil-romanticisme h2 { color: #6d5440; }
+        .estil-romanticisme .boto { background-color: #6d5440; }
+
+        /* Principis S. XX */
+        .estil-segle-xx {
+            background-color: #f0f0f0;
+            background-image:
+                linear-gradient(#d0d0d0 1px, transparent 1px),
+                linear-gradient(to right, #d0d0d0 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #222;
+            font-family: 'Roboto Mono', monospace;
+            border-color: #ccc;
+        }
+        .estil-segle-xx h2 { color: #000; }
+        .estil-segle-xx .boto { background-color: #333; }
+    </style>
+</head>
+<body>
+
+    <div id="menu-principal-container">
+        <h1>L'Escriba del Temps</h1>
+        <div id="menu-principal" class="joc-container">
+            <!-- Els llibres es generaran aquí amb JavaScript -->
+        </div>
+    </div>
+
+    <div id="pantalla-joc" class="joc-container">
+        <h2 id="titol-epoca"></h2>
+        <div id="manuscrit-text"></div>
+        
+        <div id="caixa-paraules-container">
+            <h3>Paraules per restaurar</h3>
+            <div id="caixa-paraules">
+                <!-- Les paraules arrossegables es generaran aquí -->
+            </div>
+        </div>
+
+        <div id="missatge-final">
+            <p>📜 Manuscrit restaurat amb èxit! 📜</p>
+        </div>
+
+        <div class="botons-joc">
+            <button id="boto-comprovar" class="boto">Restaurar Manuscrit</button>
+            <button id="boto-tornar" class="boto">Enrere</button>
+        </div>
+    </div>
+
+    <div class="container" id="adivinanza-container">
+        <h1>Endevina el Període Musical</h1>
+        <p class="instruccions">Llegeix la descripció i selecciona el període musical correcte.</p>
+        <div id="adivinanza-definicio" class="definicio"></div>
+        <div id="opcions-periodes"></div>
+        <div id="adivinanza-missatge"></div>
+        <button id="adivinanza-seguent" style="display:none;">Següent</button>
+    </div>
+    <div class="container" id="joc-text-input" style="display:none;">
+        <h1>El Joc dels Períodes Musicals</h1>
+        <p class="instruccions">Llegeix la descripció i escriu quin període musical creus que és.</p>
+        <div id="definicio" class="definicio"></div>
+        <input type="text" id="resposta" placeholder="Escriu el període musical..." autocomplete="off">
+        <button id="comprova">Comprova</button>
+        <div id="missatge"></div>
+        <button id="següent" style="display:none;">Següent</button>
+    </div>
+    <script src="script.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DADES DEL JOC (AMB 5 PARAULES PER ÈPOCA) ---
+            const manuscritsPerEpoca = [
+              {
+                epoca: "Edat Mitjana",
+                estilCss: "estil-mitjana",
+                text: "La música medieval estava dominada pel <strong>[___]</strong>, un cant religiós monòdic. Per escriure'l, es van inventar els <strong>[___]</strong>, uns signes primitius. Més tard va sorgir l'<strong>[___]</strong>, una primera forma de polifonia. La tècnica va evolucionar cap a una <strong>[___]</strong> més complexa. Fora de l'església, els <strong>[___]</strong> componien i cantaven poesia en les corts.",
+                paraulesCorrectes: ["cant gregorià", "neumes", "organum", "polifonia", "trobadors"]
+              },
+              {
+                epoca: "Renaixement",
+                estilCss: "estil-renaixement",
+                text: "El Renaixement considerava la <strong>[___]</strong> com l'instrument més perfecte. En la música profana, el <strong>[___]</strong> va ser la forma vocal per excel·lència. Un instrument molt popular a les cases i les corts va ser el <strong>[___]</strong>. La difusió musical va ser possible gràcies a la <strong>[___]</strong>. Tot aquest art es finançava gràcies al <strong>[___]</strong> de nobles i papes.",
+                paraulesCorrectes: ["veu humana", "madrigal", "laüt", "impremta", "mecenatge"]
+              },
+              {
+                epoca: "Barroc",
+                estilCss: "estil-barroc",
+                text: "La música barroca buscava el <strong>[___]</strong> i el dramatisme. L'harmonia es basava en el <strong>[___]</strong>. En aquesta època neix l'<strong>[___]</strong>, unint teatre i música. Una forma instrumental clau va ser el <strong>[___]</strong>, que enfrontava un solista amb l'orquestra. La forma contrapuntística més complexa va ser la <strong>[___]</strong>, dominada per Bach.",
+                paraulesCorrectes: ["contrast", "baix continu", "òpera", "concerto", "fuga"]
+              },
+              {
+                epoca: "Classicisme",
+                estilCss: "estil-classicisme",
+                text: "El Classicisme, influït per la <strong>[___]</strong>, busca la <strong>[___]</strong> i l'equilibri. L'estructura més important és la forma <strong>[___]</strong>. La gran forma orquestral és la <strong>[___]</strong>, perfeccionada per Haydn i Mozart. En la música de cambra, la formació més important va ser el <strong>[___]</strong>, consolidat també per Haydn.",
+                paraulesCorrectes: ["Il·lustració", "claredat", "sonata", "simfonia", "quartet de corda"]
+              },
+              {
+                epoca: "Romanticisme",
+                estilCss: "estil-romanticisme",
+                text: "El Romanticisme posa l'accent en l'<strong>[___]</strong> individual. És l'era del <strong>[___]</strong>, amb intèrprets de nivell espectacular. Per expressar aquests sentiments, l'<strong>[___]</strong> creix enormement. Molts compositors van incorporar melodies populars, en un corrent anomenat <strong>[___]</strong>. La cançó per a veu i piano, anomenada <strong>[___]</strong> en alemany, va ser una forma molt cultivada.",
+                paraulesCorrectes: ["emoció", "virtuosisme", "orquestra", "nacionalisme", "lied"]
+              },
+              {
+                epoca: "Principis del Segle XX",
+                estilCss: "estil-segle-xx",
+                text: "A principis del segle XX es busca el <strong>[___]</strong> amb la tradició. L'<strong>[___]</strong> francès explora noves sonoritats. Un altre corrent va ser el <strong>[___]</strong>, que s'inspirava en cultures no occidentals, com a 'La consagració de la primavera'. Més tard, l'<strong>[___]</strong> de Schoenberg trenca amb la tonalitat. Aquest sistema es va organitzar en el <strong>[___]</strong>, que utilitza sèries de dotze sons.",
+                paraulesCorrectes: ["trencament", "impressionisme", "primitivisme", "atonalisme", "dodecafonisme"]
+              }
+            ];
+
+            // --- ESTATS I ELEMENTS DEL DOM ---
+            const menuPrincipalContainer = document.getElementById('menu-principal-container');
+            const menuPrincipal = document.getElementById('menu-principal');
+            const pantallaJoc = document.getElementById('pantalla-joc');
+            const titolEpoca = document.getElementById('titol-epoca');
+            const manuscritText = document.getElementById('manuscrit-text');
+            const caixaParaules = document.getElementById('caixa-paraules');
+            const botoComprovar = document.getElementById('boto-comprovar');
+            const botoTornar = document.getElementById('boto-tornar');
+            const missatgeFinal = document.getElementById('missatge-final');
+            
+            let estatsCompletats = {};
+            let paraulaArrossegada = null;
+            let dadesNivellActual = null;
+
+            // --- FUNCIONS DEL JOC ---
+
+            function desarProgres() {
+                localStorage.setItem('escribaTempsProgres', JSON.stringify(estatsCompletats));
+            }
+
+            function carregarProgres() {
+                const progresGuardat = localStorage.getItem('escribaTempsProgres');
+                if (progresGuardat) {
+                    estatsCompletats = JSON.parse(progresGuardat);
+                }
+            }
+
+            function crearMenuPrincipal() {
+                menuPrincipal.innerHTML = '';
+                manuscritsPerEpoca.forEach((nivell, index) => {
+                    const llibre = document.createElement('div');
+                    llibre.className = 'llibre';
+                    llibre.textContent = nivell.epoca;
+                    llibre.dataset.index = index;
+                    if (estatsCompletats[index]) {
+                        llibre.classList.add('completat');
+                    }
+                    llibre.addEventListener('click', () => iniciarJoc(index));
+                    menuPrincipal.appendChild(llibre);
+                });
+            }
+
+            function iniciarJoc(index) {
+                dadesNivellActual = manuscritsPerEpoca[index];
+                
+                // Canviar de pantalla
+                menuPrincipalContainer.style.display = 'none';
+                pantallaJoc.style.display = 'block';
+
+                // Aplicar estil de l'època
+                pantallaJoc.className = 'joc-container ' + dadesNivellActual.estilCss;
+                titolEpoca.textContent = dadesNivellActual.epoca;
+
+                // Preparar el manuscrit amb els espais buits
+                let i = 0;
+                manuscritText.innerHTML = dadesNivellActual.text.replace(/<strong>\[___\]<\/strong>/g, () => {
+                    const paraulaCorrecta = dadesNivellActual.paraulesCorrectes[i++];
+                    return `<span class="espai-buit" data-correcta="${paraulaCorrecta}">___</span>`;
+                });
+
+                // Preparar la caixa de paraules
+                caixaParaules.innerHTML = '';
+                const paraulesBarrejades = [...dadesNivellActual.paraulesCorrectes]
+                    .sort(() => Math.random() - 0.5);
+                
+                paraulesBarrejades.forEach(paraula => {
+                    const paraulaElem = document.createElement('div');
+                    paraulaElem.className = 'paraula-arrossegable';
+                    paraulaElem.textContent = paraula;
+                    paraulaElem.draggable = true;
+                    caixaParaules.appendChild(paraulaElem);
+                });
+                
+                // Reset estat visual
+                missatgeFinal.style.display = 'none';
+                botoComprovar.style.display = 'inline-block';
+
+                afegirEventListenersJoc();
+            }
+            
+            function afegirEventListenersJoc() {
+                // Events per arrossegar paraules
+                const paraules = document.querySelectorAll('.paraula-arrossegable');
+                paraules.forEach(p => {
+                    p.addEventListener('dragstart', handleDragStart);
+                    p.addEventListener('dragend', handleDragEnd);
+                });
+
+                // Events per deixar anar als espais buits
+                const espais = document.querySelectorAll('.espai-buit');
+                espais.forEach(e => {
+                    e.addEventListener('dragover', handleDragOver);
+                    e.addEventListener('dragleave', handleDragLeave);
+                    e.addEventListener('drop', handleDrop);
+                });
+            }
+
+            function comprovarRespostes() {
+                const espais = document.querySelectorAll('.espai-buit');
+                let totsCorrectes = true;
+
+                espais.forEach(espai => {
+                    espai.classList.remove('correcte', 'incorrecte');
+                    const resposta = espai.textContent;
+                    const correcta = espai.dataset.correcta;
+
+                    if (resposta === '___') {
+                        totsCorrectes = false;
+                        return; // No comprovar si està buit
+                    }
+
+                    if (resposta === correcta) {
+                        espai.classList.add('correcte');
+                        // Desactivar drop per als correctes
+                        espai.removeEventListener('dragover', handleDragOver);
+                        espai.removeEventListener('drop', handleDrop);
+                    } else {
+                        espai.classList.add('incorrecte');
+                        totsCorrectes = false;
+                        
+                        // Retornar paraula incorrecta a la caixa
+                        const paraulaOriginal = document.querySelector(`.paraula-arrossegable[data-original-text="${resposta}"]`);
+                        if (paraulaOriginal) {
+                            paraulaOriginal.classList.remove('hidden');
+                        }
+                        
+                        // Buidar l'espai incorrecte
+                        setTimeout(() => {
+                           espai.textContent = '___';
+                           espai.classList.remove('emplenat', 'incorrecte');
+                        }, 1000);
+                    }
+                });
+
+                if (totsCorrectes) {
+                    finalitzarNivell();
+                }
+            }
+
+            function finalitzarNivell() {
+                missatgeFinal.style.display = 'block';
+                botoComprovar.style.display = 'none';
+                
+                const indexNivell = manuscritsPerEpoca.findIndex(n => n.epoca === dadesNivellActual.epoca);
+                estatsCompletats[indexNivell] = true;
+                desarProgres();
+            }
+
+            function tornarAlMenu() {
+                pantallaJoc.style.display = 'none';
+                menuPrincipalContainer.style.display = 'block';
+                crearMenuPrincipal(); // Actualitza l'estat 'completat'
+            }
+
+            // --- HANDLERS D'EVENTS DRAG & DROP ---
+
+            function handleDragStart(e) {
+                e.target.classList.add('dragging');
+                paraulaArrossegada = e.target;
+            }
+
+            function handleDragEnd(e) {
+                e.target.classList.remove('dragging');
+                paraulaArrossegada = null;
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                if (e.target.classList.contains('espai-buit') && e.target.textContent === '___') {
+                    e.target.classList.add('over');
+                }
+            }
+            
+            function handleDragLeave(e) {
+                 e.target.classList.remove('over');
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                e.target.classList.remove('over');
+
+                if (e.target.classList.contains('espai-buit') && e.target.textContent === '___') {
+                    e.target.textContent = paraulaArrossegada.textContent;
+                    e.target.classList.add('emplenat');
+                    
+                    paraulaArrossegada.classList.add('hidden');
+                    // Guardem el text original per si cal retornar-lo
+                    paraulaArrossegada.dataset.originalText = paraulaArrossegada.textContent;
+                }
+            }
+
+            // --- INICIALITZACIÓ ---
+            carregarProgres();
+            crearMenuPrincipal();
+            botoComprovar.addEventListener('click', comprovarRespostes);
+            botoTornar.addEventListener('click', tornarAlMenu);
+        });
+    </script>
+</body>
+</html>

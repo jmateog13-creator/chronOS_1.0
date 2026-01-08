@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Note: The Survival Symphony</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --toxic-green: #2ecc71;
+            --rusty-red: #8b0000;
+            --dark-grey: #1a1a1a;
+            --terminal-glow: 0 0 15px rgba(46, 204, 113, 0.6);
+            --crt-opacity: 0.1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.9)), url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            color: var(--toxic-green);
+            font-family: 'VT323', monospace;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CRT Filter */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.9) 100%);
+            pointer-events: none;
+            z-index: 101;
+        }
+
+        /* Glitch Animation */
+        .glitch-flash {
+            animation: glitch 0.15s infinite;
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(3px, 0);
+                filter: hue-rotate(90deg) contrast(200%);
+            }
+
+            20% {
+                transform: translate(-3px, 0);
+                filter: hue-rotate(180deg) brightness(150%);
+            }
+
+            40% {
+                transform: translate(3px, 3px);
+                filter: contrast(300%);
+            }
+
+            60% {
+                transform: translate(-3px, -3px);
+                filter: brightness(200%);
+            }
+
+            80% {
+                transform: translate(3px, -3px);
+                filter: hue-rotate(270deg);
+            }
+
+            100% {
+                transform: translate(0, 0);
+                filter: none;
+            }
+        }
+
+        #game-container {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+            z-index: 10;
+        }
+
+        #header {
+            text-align: center;
+            border: 2px solid var(--toxic-green);
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            box-shadow: var(--terminal-glow);
+            border-radius: 4px;
+        }
+
+        #chamber-name {
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            color: #fff;
+            text-shadow: 0 0 15px var(--toxic-green);
+        }
+
+        #participants-count {
+            font-size: 1.5rem;
+            color: var(--toxic-green);
+            opacity: 0.9;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+
+        #race-track {
+            flex-grow: 1;
+            background: linear-gradient(to bottom, #050505 0%, #111 50%, #050505 100%);
+            border: 2px solid #222;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 30px 0;
+            box-shadow: inset 0 0 100px #000;
+        }
+
+        .lane {
+            height: 70px;
+            width: 100%;
+            border-bottom: 1px dashed #333;
+            display: flex;
+            align-items: center;
+            padding: 0 80px;
+            position: relative;
+        }
+
+        .lane-label {
+            position: absolute;
+            left: 20px;
+            font-size: 1.2rem;
+            color: #777;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .progress-bar-bg {
+            height: 18px;
+            width: 100%;
+            background: #000;
+            border: 1px solid #444;
+            position: relative;
+            border-radius: 9px;
+            overflow: visible;
+            /* To allow avatar glow */
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--toxic-green) 20%, #8b0000 100%);
+            box-shadow: 0 0 20px var(--toxic-green);
+            transition: width 0.1s linear;
+        }
+
+        .avatar {
+            width: 70px;
+            height: 70px;
+            position: absolute;
+            left: 0;
+            top: -26px;
+            transform: translateX(-50%);
+            transition: left 0.1s linear;
+            filter: drop-shadow(0 0 10px #000);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .lane.eliminated .progress-bar-fill {
+            background: var(--rusty-red);
+            filter: grayscale(1);
+        }
+
+        .lane.eliminated {
+            opacity: 0.2;
+            filter: blur(2px) grayscale(1);
+        }
+
+        .elimination-x {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-10deg);
+            color: var(--rusty-red);
+            font-size: 4rem;
+            font-weight: 900;
+            z-index: 50;
+            text-shadow: 0 0 20px #000;
+            -webkit-text-stroke: 1px white;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+
+        .lane.eliminated .elimination-x {
+            opacity: 1;
+        }
+
+        #typing-area {
+            height: 160px;
+            background: #000;
+            border: 3px solid var(--toxic-green);
+            padding: 40px;
+            font-size: 2.2rem;
+            line-height: 1.4;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(46, 204, 113, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        #text-to-type {
+            color: #333;
+            white-space: pre-wrap;
+            text-align: center;
+        }
+
+        .char-correct {
+            color: var(--toxic-green);
+            text-shadow: var(--terminal-glow);
+        }
+
+        .char-error {
+            background-color: var(--rusty-red);
+            color: white;
+            animation: shake 0.2s;
+        }
+
+        .char-next {
+            border-bottom: 3px solid var(--toxic-green);
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(5px);
+            }
+
+            50% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Screens */
+        #screens {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid var(--toxic-green);
+            color: var(--toxic-green);
+            padding: 20px 60px;
+            font-family: inherit;
+            font-size: 1.8rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: var(--toxic-green);
+            color: #000;
+            box-shadow: 0 0 30px var(--toxic-green);
+            transform: scale(1.1);
+        }
+
+        #screen-title {
+            font-size: 5rem;
+            text-shadow: 0 0 30px rgba(46, 204, 113, 0.8);
+            letter-spacing: 15px;
+            margin-bottom: 10px;
+        }
+
+        .blood-text {
+            color: var(--rusty-red) !important;
+            text-shadow: 0 0 20px rgba(192, 57, 43, 0.8) !important;
+        }
+
+        /* Blood Splatter overlay */
+        #blood-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://cdn.pixabay.com/photo/2016/09/27/12/37/blood-1698285_1280.png');
+            background-size: cover;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.2s;
+        }
+
+        /* Power flicker */
+        @keyframes power-flicker {
+            0% {
+                opacity: 1;
+            }
+
+            92% {
+                opacity: 1;
+            }
+
+            93% {
+                opacity: 0.4;
+            }
+
+            94% {
+                opacity: 1;
+            }
+
+            98% {
+                opacity: 1;
+            }
+
+            99% {
+                opacity: 0.2;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #game-container.flicker {
+            animation: power-flicker 10s infinite;
+        }
+
+        /* Volume Control */
+        #volume-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 15px;
+            border: 1px solid var(--toxic-green);
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+        }
+
+        #volume-slider {
+            width: 100px;
+            accent-color: var(--toxic-green);
+            cursor: pointer;
+        }
+
+        .vol-icon {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="blood-overlay"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div id="volume-container">
+        <span class="vol-icon">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Reverse the Timer.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="game-container" class="flicker" style="display: none;">
+        <div id="header">
+            <div id="chamber-name">CAMBRA 1: L'OBSCURITAT MEDIEVAL</div>
+            <div id="participants-count">7 SUBJECTES RESTANTS</div>
+        </div>
+
+        <div id="race-track">
+            <!-- Participants will be here -->
+        </div>
+
+        <div id="typing-area">
+            <div id="text-to-type"> Carregant...</div>
+        </div>
+    </div>
+
+    <div id="screens">
+        <h1 id="screen-title">FINAL NOTE</h1>
+        <p id="screen-desc" style="max-width: 700px; font-size: 1.4rem; line-height: 1.6; color: #888;">
+            Benvingut a la <span style="color:var(--toxic-green)">Simfonia de la Supervivencia</span>.<br>
+            Aixo no es un joc, es un ritual de purificacio.<br>
+            Escriu amb decisio. <span style="color:var(--toxic-green)">He eliminat els accents perque la teva ment es
+                massa feble per processar-los...</span> o potser per fer-ho mes facil.<br>
+            <span class="blood-text">L'ultim a acabar cada ronda sera ELIMINAT.</span>
+        </p>
+        <button id="main-btn" class="btn" onclick="initGame()">INICIAR RITUAL</button>
+    </div>
+
+    <script>
+        const GAME_DATA = {
+            eras: [
+                {
+                    id: "chamber1",
+                    name: "Cambra 1: L'Obscuritat Medieval",
+                    sentences: [
+                        "El cant gregoria es una pregaria monodica cantada en llati pels monjos sense instruments.",
+                        "Els trobadors eren musics poetes que viatjaven pels castells cantant a l'amor cortes."
+                    ],
+                    base_speed: 1.0 // Normalized factor
+                },
+                {
+                    id: "chamber2",
+                    name: "Cambra 2: L'Equilibri Huma",
+                    sentences: [
+                        "La polifonia busca l'equilibri perfecte entre les veus humanes imitant l'art classic.",
+                        "La impremta musical va permetre que les partitures arribessin a molta mes gent."
+                    ],
+                    base_speed: 1.2
+                },
+                {
+                    id: "chamber3",
+                    name: "Cambra 3: L'Exces Barroc",
+                    sentences: [
+                        "El baix continu i el clavicembal omplen l'espai amb ornaments i contrastos forts.",
+                        "L'opera neix a Italia com un espectacle total que barreja musica, teatre i escenografia."
+                    ],
+                    base_speed: 1.4
+                },
+                {
+                    id: "chamber4",
+                    name: "Cambra 4: L'Ordre Racional",
+                    sentences: [
+                        "La musica busca l'ordre i la claredat a traves de la forma sonata i la simetria racional.",
+                        "L'orquestra s'amplia i desapareix el clavicembal per donar pas al piano i al clarinet."
+                    ],
+                    base_speed: 1.6
+                },
+                {
+                    id: "chamber5",
+                    name: "Cambra 5: La Passio Mortal",
+                    sentences: [
+                        "El compositor expressa els seus propis sentiments i la passio desbordada per sobre de les normes.",
+                        "El virtuosisme instrumental arriba al maxim amb peces molt dificils per a piano i violi."
+                    ],
+                    base_speed: 1.8
+                },
+                {
+                    id: "chamber6",
+                    name: "Cambra 6: El Soroll Final",
+                    sentences: [
+                        "Els compositors trenquen amb la tonalitat tradicional experimentant amb el soroll i l'electronica.",
+                        "Neixen nous estils com el jazz, el rock i la musica de cinema gracies a la tecnologia."
+                    ],
+                    base_speed: 2.2
+                }
+            ],
+            bot_names: ["Subject_Bach", "Subject_Mozart", "Subject_Guido", "Subject_Clara", "Subject_Wagner", "Subject_Igor"]
+        };
+
+        const AVATARS = [
+            "img/avatar1.png",
+            "img/avatar2.png",
+            "img/avatar3.png",
+            "img/avatar4.png",
+            "img/avatar5.png",
+            "img/avatar6.png",
+            "img/avatar7.png"
+        ];
+
+        let currentRound = 0;
+        let participants = []; // { name, isPlayer, progress, finished, eliminated, speedFactor, behavior, avatar }
+        let currentSentence = "";
+        let playerIndex = 0;
+        let gameActive = false;
+        let roundStartTime = 0;
+        let lastBotUpdate = 0;
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        // Volume logic
+        const savedVol = localStorage.getItem('finalnote_vol');
+        if (savedVol !== null) {
+            bgMusic.volume = savedVol;
+            volSlider.value = savedVol;
+        } else {
+            bgMusic.volume = 0.5;
+        }
+
+        volSlider.oninput = (e) => {
+            const v = e.target.value;
+            bgMusic.volume = v;
+            localStorage.setItem('finalnote_vol', v);
+        };
+
+        function initGame() {
+            if (bgMusic.paused) bgMusic.play().catch(e => console.log("Audio focus needed"));
+            participants = [
+                { name: "TU", isPlayer: true, progress: 0, finished: false, eliminated: false, avatar: AVATARS[0] }
+            ];
+            GAME_DATA.bot_names.forEach((name, i) => {
+                participants.push({
+                    name: name,
+                    isPlayer: false,
+                    progress: 0,
+                    finished: false,
+                    eliminated: false,
+                    avatar: AVATARS[i + 1]
+                });
+            });
+
+            document.getElementById('screens').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            startRound();
+        }
+
+        function startRound() {
+            const era = GAME_DATA.eras[currentRound];
+            document.getElementById('chamber-name').textContent = era.name;
+            const remainingCount = participants.filter(p => !p.eliminated).length;
+            document.getElementById('participants-count').textContent = `${remainingCount} SUBJECTES RESTANTS`;
+
+            currentSentence = era.sentences[Math.floor(Math.random() * era.sentences.length)];
+            playerIndex = 0;
+            renderText();
+
+            // Reset lane statuses and behavior
+            const activeParticipants = participants.filter(p => !p.eliminated);
+            activeParticipants.forEach((p, idx) => {
+                p.progress = 0;
+                p.finished = false;
+                if (!p.isPlayer) {
+                    // Difficulty scaling: early rounds are much slower
+                    // Adjust base speed factors according to round
+                    const difficultyGlobalFactor = 0.5 + (currentRound * 0.1); // Starts at 0.5, ends at 1.0 approx
+
+                    if (idx === 1) { // Stalker
+                        p.behavior = 'stalker';
+                        p.speedFactor = 1.15 * difficultyGlobalFactor;
+                    } else if (idx === activeParticipants.length - 1) { // Victim
+                        p.behavior = 'victim';
+                        p.speedFactor = 0.65 * difficultyGlobalFactor;
+                    } else {
+                        p.behavior = 'normal';
+                        p.speedFactor = (0.8 + Math.random() * 0.25) * difficultyGlobalFactor;
+                    }
+                }
+            });
+
+            renderParticipants();
+
+            // Countdown
+            let countdown = 3;
+            const screens = document.getElementById('screens');
+            screens.style.display = 'flex';
+            screens.style.background = 'rgba(0,0,0,0.7)';
+            const title = document.getElementById('screen-title');
+            const desc = document.getElementById('screen-desc');
+            const btn = document.getElementById('main-btn');
+
+            btn.style.display = 'none';
+            desc.style.display = 'none';
+
+            const counterInterval = setInterval(() => {
+                title.textContent = countdown;
+                title.style.fontSize = "10rem";
+                if (countdown <= 0) {
+                    clearInterval(counterInterval);
+                    screens.style.display = 'none';
+                    title.style.fontSize = "5rem";
+                    btn.style.display = 'block';
+                    desc.style.display = 'block';
+                    gameActive = true;
+                    roundStartTime = Date.now();
+                    lastBotUpdate = Date.now();
+                    requestAnimationFrame(gameLoop);
+                }
+                countdown--;
+            }, 1000);
+        }
+
+        function renderText() {
+            const container = document.getElementById('text-to-type');
+            container.innerHTML = '';
+            for (let i = 0; i < currentSentence.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = currentSentence[i];
+                if (i < playerIndex) span.className = 'char-correct';
+                else if (i === playerIndex) span.className = 'char-next';
+                container.appendChild(span);
+            }
+        }
+
+        function renderParticipants() {
+            const track = document.getElementById('race-track');
+            track.innerHTML = '';
+            participants.forEach(p => {
+                if (p.eliminated) return;
+                const lane = document.createElement('div');
+                lane.className = p.eliminated ? 'lane eliminated' : 'lane';
+                lane.innerHTML = `
+                    <div class="lane-label">${p.name}</div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${p.progress * 100}%"></div>
+                        <img class="avatar" src="${p.avatar}" style="left: ${p.progress * 100}%">
+                    </div>
+                    <div class="elimination-x">X</div>
+                `;
+                track.appendChild(lane);
+            });
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            const now = Date.now();
+            const deltaTime = (now - lastBotUpdate) / 1000;
+            lastBotUpdate = now;
+
+            const player = participants.find(p => p.isPlayer);
+            const era = GAME_DATA.eras[currentRound];
+
+            // Base WPM emulation: Player usually does 40-70 WPM. 
+            // Let's use characters per second.
+            const elapsed = (now - roundStartTime) / 1000;
+            let playerCPS = player.progress * currentSentence.length / (elapsed || 0.1);
+            if (playerCPS < 0.5) playerCPS = 0.5; // Min speed to keep bots moving
+
+            participants.filter(p => !p.isPlayer && !p.eliminated && !p.finished).forEach(bot => {
+                let targetCPS = playerCPS * bot.speedFactor;
+
+                // Rubber Banding / Behavior Logic
+                if (bot.behavior === 'stalker') {
+                    // Stalker is fast but 'stumbles' at the very end
+                    if (bot.progress >= 0.95) {
+                        targetCPS = 0.1; // Nearly stop
+                    } else {
+                        targetCPS = playerCPS * 1.15; // Always faster than player
+                    }
+                } else if (bot.behavior === 'victim') {
+                    // Victim is slow to ensure player survival
+                    targetCPS = playerCPS * 0.75;
+                    // Never pass the player if they are close to finishing
+                    if (bot.progress > player.progress - 0.05 && player.progress < 0.9) {
+                        targetCPS = playerCPS * 0.5;
+                    }
+                } else {
+                    // Normal bots have random variability
+                    targetCPS *= (0.9 + Math.random() * 0.2);
+                }
+
+                bot.progress += (targetCPS / currentSentence.length) * deltaTime;
+                if (bot.progress >= 1) {
+                    bot.progress = 1;
+                    bot.finished = true;
+                    checkRoundEnd();
+                }
+            });
+
+            renderParticipants();
+            if (gameActive) requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('keydown', e => {
+            if (!gameActive) return;
+
+            // Ignore modifiers, Shift, and dead keys (accents)
+            // Added explicit accent chars that might trigger as single keydowns
+            const ignoreKeys = ["Dead", "´", "`", "^", "¨", "~", "Shift", "Control", "Alt", "Meta", "AltGraph"];
+            if (e.key.length > 1 || ignoreKeys.includes(e.key)) return;
+
+            const targetChar = currentSentence[playerIndex];
+            if (e.key === targetChar) {
+                playerIndex++;
+                const player = participants.find(p => p.isPlayer);
+                player.progress = playerIndex / currentSentence.length;
+                renderText();
+                if (playerIndex >= currentSentence.length) {
+                    player.finished = true;
+                    checkRoundEnd();
+                }
+            } else {
+                triggerGlitch();
+            }
+        });
+
+        function triggerGlitch() {
+            document.body.classList.add('glitch-flash');
+            const blood = document.getElementById('blood-overlay');
+            blood.style.opacity = "0.6";
+            setTimeout(() => {
+                document.body.classList.remove('glitch-flash');
+                blood.style.opacity = "0";
+            }, 200);
+        }
+
+        function checkRoundEnd() {
+            const active = participants.filter(p => !p.eliminated);
+            const finished = active.filter(p => p.finished);
+
+            if (finished.length === active.length - 1) {
+                gameActive = false;
+                const loser = active.find(p => !p.finished);
+                eliminate(loser);
+            }
+        }
+
+        function eliminate(loser) {
+            loser.eliminated = true;
+            renderParticipants();
+
+            setTimeout(() => {
+                const screens = document.getElementById('screens');
+                const title = document.getElementById('screen-title');
+                const desc = document.getElementById('screen-desc');
+                const btn = document.getElementById('main-btn');
+
+                screens.style.display = 'flex';
+                screens.style.background = '#000';
+
+                if (loser.isPlayer) {
+                    title.textContent = "HAS SIGUT ELIMINAT";
+                    title.className = "blood-text";
+                    desc.innerHTML = `La teva simfonia s'ha apagat a la ${GAME_DATA.eras[currentRound].name}.<br>No has estat prou ràpid per sobreviure.`;
+                    btn.textContent = "REINTENTAR RITUAL";
+                    btn.onclick = () => location.reload();
+                } else {
+                    currentRound++;
+                    if (currentRound >= 6) {
+                        title.textContent = "HAS SOBREVISCUT";
+                        title.style.color = "var(--toxic-green)";
+                        desc.innerHTML = "Has completat el ritual. Ets l'última nota que ressona en aquesta foscor.<br><span style='color:#fff'>HAS GUANYAT LA TEVA LLIBERTAT.</span>";
+                        btn.textContent = "REINICIAR EL MÓN";
+                        btn.onclick = () => location.reload();
+                    } else {
+                        const remaining = participants.filter(p => !p.eliminated).length;
+                        if (remaining === 2) {
+                            title.textContent = "EL DUEL FINAL";
+                            title.className = "blood-text";
+                            desc.textContent = `Només quedes tu i ${participants.find(p => !p.eliminated && !p.isPlayer).name}. L'última cambra t'espera.`;
+                        } else {
+                            title.textContent = "SUBJECTE ELIMINAT";
+                            title.style.color = "var(--toxic-green)";
+                            desc.textContent = `${loser.name} ha estat consumit pel silenci. Prepara't per a la següent cambra.`;
+                        }
+                        btn.textContent = "CONTINUAR RITUAL";
+                        btn.onclick = startRound;
+                    }
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
