@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Estudi d'Animació Musical</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Nunito:wght@400;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --ui-bg: #2b2b2b;
+            --ui-panel: #3a3a3a;
+            --ui-border: #1e1e1e;
+            --accent: #00a8ff;
+            /* Pixar-ish Blue */
+            --accent-hover: #0097e6;
+            --text-main: #f5f5f5;
+            --text-dim: #a4a4a4;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: var(--text-main);
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* TOOLBAR */
+        #toolbar {
+            height: 50px;
+            background: var(--ui-panel);
+            border-bottom: 2px solid var(--ui-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            color: white;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .tools {
+            display: flex;
+            gap: 15px;
+        }
+
+        .tool-btn {
+            background: var(--ui-bg);
+            border: 1px solid var(--ui-border);
+            color: var(--text-dim);
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .tool-btn:hover {
+            color: white;
+            background: var(--ui-border);
+        }
+
+        /* MAIN WORKSPACE */
+        #workspace {
+            flex: 1;
+            display: flex;
+            padding: 10px;
+            gap: 10px;
+            height: calc(100vh - 50px);
+            box-sizing: border-box;
+        }
+
+        /* LEFT: VIEWPORT (The Scene) */
+        #viewport {
+            flex: 2;
+            background: #111;
+            border-radius: 8px;
+            border: 2px solid var(--ui-border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewport-header {
+            padding: 10px 15px;
+            background: var(--ui-bg);
+            border-bottom: 1px solid var(--ui-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .scene-display {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #111 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .scene-overlay {
+            position: absolute;
+            bottom: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 30px;
+            border-radius: 12px;
+            max-width: 80%;
+            text-align: center;
+            border: 1px solid var(--ui-border);
+            backdrop-filter: blur(5px);
+        }
+
+        .scene-text {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: #ddd;
+            font-style: italic;
+        }
+
+        /* 3D DROP ZONE (BIGGER NOW) */
+        .drop-target {
+            width: 350px;
+            height: 350px;
+            border: 3px dashed var(--accent);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+            background: rgba(0, 168, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        /* 3D Grid Floor Effect */
+        .drop-target::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background:
+                linear-gradient(rgba(0, 168, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 168, 255, 0.2) 1px, transparent 1px);
+            background-size: 30px 30px;
+            transform: perspective(600px) rotateX(60deg) scale(0.8);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .drop-target.drag-over {
+            background: rgba(0, 168, 255, 0.2);
+            box-shadow: 0 0 50px rgba(0, 168, 255, 0.4);
+            transform: scale(1.1);
+            border-width: 5px;
+        }
+
+        .drop-target.filled {
+            border: none;
+            background: none;
+        }
+
+        .drop-target::after {
+            content: 'DRAG ACTOR HERE';
+            font-size: 1rem;
+            color: var(--accent);
+            font-weight: bold;
+            margin-top: 150px;
+            letter-spacing: 3px;
+        }
+
+        .drop-target.filled::after {
+            content: '';
+        }
+
+        /* RIGHT: ASSET BROWSER (COMPACT NOW) */
+        #asset-browser {
+            flex: 1;
+            background: var(--ui-panel);
+            border-radius: 8px;
+            border: 2px solid var(--ui-border);
+            display: flex;
+            flex-direction: column;
+            max-width: 380px;
+        }
+
+        .browser-header {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--ui-border);
+            font-weight: bold;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+        }
+
+        .assets-grid {
+            flex: 1;
+            padding: 10px;
+            display: grid;
+            /* Auto-fill for compact layout so no scrolling is needed */
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        /* ACTOR CARDS */
+        .actor-card {
+            background: var(--ui-bg);
+            border-radius: 6px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            position: relative;
+            min-height: 100px;
+        }
+
+        .actor-card:hover {
+            background: #444;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            z-index: 10;
+        }
+
+        /* HOVER NAME REVEAL */
+        .actor-img {
+            width: 70px;
+            /* Returned to compact size */
+            height: 70px;
+            border-radius: 50%;
+            background: #555;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+            border: 2px solid #333;
+            margin-bottom: 0;
+        }
+
+        .actor-name {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 4px 8px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            border: 1px solid var(--accent);
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 20;
+        }
+
+        .actor-card:hover .actor-name {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .actor-card.dragging {
+            opacity: 0.4;
+            cursor: grabbing;
+        }
+
+        /* RENDER FEEDBACK */
+        #render-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 5px 15px;
+            font-family: monospace;
+            color: #0f0;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spinner {
+            width: 15px;
+            height: 15px;
+            border: 2px solid #0f0;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* WIN SCREEN */
+        #win-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .pixar-lamp-anim {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: hop 0.5s infinite alternate;
+        }
+
+        @keyframes hop {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-20px);
+            }
+        }
+
+        .btn-main {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 30px;
+            font-family: 'Nunito', sans-serif;
+            box-shadow: 0 5px 15px rgba(0, 168, 255, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            background: var(--accent-hover);
+        }
+
+        /* INTRO MODAL */
+        #intro-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="toolbar">
+        <div class="logo">Anim<span>OS</span> Studio</div>
+        <div class="tools">
+            <div class="tool-btn">File</div>
+            <div class="tool-btn">Edit</div>
+            <div class="tool-btn">Render</div>
+        </div>
+
+        <!-- PROGRESS & VOLUME -->
+        <div style="display:flex; align-items:center; gap:25px; margin-left: auto; margin-right: 20px;">
+            <div
+                style="font-family:'Nunito'; font-weight:800; color:var(--text-dim); font-size: 1.1rem; letter-spacing: 1px;">
+                PROGRESS: <span id="progress-cnt" style="color:var(--accent);">0/10</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px; border-left: 1px solid #444; padding-left: 20px;">
+                <span style="font-size:1.2rem; cursor:pointer;" onclick="toggleMute()">🎵</span>
+                <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.3"
+                    style="width:80px; accent-color: var(--accent); cursor:pointer;">
+            </div>
+        </div>
+
+        <div style="color:var(--text-dim); font-size: 0.8rem; border-left: 1px solid #444; padding-left: 20px;">
+            PixarMusic_v1.0</div>
+    </div>
+
+    <div id="workspace">
+        <!-- LEFT PANEL -->
+        <div id="viewport">
+            <div class="viewport-header">
+                <span id="scene-id">SCENE 01</span>
+                <span>Camera: Perspective</span>
+            </div>
+
+            <div id="render-status">
+                <div class="spinner"></div> RENDERING...
+            </div>
+
+            <div class="scene-display" id="scene-bg">
+                <div class="drop-target" id="drop-zone"></div>
+
+                <div class="scene-overlay">
+                    <div class="scene-text" id="scene-desc">"..."</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div id="asset-browser">
+            <div class="browser-header">Character Assets</div>
+            <div class="assets-grid" id="asset-grid">
+                <!-- Assets injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- INTRO -->
+    <div id="intro-modal">
+        <h1 style="font-size: 4rem; margin-bottom: 0;">Anim<span style="color:var(--accent)">OS</span></h1>
+        <p style="font-size: 1.5rem; color: #aaa;">Estudi d'Animació Musical</p>
+        <div style="background:var(--ui-panel); padding:30px; border-radius:10px; max-width:600px; margin:20px;">
+            <p>Benvingut, Animador!</p>
+            <p>Tenim 10 escenes per a la nostra nova pel·lícula històrica, però ens falten els protagonistes.</p>
+            <p>Llegeix la descripció del guió i <strong>arrossega</strong> el personatge correcte (3D) a l'escena.</p>
+        </div>
+        <button class="btn-main" onclick="startGame()">START PROJECT</button>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-modal">
+        <div class="pixar-lamp-anim">💡</div>
+        <h1 style="font-size: 3rem;">RENDER COMPLET!</h1>
+        <p style="font-size: 1.5rem; color:#ccc;">La pel·lícula és un èxit de taquilla!</p>
+        <button class="btn-main" onclick="location.reload()">NEW PROJECT</button>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop src="audio/Curious Little Workshop.m4a"></audio>
+
+    <script>
+        // --- ASSETS (Pixar Style) ---
+        const ACTORS = [
+            { id: "guido", name: "Guido d'Arezzo", info: "Monjo Inventor", img: "img/guido.png" },
+            { id: "hildegard", name: "Hildegard", info: "Mística Visionària", img: "img/hildegard.png" },
+            { id: "palestrina", name: "Palestrina", info: "Salvador Polifonia", img: "img/palestrina.png" },
+            { id: "vivaldi", name: "Vivaldi", info: "El Pèl-roig", img: "img/vivaldi.png" },
+            { id: "bach", name: "J.S. Bach", info: "El Mestre Matemàtic", img: "img/bach.png" },
+            { id: "mozart", name: "Mozart", info: "Nen Prodigi", img: "img/mozart.png" },
+            { id: "beethoven", name: "Beethoven", info: "El Geni Sord", img: "img/beethoven.png" },
+            { id: "chopin", name: "Chopin", info: "Poeta del Piano", img: "img/chopin.png" },
+            { id: "wagner", name: "Wagner", info: "Drama Èpic", img: "img/wagner.png" },
+            { id: "cage", name: "John Cage", info: "El Filòsof del Soroll", img: "img/cage.png" }
+        ];
+
+        const SCENES = [
+            { id: 1, text: "ESCENA 1: Un monjo medieval ensenya a cantar als seus alumnes usant la seva pròpia mà com a guia.", target: "guido", bg: "img/fonsguido.jpg" },
+            { id: 2, text: "ESCENA 2: Una abadessa escriu visions divines i compon melodies celestials sola a la seva cel·la.", target: "hildegard", bg: "img/fonshildegard.jpg" },
+            { id: 3, text: "ESCENA 3: El Papa està enfadat! Algú ha de compondre una missa perfecta per salvar la música a l'església.", target: "palestrina", bg: "img/fonspalestrina.jpg" },
+            { id: 4, text: "ESCENA 4: Un capellà pèl-roig toca el violí furiós mentre les estacions canvien al seu voltant.", target: "vivaldi", bg: "img/fonsvivaldi.jpg" },
+            { id: 5, text: "ESCENA 5: Un home amb perruca escriu una fuga per a orgue tan complexa que sembla un codi matemàtic.", target: "bach", bg: "img/fonsbach.jpg" },
+            { id: 6, text: "ESCENA 6: Un nen petit amb vestit de gala toca el piano amb els ulls embenats davant dels reis.", target: "mozart", bg: "img/fonsmozart.jpg" },
+            { id: 7, text: "ESCENA 7: Un home despentinat i furiós dirigeix una orquestra encara que no hi sent absolutament res.", target: "beethoven", bg: "img/fomsbeethoven.jpg" },
+            { id: 8, text: "ESCENA 8: Un pianista pàl·lid i malaltic toca una trista melodia en un saló de París mentre plou.", target: "chopin", bg: "img/fonschopin.jpg" },
+            { id: 9, text: "ESCENA 9: Òperes de 15 hores, dracs i anells màgics. Algú està creant l'espectacle total!", target: "wagner", bg: "img/fonswagner.jpg" },
+            { id: 10, text: "ESCENA 10: Un home s'asseu al piano, posa el cronòmetre i... no toca ni una sola nota.", target: "cage", bg: "img/fonscage.jpg" }
+        ];
+
+        let queue = [];
+        let currentSceneIdx = 0;
+
+        const elViewport = document.getElementById('viewport');
+        const elSceneDesc = document.getElementById('scene-desc');
+        const elSceneId = document.getElementById('scene-id');
+        const elDropZone = document.getElementById('drop-zone');
+        const elAssetGrid = document.getElementById('asset-grid');
+        const elRenderStatus = document.getElementById('render-status');
+        const elSceneBg = document.getElementById('scene-bg');
+        const elProgressCnt = document.getElementById('progress-cnt');
+
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('vol-slider');
+
+        // Volume Init
+        bgMusic.volume = 0.3;
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function startGame() {
+            document.getElementById('intro-modal').style.display = 'none';
+            bgMusic.play().catch(e => console.log("Audio needs interaction"));
+            initGame();
+        }
+
+        function initGame() {
+            // Shuffle Scenes
+            queue = [...SCENES].sort(() => Math.random() - 0.5);
+            currentSceneIdx = 0;
+
+            // Render Assets (Shuffled)
+            renderAssets();
+            loadScene(0);
+        }
+
+        function renderAssets() {
+            elAssetGrid.innerHTML = "";
+            // FORCE SHUFFLE EACH TIME
+            const actors = [...ACTORS].sort(() => Math.random() - 0.5);
+
+            actors.forEach(a => {
+                const card = document.createElement('div');
+                card.className = "actor-card";
+                card.htmlName = a.name; // metadata
+                card.title = a.name;
+                card.draggable = true;
+
+                card.innerHTML = `
+                    <div class="actor-img" style="background-image:url('${a.img}');"></div>
+                    <div class="actor-name">${a.name}</div>
+                `;
+
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', a.id);
+                    card.classList.add('dragging');
+                });
+                card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+                elAssetGrid.appendChild(card);
+            });
+        }
+
+        function loadScene(idx) {
+            currentSceneIdx = idx;
+            const scene = queue[idx];
+
+            elSceneId.innerText = `SCENE ${idx + 1}/${queue.length}`;
+            elSceneDesc.innerText = `"${scene.text}"`;
+
+            // Update Progress UI
+            elProgressCnt.innerText = `${idx}/10`;
+
+            // Set Background
+            elSceneBg.style.backgroundImage = `url('${scene.bg}')`;
+
+            // Reset dropzone
+            elDropZone.className = "drop-target";
+            elDropZone.innerHTML = "";
+        }
+
+        // Logic
+        elDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elDropZone.classList.add('drag-over');
+        });
+        elDropZone.addEventListener('dragleave', () => {
+            elDropZone.classList.remove('drag-over');
+        });
+
+        elDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elDropZone.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            checkAnswer(id);
+        });
+
+        function checkAnswer(id) {
+            const scene = queue[currentSceneIdx];
+            if (id === scene.target) {
+                // Correct
+                elRenderStatus.style.display = "flex";
+                successVisuals(id);
+
+                setTimeout(() => {
+                    elRenderStatus.style.display = "none";
+                    nextScene();
+                }, 2000);
+            } else {
+                // Wrong
+                elDropZone.style.animation = "shake 0.5s";
+                setTimeout(() => elDropZone.style.animation = "none", 500);
+            }
+        }
+
+        // Shake anim
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} 100%{transform:translateX(0)} }
+        `;
+        document.head.appendChild(styleSheet);
+
+        function successVisuals(id) {
+            elDropZone.classList.add('filled');
+            const hero = ACTORS.find(x => x.id === id);
+            // Show character in spotlight (BIGGER!)
+            elDropZone.innerHTML = `
+                <div style="width:400px; height:400px; background:url('${hero.img}') center/cover; filter:drop-shadow(0 0 20px cyan); border-radius:10px;"></div>
+            `;
+        }
+
+        function nextScene() {
+            if (currentSceneIdx < queue.length - 1) {
+                loadScene(currentSceneIdx + 1);
+            } else {
+                elProgressCnt.innerText = "10/10";
+                document.getElementById('win-modal').style.display = "flex";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Sabotejador de la Cort 🎭</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-court: #0a0a1a;
+            --gold: #f1c40f;
+            --red: #ff3e3e;
+            --text: #ecf0f1;
+            --font-pixel: 'Share Tech Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-court);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Main Container */
+        #game-container {
+            width: 98vw;
+            height: 96vh;
+            background: #000 url("img/background.jpg") center center / cover no-repeat;
+            border: 4px solid var(--gold);
+            border-radius: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 100px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            text-align: center;
+            border-bottom: 2px solid var(--gold);
+        }
+
+        h1 {
+            margin: 0;
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px black;
+        }
+
+        #era-display {
+            font-size: 0.9rem;
+            color: #ddd;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        #volume-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--gold);
+            z-index: 110;
+        }
+
+        #volume-slider {
+            width: 80px;
+            accent-color: var(--gold);
+        }
+
+        /* Characters Area */
+        #stage {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            /* Align to bottom of stage */
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+
+        .character {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+            width: 150px;
+            /* Fixed width for stability */
+        }
+
+        .character:hover {
+            transform: scale(1.05);
+        }
+
+        .avatar {
+            width: 120px;
+            height: 180px;
+            /* Taller for standing characters */
+            object-fit: contain;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+            transition: filter 0.3s;
+        }
+
+        .character:hover .avatar {
+            filter: drop-shadow(0 0 10px var(--gold));
+        }
+
+        .speech-bubble {
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            position: absolute;
+            bottom: 100%;
+            /* Position above character */
+            margin-bottom: 10px;
+            width: 220px;
+            text-align: center;
+            font-size: 0.95rem;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+
+        .character.talking .speech-bubble {
+            opacity: 1;
+        }
+
+        .character.talking .avatar {
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Controls */
+        #controls {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .btn {
+            background: var(--gold);
+            color: #2c3e50;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: 'Cinzel', serif;
+            box-shadow: 0 4px 0 #c0392b;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn:hover {
+            background: white;
+        }
+
+        /* Start Screen (Among Us Style) */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000 url("img/fonsintro.jpg") center center / cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        #start-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            /* Dark overlay for readability */
+            z-index: -1;
+        }
+
+        .among-title {
+            font-size: 5rem;
+            font-family: var(--font-pixel);
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            margin-bottom: 0;
+            text-shadow: 0 0 20px #00ffff;
+        }
+
+        .sub-title {
+            color: #ff3e3e;
+            font-size: 1.5rem;
+            font-family: var(--font-pixel);
+            margin-bottom: 40px;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .era-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #555;
+            color: white;
+            padding: 15px 30px;
+            margin: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 200px;
+            transition: all 0.2s;
+            font-family: var(--font-pixel);
+            text-transform: uppercase;
+            border-radius: 8px;
+        }
+
+        .era-btn.completed {
+            background: rgba(46, 204, 113, 0.3);
+            border-color: #2ecc71;
+            color: #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+
+        .era-btn.completed::after {
+            content: ' ✓';
+        }
+
+        .instructions-box {
+            margin-top: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            padding: 25px;
+            max-width: 800px;
+            color: #ccc;
+            border-radius: 15px;
+            text-align: left;
+            font-family: var(--font-pixel);
+            position: relative;
+        }
+
+        .instructions-box h3 {
+            color: #00ffff;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .instructions-box li {
+            margin-bottom: 10px;
+        }
+
+        /* Result Overlay */
+        #result-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 50;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 3rem;
+            font-family: 'Cinzel', serif;
+            margin-bottom: 20px;
+        }
+
+        .result-msg {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #ecf0f1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <header>
+            <h1>El Sabotejador de la Cort</h1>
+            <div id="era-display">Època: <span id="current-era-name">...</span></div>
+        </header>
+
+        <div id="stage">
+            <!-- Characters injected here -->
+        </div>
+
+        <div id="controls">
+            <button class="btn" style="box-shadow: 0 4px 0 #008888; background: #00ffff; color: black;"
+                onclick="revealStatements()">OBRIR EMERGENCY MEETING</button>
+            <button class="btn" onclick="startVoting()" id="vote-btn" style="display:none;">VOTAR IMPOSTOR</button>
+        </div>
+
+        <div id="result-overlay">
+            <div class="result-title" id="res-title">VICTÒRIA</div>
+            <div class="result-msg" id="res-msg">Has trobat l'impostor!</div>
+            <button class="btn" onclick="resetGame()">Jugar de nou</button>
+        </div>
+
+        <div id="volume-controls">
+            <i class="fas fa-volume-up" style="color: var(--gold); font-size: 0.8rem;"></i>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                oninput="updateVolume(this.value)">
+        </div>
+
+        <div id="start-screen">
+            <div class="among-title">AMONG US<br>MUSICAL</div>
+            <div class="sub-title">Hi ha 1 Impostor entre nosaltres</div>
+
+            <div id="era-buttons" style="display: flex; flex-wrap: wrap; justify-content: center; max-width: 900px;">
+            </div>
+
+            <div class="instructions-box">
+                <h3>MANUAL DE MISSIONS</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li><i class="fas fa-exclamation-triangle mr-2" style="color: #ff3e3e;"></i> <b>OBJECTIU:</b> Troba
+                        qui menteix en cada època musical.</li>
+                    <li><i class="fas fa-check-circle mr-2" style="color: #00ff00;"></i> <b>RECONEIXEMENT:</b> Encerta 3
+                        de 4 sabotejadors per guanyar la teva insígnia.</li>
+                    <li><i class="fas fa-satellite-dish mr-2" style="color: #00ffff;"></i> <b>AVÍS:</b> L'impostor
+                        intentarà enganyar-te amb conceptes anacrònics.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            'Edat Mitjana': {
+                bg: 'img/edatmitjana.jpg',
+                truths: [
+                    "La música és principalment vocal i religiosa.",
+                    "Utilitzem modes gregorians, no escales majors/menors.",
+                    "Els trobadors canten en llengües vernacles.",
+                    "La polifonia comença a desenvolupar-se a Notre Dame.",
+                    "Guido d'Arezzo va donar nom a les notes musicals.",
+                    "El cant gregorià s'anomena així pel Papa Gregori el Gran.",
+                    "Els joglars entretenen el poble amb música i sàtira."
+                ],
+                lies: [
+                    "L'orquestra simfònica és molt popular.",
+                    "El piano és l'instrument principal.",
+                    "Fem servir molts acords de setena disminuïda.",
+                    "L'òpera és l'espectacle de moda.",
+                    "Utilitzem sintetitzadors per als cants religiosos.",
+                    "El rock and roll és el gènere més ballat.",
+                    "Llegim les partitures en tablets digitals."
+                ]
+            },
+            'Renaixement': {
+                bg: 'img/renaixement.jpg',
+                truths: [
+                    "La polifonia arriba al seu màxim esplendor vocal.",
+                    "El madrigal és la forma profana més important.",
+                    "La impremta musical ajuda a difondre les partitures.",
+                    "El mecenatge és vital per als compositors.",
+                    "Busquem l'equilibri i la proporció clàssica.",
+                    "El llaüt és l'instrument domèstic favorit.",
+                    "Palestrina és el mestre de la música sacra."
+                ],
+                lies: [
+                    "El baix continu és la base de tota composició.",
+                    "Els castrati són les estrelles del moment.",
+                    "L'orquestra simfònica té més de cent músics.",
+                    "La música dodecafònica és la nova norma.",
+                    "Fem servir violins elèctrics per a les danses.",
+                    "Bach és el compositor més famós de l'època.",
+                    "L'òpera italiana s'emet per ràdio."
+                ]
+            },
+            'Barroc': {
+                bg: 'img/barroc.jpg',
+                truths: [
+                    "El baix continu és essencial en la nostra música.",
+                    "Ens encanta l'ornamentació i el contrast.",
+                    "L'òpera neix i es fa molt popular.",
+                    "El clavecí i l'orgue són els reis.",
+                    "La fuga és la forma de contrapunt més complexa.",
+                    "Vivaldi escriu centenars de concerts per a violí.",
+                    "El contrast 'forte/piano' és un recurs típic."
+                ],
+                lies: [
+                    "Busquem la simplicitat i l'equilibri absolut.",
+                    "El piano romàntic és el nostre favorit.",
+                    "No ens agrada la música instrumental.",
+                    "El jazz comença a influir-nos.",
+                    "Tots els instruments tenen mecanismes electrònics.",
+                    "La música es distribueix en CDs de plata.",
+                    "No fem servir cap tipus d'ornamentació."
+                ]
+            },
+            'Classicisme': {
+                bg: 'img/classicisme.jpg',
+                truths: [
+                    "Busquem la claredat, l'equilibri i la proporció.",
+                    "La forma sonata és molt important.",
+                    "La melodia ha de ser senzilla i cantabile.",
+                    "El pianoforte comença a substituir el clavecí.",
+                    "L'orquestra es fa més homogènia i equilibrada.",
+                    "Haydn és el pare de la simfonia moderna.",
+                    "La música de cambra es toca en salons aristocràtics."
+                ],
+                lies: [
+                    "Ens agrada el caos i l'exageració.",
+                    "El baix continu encara s'utilitza a tot arreu.",
+                    "La música atonal és el futur.",
+                    "L'emoció és més important que la forma.",
+                    "Mozart feia les seves barreges amb programes de DJ.",
+                    "Les simfonies duren més de tres hores.",
+                    "El sintetitzador és la base de l'orquestra."
+                ]
+            },
+            'Romanticisme': {
+                bg: 'img/romanticisme.jpg',
+                truths: [
+                    "L'expressió dels sentiments és el més important.",
+                    "L'orquestra creix en mida i potència.",
+                    "El piano és l'instrument de l'ànima.",
+                    "Ens inspirem en la natura i la literatura.",
+                    "El virtuosisme arriba a nivells increïbles com Paganini.",
+                    "El nacionalisme musical exalta les arrels dels pobles.",
+                    "L'òpera de Verdi mou passions a tot Itàlia."
+                ],
+                lies: [
+                    "La raó ha de dominar sobre l'emoció.",
+                    "Només escrivim música religiosa.",
+                    "Els sintetitzadors ens ajuden a compondre.",
+                    "La forma és més important que el contingut.",
+                    "Wagner dissenyava les seves escenografies en 3D.",
+                    "Txaikovski utilitzava walkie-talkies per als canons.",
+                    "Chopin preferia tocar el teclat MIDI."
+                ]
+            },
+            'Segle XX': {
+                bg: 'img/segleXX.jpg',
+                truths: [
+                    "L'experimentació i la ruptura són el motor de l'art.",
+                    "El dodecafonisme trenca amb la tonalitat tradicional.",
+                    "El jazz i el blues influeixen en la música culta.",
+                    "La tecnologia permet la gravació i l'electrònica.",
+                    "Stravinsky revoluciona el ritme amb la seva música.",
+                    "El minimalisme utilitza la repetició constant d'idees.",
+                    "Les bandes sonores neixen com un nou gènere vital."
+                ],
+                lies: [
+                    "Tota la música ha de sonar igual que al Barroc.",
+                    "Els ordinadors estan prohibits per fer música.",
+                    "L'orquestra desapareix totalment per por al soroll.",
+                    "Els Beatles tocaven la viola de roda als seus discos.",
+                    "El jazz només es permet en esglésies gòtiques.",
+                    "Pavarotti feia servir autotune en els seus directes.",
+                    "La ràdio no va tenir cap importància per a la música."
+                ]
+            }
+        };
+
+        // Using the requested images from the img folder
+        const AVATARS = [
+            'img/Blue.webp',
+            'img/Green.webp',
+            'img/Red.webp',
+            'img/Yellow.webp'
+        ];
+
+        // --- STATE ---
+        let currentEraKey = '';
+        let characters = [];
+        let impostorIndex = -1;
+        let votingMode = false;
+        let currentRound = 1;
+        const MAX_ROUNDS = 4;
+        let score = 0;
+        let usedPhrases = new Set(); // Per evitar repeticions
+        let completedEras = new Set(JSON.parse(localStorage.getItem('sabotejador_completed_eras') || '[]'));
+
+        // --- AUDIO ---
+        const bgMusic = new Audio('audio/Sus in Electrical.m4a');
+        bgMusic.loop = true;
+
+        function updateVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        function startMusic() {
+            bgMusic.play().catch(e => console.warn("Audio interaction needed"));
+        }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            startMusic(); // També intentem activar la música
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'talk') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200 + Math.random() * 200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'win') {
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        // --- LOGIC ---
+
+        function init() {
+            const container = document.getElementById('era-buttons');
+            container.innerHTML = ''; // Clear previous buttons if any
+            Object.keys(DB).forEach(era => {
+                const btn = document.createElement('button');
+                btn.className = 'era-btn';
+                if (completedEras.has(era)) {
+                    btn.classList.add('completed');
+                }
+                btn.textContent = era;
+                btn.onclick = () => startGame(era);
+                container.appendChild(btn);
+            });
+
+            // Mix Mode
+            const mixBtn = document.createElement('button');
+            mixBtn.className = 'era-btn';
+            mixBtn.textContent = 'Mode Mix 🔀';
+            mixBtn.onclick = () => startGame('Mix');
+            container.appendChild(mixBtn);
+        }
+
+        function startGame(era) {
+            currentEraKey = era;
+            currentRound = 1;
+            score = 0;
+            usedPhrases.clear(); // Reiniciem frases usades al començar
+            document.getElementById('start-screen').style.display = 'none';
+
+            // Actualitzem el fons segons l'època
+            const container = document.getElementById('game-container');
+            if (era === 'Mix') {
+                container.style.backgroundImage = 'url("img/modemix.jpg")';
+            } else if (DB[era] && DB[era].bg) {
+                container.style.backgroundImage = `url("${DB[era].bg}")`;
+            }
+
+            updateHeader();
+            setupRound();
+        }
+
+        function updateHeader() {
+            document.getElementById('current-era-name').textContent = `${currentEraKey} - Ronda ${currentRound}/${MAX_ROUNDS}`;
+        }
+
+        function setupRound() {
+            const stage = document.getElementById('stage');
+            stage.innerHTML = '';
+            characters = [];
+            impostorIndex = Math.floor(Math.random() * 4);
+
+            // Shuffle avatars to ensure random assignment
+            const roundAvatars = [...AVATARS].sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < 4; i++) {
+                const charDiv = document.createElement('div');
+                charDiv.className = 'character';
+                // Use img tag for the avatar
+                charDiv.innerHTML = `
+                <div class="speech-bubble">...</div>
+                <img src="${roundAvatars[i]}" class="avatar" alt="Character">
+            `;
+                charDiv.onclick = () => vote(i);
+                stage.appendChild(charDiv);
+
+                // Generate statement (sense repeticions si és possible)
+                let statement;
+                const getStatement = (eraName, isLie) => {
+                    const pool = isLie ? DB[eraName].lies : DB[eraName].truths;
+                    let available = pool.filter(p => !usedPhrases.has(p));
+
+                    if (available.length === 0) {
+                        // Si s'han esgotat, netegem el set per aquesta categoria
+                        pool.forEach(p => usedPhrases.delete(p));
+                        available = pool;
+                    }
+
+                    const choice = available[Math.floor(Math.random() * available.length)];
+                    usedPhrases.add(choice);
+                    return choice;
+                };
+
+                if (currentEraKey === 'Mix') {
+                    const eras = Object.keys(DB);
+                    const roundEra = eras[Math.floor(Math.random() * eras.length)];
+                    statement = getStatement(roundEra, i === impostorIndex);
+                } else {
+                    statement = getStatement(currentEraKey, i === impostorIndex);
+                }
+
+                characters.push({ el: charDiv, statement: statement });
+            }
+
+            document.getElementById('vote-btn').style.display = 'none';
+            votingMode = false;
+        }
+
+        function revealStatements() {
+            let delay = 0;
+            // Create an array of indices [0, 1, 2, 3] and shuffle it
+            const indices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+
+            indices.forEach(i => {
+                const char = characters[i];
+                setTimeout(() => {
+                    char.el.classList.add('talking');
+                    char.el.querySelector('.speech-bubble').textContent = char.statement;
+                    playSound('talk');
+                }, delay);
+                delay += 800; // Slightly faster reveal
+            });
+
+            setTimeout(() => {
+                document.getElementById('vote-btn').style.display = 'inline-block';
+            }, delay);
+        }
+
+        function startVoting() {
+            votingMode = true;
+            showFeedback("FES CLIC AL PERSONATGE QUE CREUS QUE ÉS EL SABOTEJADOR!");
+        }
+
+        function showFeedback(msg) {
+            const overlay = document.createElement('div');
+            overlay.style = "position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); color:#00ffff; padding:20px; border:2px solid #00ffff; font-family:'Share Tech Mono'; z-index:200; border-radius:10px; text-align:center; pointer-events:none; animation: fadeOut 2s forwards;";
+            overlay.innerText = msg;
+            document.getElementById('game-container').appendChild(overlay);
+            setTimeout(() => overlay.remove(), 2000);
+        }
+
+        function vote(index) {
+            if (!votingMode) return;
+
+            const overlay = document.getElementById('result-overlay');
+            const title = document.getElementById('res-title');
+            const msg = document.getElementById('res-msg');
+            const btn = overlay.querySelector('.btn');
+
+            overlay.style.display = 'flex';
+
+            if (index === impostorIndex) {
+                title.textContent = "VICTÒRIA!";
+                title.style.color = "#2ecc71";
+                msg.textContent = "Has desemmascarat el sabotejador!";
+                playSound('win');
+                score++;
+            } else {
+                title.textContent = "DERROTA...";
+                title.style.color = "#e74c3c";
+                msg.textContent = "Has acusat un innocent. El sabotejador ha escapat.";
+                playSound('lose');
+            }
+
+            if (currentRound < MAX_ROUNDS) {
+                btn.textContent = "Següent Ronda ➡️";
+                btn.onclick = nextRound;
+            } else {
+                btn.textContent = "Veure Resultats Finals 🏆";
+                btn.onclick = showFinalResults;
+            }
+        }
+
+        function nextRound() {
+            document.getElementById('result-overlay').style.display = 'none';
+            currentRound++;
+            updateHeader();
+            setupRound();
+        }
+
+        function showFinalResults() {
+            const overlay = document.getElementById('result-overlay');
+            const title = document.getElementById('res-title');
+            const msg = document.getElementById('res-msg');
+            const btn = overlay.querySelector('.btn');
+
+            title.textContent = "PARTIDA FINALITZADA";
+            title.style.color = "#f1c40f";
+            msg.textContent = `Puntuació Final: ${score} de ${MAX_ROUNDS}`;
+
+            // REWARD INTEGRATION
+            if (score >= 3) { // Win condition
+                if (currentEraKey !== 'Mix') {
+                    completedEras.add(currentEraKey);
+                    localStorage.setItem('sabotejador_completed_eras', JSON.stringify([...completedEras]));
+                }
+
+                setTimeout(() => {
+                    const eraId = currentEraKey.replace(/ /g, '_').toLowerCase();
+                    let cardId = `sabotejador_${eraId}`;
+                    if (currentEraKey === "Mix") cardId = "sabotejador_mix";
+
+                    if (typeof Rewards !== 'undefined') {
+                        Rewards.unlockCard(
+                            cardId,
+                            `El Sabotejador - ${currentEraKey}`,
+                            'Has desemmascarat els impostors de la cort!',
+                            '../../img/card_sabotejador.png' // Placeholder path
+                        );
+                    }
+                }, 1000);
+            }
+
+            btn.textContent = "Tornar al Menú 🏠";
+            btn.onclick = resetGame;
+        }
+
+        function resetGame() {
+            document.getElementById('result-overlay').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+            init(); // Re-render buttons to show new completed status
+        }
+
+        init();
+
+    </script>
+    <script src="../../js/rewards.js"></script>
+</body>
+
+</html>

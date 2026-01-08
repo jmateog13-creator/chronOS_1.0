@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rap Battle: Dactyls vs Beats</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            font-family: 'Permanent Marker', cursive;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            z-index: 10;
+        }
+
+        .active-screen {
+            display: flex;
+        }
+
+        /* BRACKET SCREEN */
+        #bracket-screen {
+            background: linear-gradient(0deg, #220033, #000);
+            z-index: 20;
+        }
+
+        .bracket-title {
+            font-family: 'Press Start 2P', cursive;
+            color: yellow;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 6px 6px #ff00ff;
+            text-align: center;
+        }
+
+        .ladder {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 15px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .ladder-step {
+            background: #333;
+            padding: 20px 60px;
+            border: 4px solid #555;
+            font-size: 1.8rem;
+            width: 50vw;
+            text-align: center;
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .ladder-step.current {
+            background: #ff00ff;
+            border-color: yellow;
+            color: black;
+            opacity: 1;
+            transform: scale(1.05);
+            animation: pulse-step 1s infinite;
+        }
+
+        .ladder-step.completed {
+            background: #00ff00;
+            border-color: #fff;
+            color: black;
+            opacity: 1;
+            text-decoration: line-through;
+        }
+
+        @keyframes pulse-step {
+            0% {
+                box-shadow: 0 0 10px #ff00ff;
+            }
+
+            50% {
+                box-shadow: 0 0 30px #ff00ff;
+            }
+
+            100% {
+                box-shadow: 0 0 10px #ff00ff;
+            }
+        }
+
+        /* BATTLE STAGE - FULLSCREEN */
+        #stage {
+            width: 100%;
+            height: 100%;
+            background: url('img/fons.jpg') no-repeat center center;
+            background-size: cover;
+            position: relative;
+        }
+
+        /* Dark overlay for readability */
+        #stage::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .rapper {
+            position: absolute;
+            bottom: 0px;
+            width: 40vw;
+            /* Responsive huge size */
+            height: 70vh;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom;
+            transition: transform 0.2s;
+            filter: drop-shadow(10px 10px 5px rgba(0, 0, 0, 0.8));
+        }
+
+        #player {
+            left: -5vw;
+            background-image: url('img/personatge.png');
+        }
+
+        #opponent {
+            right: -5vw;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .hud-side {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hud-right {
+            align-items: flex-end;
+        }
+
+        .health-bar-container {
+            width: 100%;
+            height: 40px;
+            background: #000;
+            border: 4px solid #fff;
+            position: relative;
+        }
+
+        .health-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.5s;
+        }
+
+        #p-health {
+            background: linear-gradient(90deg, cyan, blue);
+            box-shadow: 0 0 20px cyan;
+        }
+
+        #o-health {
+            background: linear-gradient(90deg, orange, red);
+            box-shadow: 0 0 20px orange;
+        }
+
+        .name-tag {
+            font-family: 'Press Start 2P';
+            font-size: 1.5rem;
+            color: #fff;
+            text-shadow: 4px 4px #000;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            display: inline-block;
+        }
+
+        /* AUDIO CONTROLS */
+        #audio-controls {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 150;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* DIALOGUE & OPTIONS */
+        #dialogue-area {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 50;
+        }
+
+        #current-verse {
+            background: #fff;
+            color: #000;
+            padding: 30px;
+            border-radius: 30px;
+            font-size: 2rem;
+            border: 6px solid #000;
+            box-shadow: 10px 10px 0 #000;
+            margin-bottom: 30px;
+            max-width: 80%;
+            text-align: center;
+            opacity: 0;
+            animation: popIn 0.5s forwards;
+        }
+
+        #options-container {
+            position: absolute;
+            top: 25%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 60;
+        }
+
+        .rhyme-option {
+            background: #000;
+            border: 4px solid #fff;
+            color: #fff;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: transform 0.2s, background 0.2s;
+            width: 80%;
+            text-align: center;
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.5);
+            font-family: 'Permanent Marker';
+        }
+
+        .rhyme-option:hover {
+            transform: scale(1.05);
+            background: #ff00ff;
+            color: #fff;
+            border-color: yellow;
+        }
+
+        #feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-10deg);
+            font-size: 8rem;
+            color: yellow;
+            text-shadow: 10px 10px 0 #000;
+            display: none;
+            z-index: 200;
+            font-family: 'Press Start 2P';
+            pointer-events: none;
+        }
+
+        /* START MODAL */
+        #start-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: #111;
+            border: 4px solid #ff00ff;
+            padding: 50px;
+            text-align: center;
+            max-width: 800px;
+            color: #fff;
+            box-shadow: 0 0 50px #ff00ff;
+        }
+
+        .btn {
+            padding: 20px 50px;
+            font-size: 2.5rem;
+            background: yellow;
+            border: 4px solid #fff;
+            cursor: pointer;
+            font-family: 'Press Start 2P';
+            margin-top: 30px;
+            color: black;
+            transition: all 0.2s;
+            box-shadow: 5px 5px 0 #fff;
+        }
+
+        .btn:hover {
+            background: #ff00ff;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: scaleX(-1) translateX(0);
+            }
+
+            25% {
+                transform: scaleX(-1) translateX(-20px);
+            }
+
+            75% {
+                transform: scaleX(-1) translateX(20px);
+            }
+
+            100% {
+                transform: scaleX(-1) translateX(0);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START MODAL -->
+    <div id="start-modal">
+        <div class="modal-box">
+            <h1 style="font-family:'Press Start 2P'; color:#ff00ff; font-size:3rem; margin-bottom:20px;">RAP
+                BATTLE<br>HISTÒRIC</h1>
+            <p style="font-size:1.5rem;">Benvingut al Torneig, Rookie.</p>
+            <p style="font-size:1.5rem;">T'enfrontaràs als <strong>6 GRANS MESTRES</strong> de la història.</p>
+            <p style="color:yellow; font-size:1.2rem; margin-top:20px;">INSTRUCCIONS:</p>
+            <ul style="text-align:left; font-size:1.2rem; display:inline-block;">
+                <li>🎤 Escolta la rima de l'oponent.</li>
+                <li>🔥 Tria la millor resposta (Rima, Zasca o Referència).</li>
+                <li>💔 Buida la barra de vida del rival.</li>
+            </ul>
+            <br>
+            <button class="btn" onclick="startTournament()">ENTRAR</button>
+        </div>
+    </div>
+
+    <!-- SCREEN: BRACKET -->
+    <div id="bracket-screen" class="screen">
+        <div class="bracket-title">TORNEIG CRONOLÒGIC 🏆</div>
+        <div class="ladder" id="ladder-container">
+            <!-- JS generates steps -->
+        </div>
+        <button class="btn" id="start-battle-btn" onclick="enterBattle()">LLUITAR!</button>
+    </div>
+
+    <!-- SCREEN: BATTLE -->
+    <div id="battle-screen" class="screen">
+        <div id="stage">
+
+            <div id="audio-controls">
+                <span>🔊</span>
+                <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+            </div>
+
+            <div id="hud">
+                <div class="hud-side">
+                    <div class="name-tag">ALUMNE (YOU)</div>
+                    <div class="health-bar-container">
+                        <div id="p-health" class="health-fill"></div>
+                    </div>
+                </div>
+                <div class="hud-side hud-right">
+                    <div class="name-tag" id="opp-name">OPPONENT</div>
+                    <div class="health-bar-container">
+                        <div id="o-health" class="health-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feedback">BRUTAL! 🔥</div>
+            <div id="player" class="rapper"></div>
+            <div id="opponent" class="rapper"></div>
+
+            <div id="options-container"></div>
+
+            <div id="dialogue-area">
+                <div id="current-verse">...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL: ROUND WON -->
+    <div id="round-modal" class="screen"
+        style="background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center;">
+        <div class="modal-box" style="border-color:#00ff00; box-shadow:0 0 50px #00ff00;">
+            <div
+                style="font-family:'Press Start 2P'; color:#00ff00; font-size:2.5rem; margin-bottom:20px; text-shadow:4px 4px 0 #000;">
+                RONDA GUANYADA! 🎤
+            </div>
+            <div style="font-size:1.5rem; margin-bottom:30px; color:#fff;">
+                Has destrossat al mestre amb els teus arguments.
+            </div>
+            <button class="btn" style="background:#00ff00; color:black; border-color:#fff;"
+                onclick="nextRound()">SEGÜENT RIVAL ⏭️</button>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL: GAME OVER (LOSS) -->
+    <div id="loss-modal" class="screen"
+        style="background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center;">
+        <div class="modal-box" style="border-color:#ff0000; box-shadow:0 0 50px #ff0000;">
+            <div
+                style="font-family:'Press Start 2P'; color:#ff0000; font-size:2.5rem; margin-bottom:20px; text-shadow:4px 4px 0 #000;">
+                T'HAN GUANYAT... 💀
+            </div>
+            <div style="font-size:1.5rem; margin-bottom:30px; color:#fff;">
+                El teu flow no ha estat suficient aquesta vegada.
+            </div>
+            <button class="btn" style="background:#ff0000; color:black; border-color:#fff;"
+                onclick="location.reload()">TORNA-HO A PROVAR 🔄</button>
+        </div>
+    </div>
+
+    <!-- SCREEN: WIN -->
+    <div id="win-screen" class="screen">
+        <h1 style="font-size:5rem; color:yellow; text-shadow:10px 10px #ff00ff; text-align:center;">TORNEIG<br>GUANYAT!
+            👑</h1>
+        <p style="font-size:3rem;">Ets el mestre del Flow Històric.</p>
+        <button class="btn" onclick="location.reload()">NOVA PARTIDA</button>
+    </div>
+
+    <!-- AUDIO PLAYER -->
+    <audio id="battle-music" loop>
+        <source src="" type="audio/mp3">
+    </audio>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const ERA_MUSIC = [
+            "audio/Cold Steps, Warm Barrel.m4a",  // Medieval
+            "audio/Hallway Cypher.m4a",           // Renaissance
+            "audio/Concrete on My Name.m4a",      // Baroque
+            "audio/Southside Cipher.m4a",         // Classicism
+            "audio/Hallway Cypher-2.m4a",         // Romanticism
+            "audio/Concrete on My Name-2.m4a"     // 20th C
+        ];
+
+        const RAPPERS = [
+            { name: "MC HILDEGARD", era: "EDAT MITJANA", img: "img/hildegard.png", music: 0 },
+            { name: "DJ PALESTRINA", era: "RENAIXEMENT", img: "img/palestrina.png", music: 1 },
+            { name: "B.I.G. BACH", era: "BARROC", img: "img/bach.png", music: 2 },
+            { name: "LIL WOLFIE", era: "CLASSICISME", img: "img/mozart.png", music: 3 },
+            { name: "LUDWIG V.", era: "ROMANTICISME", img: "img/beethoven.png", music: 4 },
+            { name: "SCHÖNY", era: "SEGLE XX", img: "img/schoemberg.png", music: 5 }
+        ];
+
+        // --- EXPANDED BATTLES (6-7 VERSES) ---
+        // Score logic: 25 for best answer. Max HP 100. Need 4 best answers.
+
+        const BATTLES = [
+            // 1. HILDEGARD (Medieval)
+            {
+                lines: [
+                    {
+                        verse: "Jo tinc visions divines, tu només tens soroll...",
+                        options: [
+                            { text: "El meu flow és sagrat, el teu és un nyap!", score: 10 },
+                            { text: "Tinc visió de futur, tu vius al passat fosc!", score: 25 },
+                            { text: "M'agrada el pa amb tomàquet.", score: -20 }
+                        ]
+                    },
+                    {
+                        verse: "Canto Monòdia, una sola veu pura...",
+                        options: [
+                            { text: "Però jo porto el ritme que tot ho cura!", score: 25 },
+                            { text: "La teva veu és molt aguda.", score: 5 },
+                            { text: "Jo tinc moltes veus al cap.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "El cant gregorià és l'única veritat...",
+                        options: [
+                            { text: "Però és una mica avorrit, la veritat!", score: 25 },
+                            { text: "M'agrada el color gris.", score: -10 },
+                            { text: "Amen, germana.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Scivias, Coneix els Camins del Senyor...",
+                        options: [
+                            { text: "Jo conec els camins del millor rapero major!", score: 25 },
+                            { text: "No tinc GPS.", score: 0 },
+                            { text: "El Senyor dels Anells mola.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "L'Ordo Virtutum és el primer musical...",
+                        options: [
+                            { text: "Jo sóc l'estrella del xou principal!", score: 25 },
+                            { text: "Musical? On són els gats?", score: -5 },
+                            { text: "Prefereixo el teatre.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Emancipada i sàvia, soc una abadessa...",
+                        options: [
+                            { text: "Però rimant contra mi et convé anar de pressa!", score: 25 },
+                            { text: "Jo soc el rei.", score: 5 },
+                            { text: "Mola el convent.", score: -5 }
+                        ]
+                    }
+                ]
+            },
+            // 2. PALESTRINA (Renaissance)
+            {
+                lines: [
+                    {
+                        verse: "La meva polifonia és perfecta i ordenada...",
+                        options: [
+                            { text: "Però la teva festa està molt apagada!", score: 25 },
+                            { text: "El teu ordre em fa dormir.", score: 10 },
+                            { text: "M'agraden els acords simples.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "Salvo l'església amb el meu contrapunt...",
+                        options: [
+                            { text: "Doncs jo et guanyo i això és punt!", score: 25 },
+                            { text: "El contrapunt és difícil.", score: 5 },
+                            { text: "A mi m'agrada el techno.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "El Concili de Trento aprova el meu estil...",
+                        options: [
+                            { text: "Però aquí al carrer el teu estil és feble i vil!", score: 25 },
+                            { text: "Trento és a Itàlia.", score: 5 },
+                            { text: "Jo no tinc aprovació.", score: -5 }
+                        ]
+                    },
+                    {
+                        verse: "Veus a cappella, sense instruments...",
+                        options: [
+                            { text: "Doncs mira com et guanyo sense impediments!", score: 25 },
+                            { text: "On està la guitarra?", score: 5 },
+                            { text: "A cappella sona a pizza.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "La Missa del Papa Marcel és llegenda...",
+                        options: [
+                            { text: "El teu rap és una ofenda tremenda!", score: 25 },
+                            { text: "Marcel era el meu veí.", score: -10 },
+                            { text: "Bona missa.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Sóc el Príncep de la Música, respecta'm...",
+                        options: [
+                            { text: "Jo sóc el Rei del Flow, detecta'm!", score: 25 },
+                            { text: "No veig la corona.", score: 5 },
+                            { text: "Hola príncep.", score: 0 }
+                        ]
+                    }
+                ]
+            },
+            // 3. BACH (Baroque)
+            {
+                lines: [
+                    {
+                        verse: "Tinc vint fills i mil fugues al cap...",
+                        options: [
+                            { text: "Però el teu estil ja no val ni un xap!", score: 15 },
+                            { text: "La teva perruca té polls!", score: 25 },
+                            { text: "Jo no tinc fills.", score: -5 }
+                        ]
+                    },
+                    {
+                        verse: "Toco l'orgue amb els peus i les mans...",
+                        options: [
+                            { text: "Però jo faig ballar a tots els teus fans!", score: 25 },
+                            { text: "Això sembla gimnàstica.", score: 5 },
+                            { text: "Jo toco el triangle.", score: -20 }
+                        ]
+                    },
+                    {
+                        verse: "El clavecí ben temperat és la llei...",
+                        options: [
+                            { text: "Però jo sóc el nou rei, així que obeeix!", score: 25 },
+                            { text: "Està calent o fred?", score: 0 },
+                            { text: "Mola el piano.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Contrapunt complex, matemàtica pura...",
+                        options: [
+                            { text: "La meva rima és art, la teva és tortura!", score: 25 },
+                            { text: "No m'agraden les mates.", score: -5 },
+                            { text: "2 + 2 són 4.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Vaig caminar 400km per veure a Buxtehude...",
+                        options: [
+                            { text: "Tu no camines ni al supermercat, que rude!", score: 25 },
+                            { text: "Tinc cotxe.", score: 0 },
+                            { text: "Buxte... què?", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Sóc el mestre del Barroc Alemany...",
+                        options: [
+                            { text: "El teu estil és vell, quin engany!", score: 25 },
+                            { text: "Parles alemany?", score: 5 },
+                            { text: "Barroc rima amb roc.", score: 0 }
+                        ]
+                    }
+                ]
+            },
+            // 4. MOZART (Classicism)
+            {
+                lines: [
+                    {
+                        verse: "Sóc un nen prodigi, toco amb els ulls tancats...",
+                        options: [
+                            { text: "Però els teus deutes t'han deixat pelats!", score: 25 },
+                            { text: "Jo també puc tancar els ulls.", score: -5 },
+                            { text: "Ets massa petit per mi.", score: 10 }
+                        ]
+                    },
+                    {
+                        verse: "La meva simfonia 40 és un hit mundial...",
+                        options: [
+                            { text: "Però el meu rap és l'himne actual!", score: 25 },
+                            { text: "La 41 és millor.", score: 15 },
+                            { text: "M'agrada el número 40.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "Rèquiem en D menor, escric fins la mort...",
+                        options: [
+                            { text: "Tranquil Wolfie, que avui no tindràs sort!", score: 25 },
+                            { text: "D menor és trist.", score: 5 },
+                            { text: "Descansa en pau.", score: 10 }
+                        ]
+                    },
+                    {
+                        verse: "La Flauta Màgica encanta a tothom...",
+                        options: [
+                            { text: "Però jo tinc el micròfon que et fa pam i pum!", score: 25 },
+                            { text: "M'agraden les flautes.", score: 5 },
+                            { text: "És de fusta o metall?", score: 0 }
+                        ]
+                    },
+                    {
+                        verse: "Vaig escriure la primera simfonia als 8 anys...",
+                        options: [
+                            { text: "A mi als 8 anys ja em temien els companys!", score: 25 },
+                            { text: "Jo menjava terra.", score: -10 },
+                            { text: "Molt precoç.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Salieri no és el meu rival, ets tu...",
+                        options: [
+                            { text: "I et guanyo fàcil, no cal vudú!", score: 25 },
+                            { text: "M'agrada la pasta.", score: 0 },
+                            { text: "Qui és Salieri?", score: -5 }
+                        ]
+                    }
+                ]
+            },
+            // 5. BEETHOVEN (Romanticism)
+            {
+                lines: [
+                    {
+                        verse: "¡NO ET SENTO BÉ, PERÒ CRIDO MÉS FORT!...",
+                        options: [
+                            { text: "Tranquil Ludwig, que et donarà un suport!", score: 10 },
+                            { text: "Crida menys i rima amb més encert!", score: 25 },
+                            { text: "Jo tampoc et sento.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "La meva música és tempesta i tro...",
+                        options: [
+                            { text: "I la meva rima et roba la il·lusió!", score: 25 },
+                            { text: "Tinc por dels trons.", score: -20 },
+                            { text: "La pluja mulla els papers.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "¡A L'ALEGRIA! TOTS SÓN GERMANS!...",
+                        options: [
+                            { text: "Menys tu i jo, que som rivals gegants!", score: 25 },
+                            { text: "Visca l'alegria.", score: 5 },
+                            { text: "Tinc molts germans.", score: -5 }
+                        ]
+                    },
+                    {
+                        verse: "Trenco les normes, comença el Romanticisme...",
+                        options: [
+                            { text: "Però el teu pentinat és un cataclisme!", score: 25 },
+                            { text: "Que romàntic.", score: 5 },
+                            { text: "Les normes són per complir-les.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "La Cinquena fa TA-TA-TA-TAAA...",
+                        options: [
+                            { text: "I jo et faig fora, BLA-BLA-BLA-BLAAA!", score: 25 },
+                            { text: "Quatre notes només?", score: 5 },
+                            { text: "Mola el ritme.", score: 0 }
+                        ]
+                    },
+                    {
+                        verse: "Vaig dedicar l'Heroica a Napoleó...",
+                        options: [
+                            { text: "Però per tu no tinc ni una cançó!", score: 25 },
+                            { text: "Napoleó era baixet.", score: 5 },
+                            { text: "Ets un heroi.", score: 0 }
+                        ]
+                    }
+                ]
+            },
+            // 6. SCHOENBERG (20th C)
+            {
+                lines: [
+                    {
+                        verse: "Trenco la tonalitat, sóc dodecafònic...",
+                        options: [
+                            { text: "El teu estil em sembla molt tòxic!", score: 25 },
+                            { text: "Dotze notes són masses.", score: 5 },
+                            { text: "M'agrada el do major.", score: -10 }
+                        ]
+                    },
+                    {
+                        verse: "L'emancipació de la dissonància és aquí...",
+                        options: [
+                            { text: "Però amb aquest soroll ningú et vol sentir!", score: 25 },
+                            { text: "Jo m'emancipo de casa.", score: 5 },
+                            { text: "Això sona a gat aixafat.", score: 15 }
+                        ]
+                    },
+                    {
+                        verse: "Sprechgesang, parlo i canto alhora...",
+                        options: [
+                            { text: "Doncs decideix-te ja i marxa fora!", score: 25 },
+                            { text: "Què dius?", score: 0 },
+                            { text: "Jo també parlo.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "El serialisme és el futur matemàtic...",
+                        options: [
+                            { text: "El teu futur és fosc i gens simpàtic!", score: 25 },
+                            { text: "M'agraden els cereals.", score: -10 },
+                            { text: "Suma i segueix.", score: 5 }
+                        ]
+                    },
+                    {
+                        verse: "Pierrot Lunaire és expressionisme pur...",
+                        options: [
+                            { text: "El teu rap és brossa, t'ho asseguro!", score: 25 },
+                            { text: "La lluna és maca.", score: 5 },
+                            { text: "M'agraden els pallassos.", score: 0 }
+                        ]
+                    },
+                    {
+                        verse: "La Segona Escola de Viena sóc jo...",
+                        options: [
+                            { text: "Tu no passaries ni l'ESO, no!", score: 25 },
+                            { text: "A Viena fan valsos.", score: 5 },
+                            { text: "M'agrada anar a escola.", score: -5 }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentTournamentIndex = 0;
+        let pHealth = 100;
+        let oHealth = 100;
+
+        // Deck management
+        let currentRoundLines = []; // Shuffled deck
+        let currentDeckIndex = 0;   // Pointer
+
+        const bgMusic = document.getElementById('battle-music');
+
+        // --- LOGIC ---
+
+        function setVolume(val) { bgMusic.volume = val; }
+
+        function startTournament() {
+            document.getElementById('start-modal').style.display = 'none';
+            document.getElementById('bracket-screen').classList.add('active-screen');
+            renderBracket();
+        }
+
+        // 1. Bracket Logic
+        function renderBracket() {
+            const ladder = document.getElementById('ladder-container');
+            ladder.innerHTML = '';
+
+            RAPPERS.slice().reverse().forEach((rapper, i) => {
+                const realIndex = RAPPERS.length - 1 - i;
+                const div = document.createElement('div');
+                div.className = 'ladder-step';
+                div.textContent = `VS. ${rapper.name}`;
+
+                if (realIndex < currentTournamentIndex) {
+                    div.classList.add('completed');
+                } else if (realIndex === currentTournamentIndex) {
+                    div.classList.add('current');
+                }
+
+                ladder.appendChild(div);
+            });
+
+            document.getElementById('start-battle-btn').innerText =
+                (currentTournamentIndex === 0) ? "INICIAR TORNEIG" : "SEGÜENT RONDA";
+
+            bgMusic.pause();
+        }
+
+        // Shuffle Utility
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function enterBattle() {
+            document.getElementById('bracket-screen').classList.remove('active-screen');
+            document.getElementById('battle-screen').classList.add('active-screen');
+
+            // Setup Battle Stats
+            pHealth = 100;
+            oHealth = 100;
+            updateHealth();
+
+            // Setup Deck
+            // Clone the lines from master data
+            currentRoundLines = JSON.parse(JSON.stringify(BATTLES[currentTournamentIndex].lines));
+            shuffleArray(currentRoundLines); // Shuffle them!
+            currentDeckIndex = 0;
+
+            // Setup Opponent Visuals
+            const opp = RAPPERS[currentTournamentIndex];
+            document.getElementById('opp-name').innerText = opp.name;
+            document.getElementById('opponent').style.backgroundImage = `url('${opp.img}')`;
+
+            // Audio
+            const track = ERA_MUSIC[opp.music];
+            bgMusic.src = track;
+            bgMusic.play().catch(e => console.log("Audio play failed", e));
+
+            // Start verse loop
+            loadLine();
+        }
+
+        function loadLine() {
+            // Check if we need to loop the deck
+            if (currentDeckIndex >= currentRoundLines.length) {
+                // Deck exhausted, Reshuffle and Loop
+                shuffleArray(currentRoundLines);
+                currentDeckIndex = 0;
+            }
+
+            const verseData = currentRoundLines[currentDeckIndex];
+
+            document.getElementById('current-verse').textContent = verseData.verse;
+            // Reset animation
+            const verseEl = document.getElementById('current-verse');
+            verseEl.style.animation = 'none';
+            void verseEl.offsetWidth; // Trigger reflow
+            verseEl.style.animation = 'popIn 0.5s forwards';
+
+            const cont = document.getElementById('options-container');
+            cont.innerHTML = '';
+
+            // Shuffle options for display
+            const opts = [...verseData.options].sort(() => Math.random() - 0.5);
+
+            opts.forEach(opt => {
+                const b = document.createElement('div');
+                b.className = 'rhyme-option';
+                b.textContent = opt.text;
+                b.onclick = () => handleChoice(opt.score);
+                cont.appendChild(b);
+            });
+        }
+
+        function handleChoice(score) {
+            const fb = document.getElementById('feedback');
+            fb.style.display = 'block';
+
+            // Clean up options
+            document.getElementById('options-container').innerHTML = '';
+
+            // Calc Damage
+            if (score > 0) {
+                // Damage Opponent
+                const dmg = score; // DIRECT SCORE (25 per hit)
+                oHealth = Math.max(0, oHealth - dmg);
+                fb.innerText = (score >= 25) ? "BRUTAL! 🔥" : "POWER! 🎤";
+                document.getElementById('opponent').classList.add('shake');
+            } else {
+                // Damage Player
+                pHealth = Math.max(0, pHealth - 25);
+                fb.innerText = "WACK... 👎";
+                document.getElementById('player').classList.add('shake');
+            }
+            updateHealth();
+
+            setTimeout(() => {
+                fb.style.display = 'none';
+                document.getElementById('player').classList.remove('shake');
+                document.getElementById('opponent').classList.remove('shake');
+
+                checkWinCondition();
+            }, 1000);
+        }
+
+        function updateHealth() {
+            document.getElementById('p-health').style.width = pHealth + "%";
+            document.getElementById('o-health').style.width = oHealth + "%";
+        }
+
+        function checkWinCondition() {
+            if (pHealth <= 0) {
+                // Custom LOSS MODAL
+                document.getElementById('loss-modal').style.display = 'flex';
+                return;
+            }
+            if (oHealth <= 0) {
+                // Won immediately
+                roundWon();
+                return;
+            }
+
+            // Next Line
+            currentDeckIndex++;
+            // The infinite loop logic is handled in loadLine checks
+            loadLine();
+        }
+
+        function roundWon() {
+            document.getElementById('round-modal').style.display = 'flex';
+        }
+
+        function nextRound() {
+            document.getElementById('round-modal').style.display = 'none';
+            currentTournamentIndex++;
+            if (currentTournamentIndex >= RAPPERS.length) {
+                // Victory
+                document.getElementById('battle-screen').classList.remove('active-screen');
+                document.getElementById('win-screen').classList.add('active-screen');
+                if (window.Rewards) Rewards.unlockCard('RapBattle');
+            } else {
+                // Back to bracket
+                renderBracket();
+                document.getElementById('battle-screen').classList.remove('active-screen');
+                document.getElementById('bracket-screen').classList.add('active-screen');
+            }
+        }
+    </script>
+</body>
+
+</html>

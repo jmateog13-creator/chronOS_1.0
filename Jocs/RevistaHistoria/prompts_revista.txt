@@ -1,0 +1,69 @@
+# PROMPTS PER A REVISTA MUSICAL - ESTILS PER ÈPOCA + DISTRACTORS CAMUFLATS
+
+Generar sempre amb fons blanc o transparent si és possible, o paper molt suau (cream/beige). 
+**TOTS els elements d'una època (inclosos els distractors anacrònics) han de tenir el MATEIX ESTIL VISUAL.**
+
+## 1. EDAT MITJANA -> Estil: GRABADO (ETCHING)
+**Estil**: Línies fines negres, trama creuada (cross-hatching), estil bitllet antic o xilografia medieval. Monocromàtic.
+- [hildegard]: A woodcut etching of Hildegard von Bingen, ecstatic pose, medieval nun clothing.
+- [llaut]: A woodcut etching of a medieval lute (oud shape).
+- [monestir]: A woodcut etching of a medieval stone monastery on a hill.
+- [neumes]: A woodcut etching of a piece of parchment with square medieval musical notation.
+- [guido]: A woodcut etching of Guido d'Arezzo teaching music.
+**DISTRACTORS (Anachronisms in Medieval Style)**:
+- [d_medieval_guitarra]: A woodcut etching of a modern Gibson Les Paul Electric Guitar. Looks medieval but is clearly a modern instrument.
+- [d_medieval_tv]: A woodcut etching of a Television set with an antenna.
+
+## 2. RENAIXEMENT -> Estil: TINTA CHINA (SUMI-E / SKETCH)
+**Estil**: Traçats fluids i expressius, tinta negra amb diferents opacitats (aiguades), estil esbós de Da Vinci.
+- [palestrina]: Ink wash painting of Palestrina, renaissance composer profile.
+- [sixtina]: Ink wash painting (sumi-e style) of the Creation of Adam hands.
+- [viola]: Ink wash painting of a Viola da Gamba, elegant curves.
+**DISTRACTORS (Anachronisms in Renaissance Style)**:
+- [d_renaix_cotxe]: Ink wash painting of a modern Sport Car (Ferrari style) but drawn with loose ink strokes.
+- [d_renaix_mobil]: Ink wash painting of a Smartphone with a logo, drawn in Da Vinci sketch style.
+
+## 3. BARROC -> Estil: ACUARELA (WATERCOLOR)
+**Estil**: Manches suaus de color, vores difuses, paper rugoso visible, tons pastels.
+- [bach]: Watercolor portrait of J.S. Bach, white wig, serious face.
+- [clavi]: Watercolor painting of a Harpsichord, ornate wooden details.
+- [versalles]: Watercolor painting of the Palace of Versailles gardens.
+**DISTRACTORS (Anachronisms in Baroque Style)**:
+- [d_barroc_dj]: Watercolor painting of a DJ Turntable and Mixer. Soft colors but clearly modern tech.
+- [d_barroc_bambes]: Watercolor painting of modern Nike Air Sneakers.
+
+## 4. CLASSICISME -> Estil: PUNTILLISME
+**Estil**: Imatges formades per milers de punts de color. Sense línies definides.
+- [mozart]: Pointillism portrait of Mozart, red jacket, white wig.
+- [piano]: Pointillism image of an early Piano Forte.
+- [viena]: Pointillism image of the Vienna State Opera facade.
+**DISTRACTORS (Anachronisms in Classicism Style)**:
+- [d_classic_bateria]: Pointillism image of a Rock Drum Kit (Yamaha style).
+- [d_classic_hamburguesa]: Pointillism image of a Fast Food Burger and Fries.
+
+## 5. ROMANTICISME -> Estil: ART DÉCO
+**Estil**: Geometría elegant, línies daurades sobre negre, estil anys 20 (Great Gatsby).
+- [beethoven]: Art Deco stylized portrait of Beethoven, geometric wild hair.
+- [natura]: Art Deco landscape of a storm, geometric lightning bolts.
+- [amor]: Art Deco symbol of a broken heart, geometric shapes.
+**DISTRACTORS (Anachronisms in Art Deco Style)**:
+- [d_romant_robot]: Art Deco stylized Robot (Sci-Fi style), gold and black geometry.
+- [d_romant_coet]: Art Deco stylized Space Rocket launching.
+
+## 6. SEGLE XX -> Estil: BAUHAUS
+**Estil**: Formes bàsiques (cercle, quadrat), colors primaris (vermell, blau, groc), minimalisme.
+- [stravinsky]: Bauhaus style portrait of Stravinsky, abstract geometric face.
+- [sinte]: Bauhaus composition of a Synthesizer, knobs as perfect circles.
+- [silenci]: Bauhaus abstract composition representing "Silence", simple beige square.
+**DISTRACTORS (Anachronisms in Bauhaus Style)**:
+- [d_xx_cavaller]: Bauhaus geometric style Medieval Knight in armor (triangles and squares). Anachronism (Too old).
+- [d_xx_piramide]: Bauhaus style Egyptian Pyramid.
+
+## FONS D'ESCRIPTORI (BACKGROUNDS - TEXTURES)
+Generar textures de paper/fons subtils que no molestin la lectura, però donin ambient de l'època.
+- [fons_medieval]: Texture of rough, hand-made medieval parchment. Pale yellow, irregular edges, subtle wrinkles. Macro photography close-up.
+- [fons_renaixement]: Texture of fine renaissance paper, slightly cream-colored, delicate grain, high-quality archival paper feel.
+- [fons_barroc]: Texture of ornate, embossed baroque stationery. Subtle ivory color with a very faint, elegant damask watermark.
+- [fons_classicisme]: Texture of clean, logical neoclassical vellum. Perfectly smooth, off-white, minimalist and bright.
+- [fons_romanticisme]: Texture of rough, expressive textured paper. Slightly greyish or brownish tint, visible paper fibers, moody and raw.
+- [fons_segle20]: Texture of smooth, industrial matte paper. Neutral grey or blue tint, clean and technical surface.

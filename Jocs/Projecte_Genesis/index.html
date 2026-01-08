@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projecte Gènesis: ADN Musical</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-cyan: #00ffcc;
+            --bg-dark: #050a10;
+            --glass-bg: rgba(0, 242, 255, 0.05);
+            --grid-color: rgba(0, 242, 255, 0.1);
+            --text-highlight: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--neon-blue);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-image:
+                linear-gradient(rgba(5, 10, 16, 0.9), rgba(5, 10, 16, 0.9)),
+                repeating-linear-gradient(0deg, transparent, transparent 1px, var(--grid-color) 1px, transparent 2px),
+                repeating-linear-gradient(90deg, transparent, transparent 1px, var(--grid-color) 1px, transparent 2px);
+            background-size: 100% 100%, 20px 20px, 20px 20px;
+        }
+
+        header {
+            width: 100%;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-bottom: 2px solid var(--neon-blue);
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* Volume Control */
+        .volume-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid var(--neon-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1001;
+        }
+
+        .volume-container label {
+            color: var(--neon-blue);
+            font-size: 1rem;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 80px;
+            height: 4px;
+            background: rgba(0, 242, 255, 0.3);
+            outline: none;
+            border-radius: 2px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--neon-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .main-container {
+            flex: 1;
+            width: 95%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            position: relative;
+        }
+
+        /* Top Controls */
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .round-info {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--neon-cyan);
+            padding: 5px 20px;
+            border: 1px solid var(--neon-blue);
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+            border-radius: 5px;
+        }
+
+        /* Timeline Grid */
+        .timeline {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border: 1px solid var(--neon-blue);
+            min-height: 140px;
+            position: relative;
+            border-radius: 10px;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        .slot {
+            height: 150px;
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            background: rgba(0, 10, 20, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+
+        .slot.hovered {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--neon-cyan);
+            box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.2);
+        }
+
+        .slot-name {
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 0;
+        }
+
+        /* Data Cells (Shards) */
+        .depot {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0, 20, 40, 0.4);
+            border: 1px dashed var(--neon-blue);
+            border-radius: 15px;
+            justify-items: center;
+            flex: 1;
+            min-height: 250px;
+        }
+
+        .cell {
+            width: 160px;
+            height: 130px;
+            background: rgba(5, 15, 25, 0.9);
+            border: 1px solid var(--neon-blue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            text-align: center;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+            transition: all 0.2s;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px var(--neon-blue);
+            border-color: var(--neon-cyan);
+        }
+
+        .cell img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-bottom: 8px;
+            border: 1px solid var(--neon-blue);
+            border-radius: 4px;
+        }
+
+        .cell-text {
+            color: #ffffff;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 1rem;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+            z-index: 2;
+        }
+
+        .btn-synth {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            padding: 8px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+            transition: all 0.2s;
+            border-radius: 5px;
+        }
+
+        .btn-synth:hover:not(:disabled) {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            box-shadow: 0 0 25px var(--neon-blue);
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 10, 16, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay-box {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(10, 20, 30, 0.9);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.2);
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .overlay h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .overlay p {
+            font-size: 1.5rem;
+            color: var(--neon-cyan);
+            margin-bottom: 30px;
+        }
+
+        .error-flash {
+            animation: flashRed 0.5s;
+        }
+
+        @keyframes flashRed {
+
+            0%,
+            100% {
+                border-color: var(--neon-blue);
+            }
+
+            50% {
+                border-color: #ff3e3e;
+                box-shadow: 0 0 20px #ff3e3e;
+            }
+        }
+
+        /* Particles */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @media (max-width: 800px) {
+            .timeline {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .depot {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="volume-container">
+            <label>🔊</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+        <h1>PROJECTE GÈNESIS: ADN MUSICAL</h1>
+    </header>
+
+    <div class="main-container">
+        <div class="top-controls">
+            <div class="round-info" id="round-indicator">SEQÜÈNCIA 1 / 3</div>
+            <button class="btn-synth" id="check-btn">Sintetitzar ADN</button>
+        </div>
+
+        <div class="timeline" id="timeline">
+            <div class="slot" data-era="medieval"><span class="slot-name">Edat Mitjana</span></div>
+            <div class="slot" data-era="renaixement"><span class="slot-name">Renaixement</span></div>
+            <div class="slot" data-era="barroc"><span class="slot-name">Barroc</span></div>
+            <div class="slot" data-era="classicisme"><span class="slot-name">Classicisme</span></div>
+            <div class="slot" data-era="romanticisme"><span class="slot-name">Romanticisme</span></div>
+            <div class="slot" data-era="sxx"><span class="slot-name">Segle XX</span></div>
+        </div>
+
+        <div class="depot" id="depot">
+            <!-- Cells here -->
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="overlay" id="start-screen" style="display: flex;">
+        <div class="overlay-box">
+            <h2>LABORATORI GÈNESIS</h2>
+            <p>L'ADN de la música s'ha fragmentat. Cal reconstruir la cadena evolutiva.</p>
+            <div
+                style="text-align: left; margin: 25px 0; border: 1px dashed var(--neon-blue); padding: 20px; background: rgba(0,242,255,0.05); font-size: 1.1rem; color: #fff;">
+                <p><strong>PROTOCOLS DE RECONSTRUCCIÓ:</strong></p>
+                <ul>
+                    <li>Arrossega els <strong>fragments cel·lulars</strong> a la seva era corresponent.</li>
+                    <li>Completa la seqüència cronològica correcta.</li>
+                    <li>Supera <strong>3 fases</strong> per estabilitzar l'organisme.</li>
+                </ul>
+            </div>
+            <button id="start-btn" class="btn-synth">Iniciar Seqüència</button>
+        </div>
+    </div>
+
+    <!-- Success/End Overlay -->
+    <div class="overlay" id="overlay">
+        <div class="overlay-box">
+            <h2 id="overlay-title">SEQÜÈNCIA ESTABILITZADA</h2>
+            <p id="overlay-text">L'ADN ha estat acceptat.</p>
+            <button class="btn-synth" id="next-btn">Processar</button>
+        </div>
+    </div>
+
+    <div id="particles"></div>
+    <audio id="bg-music" src="audio/Chromosome Factory.m4a" loop></audio>
+
+    <script>
+        const DNA_DATA = {
+            medieval: [
+                { text: "Teocentrisme", img: "teocentrisme.jpg" },
+                { text: "Monestirs i Castells", img: "monestirsicastells.jpg" },
+                { text: "Por i Foscor", img: "porifoscor.jpg" }
+            ],
+            renaixement: [
+                { text: "Humanisme", img: "humanisme.jpg" },
+                { text: "La Impremta", img: "impemta.jpg" },
+                { text: "Reforma Protestant", img: "reforma.jpg" }
+            ],
+            barroc: [
+                { text: "Absolutisme", img: "absolutisme.jpg" },
+                { text: "Luxe i Ornament", img: "luxior.jpg" },
+                { text: "Teatralitat", img: "teatralitat.jpg" }
+            ],
+            classicisme: [
+                { text: "La Raó", img: "rao.jpg" },
+                { text: "Equilibri", img: "equilibri.jpg" },
+                { text: "Viena Capital", img: "vienacapital.jpg" }
+            ],
+            romanticisme: [
+                { text: "Sentiments i Jo", img: "passio.jpg" },
+                { text: "Nacionalisme", img: "nacionalismes.jpg" },
+                { text: "Llibertat Creativa", img: "llibertatacreativa.jpg" }
+            ],
+            sxx: [
+                { text: "Guerres i Caos", img: "guerres.jpg" },
+                { text: "Tecnologia", img: "tecnologia.jpg" },
+                { text: "Avantguardes", img: "avantguardes.jpg" }
+            ]
+        };
+
+        const ERA_QUEUES = {};
+        Object.keys(DNA_DATA).forEach(era => {
+            ERA_QUEUES[era] = [...DNA_DATA[era]].sort(() => Math.random() - 0.5);
+        });
+
+        let currentRound = 1;
+        const totalRounds = 3;
+        let draggedCell = null;
+        const eras = ["medieval", "renaixement", "barroc", "classicisme", "romanticisme", "sxx"];
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function initRound() {
+            const depot = document.getElementById('depot');
+            const slots = document.querySelectorAll('.slot');
+            const indicator = document.getElementById('round-indicator');
+
+            indicator.innerText = `SEQÜÈNCIA ${currentRound} / ${totalRounds}`;
+            depot.innerHTML = '';
+
+            slots.forEach(slot => {
+                const existing = slot.querySelector('.cell');
+                if (existing) existing.remove();
+                slot.classList.remove('error-flash');
+            });
+
+            const roundItems = eras.map(era => {
+                const item = ERA_QUEUES[era].pop();
+                return { ...item, era: era };
+            });
+
+            const shuffled = [...roundItems].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(item => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.draggable = true;
+                cell.dataset.era = item.era;
+                cell.innerHTML = `
+                    <img src="img/${item.img}" alt="${item.text}">
+                    <div class="cell-text">${item.text}</div>
+                `;
+
+                cell.addEventListener('dragstart', (e) => {
+                    draggedCell = cell;
+                    cell.style.opacity = '0.5';
+                });
+
+                cell.addEventListener('dragend', () => {
+                    cell.style.opacity = '1';
+                    draggedCell = null;
+                    slots.forEach(s => s.classList.remove('hovered'));
+                });
+
+                depot.appendChild(cell);
+            });
+        }
+
+        const slots = document.querySelectorAll('.slot');
+        slots.forEach(slot => {
+            slot.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                slot.classList.add('hovered');
+            });
+
+            slot.addEventListener('dragleave', () => {
+                slot.classList.remove('hovered');
+            });
+
+            slot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                slot.classList.remove('hovered');
+
+                if (draggedCell) {
+                    const existing = slot.querySelector('.cell');
+                    if (existing) {
+                        const originalParent = draggedCell.parentElement;
+                        originalParent.appendChild(existing);
+                    }
+                    slot.appendChild(draggedCell);
+                }
+            });
+        });
+
+        document.getElementById('depot').addEventListener('dragover', e => e.preventDefault());
+        document.getElementById('depot').addEventListener('drop', e => {
+            if (draggedCell) {
+                document.getElementById('depot').appendChild(draggedCell);
+            }
+        });
+
+        document.getElementById('check-btn').addEventListener('click', () => {
+            const slots = document.querySelectorAll('.slot');
+            let correct = true;
+            let filledCount = 0;
+
+            slots.forEach((slot, i) => {
+                const cell = slot.querySelector('.cell');
+                if (cell) {
+                    filledCount++;
+                    if (cell.dataset.era !== eras[i]) {
+                        correct = false;
+                        slot.classList.add('error-flash');
+                        setTimeout(() => slot.classList.remove('error-flash'), 500);
+                    }
+                } else {
+                    correct = false;
+                }
+            });
+
+            if (filledCount === 6 && correct) {
+                handleSuccess();
+            } else if (filledCount < 6) {
+                // Optional: Alert missing slots
+            }
+        });
+
+        function handleSuccess() {
+            setTimeout(() => {
+                const overlay = document.getElementById('overlay');
+                const title = document.getElementById('overlay-title');
+                const text = document.getElementById('overlay-text');
+                const nextBtn = document.getElementById('next-btn');
+
+                overlay.style.display = 'flex';
+
+                if (currentRound < totalRounds) {
+                    title.innerText = "SEQÜÈNCIA ESTABILITZADA";
+                    text.innerText = "L'ADN connecta correctament. Procedint a la següent fase.";
+                    nextBtn.innerText = "Següent Fase";
+                    nextBtn.onclick = () => {
+                        overlay.style.display = 'none';
+                        currentRound++;
+                        initRound();
+                    };
+                } else {
+                    title.innerText = "ORGANISME EVOLUTIU COMPLET";
+                    text.innerText = "Has reconstruït tota la història musical!";
+                    nextBtn.innerText = "Reiniciar Sistema";
+                    nextBtn.onclick = () => location.reload();
+                }
+            }, 200);
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
+            bgMusic.play().catch(e => console.log("Audio autoplay block"));
+            bgMusic.volume = volumeSlider.value;
+        });
+
+        // Initialize
+        initRound();
+
+        // Simple particle effect
+        const particles = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.style.cssText = `
+                position: absolute;
+                width: 2px;
+                height: 2px;
+                background: var(--neon-blue);
+                left: ${Math.random() * 100}%;
+                top: ${Math.random() * 100}%;
+                opacity: ${Math.random() * 0.5};
+                transition: top 5s linear;
+            `;
+            particles.appendChild(p);
+
+            setInterval(() => {
+                p.style.top = Math.random() * 100 + '%';
+                p.style.left = Math.random() * 100 + '%';
+            }, 5000 + Math.random() * 5000);
+        }
+    </script>
+</body>
+
+</html>

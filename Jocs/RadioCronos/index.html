@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ràdio Cronos 📻</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&family=Montserrat:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --pop-bg: #121212;
+            --pop-purple: #8e44ad;
+            --pop-pink: #ff007f;
+            --pop-cyan: #00f2ea;
+            --pop-yellow: #ffec00;
+            --card-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #2b003e 0%, #000 100%);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--pop-cyan), var(--pop-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .on-air {
+            background: #ff0000;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 1rem;
+            box-shadow: 0 0 15px #ff0000;
+            transition: all 0.3s;
+        }
+
+        .on-air.active {
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+            }
+        }
+
+        .stats {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--pop-yellow);
+        }
+
+        /* STUDIO */
+        #studio {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* REQUEST CARD */
+        #request-screen {
+            background: rgba(255, 255, 255, 0.05);
+            /* Glass */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(15px);
+        }
+
+        .request-label {
+            font-size: 0.9rem;
+            color: var(--pop-cyan);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        #request-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        /* TURNTABLE ZONE */
+        #turntable-zone {
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        #turntable-zone.drag-over {
+            border-color: var(--pop-pink);
+            box-shadow: 0 0 50px var(--pop-pink);
+            transform: scale(1.05);
+        }
+
+        /* VINYL STYLES using IMAGES */
+        .vinyl-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+
+        .vinyl-container:hover {
+            transform: scale(1.1);
+        }
+
+        .vinyl {
+            width: 130px;
+            /* Slightly smaller to fit 6 comfortably */
+            height: 130px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+
+            /* Base Vinyl Image */
+            background-image: url('img/vinilo.png');
+            background-size: cover;
+            background-position: center;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+        }
+
+        .vinyl-inner {
+            width: 45%;
+            height: 45%;
+            border-radius: 50%;
+            overflow: hidden;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vinyl-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .vinyl-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .vinyl.spinning {
+            width: 360px;
+            /* Fill turntable */
+            height: 360px;
+            animation: spin 3s linear infinite;
+            cursor: default;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* RACK */
+        #vinyl-rack {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 30px 30px 0 0;
+            margin-top: auto;
+            flex-wrap: wrap;
+            /* Ensure wrap if needed, but try to fit */
+            justify-content: center;
+            width: 100%;
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* FEEDBACK / TITLE OVERLAY */
+        #now-playing {
+            position: fixed;
+            bottom: 15rem;
+            /* Raise it up */
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 2px solid var(--pop-cyan);
+            text-align: center;
+            z-index: 200;
+            display: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 242, 234, 0.3);
+        }
+
+        #now-playing h3 {
+            margin: 0;
+            color: var(--pop-cyan);
+            font-size: 1.2rem;
+        }
+
+        #now-playing p {
+            margin: 0;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        #progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            margin-top: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--pop-pink);
+            transition: width 1s linear;
+        }
+
+        /* FEEDBACK POPUP LOGIC */
+        #feedback-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 3rem 5rem;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 4px solid #fff;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .popup-correct {
+            background: linear-gradient(135deg, rgba(0, 255, 127, 0.9), rgba(0, 200, 83, 0.9));
+            color: #000;
+            border-color: #fff;
+        }
+
+        .popup-incorrect {
+            background: linear-gradient(135deg, rgba(255, 50, 50, 0.9), rgba(200, 0, 0, 0.9));
+            color: #fff;
+            border-color: #fff;
+        }
+
+        #feedback-popup h2 {
+            font-size: 3rem;
+            margin: 0;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        /* BUTTONS */
+        .btn {
+            background: linear-gradient(45deg, var(--pop-pink), var(--pop-purple));
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 0, 127, 0.4);
+            transition: transform 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* MODAL */
+        #modal,
+        #win-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            backdrop-filter: blur(20px);
+        }
+
+        .modal-box {
+            background: rgba(20, 20, 20, 0.95);
+            padding: 4rem;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 700px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 100px rgba(142, 68, 173, 0.3), inset 0 0 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative circle behind title */
+        .modal-box::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 100px;
+            background: var(--pop-pink);
+            filter: blur(80px);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .modal-box h2 {
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, var(--pop-cyan) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .instructions-list {
+            text-align: left;
+            margin: 0 auto 2.5rem auto;
+            max-width: 500px;
+            font-size: 1.25rem;
+            color: #ddd;
+        }
+
+        .instruction-item {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .instruction-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        .instruction-text {
+            line-height: 1.4;
+        }
+
+        .highlight {
+            color: var(--pop-cyan);
+            font-weight: bold;
+        }
+
+        .win-condition {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--pop-yellow);
+            margin-bottom: 2.5rem;
+            border: 2px dashed rgba(255, 236, 0, 0.3);
+            padding: 1rem;
+            border-radius: 15px;
+            background: rgba(255, 236, 0, 0.05);
+        }
+
+        .btn-large {
+            padding: 20px 70px;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, var(--pop-pink), var(--pop-purple), var(--pop-cyan));
+            background-size: 200% 200%;
+            animation: gradient-anim 3s ease infinite;
+        }
+
+        @keyframes gradient-anim {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="on-air" id="on-air-sign">● ON AIR</div>
+        <h1>Ràdio Cronos</h1>
+        <div class="stats">
+            ENCERTS: <span id="score">0</span> / 10
+        </div>
+    </header>
+
+    <div id="studio">
+        <div id="request-screen">
+            <div class="request-label">NOVA DEDICATÒRIA</div>
+            <div id="request-text">Esperant senyal...</div>
+        </div>
+
+        <div id="turntable-zone">
+            <!-- Turntable center decoration -->
+            <div style="width:20px; height:20px; background:#fff; border-radius:50%; position:absolute; z-index:10;">
+            </div>
+        </div>
+
+        <!-- Now Playing Overlay -->
+        <div id="now-playing">
+            <h3 id="track-title">Title</h3>
+            <p id="track-author">Author</p>
+            <div id="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- NEW FEEDBACK POPUP -->
+        <div id="feedback-popup">
+            <h2 id="feedback-text">CORRECTE!</h2>
+        </div>
+
+        <div id="vinyl-rack">
+            <!-- Vinyls -->
+        </div>
+    </div>
+
+    <!-- START MODAL -->
+    <div id="modal">
+        <div class="modal-box">
+            <h2>BENVINGUT DJ!</h2>
+
+            <div class="instructions-list">
+                <div class="instruction-item">
+                    <span class="instruction-icon">📻</span>
+                    <span class="instruction-text">Ets el nou presentador de <strong>Ràdio Cronos</strong>, l'emissora
+                        que viatja en el temps.</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">👂</span>
+                    <span class="instruction-text">Escolta les peticiones dels oients. Et donaran pistes sobre <span
+                            class="highlight">l'Època Històrica</span>.</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">💿</span>
+                    <span class="instruction-text">Arrossega el disc de l'època correcta al plat. Si encertes, sonarà un
+                        <strong>TEMAZO</strong>!</span>
+                </div>
+            </div>
+
+            <div class="win-condition">
+                OBJECTIU: 10 ENCERTS
+            </div>
+
+            <button class="btn btn-large" onclick="startGame()">ENTRAR</button>
+        </div>
+    </div>
+
+    <!-- WIN MODAL -->
+    <div id="win-modal" class="hidden">
+        <div class="modal-box">
+            <h2>🏆 LLEGENDA DEL POP! 🏆</h2>
+            <p>Has completat 10 dedicatòries perfectes.</p>
+            <p style="font-size: 1.5rem; margin-top:2rem;">L'audiència t'adora.</p>
+            <br>
+            <button class="btn btn-large" onclick="location.reload()">TORNAR A PUNXAR</button>
+        </div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const RADIO_DB = [
+            {
+                era: 'Edat Mitjana',
+                keywords: ['els Monjos', 'el Cant Gregorià', 'els Castells', 'les Catedrals', 'l\'Art Gòtic', 'la vida al Monestir'],
+                img: 'mitjana.jpg',
+                tracks: [
+                    { file: '../../assets/audio_shared/Ànonim- Organum.Tu patris sempiternu.m4a', title: 'Organum Tu Patris', author: 'Anònim' },
+                    { file: '../../assets/audio_shared/Hildegard of Bingen： De Spiritu Sancto (Holy Spirit, The Quickener Of Life).m4a', title: 'De Spiritu Sancto', author: 'Hildegard von Bingen' }
+                ]
+            },
+            {
+                era: 'Renaixement',
+                keywords: ['la Polifonia', 'l\'Humanisme', 'els Madrigals', 'les Veus a capella', 'l\'equilibri vocal'],
+                img: 'renaixement.jpg',
+                tracks: [
+                    { file: '../../assets/audio_shared/Palestrina-O bone Jesu.m4a', title: 'O Bone Jesu', author: 'Palestrina' },
+                    { file: '../../assets/audio_shared/Ànonim-Greensleeves.m4a', title: 'Greensleeves', author: 'Popular Renaixement' },
+                    { file: '../../assets/audio_shared/Verdelot-Con soave parlar.m4a', title: 'Con Soave Parlar', author: 'Philippe Verdelot' }
+                ]
+            },
+            {
+                era: 'Barroc',
+                keywords: ['el Baix Continu', 'el Clavecí', 'l\'Ornamentació', 'el Luxe Exagerat', 'el Contrast', 'les Corts Reials'],
+                img: 'barroc.jpg',
+                tracks: [
+                    { file: '../../assets/audio_shared/Bach-Toccata & Fugue D Minor, BWV 565.m4a', title: 'Toccata i Fuga en Re Menor', author: 'J.S. Bach' },
+                    { file: '../../assets/audio_shared/Vivaldi- Four Seasons： Winter (L\'Inverno).m4a', title: 'L\'Hivern (4 Estacions)', author: 'Antonio Vivaldi' },
+                    { file: '../../assets/audio_shared/Haendel- Lascia ch\'io pianga.m4a', title: 'Lascia ch\'io pianga', author: 'G.F. Händel' }
+                ]
+            },
+            {
+                era: 'Classicisme',
+                keywords: ['l\'Equilibri', 'la Sonata', 'la Melodia clara', 'l\'Ordre', 'la Simetria', 'la Orquestra Simfònica'],
+                img: 'classicisme.jpg',
+                tracks: [
+                    { file: '../../assets/audio_shared/Mozart-Pequeña Serenata Nocturna.m4a', title: 'Petita Serenata Nocturna', author: 'W.A. Mozart' },
+                    { file: '../../assets/audio_shared/Franz Joseph Haydn - ＂Simfonia Sorpresa＂ (Symphony no. 94).m4a', title: 'Simfonia Sorpresa', author: 'J. Haydn' }
+                ]
+            },
+            {
+                era: 'Romanticisme',
+                keywords: ['la Passió', 'el Sentiment pur', 'la Tempesta', 'el Piano virtuós', 'la Natura misteriosa', 'l\'Emoció'],
+                img: 'romanticisme.jpg',
+                tracks: [
+                    { file: '../../assets/audio_shared/Beethoven- 5a Simfonia.m4a', title: '5a Simfonia', author: 'L. van Beethoven' },
+                    { file: '../../assets/audio_shared/Chopin - Nocturne op.9 No.2.m4a', title: 'Nocturn Op.9 No.2', author: 'F. Chopin' },
+                    { file: '../../assets/audio_shared/P. Tchaikovsky - Pas de Deux (\'The Nutcracker\').m4a', title: 'El Trencanous', author: 'P. Tchaikovsky' },
+                    { file: '../../assets/audio_shared/Richard Wagner- Cavalcada de les Valkiries.m4a', title: 'Cavalcada de les Valquíries', author: 'R. Wagner' }
+                ]
+            },
+            {
+                era: 'Segle XX',
+                keywords: ['la Dissonància', 'el trencament de normes', 'l\'Atonalitat', 'el Ritme trencat', 'els nous sons electrònics'],
+                img: 'segleXX.jpg',
+                tracks: [
+                    { file: '../../assets/audio_shared/Schoemberg-Tres piezas para piano.m4a', title: 'Tres peces per piano', author: 'A. Schoenberg' },
+                    { file: '../../assets/audio_shared/Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a', title: 'Jazz Medley', author: 'Standards' },
+                    { file: '../../assets/audio_shared/Jellybean Fenderson-Oscilloscope Music.m4a', title: 'Function (Elecrònica)', author: 'Oscilloscope' }
+                ]
+            }
+        ];
+
+        const TEMPLATES = [
+            "Hola! Sòc en Marc, vull dedicar un tema sobre {KEY} a la meva germana!",
+            "Ei Ràdio Cronos! Aquí la Júlia. Posa'm algo relacionat amb {KEY} per animar el matí!",
+            "Bona tarda! M'encanta l'època que destaca per {KEY}. Posa-ho!",
+            "Hola DJ, sòc el Pau. La meva àvia sempre em parla de {KEY}, posa-li un 'hit'!",
+            "Ei família! Vull una dedicatòria que em recordi a {KEY}. T'estimo Laura!",
+            "Hola hola! Aquí la Carla, estic estudiant {KEY} i necessito inspiració musical!",
+            "Ei DJ! Un tema potent on es noti {KEY} per començar el finde!",
+            "Hola, sòc el Toni. Posa alguna cosa definida per {KEY} que em faci vibrar!"
+        ];
+
+        // --- STATE ---
+        let score = 0;
+        let currentRequest = null;
+        let gameActive = false;
+        let currentAudio = null;
+        const WIN_SCORE = 10;
+        let audioCtx = null;
+
+        function startGame() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('on-air-sign').classList.add('active');
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            spawnAllVinyls();
+            gameActive = true;
+            nextRequest();
+        }
+
+        function spawnAllVinyls() {
+            const rack = document.getElementById('vinyl-rack');
+            rack.innerHTML = '';
+            const ordered = [
+                RADIO_DB.find(e => e.era === 'Edat Mitjana'),
+                RADIO_DB.find(e => e.era === 'Renaixement'),
+                RADIO_DB.find(e => e.era === 'Barroc'),
+                RADIO_DB.find(e => e.era === 'Classicisme'),
+                RADIO_DB.find(e => e.era === 'Romanticisme'),
+                RADIO_DB.find(e => e.era === 'Segle XX')
+            ];
+
+            ordered.forEach(opt => {
+                const container = document.createElement('div');
+                container.className = 'vinyl-container';
+                container.draggable = true;
+
+                const v = document.createElement('div');
+                v.className = 'vinyl';
+                const inner = document.createElement('div');
+                inner.className = 'vinyl-inner';
+                inner.innerHTML = `<img src="img/${opt.img}" alt="${opt.era}">`;
+                v.appendChild(inner);
+
+                const label = document.createElement('div');
+                label.className = 'vinyl-text';
+                label.textContent = opt.era;
+
+                container.appendChild(v);
+                container.appendChild(label);
+
+                container.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('era', opt.era);
+                });
+
+                rack.appendChild(container);
+            });
+        }
+
+        function nextRequest() {
+            if (!gameActive) return;
+
+            const zone = document.getElementById('turntable-zone');
+            zone.innerHTML = '<div style="width:20px; height:20px; background:#fff; border-radius:50%; position:absolute; z-index:10;"></div>';
+
+            document.getElementById('now-playing').style.display = 'none';
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('feedback-popup').style.display = 'none';
+
+            const targetEra = RADIO_DB[Math.floor(Math.random() * RADIO_DB.length)];
+            const keyword = targetEra.keywords[Math.floor(Math.random() * targetEra.keywords.length)];
+            const template = TEMPLATES[Math.floor(Math.random() * TEMPLATES.length)];
+            const text = template.replace('{KEY}', `"${keyword}"`);
+
+            currentRequest = { target: targetEra, text: text };
+
+            const reqEl = document.getElementById('request-text');
+            reqEl.style.opacity = 0;
+            setTimeout(() => {
+                reqEl.textContent = text;
+                reqEl.style.opacity = 1;
+                playNoise();
+            }, 300);
+        }
+
+        function playNoise() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function handleDrop(era) {
+            if (!gameActive) return;
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+            const eraObj = RADIO_DB.find(d => d.era === era);
+
+            const zone = document.getElementById('turntable-zone');
+            zone.innerHTML = '';
+            const v = document.createElement('div');
+            v.className = 'vinyl spinning';
+            v.innerHTML = `<div class="vinyl-inner"><img src="img/${eraObj.img}"></div>`;
+            zone.appendChild(v);
+
+            if (era === currentRequest.target.era) {
+                // SUCCESS
+                const track = eraObj.tracks[Math.floor(Math.random() * eraObj.tracks.length)];
+                currentAudio = new Audio(track.file);
+                currentAudio.volume = 0.6;
+                currentAudio.play();
+
+                const info = document.getElementById('now-playing');
+                document.getElementById('track-title').textContent = track.title;
+                document.getElementById('track-author').textContent = track.author;
+                info.style.display = 'block';
+
+                setTimeout(() => document.getElementById('progress-fill').style.width = '100%', 100);
+
+                showPopup("¡CORRECTE!", "popup-correct");
+
+                score++;
+                document.getElementById('score').textContent = score;
+
+                setTimeout(() => {
+                    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                    if (score >= WIN_SCORE) {
+                        gameActive = false;
+                        document.getElementById('win-modal').classList.remove('hidden');
+                        Rewards.unlockCard('RadioCronos');
+                    } else {
+                        nextRequest();
+                    }
+                }, 10000);
+
+            } else {
+                // FAIL
+                showPopup("INCORRECTE...", "popup-incorrect");
+                playNoise();
+                setTimeout(nextRequest, 1500);
+            }
+        }
+
+        function showPopup(text, className) {
+            const popup = document.getElementById('feedback-popup');
+            const h2 = document.getElementById('feedback-text');
+            h2.textContent = text;
+            popup.className = className;
+            popup.style.display = 'block';
+
+            popup.animate([
+                { transform: 'translate(-50%, -50%) scale(0.5)', opacity: 0 },
+                { transform: 'translate(-50%, -50%) scale(1.1)', opacity: 1 },
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
+            ], {
+                duration: 400,
+                easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            });
+        }
+
+        const dropZone = document.getElementById('turntable-zone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const era = e.dataTransfer.getData('era');
+            if (era) handleDrop(era);
+        });
+    </script>
+</body>
+
+</html>

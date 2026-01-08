@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pixel Art Històric: Repte</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            user-select: none;
+        }
+
+        /* Screens */
+        #start-screen,
+        #level-screen,
+        #fail-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 100;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: #ffd700;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            color: black;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Game Controls */
+        #game-controls {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            font-size: 1.3rem;
+            border-radius: 5px;
+            border: 2px solid #333;
+            text-align: center;
+            width: 300px;
+            font-family: inherit;
+        }
+
+        #submit-btn {
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            margin-top: 0;
+            background: #333;
+            color: #ffd700;
+        }
+
+        /* Header */
+        #header {
+            margin-bottom: 5px;
+            text-align: center;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #level-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #d32f2f;
+            background: white;
+            padding: 5px 15px;
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+
+        /* Grid */
+        #grid {
+            display: grid;
+            gap: 1px;
+            background: #ccc;
+            border: 5px solid #333;
+            width: 500px;
+            height: 500px;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .cell {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #ccc;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .cell:hover {
+            background: #eee;
+        }
+
+        .cell.filled {
+            color: transparent;
+        }
+
+        /* Palette */
+        #palette {
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .color-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .color-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .color-btn.selected {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+
+        .shake {
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Audio Control */
+        #audio-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 200;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Audio Player -->
+    <div id="audio-control">
+        <span style="font-size: 20px;">🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+            style="width: 100px; cursor: pointer;">
+    </div>
+    <audio id="bg-music" loop>
+        <source src="audio/HexaDrop%20Puzzle%20Loop.m4a" type="audio/mpeg">
+    </audio>
+
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1>Pixel Art Històric: Progressiu</h1>
+        <p>12 Reptes. Dificultat Creixent.</p>
+        <p>1. Pinta el dibuix (mínim 8x8 per veure-ho millor).<br>2. Endevina la imatge.<br>3. Tens 60 segons!</p>
+        <button onclick="startGame()">COMENÇAR</button>
+    </div>
+
+    <!-- Fail Screen -->
+    <div id="fail-screen" style="display: none;">
+        <h1 style="color: #ff4444;">Temps Esgotat!</h1>
+        <p>No has pogut completar l'obra a temps.</p>
+        <h2 id="fail-reveal" style="color: #ffd700; margin: 10px 0;">Era: ...</h2>
+        <p>Has de tornar a començar des del principi.</p>
+        <button onclick="location.reload()">TORNAR A L'INICI</button>
+    </div>
+
+    <!-- Level Complete Screen -->
+    <div id="level-screen" style="display:none;">
+        <h1 id="level-msg">Correcte!</h1>
+        <p id="level-desc"></p>
+        <button onclick="nextLevel()">SEGÜENT REPTE</button>
+    </div>
+
+    <div id="header">
+        <div id="timer">60</div>
+        <div id="level-title">NIVELL 1</div>
+    </div>
+    <div style="margin-bottom: 5px; font-style: italic; color:#666; font-size: 1.1rem; max-width: 500px; text-align: center;"
+        id="game-hint">PISTA: ...</div>
+
+    <div id="grid"></div>
+
+    <div id="palette"></div>
+
+    <div id="game-controls">
+        <input type="text" id="answer-input" placeholder="Escriu la resposta..." autocomplete="off">
+        <button id="submit-btn" onclick="checkAnswer()">ENVIAR (ENTER)</button>
+        <div id="feedback-msg" style="height: 20px; color: #ff4444; font-weight: bold; font-size: 1rem;"></div>
+    </div>
+
+    <script>
+        // Audio Logic
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        bgMusic.volume = 0.5; // Default
+
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+            if (bgMusic.paused && bgMusic.volume > 0) bgMusic.play();
+        });
+
+        document.body.addEventListener('click', () => {
+            if (bgMusic.paused && parseFloat(volSlider.value) > 0) {
+                bgMusic.play().catch(e => console.log("Audio play blocked until interaction"));
+            }
+        }, { once: true });
+
+
+        // PROGRESSIVE DIFFICULTY: 8x8 -> 10x10 -> 12x12
+        const LEVEL_MAPS = [
+            // --- 1. EDAT MITJANA (8x8) ---
+            {
+                era: "EDAT MITJANA",
+                hint: "Viu al monestir (Escriu: Monjo)",
+                validAnswers: ["monjo", "monje", "gregoria"],
+                rows: 8, cols: 8,
+                colors: ['#ffe0bd', '#8B4513', '#222'],
+                labels: ['Pell', 'Hàbit', 'Fons'],
+                data: [
+                    [3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 2, 2, 3, 3, 3],
+                    [3, 3, 2, 1, 1, 2, 3, 3],
+                    [3, 3, 2, 1, 1, 2, 3, 3],
+                    [3, 3, 2, 2, 2, 2, 3, 3],
+                    [3, 2, 2, 2, 2, 2, 2, 3],
+                    [3, 2, 2, 2, 2, 2, 2, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3]
+                ]
+            },
+            {
+                era: "EDAT MITJANA",
+                hint: "Instrument antic de corda (Escriu: Arpa)",
+                validAnswers: ["arpa", "lira"],
+                rows: 8, cols: 8,
+                colors: ['#DAA520', '#333'],
+                labels: ['Fusta', 'Fons'],
+                data: [
+                    [2, 2, 2, 1, 1, 2, 2, 2],
+                    [2, 2, 1, 2, 2, 1, 2, 2],
+                    [2, 2, 1, 2, 2, 1, 2, 2],
+                    [2, 2, 1, 2, 2, 1, 2, 2],
+                    [2, 2, 1, 2, 2, 1, 2, 2],
+                    [2, 2, 1, 1, 1, 1, 2, 2],
+                    [2, 2, 2, 2, 2, 2, 2, 2],
+                    [2, 2, 2, 2, 2, 2, 2, 2]
+                ]
+            },
+
+            // --- 2. RENAIXEMENT (8x8) ---
+            {
+                era: "RENAIXEMENT",
+                hint: "Instrument de corda (Escriu: Llaut)",
+                validAnswers: ["llaut", "llaüt", "lute"],
+                rows: 8, cols: 8,
+                colors: ['#DAA520', '#8B4513', '#222'],
+                labels: ['Cordes', 'Cos', 'Fons'],
+                data: [
+                    [3, 3, 3, 3, 3, 3, 1, 3],
+                    [3, 3, 3, 3, 3, 1, 1, 3],
+                    [3, 3, 3, 3, 1, 1, 3, 3],
+                    [3, 3, 3, 1, 1, 3, 3, 3],
+                    [3, 3, 2, 2, 2, 3, 3, 3],
+                    [3, 2, 2, 2, 2, 2, 3, 3],
+                    [3, 2, 2, 2, 2, 2, 3, 3],
+                    [3, 3, 2, 2, 2, 3, 3, 3]
+                ]
+            },
+            {
+                era: "RENAIXEMENT",
+                hint: "Cantant de madrigals (Escriu: Cantant)",
+                validAnswers: ["cantant", "músic", "music"],
+                rows: 8, cols: 8,
+                colors: ['#ffe0bd', '#d32f2f', '#222'],
+                labels: ['Pell', 'Roba', 'Fons'],
+                data: [
+                    [3, 3, 1, 1, 3, 3, 3, 3],
+                    [3, 1, 1, 1, 1, 3, 3, 3],
+                    [3, 3, 1, 1, 3, 3, 3, 3],
+                    [3, 3, 2, 2, 3, 3, 3, 3],
+                    [3, 2, 2, 2, 2, 3, 3, 3],
+                    [3, 2, 2, 2, 2, 3, 3, 3],
+                    [3, 2, 2, 2, 2, 3, 3, 3],
+                    [3, 2, 2, 2, 2, 3, 3, 3]
+                ]
+            },
+
+            // --- 3. BARROC (10x10) ---
+            {
+                era: "BARROC",
+                hint: "Mestre de l'orgue (Escriu: Bach)",
+                validAnswers: ["bach", "js bach"],
+                rows: 10, cols: 10,
+                colors: ['#ffe0bd', '#e0e0e0', '#222'],
+                labels: ['Pell', 'Perruca', 'Fons'],
+                data: [
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 2, 2, 2, 2, 3, 3, 3],
+                    [3, 3, 2, 2, 2, 2, 2, 2, 3, 3],
+                    [3, 2, 2, 1, 1, 1, 1, 2, 2, 3],
+                    [3, 2, 2, 1, 1, 1, 1, 2, 2, 3],
+                    [3, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+                    [3, 3, 2, 2, 3, 3, 2, 2, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+                ]
+            },
+            {
+                era: "BARROC",
+                hint: "El capellà pèl-roig (Escriu: Vivaldi)",
+                validAnswers: ["vivaldi"],
+                rows: 10, cols: 10,
+                colors: ['#ffe0bd', '#b22222', '#222'],
+                labels: ['Pell', 'Pèl-roig', 'Fons'],
+                data: [
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 2, 2, 2, 2, 3, 3, 3],
+                    [3, 3, 2, 2, 2, 2, 2, 2, 3, 3],
+                    [3, 3, 2, 1, 1, 1, 1, 2, 3, 3],
+                    [3, 3, 2, 1, 1, 1, 1, 2, 3, 3],
+                    [3, 3, 2, 2, 2, 2, 2, 2, 3, 3],
+                    [3, 3, 2, 2, 3, 3, 2, 2, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+                ]
+            },
+
+            // --- 4. CLASSICISME (10x10) ---
+            {
+                era: "CLASSICISME",
+                hint: "Nen prodigi (Escriu: Mozart)",
+                validAnswers: ["mozart"],
+                rows: 10, cols: 10,
+                colors: ['#ffe0bd', '#fff', '#DC143C', '#222'],
+                labels: ['Pell', 'Perruca', 'Levita', 'Fons'],
+                data: [
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 2, 2, 2, 2, 2, 2, 4, 4],
+                    [4, 2, 2, 2, 2, 2, 2, 2, 2, 4],
+                    [4, 2, 2, 1, 1, 1, 1, 2, 2, 4],
+                    [4, 2, 1, 1, 1, 1, 1, 1, 2, 4],
+                    [4, 2, 2, 2, 2, 2, 2, 2, 2, 4],
+                    [4, 4, 3, 3, 3, 3, 3, 3, 4, 4],
+                    [4, 4, 3, 3, 3, 3, 3, 3, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+                ]
+            },
+            {
+                era: "CLASSICISME",
+                hint: "Instrument de teclat (Escriu: Piano)",
+                validAnswers: ["piano", "fortepiano", "clavicèmbal"],
+                rows: 10, cols: 10,
+                colors: ['#222', '#fff', '#555'],
+                labels: ['Negre', 'Blanc', 'Fons'],
+                data: [
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], // 3=BG
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // 1=Black Body
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [2, 1, 2, 1, 2, 1, 2, 1, 2, 1], // Keys (2=White, 1=Black)
+                    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+                    [1, 3, 3, 3, 3, 3, 3, 3, 3, 1],
+                    [1, 3, 3, 3, 3, 3, 3, 3, 3, 1],
+                    [1, 3, 3, 3, 3, 3, 3, 3, 3, 1],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+                ]
+            },
+
+            // --- 5. ROMANTICISME (12x12) ---
+            {
+                era: "ROMANTICISME",
+                hint: "Sord i genial (Escriu: Beethoven)",
+                validAnswers: ["beethoven", "ludwig van beethoven"],
+                rows: 12, cols: 12,
+                colors: ['#e6c2a8', '#888', '#d32f2f', '#222'],
+                labels: ['Pell', 'Cabells', 'Foulard', 'Fons'],
+                data: [
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4],
+                    [4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4],
+                    [4, 2, 2, 1, 1, 1, 1, 1, 2, 2, 4, 4],
+                    [4, 2, 2, 1, 1, 1, 1, 1, 2, 2, 4, 4],
+                    [4, 4, 2, 2, 2, 2, 2, 2, 2, 4, 4, 4],
+                    [4, 4, 4, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+                    [4, 4, 4, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+                ]
+            },
+            {
+                era: "ROMANTICISME",
+                hint: "Compositor d'òpera èpica (Escriu: Wagner)",
+                validAnswers: ["wagner"],
+                rows: 12, cols: 12,
+                colors: ['#ffe0bd', '#000', '#222', '#555'],
+                labels: ['Pell', 'Barret', 'Roba', 'Fons'],
+                data: [
+                    [4, 4, 4, 4, 2, 2, 2, 2, 4, 4, 4, 4],
+                    [4, 4, 4, 2, 2, 2, 2, 2, 2, 4, 4, 4],
+                    [4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4],
+                    [4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4],
+                    [4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4],
+                    [4, 4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4],
+                    [4, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+                ]
+            },
+
+            // --- 6. SEGLE XX (12x12) ---
+            {
+                era: "SEGLE XX",
+                hint: "Compositor rus modern (Escriu: Stravinski)",
+                validAnswers: ["stravinski", "stravinsky"],
+                rows: 12, cols: 12,
+                colors: ['#ffe0bd', '#333', '#111', '#555'],
+                labels: ['Pell', 'Ulleres', 'Roba', 'Fons'],
+                data: [
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 1, 1, 1, 1, 4, 4, 4, 4],
+                    [4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4],
+                    [4, 4, 4, 1, 2, 1, 1, 2, 1, 4, 4, 4],
+                    [4, 4, 4, 1, 2, 1, 1, 2, 1, 4, 4, 4],
+                    [4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4],
+                    [4, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4],
+                    [4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+                    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+                ]
+            },
+            {
+                era: "SEGLE XX",
+                hint: "Instrument de Jazz (Escriu: Saxofon)",
+                validAnswers: ["saxofon", "saxo"],
+                rows: 12, cols: 12,
+                colors: ['#FFD700', '#DAA520', '#222', '#000'],
+                labels: ['Or', 'Fosc', 'Fons', 'Fons'],
+                data: [
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], // 3=BG
+                    [3, 3, 3, 3, 3, 3, 3, 1, 1, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 1, 1, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 1, 1, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 1, 1, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 1, 1, 1, 3, 3, 3],
+                    [3, 3, 3, 3, 1, 1, 1, 3, 3, 3, 3, 3],
+                    [3, 3, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 1, 1, 3, 3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+                ]
+            },
+        ];
+
+        let currentLevel = 0;
+        let selectedColor = 1;
+        let timerVal = 60;
+        let timerInt = null;
+
+        // Elements
+        const gridEl = document.getElementById('grid');
+        const paletteEl = document.getElementById('palette');
+        const titleEl = document.getElementById('level-title');
+        const hintEl = document.getElementById('game-hint');
+        const timerEl = document.getElementById('timer');
+        const startScreen = document.getElementById('start-screen');
+        const levelScreen = document.getElementById('level-screen');
+        const failScreen = document.getElementById('fail-screen');
+        const failReveal = document.getElementById('fail-reveal');
+        const answerInput = document.getElementById('answer-input');
+        const feedbackMsg = document.getElementById('feedback-msg');
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            loadLevel(0);
+        }
+
+        function loadLevel(idx) {
+            currentLevel = idx;
+            if (currentLevel >= LEVEL_MAPS.length) {
+                alert("Has completat totes les èpoques! Felicitats!");
+                location.reload();
+                return;
+            }
+
+            const level = LEVEL_MAPS[idx];
+            titleEl.textContent = `${level.era} (${idx + 1}/12)`;
+            hintEl.textContent = `PISTA: ${level.hint.split('(')[0]}`;
+
+            // Reset Inputs
+            answerInput.value = "";
+            feedbackMsg.textContent = "";
+
+            // Reset Timer
+            clearInterval(timerInt);
+            timerVal = 60;
+            timerEl.textContent = timerVal;
+            timerInt = setInterval(updateTimer, 1000);
+
+            // Build Grid dynamically based on Rows/Cols
+            gridEl.innerHTML = '';
+            gridEl.style.gridTemplateColumns = `repeat(${level.cols}, 1fr)`;
+
+            for (let y = 0; y < level.rows; y++) {
+                for (let x = 0; x < level.cols; x++) {
+                    const val = level.data[y][x];
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = val;
+                    cell.dataset.val = val;
+                    cell.onclick = () => handleCellClick(cell, val);
+                    gridEl.appendChild(cell);
+                }
+            }
+
+            // Build Palette
+            paletteEl.innerHTML = '';
+            selectedColor = 1;
+            level.colors.forEach((color, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'color-btn';
+                if (i === 0) btn.classList.add('selected');
+                btn.style.backgroundColor = color;
+                btn.textContent = i + 1;
+                btn.title = level.labels[i];
+                btn.onclick = () => selectColor(btn, i + 1);
+                paletteEl.appendChild(btn);
+            });
+        }
+
+        function updateTimer() {
+            timerVal--;
+            timerEl.textContent = timerVal;
+            if (timerVal <= 10) timerEl.style.color = "red";
+            else timerEl.style.color = "#d32f2f";
+
+            if (timerVal <= 0) {
+                clearInterval(timerInt);
+                // Show result name on fail
+                const correctName = LEVEL_MAPS[currentLevel].validAnswers[0];
+                failReveal.textContent = `Era: ${correctName.toUpperCase()}`;
+                failScreen.style.display = 'flex';
+            }
+        }
+
+        function restartLevel() {
+            // Reloads the page to start from beginning
+            location.reload();
+        }
+
+        function selectColor(btn, val) {
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedColor = val;
+        }
+
+        function handleCellClick(cell, targetVal) {
+            if (cell.classList.contains('filled')) return;
+
+            if (selectedColor === targetVal) {
+                cell.style.backgroundColor = LEVEL_MAPS[currentLevel].colors[targetVal - 1];
+                cell.classList.add('filled');
+            } else {
+                gridEl.classList.add('shake');
+                setTimeout(() => gridEl.classList.remove('shake'), 300);
+            }
+        }
+
+        function checkAnswer() {
+            const level = LEVEL_MAPS[currentLevel];
+            const userVal = answerInput.value.trim().toLowerCase();
+
+            if (level.validAnswers.includes(userVal)) {
+                // Correct
+                clearInterval(timerInt);
+                document.getElementById('level-msg').textContent = "Correcte!";
+                document.getElementById('level-desc').textContent = `${level.validAnswers[0].toUpperCase()} revelat.`;
+                levelScreen.style.display = 'flex';
+            } else {
+                feedbackMsg.textContent = "Incorrecte! Prova una altra vegada.";
+                answerInput.classList.add('shake');
+                setTimeout(() => answerInput.classList.remove('shake'), 300);
+            }
+        }
+
+        function nextLevel() {
+            levelScreen.style.display = 'none';
+            loadLevel(currentLevel + 1);
+        }
+
+        // Allow enter key
+        answerInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                checkAnswer();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

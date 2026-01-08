@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radiografia Històrica 🩻</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-xray: #000000;
+            --bone-cyan: #00e5ff;
+            --bone-white: #e0f7fa;
+            --danger-red: #ff3d00;
+            --success-green: #00e676;
+            --card-size: 140px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+            background-color: var(--bg-xray);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: var(--bone-cyan);
+        }
+
+        /* Lightbox Background Effect */
+        #lightbox {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #0d1b2a 0%, #000000 70%);
+            z-index: -1;
+        }
+
+        #scan-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.03) 0px, rgba(0, 229, 255, 0.03) 1px, transparent 1px, transparent 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Header */
+        header {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(0, 229, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--bone-cyan);
+        }
+
+        .status-panel {
+            display: flex;
+            gap: 30px;
+            font-size: 1.2rem;
+            align-items: center;
+        }
+
+        .life-counter {
+            color: var(--danger-red);
+            text-shadow: 0 0 10px var(--danger-red);
+            font-size: 1.5rem;
+        }
+
+        #round-counter {
+            color: var(--bone-white);
+            font-weight: bold;
+            border: 1px solid var(--bone-cyan);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        /* SPLIT LAYOUT */
+        #main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* LEFT: Patient Era Info */
+        #patient-zone {
+            width: 35%;
+            border-right: 2px solid rgba(0, 229, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        #patient-frame {
+            width: 300px;
+            height: 400px;
+            border: 4px solid var(--bone-cyan);
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #patient-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) sepia(100%) hue-rotate(170deg) saturate(3) brightness(0.8);
+            /* Cyan Tint */
+        }
+
+        #patient-label {
+            font-size: 2rem;
+            color: var(--bone-white);
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--bone-cyan);
+        }
+
+        /* RIGHT: X-Ray Grid */
+        #xray-grid {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+            gap: 20px;
+            perspective: 1000px;
+        }
+
+        .xray-card {
+            width: var(--card-size);
+            height: var(--card-size);
+            background: #000;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        /* The "Hidden" state - dark, blurry */
+        .xray-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) brightness(0.1) blur(5px);
+            transition: filter 0.2s;
+        }
+
+        /* Hover: Reveal X-Ray style */
+        .xray-card:hover {
+            border-color: var(--bone-cyan);
+            box-shadow: 0 0 20px var(--bone-cyan);
+            transform: scale(1.05);
+            z-index: 100;
+            /* Pop up */
+        }
+
+        .xray-card:hover img {
+            filter: grayscale(100%) brightness(1.2) sepia(1) hue-rotate(130deg) saturate(2) blur(0px);
+        }
+
+        /* TOOLTIP ON HOVER */
+        .xray-card .tooltip {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 10, 20, 0.9);
+            color: var(--bone-white);
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.3s;
+            pointer-events: none;
+            border-top: 1px solid var(--bone-cyan);
+        }
+
+        .xray-card:hover .tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip strong {
+            display: block;
+            color: var(--bone-cyan);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        /* Message Overlay */
+        #message-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            color: var(--success-green);
+            text-shadow: 0 0 20px black;
+            font-weight: bold;
+            display: none;
+            pointer-events: none;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 20px;
+            border: 2px solid var(--success-green);
+        }
+
+        /* Modal */
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-box {
+            background: #00111a;
+            padding: 3rem;
+            border: 2px solid var(--bone-cyan);
+            border-radius: 10px;
+            text-align: center;
+            max-width: 600px;
+            box-shadow: 0 0 30px var(--bone-cyan);
+            color: var(--bone-white);
+        }
+
+        .btn {
+            background: var(--bone-cyan);
+            color: black;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--bone-cyan);
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: white;
+            box-shadow: 0 0 20px white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="lightbox">
+        <div id="scan-lines"></div>
+    </div>
+
+    <header>
+        <h1>RADIOGRAFIA HISTÒRICA</h1>
+        <div class="status-panel">
+            <div id="round-counter">PACIENT: <span id="current-round">1</span> / 9</div>
+            <div class="life-counter">VIDES: <span id="lives">❤❤❤</span></div>
+            <div>🔊 <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+            </div>
+        </div>
+    </header>
+
+    <div id="message-overlay">EXTRET!</div>
+
+    <div id="main-container">
+        <!-- LEFT: Context -->
+        <div id="patient-zone">
+            <div id="patient-frame">
+                <img id="patient-img" src="" alt="Pacient">
+            </div>
+            <div id="patient-label">---</div>
+            <p style="margin-top:20px; color:#aaa; font-size:0.9rem;">
+                DETECTA ELS OBJECTES ESTRANYS.<br>Extreu (fes clic) tot allò que NO sigui d'aquesta època.
+            </p>
+        </div>
+
+        <!-- RIGHT: Grid -->
+        <div id="xray-grid">
+            <!-- Cards go here -->
+        </div>
+    </div>
+
+    <!-- START MODAL -->
+    <div id="modal">
+        <div class="modal-box" id="modal-content">
+            <h2>SALÓ D'OPERACIONS 🩻</h2>
+            <p>Benvingut, Inquisidor Mèdic.</p>
+            <p>Identifica l'Època del Pacient (Esquerra).</p>
+            <p>Busca a la graella radiogràfica (Dreta).</p>
+            <p><strong>ELIMINA</strong> tots els objectes que siguin <strong>ANACRONISMES</strong>.</p>
+            <p>Atén a <strong>9 Pacients</strong> per guanyar.</p>
+            <button class="btn" onclick="startGame()">INICIAR TORN</button>
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop>
+        <source src="audio/Sterile Pulse.m4a" type="audio/mp3">
+    </audio>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA WITH DEFINITIONS ---
+        // Added 'desc' for tooltips
+        const CONCEPTS_DB = [
+            // 1. Medieval
+            { name: "Llaüt Medieval", era: "Edat Mitjana", img: "img/llaudmedieval.jpg", desc: "Instrument de corda puntejada molt comú als castells." },
+            { name: "Ploma", era: "Edat Mitjana", img: "img/ploma.jpg", desc: "Eina principal per escriure manuscrits als monestirs." },
+            { name: "Pergamí", era: "Edat Mitjana", img: "img/pergamí.jpg", desc: "Pell animal preparada per escriure-hi a sobre." },
+            { name: "Flor de Lis", era: "Edat Mitjana", img: "img/flordelis.jpg", desc: "Símbol heràldic associat a la reialesa medieval." },
+            // 2. Renaixement
+            { name: "Impremta", era: "Renaixement", img: "img/imprempta.jpg", desc: "Invenció de Gutenberg que va revolucionar el saber." },
+            { name: "Humanisme", era: "Renaixement", img: "img/humanisme.jpg", desc: "Corrent filosòfic que posa l'humà al centre." },
+            // 3. Barroc
+            { name: "Persona Barroc", era: "Barroc", img: "img/personabarroc.jpg", isPerson: true, desc: "Vestimenta típica amb perruca i exageració." },
+            { name: "Màscara Veneciana", era: "Barroc", img: "img/mascareveneciana.jpg", desc: "Element clau dels carnavals i l'òpera barroca." },
+            { name: "Clavicèmbal", era: "Barroc", img: "img/clave.jpg", desc: "Precursor del piano, so metàl·lic i clau a l'època." },
+            { name: "Violí", era: "Barroc", img: "img/violi.jpg", desc: "Instrument rei de l'orquestra del barroc." },
+            // 4. Classicisme
+            { name: "Metrònom", era: "Classicisme", img: "img/metronom.jpg", desc: "Eina per marcar el 'tempo' exacte i ordenat." },
+            { name: "Rellotge", era: "Classicisme", img: "img/rellotge.jpg", desc: "Símbol de la precisió i l'estructura clàssica." },
+            { name: "Batuta", era: "Classicisme", img: "img/batuta.jpg", desc: "Eina del director per guiar l'orquestra simfònica." },
+            // 5. Romanticisme
+            { name: "Piano", era: "Romanticisme", img: "img/piano.jpg", desc: "L'instrument romàntic per excel·lència (Chopin, Liszt)." },
+            { name: "Flor", era: "Romanticisme", img: "img/flor.jpg", desc: "Símbol de la natura i els sentiments purs." },
+            { name: "Passió", era: "Romanticisme", img: "img/passio.jpg", desc: "L'emoció desbordada típica dels romàntics." },
+            // 6. 20th C
+            { name: "Disc Vinil", era: "Segle XX", img: "img/vinil.jpg", desc: "Format físic per reproduir música gravada." },
+            { name: "Guitarra Elèctrica", era: "Segle XX", img: "img/guitarraelectrica.jpg", desc: "L'ànima del Rock and Roll i la música moderna." },
+            { name: "Cassette", era: "Segle XX", img: "img/cassete.jpg", desc: "Format magnètic portàtil molt popular als 80." }
+        ];
+
+        const PATIENTS = [
+            { era: "Edat Mitjana", img: "img/personamedieval.jpg" },
+            { era: "Renaixement", img: "img/personarenaixement.jpg" },
+            { era: "Barroc", img: "img/personabarroc.jpg" },
+            { era: "Classicisme", img: "img/personaclassicisme.jpg" },
+            { era: "Romanticisme", img: "img/personaromanticisme.jpg" },
+            { era: "Segle XX", img: "img/personasegleXX.jpg" }
+        ];
+
+        // --- STATE ---
+        let currentPatient = null;
+        let lives = 3;
+        let anachronismsRemaining = 0;
+        let gameActive = false;
+        let audioCtx = null;
+        let currentRound = 1;
+        const TOT_ROUNDS = 9;
+
+        // Progression Deck
+        let patientDeck = [];
+
+        const bgMusic = document.getElementById('bg-music');
+
+        // --- AUDIO ENGINE ---
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'good') { // Zap
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            } else if (type === 'bad') { // Buzz
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'win') { // Victory Chord
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.1); // C#
+                osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.2); // E
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+            }
+        }
+
+        function setVolume(val) { bgMusic.volume = val; }
+
+        // --- GAME LOOP ---
+        function startGame() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            document.getElementById('modal').style.display = 'none';
+            lives = 3;
+            currentRound = 1;
+            document.getElementById('lives').innerText = "❤❤❤";
+            updateRoundDisplay();
+
+            bgMusic.play().catch(e => console.log("Audio autoplay blocked"));
+
+            initDeck();
+            generateLevel();
+            gameActive = true;
+        }
+
+        // Initialize deck with at least 1 of each era
+        function initDeck() {
+            patientDeck = [...PATIENTS]; // Add 6 (one of each)
+            // Add 3 randoms to reach 9
+            for (let i = 0; i < 3; i++) {
+                patientDeck.push(PATIENTS[Math.floor(Math.random() * PATIENTS.length)]);
+            }
+            // Shuffle
+            patientDeck.sort(() => Math.random() - 0.5);
+        }
+
+        function generateLevel() {
+            if (patientDeck.length === 0) {
+                victory();
+                return;
+            }
+
+            // Pick next from deck
+            currentPatient = patientDeck.pop();
+
+            // UI
+            document.getElementById('patient-img').src = currentPatient.img;
+            document.getElementById('patient-label').innerText = currentPatient.era;
+
+            // Grid Generation
+            const container = document.getElementById('xray-grid');
+            container.innerHTML = '';
+
+            // Logic: 4 Safe (Correct Era) + 5 Targets (Diff Era) = 9 cards grid
+            // (Adjusted numbers to fit 3x3 nicely or keep random spread)
+            const gridItems = [];
+
+            const correctCandidates = CONCEPTS_DB.filter(c => c.era === currentPatient.era && !c.isPerson);
+            const incorrectCandidates = CONCEPTS_DB.filter(c => c.era !== currentPatient.era && !c.isPerson);
+
+            // Get 4 Safe items
+            for (let i = 0; i < 4; i++) {
+                if (correctCandidates.length > 0) {
+                    const item = correctCandidates[Math.floor(Math.random() * correctCandidates.length)];
+                    gridItems.push({ ...item, isTarget: false });
+                }
+            }
+
+            // Get 5 Targets
+            for (let i = 0; i < 5; i++) {
+                if (incorrectCandidates.length > 0) {
+                    const item = incorrectCandidates[Math.floor(Math.random() * incorrectCandidates.length)];
+                    gridItems.push({ ...item, isTarget: true });
+                }
+            }
+
+            anachronismsRemaining = gridItems.filter(i => i.isTarget).length;
+
+            // Shuffle grid
+            gridItems.sort(() => Math.random() - 0.5);
+
+            // Render
+            gridItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'xray-card';
+                card.innerHTML = `
+                    <div class="tooltip">
+                        <strong>${item.name}</strong>
+                        ${item.desc}
+                    </div>
+                    <img src="${item.img}">
+                `;
+                card.onclick = (e) => handleClick(e, card, item);
+                container.appendChild(card);
+            });
+        }
+
+        function updateRoundDisplay() {
+            document.getElementById('current-round').innerText = currentRound;
+        }
+
+        function handleClick(e, card, item) {
+            if (!gameActive) return;
+
+            if (item.isTarget) {
+                // Correct Extraction
+                playSound('good');
+                card.style.transform = 'scale(0) rotate(360deg)';
+                card.style.opacity = 0;
+                card.style.pointerEvents = 'none';
+
+                showFeedback("EXTRET!", "var(--success-green)");
+
+                anachronismsRemaining--;
+                if (anachronismsRemaining <= 0) {
+                    currentRound++;
+                    if (currentRound > TOT_ROUNDS) {
+                        victory();
+                    } else {
+                        updateRoundDisplay();
+                        setTimeout(generateLevel, 1000);
+                    }
+                }
+
+            } else {
+                // Mistake
+                playSound('bad');
+                lives--;
+                document.getElementById('lives').innerText = "❤".repeat(lives);
+
+                card.style.borderColor = "var(--danger-red)";
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
+
+                showFeedback("ERROR!", "var(--danger-red)");
+
+                if (lives <= 0) {
+                    gameOver();
+                }
+            }
+        }
+
+        function showFeedback(text, color) {
+            const overlay = document.getElementById('message-overlay');
+            overlay.innerText = text;
+            overlay.style.color = color;
+            overlay.style.borderColor = color;
+            overlay.style.display = 'block';
+            setTimeout(() => overlay.style.display = 'none', 600);
+        }
+
+        function victory() {
+            gameActive = false;
+            playSound('win');
+            const m = document.getElementById('modal');
+            const c = document.getElementById('modal-content');
+            c.innerHTML = `
+                <h2 style="color:var(--success-green)">DOCTOR CUM LAUDE! 🎓</h2>
+                <p>Has curat als 9 pacients històrics.</p>
+                <p>La teva llicència temporal ha estat renovada eternament.</p>
+                <button class="btn" onclick="location.reload()">NOVA GUÀRDIA</button>
+            `;
+            m.style.display = 'flex';
+            if (window.Rewards) Rewards.unlockCard('Radiografia');
+        }
+
+        function gameOver() {
+            gameActive = false;
+            const m = document.getElementById('modal');
+            const c = document.getElementById('modal-content');
+            c.innerHTML = `
+                <h2 style="color:var(--danger-red)">MALA PRAXIS 💀</h2>
+                <p>Massa errors mèdics.</p>
+                <button class="btn" onclick="startGame()">REINTENTAR</button>
+            `;
+            m.style.display = 'flex';
+        }
+
+    </script>
+</body>
+
+</html>

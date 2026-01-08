@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReCaptcha Històric</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
+
+        /* SCREENS */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+        }
+
+        .start-box {
+            background: #fff;
+            color: #333;
+            padding: 40px;
+            border-radius: 5px;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .start-btn {
+            background: #1A73E8;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 20px;
+        }
+
+        .start-btn:hover {
+            background: #1558b0;
+        }
+
+        /* WIDGET */
+        #widget-container {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #d3d3d3;
+            border-radius: 3px;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+            width: 450px;
+            /* Made wider for larger images */
+        }
+
+        /* INITIAL CHECKBOX VIEW */
+        #checkbox-view {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f9f9f9;
+            border: 1px solid #d3d3d3;
+            border-radius: 3px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #c1c1c1;
+            border-radius: 2px;
+            background: #fff;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .checkbox.checked {
+            border-color: #009688;
+        }
+
+        .checkbox.checked::after {
+            content: '✔';
+            color: #009688;
+            font-size: 20px;
+            position: absolute;
+            top: -4px;
+            left: 2px;
+        }
+
+        .label-text {
+            font-size: 14px;
+            color: #000;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.5;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%231A73E8' d='M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.84 0-16-7.16-16-16S15.16 8 24 8s16 7.16 16 16-7.16 16-16 16z'/%3E%3Cpath fill='%231A73E8' d='M22 22h4v4h-4zm0-8h4v6h-4z'/%3E%3C/svg%3E");
+            background-size: cover;
+        }
+
+        .logo-text {
+            font-size: 10px;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        /* CHALLENGE GRID VIEW */
+        #challenge-view {
+            display: none;
+            flex-direction: column;
+        }
+
+        .blue-header {
+            background: #1A73E8;
+            color: white;
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .blue-header strong {
+            font-size: 18px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            /* Spacing */
+            background: #fff;
+            padding: 5px;
+        }
+
+        .grid-item {
+            width: 140px;
+            /* Bigger images */
+            height: 140px;
+            background: #eee;
+            position: relative;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid transparent;
+        }
+
+        /* TOOLTIP ON HOVER */
+        .grid-item:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 10px;
+            padding: 5px;
+            box-sizing: border-box;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        /* Selection styling */
+        .grid-item.selected {
+            border: 4px solid #1A73E8;
+            /* Thicker border */
+            transform: scale(0.95);
+        }
+
+        .grid-item.selected::before {
+            /* Check mark circle */
+            content: '✔';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: #1A73E8;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-verify {
+            background: #1A73E8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 2px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .btn-verify:hover {
+            background: #1558b0;
+        }
+
+        .error-msg {
+            color: #d93025;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+            text-align: center;
+            padding: 5px;
+            background: #fce8e6;
+            border: 1px solid #d93025;
+        }
+
+        #audio-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #final-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #009688;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div class="start-box">
+            <h1>CAPTCHA HISTÒRIC</h1>
+            <p>Demostra que no ets un robot anacrònic.</p>
+            <p><strong>INSTRUCCIONS:</strong></p>
+            <ul style="text-align:left; margin: 20px auto; max-width: 300px;">
+                <li>Selecciona les 3 imatges correctes per a cada època.</li>
+                <li>Passa el ratolí per veure pistes.</li>
+                <li>Supera les 6 èpoques cronològiques.</li>
+            </ul>
+            <button class="start-btn" onclick="initGame()">INICIAR VERIFICACIÓ</button>
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <div id="audio-controls">
+        <span>🎵</span>
+        <input type="range" min="0" max="1" step="0.1" value="0.3"
+            oninput="document.getElementById('bg-music').volume = this.value">
+    </div>
+    <audio id="bg-music" loop>
+        <source src="audio/Soft Pattern Lock.m4a" type="audio/mp3">
+    </audio>
+
+    <div id="widget-container">
+        <!-- 1. Initial Checkbox -->
+        <div id="checkbox-view">
+            <div class="checkbox-container">
+                <div class="checkbox" id="main-checkbox"></div>
+                <div class="label-text">No sóc un anacronisme</div>
+            </div>
+            <div class="logo-container">
+                <div class="logo-icon"></div>
+                <div class="logo-text">reCAPTCHA</div>
+                <div class="logo-text">History</div>
+            </div>
+        </div>
+
+        <!-- 2. Challenge Grid -->
+        <div id="challenge-view">
+            <div class="blue-header">
+                Selecciona totes les caselles amb imatges del:
+                <strong id="target-era">...</strong>
+            </div>
+
+            <div class="error-msg" id="error-msg">ERROR: Elements Incorrectes. Torna-ho a provar.</div>
+
+            <div class="grid-container" id="grid">
+                <!-- Items injected here -->
+            </div>
+
+            <div class="footer-controls">
+                <div style="font-size:12px; color:#555;">History Security Check</div>
+                <button class="btn-verify" onclick="verify()">VERIFICAR</button>
+            </div>
+        </div>
+
+        <!-- 3. Success -->
+        <div id="final-message">
+            <h1 style="font-size:4rem;">✅</h1>
+            <h1>ACCÉS AUTORITZAT</h1>
+            <p>Has demostrat un coneixement històric vàlid.</p>
+            <button class="btn-verify" onclick="location.reload()" style="margin-top:20px; background:#009688;">NOVA
+                SESSIÓ</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATABASE ---
+        // Note: Filenames based on directory scan. Typos preserved.
+        const DB_SEQUENCE = [
+            {
+                era: "EDAT MITJANA",
+                correct: [
+                    { img: "img/mitjana1.jpg", name: "Cant Gregorià", desc: "Monòdia religiosa" },
+                    { img: "img/mitjana2.jpg", name: "Neumes", desc: "Notació antiga" },
+                    { img: "img/mitjana3.jpg", name: "Trobadors", desc: "Música profana" }
+                ],
+                incorrect: [
+                    { img: "img/mitjanafallo1.jpg", name: "Guitarra Elèctrica", desc: "Anacronisme total" },
+                    { img: "img/mitjanafallo2.jpg", name: "Orquestra", desc: "Massa instruments" },
+                    { img: "img/mitjanafallo3.jpg", name: "Piano", desc: "Encara no existia" }
+                ]
+            },
+            {
+                era: "RENAIXEMENT",
+                correct: [
+                    { img: "img/renaixement1.jpg", name: "Madrigal", desc: "Polifonia vocal" },
+                    { img: "img/renaixement2.jpg", name: "Llaüt", desc: "Instrument popular" },
+                    { img: "img/renaixement3.jpg", name: "Partitura Impresa", desc: "Impremta musical" }
+                ],
+                incorrect: [
+                    { img: "img/renaixementfallo1.jpg", name: "Sintetitzador", desc: "So electrònic" },
+                    { img: "img/renixementfallo2.jpg", name: "Gramòfon", desc: "Segle XIX" }, // Typo in filename preserved
+                    { img: "img/renaixementfallo3.jpg", name: "Micròfon", desc: "Tecnologia moderna" }
+                ]
+            },
+            {
+                era: "BARROC",
+                correct: [
+                    { img: "img/barroc1.jpg", name: "Clavicèmbal", desc: "Teclat barroc" },
+                    { img: "img/barroc2.jpg", name: "Violí", desc: "Luthieria daurada" },
+                    { img: "img/barroc3.jpg", name: "Perruca", desc: "Estil d'època" }
+                ],
+                incorrect: [
+                    { img: "img/barrocfallo1.jpg", name: "DJ", desc: "Taula de mescles" },
+                    { img: "img/barrocfallo2.jpg", name: "Saxofon", desc: "Jazz modern" },
+                    { img: "img/barrocfallo3.jpg", name: "Cassette", desc: "Anys 80" }
+                ]
+            },
+            {
+                era: "CLASSICISME",
+                correct: [
+                    { img: "img/classic1.jpg", name: "Piano Forte", desc: "Nou instrument" },
+                    { img: "img/classic2.jpg", name: "Quartet", desc: "Corda equilibrada" },
+                    { img: "img/classic3.jpg", name: "Partitura Clara", desc: "Ordre i simetria" }
+                ],
+                incorrect: [
+                    { img: "img/classicfallo1.jpg", name: "Guit. Heavy", desc: "Massa distorsió" },
+                    { img: "img/classicfallo2.jpg", name: "Bateria", desc: "Ritme rock" },
+                    { img: "img/classicfallo3.jpg", name: "Trampes", desc: "Música trap" } // Assuming 'trampes' refers to Trap music context visually?
+                ]
+            },
+            {
+                era: "ROMANTICISME",
+                correct: [
+                    { img: "img/romantic1.jpg", name: "Gran Orquestra", desc: "Potència sonora" },
+                    { img: "img/romantic2.jpg", name: "Piano Virtuós", desc: "Sentiment extrem" },
+                    { img: "img/romantic3.jpg", name: "Òpera", desc: "Drama wagnerià" }
+                ],
+                incorrect: [
+                    { img: "img/romaticfallo1.jpg", name: "CD", desc: "Format digital" }, // Typo preserved
+                    { img: "img/romaticfallo2.jpg", name: "MP3", desc: "Player digital" }, // Typo preserved
+                    { img: "img/romanticfallo3.jpg", name: "Vinil", desc: "Segle XX" }
+                ]
+            },
+            {
+                era: "SEGLE XX",
+                correct: [
+                    { img: "img/xx1.jpg", name: "Dodecafonisme", desc: "Partitura complexa" },
+                    { img: "img/xx2.jpg", name: "Theremin/Elec.", desc: "Nous sons" }, // Adjust based on visual
+                    { img: "img/xx3.jpg", name: "Avantguarda", desc: "Trencar normes" }
+                ],
+                incorrect: [
+                    { img: "img/xxfallo1.jpg", name: "Llaüt Medieval", desc: "Massa antic" },
+                    { img: "img/xxfallo2.jpg", name: "Clavicèmbal", desc: "Retorn al passat" },
+                    { img: "img/xxfallo3.jpg", name: "Monjo", desc: "Edat Mitjana" }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentRoundIndex = 0;
+        let currentEraData = null;
+        let currentGridItems = []; // Array of objects {img, isCorrect, name, desc}
+        let selectedIndices = [];
+
+        // --- DOM ---
+        const startScreen = document.getElementById('start-screen');
+        const checkboxView = document.getElementById('checkbox-view');
+        const challengeView = document.getElementById('challenge-view');
+        const finalView = document.getElementById('final-message');
+        const targetEraLabel = document.getElementById('target-era');
+        const gridEl = document.getElementById('grid');
+        const errorEl = document.getElementById('error-msg');
+        const mainChecbox = document.getElementById('main-checkbox');
+        const music = document.getElementById('bg-music');
+
+        // --- LOGIC ---
+
+        function initGame() {
+            startScreen.style.display = 'none';
+            music.volume = 0.3;
+            music.play().catch(e => console.log("Audio autoplay prevented"));
+        }
+
+        // Triggered by clicking the fake checkbox
+        mainChecbox.onclick = () => {
+            // Spinner simulation?
+            mainChecbox.style.border = "2px solid #ccc";
+            mainChecbox.innerHTML = '<div style="width:16px; height:16px; border:2px solid #1A73E8; border-top:2px solid transparent; border-radius:50%; animation:spin 1s linear infinite; margin:2px;"></div>';
+
+            // Add style for spin
+            const style = document.createElement('style');
+            style.innerHTML = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+            document.head.appendChild(style);
+
+            setTimeout(() => {
+                checkboxView.style.display = 'none';
+                challengeView.style.display = 'flex';
+                currentRoundIndex = 0;
+                setupRound();
+            }, 1000);
+        };
+
+        function setupRound() {
+            if (currentRoundIndex >= DB_SEQUENCE.length) {
+                finishGame();
+                return;
+            }
+
+            currentEraData = DB_SEQUENCE[currentRoundIndex];
+            targetEraLabel.textContent = currentEraData.era;
+
+            // Reset Selection
+            selectedIndices = [];
+            errorEl.style.display = 'none';
+
+            // Prepare Items: 3 Correct + 3 Incorrect = 6 Total
+            const correctItems = currentEraData.correct.map(i => ({ ...i, isCorrect: true }));
+            const incorrectItems = currentEraData.incorrect.map(i => ({ ...i, isCorrect: false }));
+
+            // Mix them
+            const allItems = [...correctItems, ...incorrectItems];
+
+            // Shuffle
+            shuffle(allItems);
+            currentGridItems = allItems;
+
+            // Render
+            renderGrid();
+        }
+
+        function renderGrid() {
+            gridEl.innerHTML = "";
+            currentGridItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "grid-item";
+                div.style.backgroundImage = `url('${item.img}')`;
+                div.setAttribute('data-tooltip', `${item.name}: ${item.desc}`);
+
+                if (selectedIndices.includes(index)) {
+                    div.classList.add('selected');
+                }
+
+                div.onclick = () => toggleSelect(index);
+                gridEl.appendChild(div);
+            });
+        }
+
+        function toggleSelect(index) {
+            if (selectedIndices.includes(index)) {
+                selectedIndices = selectedIndices.filter(i => i !== index);
+            } else {
+                selectedIndices.push(index);
+            }
+            renderGrid();
+        }
+
+        function verify() {
+            let incorrectSelected = false;
+            let correctSelectedCount = 0;
+            const totalCorrectAvailable = 3;
+
+            selectedIndices.forEach(idx => {
+                if (currentGridItems[idx].isCorrect) {
+                    correctSelectedCount++;
+                } else {
+                    incorrectSelected = true;
+                }
+            });
+
+            // Win Condition: Must select ALL 3 correct and NO incorrect
+            if (!incorrectSelected && correctSelectedCount === totalCorrectAvailable) {
+                // SUCCESS
+                currentRoundIndex++;
+                if (currentRoundIndex < DB_SEQUENCE.length) {
+                    setupRound();
+                } else {
+                    finishGame();
+                }
+            } else {
+                // ERROR
+                errorEl.style.display = 'block';
+                // Shake effect?
+                const grid = document.getElementById('grid');
+                grid.style.transform = "translateX(5px)";
+                setTimeout(() => grid.style.transform = "translateX(-5px)", 50);
+                setTimeout(() => grid.style.transform = "translateX(5px)", 100);
+                setTimeout(() => grid.style.transform = "translateX(0)", 150);
+            }
+        }
+
+        function finishGame() {
+            challengeView.style.display = 'none';
+            checkboxView.style.display = 'flex';
+
+            // Reset checkbox to checked state
+            mainChecbox.innerHTML = '';
+            mainChecbox.classList.add('checked');
+            mainChecbox.onclick = null; // Disable click
+
+            setTimeout(() => {
+                checkboxView.style.display = 'none';
+                finalView.style.display = 'block';
+            }, 1000);
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+    </script>
+</body>
+
+</html>

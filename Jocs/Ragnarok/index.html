@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAGNARÖK: THE MUSICAL JUDGMENT</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Metamorphous&family=Eagle+Lake&display=swap');
+
+        :root {
+            --frost: #94e2fb;
+            --blood: #b91c1c;
+            --gold: #fde047;
+            --stone: #334155;
+            --bg: #020617;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: white;
+            font-family: 'Metamorphous', cursive;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #game-viewport {
+            width: 100vw;
+            height: 100vh;
+            max-width: 1200px;
+            max-height: 800px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 100px black;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background 1.5s;
+        }
+
+        /* VIGNETTE & GRAIN */
+        #game-viewport::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.9) 100%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* --- BATTLE HUD --- */
+        #battle-hud {
+            position: absolute;
+            top: 40px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            z-index: 50;
+            padding: 0 50px;
+            box-sizing: border-box;
+        }
+
+        .health-container {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .name-tag {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            color: white;
+        }
+
+        .hp-bar-bg {
+            height: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            transform: skewX(-15deg);
+        }
+
+        .hp-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.4s ease-out;
+        }
+
+        #player-hp {
+            background: linear-gradient(90deg, #10b981, #059669);
+            box-shadow: 0 0 15px #10b981;
+        }
+
+        #boss-hp {
+            background: linear-gradient(90deg, #ef4444, #b91c1c);
+            box-shadow: 0 0 15px #ef4444;
+        }
+
+        .realm-tag {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--gold);
+            letter-spacing: 5px;
+            opacity: 0.7;
+        }
+
+        /* --- STAGE --- */
+        #stage {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 100px 50px 100px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .character {
+            height: 70%;
+            max-height: 500px;
+            transition: transform 0.3s, opacity 0.5s;
+            filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
+        }
+
+        #boss-sprite {
+            order: 2;
+            transform: scaleX(-1);
+        }
+
+        /* Face left */
+        #mimir-sprite {
+            order: 1;
+            height: 180px;
+            margin-bottom: 50px;
+            z-index: 20;
+        }
+
+        /* --- CINEMATIC UI --- */
+        #ui-overlay {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 70%, transparent 100%);
+            padding: 40px 0;
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #dialogue-text {
+            max-width: 800px;
+            font-size: 1.4rem;
+            text-align: center;
+            line-height: 1.5;
+            color: #e2e8f0;
+            min-height: 3em;
+            text-shadow: 2px 2px 5px black;
+        }
+
+        #options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 800px;
+        }
+
+        .btn-choice {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 15px 25px;
+            font-family: 'Metamorphous', cursive;
+            font-size: 1.1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-choice:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--gold);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .btn-choice.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: white;
+        }
+
+        .btn-choice.wrong {
+            background: rgba(185, 28, 28, 0.2);
+            border-color: #b91c1c;
+            color: white;
+        }
+
+        /* --- EFFECTS --- */
+        .shake {
+            animation: shakeAnim 0.4s ease-in-out;
+        }
+
+        @keyframes shakeAnim {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .damage-flash {
+            animation: flashAnim 0.3s;
+        }
+
+        @keyframes flashAnim {
+            0% {
+                background: rgba(185, 28, 28, 0);
+            }
+
+            50% {
+                background: rgba(185, 28, 28, 0.5);
+            }
+
+            100% {
+                background: rgba(185, 28, 28, 0);
+            }
+        }
+
+        /* --- START/END SCREENS --- */
+        .full-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 5rem;
+            letter-spacing: 10px;
+            margin: 0;
+            color: var(--frost);
+        }
+
+        .subtitle {
+            font-family: 'Eagle Lake', cursive;
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 50px;
+        }
+
+        .btn-start {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-start:hover {
+            background: var(--gold);
+            color: black;
+            box-shadow: 0 0 30px var(--gold);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* VOLUME */
+        #volume-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.7rem;
+            color: var(--gold);
+        }
+
+        input[type=range] {
+            width: 80px;
+            accent-color: var(--gold);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-viewport">
+        <!-- REALM INFO -->
+        <div class="realm-tag" id="realm-name">MIDGARD</div>
+
+        <!-- VOLUME -->
+        <div id="volume-panel">
+            <span>SOUND</span>
+            <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- HUD -->
+        <div id="battle-hud" class="hidden">
+            <div class="health-container">
+                <span class="name-tag">GUERRER</span>
+                <div class="hp-bar-bg">
+                    <div id="player-hp" class="hp-fill"></div>
+                </div>
+            </div>
+            <div class="health-container" style="align-items: flex-end;">
+                <span class="name-tag" id="boss-name">FENRIR</span>
+                <div class="hp-bar-bg" style="transform: skewX(15deg);">
+                    <div id="boss-hp" class="hp-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STAGE -->
+        <div id="stage">
+            <img id="mimir-sprite" src="img/mimir.png" alt="Mimir" class="character hidden">
+            <img id="boss-sprite" src="" alt="Boss" class="character hidden">
+        </div>
+
+        <!-- UI -->
+        <div id="ui-overlay" class="hidden">
+            <div id="dialogue-text">...</div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- START -->
+        <div id="start-screen" class="full-screen">
+            <h1>RAGNARÖK</h1>
+            <div class="subtitle">El Judici de les Eres Musicals</div>
+            <button class="btn-start" onclick="startGame()">COMENÇAR LA CAÇA</button>
+        </div>
+
+        <!-- END -->
+        <div id="end-screen" class="full-screen hidden">
+            <h1 id="end-title">FATALITAT</h1>
+            <p id="end-msg">El món s'enfonsa en el silenci etern.</p>
+            <button class="btn-start" onclick="location.reload()">REINTENTAR</button>
+        </div>
+    </div>
+
+    <!-- AUDIO SLOTS -->
+    <audio id="bgm" loop></audio>
+
+    <script>
+        // --- GAME DATA ---
+        const BOSS_DB = [
+            {
+                id: 'medieval',
+                name: "FENRIR",
+                realm: "MIDGARD",
+                img: "img/fenrir.png",
+                bg: "img/midgard.jpg",
+                music: "audio/Fenrir Rising.m4a",
+                mimirIntro: "Germà, m'ensumo una gana ferotge en el vent de Midgard. El Gran Llop Fenrir guarda l'entrada a les eres antigues.",
+                bossIntro: "GRRR... La monodia medieval és tan buida com el meu estómac. Proveu el meu tancament si us atreviu!",
+                bossOutro: "Aquest... aquest coneixement... m'ha colpejat com una roca de gel.",
+                mimirOutro: "L'animal ha estat domat. Però no et refiïs, el camí cap a Vanaheim és ple de màgia i perill.",
+                questions: [
+                    { q: "Quina era la funció del Cant Gregorià?", a: ["Divertir", "Precs a Déu", "Dansa Profana", "Vendre aliments"], correct: 1 },
+                    { q: "Quin idioma defineix l'Edat Mitjana religiosa?", a: ["Llatí", "Alemany", "Nòrdic Antic", "Anglès"], correct: 0 },
+                    { q: "Com s'escrivia la música abans de les notes?", a: ["Dibuixos", "Neumes", "Text complet", "Números"], correct: 1 },
+                    { q: "Quina és la textura del Cant Gregorià?", a: ["Polifonia", "Monodia", "Melodia Acompanyada", "Soroll"], correct: 1 },
+                    { q: "Els monjos feien servir instruments?", a: ["Sí, molts", "Només l'orgue", "No, A Cappella", "Guitarra elèctrica"], correct: 2 },
+                    { q: "Qui cantava als castells per divertir?", a: ["Monjos", "Trobadors", "Directors", "Soldats"], correct: 1 },
+                    { q: "De què tractaven les cançons dels Trobadors?", a: ["Déu", "Amor i cavallers", "Política", "Cuina"], correct: 1 },
+                    { q: "Qui va ser la primera compositora famosa?", a: ["Maria Antonieta", "Hildegard von Bingen", "Santa Cecília", "Madonna"], correct: 1 },
+                    { q: "Quin instrument té forma de pera?", a: ["Llaüt", "Violí", "Guitarra", "Piano"], correct: 0 },
+                    { q: "En quin idioma cantaven els Trobadors?", a: ["Llatí", "Llengua del poble", "Anglès", "Xinès"], correct: 1 }
+                ]
+            },
+            {
+                id: 'renaissance',
+                name: "FREYA",
+                realm: "VANAHEIM",
+                img: "img/freya.png",
+                bg: "img/vanaheim.jpg",
+                music: "audio/Freya’s Breath.m4a",
+                mimirIntro: "Vanaheim... la llar de la deessa Freya. La seva bellesa només és superada per la seva habilitat amb la polifonia del Renaixement.",
+                bossIntro: "Benvinguts al meu jardí. Mortals, creieu que les vostres cançons humanistes poden superar l'harmonia divina?",
+                bossOutro: "L'humanisme... posar l'home al centre... potser és la clau de la puresa.",
+                mimirOutro: "Ha estat una victòria sublim, germà. Però ara ens apropem al fred de Jötunheim.",
+                questions: [
+                    { q: "Quin concepte posa l'home al centre?", a: ["Teocentrisme", "Humanisme", "Dadaisme", "Feudalisme"], correct: 1 },
+                    { q: "Què permet la difusió massiva de la música?", a: ["Impremta", "Ràdio", "Papirus", "Televisió"], correct: 0 },
+                    { q: "Com s'anomena l'instrument de corda rei?", a: ["Llaüt", "Piano", "Sintetitzador", "Baix elèctric"], correct: 0 },
+                    { q: "Què significa 'Polifonia'?", a: ["Una veu", "Moltes veus", "Sense veu", "Només instruments"], correct: 1 },
+                    { q: "Quina veu de dona és la més aguda?", a: ["Contralt", "Soprano", "Tenor", "Baix"], correct: 1 },
+                    { q: "Qui era el 'Superstar' religiós del Renaixement?", a: ["Mozart", "Bach", "Palestrina", "Elvis"], correct: 2 },
+                    { q: "On treballava Palestrina?", a: ["Versalles", "Vaticà", "París", "Londres"], correct: 1 },
+                    { q: "La música del Renaixement busca...", a: ["Por", "Bellesa i equilibri", "Caos", "Tristesa"], correct: 1 },
+                    { q: "Quina és la veu d'home més greu?", a: ["Tenor", "Baix", "Soprano", "Baríton"], correct: 1 },
+                    { q: "L'humanisme creu que el més important és...", a: ["Déu", "L'Ésser Humà", "La natura", "Els diners"], correct: 1 }
+                ]
+            },
+            {
+                id: 'baroque',
+                name: "JÖRMUNGANDR",
+                realm: "JÖTUNHEIM",
+                img: "img/jormugandr.png",
+                bg: "img/jotunheim.jpg",
+                music: "audio/Jörmungandr.m4a",
+                mimirIntro: "La Serp del Món... Jörmungandr. S'ha enroscat al voltant del Barroc. El contrast entre el seu tamany i la teva fragilitat és el mestre del drama.",
+                bossIntro: "SSSSS... Soc tan gran que no es pot veure ni el meu principi ni el meu final! Sent la força del baix continu!",
+                bossOutro: "M'estic... enfonsant... en les aigües de l'oblit.",
+                mimirOutro: "Hem sobreviscut al monstre. Ara, el pont d'Asgard ens espera sota el sol del Classicisme.",
+                questions: [
+                    { q: "Quina gran forma teatral neix al Barroc?", a: ["Cine", "Òpera", "Comèdia", "Monòlegs"], correct: 1 },
+                    { q: "Quin instrument fa el 'Baix Continu'?", a: ["Violí", "Clavicèmbal", "Acordió", "Flauta"], correct: 1 },
+                    { q: "Quin mestre alemany domina aquesta era?", a: ["Mozart", "Bach", "Wagner", "Stravinsky"], correct: 1 },
+                    { q: "Com és l'art del Barroc?", a: ["Senzill", "Recarregat i luxós", "Fosc", "Minimalista"], correct: 1 },
+                    { q: "Què busca la música del Barroc?", a: ["Equilibri", "Contrast", "Monotonia", "Silenci"], correct: 1 },
+                    { q: "En una Òpera, els actors...", a: ["Parlen", "Canten", "Ballen", "Dormen"], correct: 1 },
+                    { q: "Quin instrument tocava Vivaldi?", a: ["Flauta", "Violí", "Trompeta", "Piano"], correct: 1 },
+                    { q: "Quina obra va fer Vivaldi?", a: ["9a Simfonia", "4 Estacions", "Cant dels Ocells", "Titanic"], correct: 1 },
+                    { q: "Com eren els Reis al Barroc?", a: ["Normals", "Absolutistes i luxosos", "Pobres", "Democràtics"], correct: 1 },
+                    { q: "On vivia el Rei de França?", a: ["Buckingham", "Versalles", "Escorial", "Casa Blanca"], correct: 1 }
+                ]
+            },
+            {
+                id: 'classicism',
+                name: "BALDUR",
+                realm: "ASGARD",
+                img: "img/baldur.png",
+                bg: "img/asgard.jpg",
+                music: "audio/Baldur.m4a",
+                mimirIntro: "Baldur el brillant. Diuen que no hi ha res que el pugui ferir, excepte potser el caos. Busca l'ordre i la raó de Viena.",
+                bossIntro: "No hi ha imperfecció en mi, ni en la simfonia clàssica. Estàs preparat per al judici més equilibrat de la teva vida?",
+                bossOutro: "Com... com he pogut perdre... davant d'una simfonia tan perfecta?",
+                mimirOutro: "Fins i tot l'invulnerable cau davant la lògica. Però ens apropem al pont del Bifröst, i el seu guardià no dorm.",
+                questions: [
+                    { q: "Què buscaven els clàssics?", a: ["Ordre i Raó", "Foc i Sang", "Por", "Caos"], correct: 0 },
+                    { q: "Quin instrument neix ara?", a: ["Piano", "Arpa", "Lleure", "Corn"], correct: 0 },
+                    { q: "On era el centre de la música mundial?", a: ["Viena", "Oslo", "Roma", "París"], correct: 0 },
+                    { q: "Com sona la música clàssica?", a: ["Caòtica", "Equilibrada i elegant", "Sorollosa", "Trista"], correct: 1 },
+                    { q: "Per què es diu Piano-Forte?", a: ["Pesa molt", "Pot fer fluix i fort", "És italià", "Té tecles"], correct: 1 },
+                    { q: "Qui va ser el Nen Prodigi més famós?", a: ["Haydn", "Mozart", "Beethoven", "Salieri"], correct: 1 },
+                    { q: "Qui és el 'Pare de la Simfonia'?", a: ["Haydn", "Mozart", "Bach", "Wagner"], correct: 0 },
+                    { q: "Què és la 'Melodia Acompanyada'?", a: ["Melodia clara + fons", "Polifonia", "Una veu sola", "Soroll"], correct: 0 },
+                    { q: "L'estil de Mozart és...", a: ["Fosc", "Elegant", "Trist", "Avorrit"], correct: 1 },
+                    { q: "Quina secció de l'orquestra va davant?", a: ["Percussió", "Corda", "Vent", "Directors"], correct: 1 }
+                ]
+            },
+            {
+                id: 'romanticism',
+                name: "HEIMDALL",
+                realm: "BIFRÖST",
+                img: "img/heimdall.png",
+                bg: "img/bifrost.jpg",
+                music: "audio/heimdall.m4a",
+                mimirIntro: "Heimdall, el guardià del Bifröst. Puc sentir l'energia del Gjallarhorn. El Romanticisme és la seva arma d'expressió pura.",
+                bossIntro: "Veig les teves notes abans que les pensis. El Romanticisme és fúria i passió, i el meu corn sona amb el destí.",
+                bossOutro: "He vist el final... i no era el que esperava.",
+                mimirOutro: "Hem creuat el pont, germà. Però la tempesta que ve des de Niflheim és fosca i industrial.",
+                questions: [
+                    { q: "Què és més important pels romàntics?", a: ["Normes", "Sentiments", "Diners", "Lògica"], correct: 1 },
+                    { q: "Què permet accelerar el tempo lliurement?", a: ["Rubato", "Lento", "Fuga", "Staccato"], correct: 0 },
+                    { q: "Quin autor va ser el mestre del tro (9a simfonia)?", a: ["Mozart", "Beethoven", "Vivaldi", "Haydn"], correct: 1 },
+                    { q: "Quin instrument expressa millor les emocions?", a: ["Flauta", "Piano", "Tambor", "Triangle"], correct: 1 },
+                    { q: "Com és l'orquestra romàntica?", a: ["Petita", "Gegant", "No n'hi ha", "Mitjana"], correct: 1 },
+                    { q: "El geni pont entre Clàssic i Romàntic és...", a: ["Mozart", "Beethoven", "Vivaldi", "Bach"], correct: 1 },
+                    { q: "Quin problema tenia Beethoven?", a: ["Cec", "Sord", "Mut", "Coix"], correct: 1 },
+                    { q: "Quins temes agraden als romàntics?", a: ["Natura salvatge", "Jardins", "Fàbriques", "Ciutats"], correct: 0 },
+                    { q: "Què és un Virtuós?", a: ["Un instrument", "Un músic 'Superstar'", "Un cantant", "Un ballarí"], correct: 1 },
+                    { q: "Beethoven va deixar de compondre sord?", a: ["Sí", "No, va seguir", "Es va fer pintor", "Es va retirar"], correct: 1 }
+                ]
+            },
+            {
+                id: 'modernism',
+                name: "THOR",
+                realm: "NIFLHEIM",
+                img: "img/thor.png",
+                bg: "img/niflheim.jpg",
+                music: "audio/Thor (Segle XX).m4a",
+                mimirIntro: "Thor... el déu del tro. S'ha apoderat del Segle XX. El soroll de la guerra i les dissonàncies són ara el seu martell.",
+                bossIntro: "SENT ELS TRONS DEL FUTUR! El Segle XX és un crit de dolor i atonalisme. Estàs preparat per ser fulminat?",
+                bossOutro: "Mjolnir... ja no ressona... amb aquesta musica caòtica.",
+                mimirOutro: "L'últim defensor ha caigut. Però mira cap amunt... Odin ens espera al buit de Ginnungagap.",
+                questions: [
+                    { q: "Com s'anomena la falta de tonalitat?", a: ["Atonalisme", "Pop", "Rock", "Jazz"], correct: 0 },
+                    { q: "Quin so 'xoca' i genera tensió?", a: ["Dissonància", "Consonància", "Melodia", "Harmonia"], correct: 0 },
+                    { q: "Quina tecnologia canvia la música per sempre?", a: ["Fonògraf", "Impremta", "Roda", "Telèfon"], correct: 0 },
+                    { q: "Què volen fer amb les normes al S.XX?", a: ["Seguir-les", "Trencar-les", "Oblidar-les", "Copiar-les"], correct: 1 },
+                    { q: "L'Impressionisme busca...", a: ["Història clara", "Atmòsfera i suggeriment", "Por", "Riure"], correct: 1 },
+                    { q: "Autor de 'Clar de Lluna'?", a: ["Debussy", "Schönberg", "Beethoven", "Mozart"], correct: 0 },
+                    { q: "L'Expressionisme expressa...", a: ["Paisatges", "Angoixa i veritat interior", "Alegria", "Festa"], correct: 1 },
+                    { q: "El Dodecafonisme usa...", a: ["12 notes", "7 notes", "5 notes", "10 notes"], correct: 0 },
+                    { q: "En quina pintura s'inspira l'Impressionisme?", a: ["Geomètrica", "Monet (llum)", "Reis", "Guerra"], correct: 1 },
+                    { q: "El ritme de canvi al S.XX és...", a: ["Lent", "Ràpid i radical", "Inexistent", "Suau"], correct: 1 }
+                ]
+            },
+            {
+                id: 'final',
+                name: "ODIN",
+                realm: "GINNUNGAGAP",
+                img: "img/odin.png",
+                bg: "img/gunnumgagap.jpg",
+                music: "audio/Odin, End Of All.m4a",
+                mimirIntro: "Hem arribat al final, germà. El Pare de Tots ens mira des de Ginnungagap. Si fallem aquí, el Ragnarök musical estarà complet.",
+                bossIntro: "Mortals... He sacrificat tant per saber el destí del món. Avui sabrem si la música mor o reneix de les cendres.",
+                bossOutro: "El coneixement... s'allibera... El meu sacrifici... ha estat digne.",
+                mimirOutro: "Has guanyat, germà. La llança d'Odin s'ha trencat davant l'harmonia de la humanitat. El Ragnarök ha acabat.",
+                questions: [
+                    // Medieval (2)
+                    { q: "Quina era la funció del Cant Gregorià?", a: ["Divertir", "Precs a Déu", "Dansa Profana", "Vendre aliments"], correct: 1 },
+                    { q: "Quin idioma defineix l'Edat Mitjana religiosa?", a: ["Llatí", "Alemany", "Nòrdic Antic", "Anglès"], correct: 0 },
+                    // Renaissance (2)
+                    { q: "Quin concepte posa l'home al centre?", a: ["Teocentrisme", "Humanisme", "Dadaisme", "Feudalisme"], correct: 1 },
+                    { q: "Què permet la difusió massiva de la música?", a: ["Impremta", "Ràdio", "Papirus", "Televisió"], correct: 0 },
+                    // Baroque (2)
+                    { q: "Quina gran forma teatral neix al Barroc?", a: ["Cine", "Òpera", "Comèdia", "Monòlegs"], correct: 1 },
+                    { q: "Quin instrument fa el 'Baix Continu'?", a: ["Violí", "Clavicèmbal", "Acordió", "Flauta"], correct: 1 },
+                    // Classicism (2)
+                    { q: "Què buscaven els clàssics?", a: ["Ordre i Raó", "Foc i Sang", "Por", "Caos"], correct: 0 },
+                    { q: "Qui va ser el Nen Prodigi més famós?", a: ["Haydn", "Mozart", "Beethoven", "Salieri"], correct: 1 },
+                    // Romanticism (2)
+                    { q: "Què és més important pels romàntics?", a: ["Normes", "Sentiments", "Diners", "Lògica"], correct: 1 },
+                    { q: "Quin problema tenia Beethoven?", a: ["Cec", "Sord", "Mut", "Coix"], correct: 1 },
+                    // Modernism (2)
+                    { q: "Com s'anomena la falta de tonalitat?", a: ["Atonalisme", "Pop", "Rock", "Jazz"], correct: 0 },
+                    { q: "Quina tecnologia canvia la música per sempre?", a: ["Fonògraf", "Impremta", "Roda", "Telèfon"], correct: 0 }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let bossIdx = 0;
+        let playerHP = 100;
+        let bossHP = 100;
+        let canAnswer = false;
+        let currentAudio = document.getElementById('bgm');
+        let dialoguePhase = 0; // 0: Mimir Intro, 1: Boss Intro, 2: Combat, 3: Boss Outro, 4: Mimir Outro
+        let usedQuestions = [];
+
+        // --- ELEMENTS ---
+        const view = document.getElementById('game-viewport');
+        const startScr = document.getElementById('start-screen');
+        const endScr = document.getElementById('end-screen');
+        const hud = document.getElementById('battle-hud');
+        const ui = document.getElementById('ui-overlay');
+        const bossSprite = document.getElementById('boss-sprite');
+        const mimirSprite = document.getElementById('mimir-sprite');
+        const dialogText = document.getElementById('dialogue-text');
+        const optionsBox = document.getElementById('options-container');
+
+        // --- INIT ---
+        function startGame() {
+            startScr.classList.add('hidden');
+            introSequence();
+        }
+
+        function introSequence() {
+            // Setup for tutorial
+            view.style.backgroundImage = "url('img/yggdrassil.jpg')";
+            document.getElementById('realm-name').innerText = "YGGDRASIL";
+
+            hud.classList.add('hidden');
+            ui.classList.remove('hidden');
+
+            // Show Mimir Centered & Large
+            bossSprite.classList.add('hidden');
+            mimirSprite.classList.remove('hidden');
+            mimirSprite.src = "img/mimir.png";
+            mimirSprite.style.order = "0";
+            mimirSprite.style.margin = "0 auto";
+            mimirSprite.style.transform = "scale(2.5) translateY(-30px)"; // Much larger
+            mimirSprite.style.filter = "drop-shadow(0 0 50px var(--gold))"; // Glowing effect
+
+            const introTexts = [
+                "Desperta, germà! El Ragnarök ha començat. Els Déus estan esborrant la història de la música.",
+                "Hem de viatjar a través de 6 eres musicals, recuperant el coneixement perdut.",
+                "Si sobrevivim a aquests guardians, ens espera la batalla final contra Odin, el Pare de Tots.",
+                "Però compte! La derrota és costosa. Si falles 3 vegades en una batalla, cauràs.",
+                "Sortosament, tens l'Amulet de Tyr. Et permetrà tornar a provar sort amb el guardià de l'era.",
+                "Estàs preparat per desafiar al destí?"
+            ];
+
+            let step = 0;
+
+            function nextIntroStep() {
+                if (step >= introTexts.length) {
+                    // Reset styles for game
+                    mimirSprite.style.margin = "";
+                    mimirSprite.style.order = "1";
+                    mimirSprite.style.transform = "";
+                    mimirSprite.style.filter = "";
+                    loadBoss(0);
+                    return;
+                }
+
+                dialogText.innerText = introTexts[step];
+                optionsBox.innerHTML = '';
+                const btn = document.createElement('button');
+                btn.className = 'btn-choice';
+                btn.style.gridColumn = "span 2";
+                btn.style.textAlign = "center";
+                btn.innerText = (step === introTexts.length - 1) ? "COMENÇAR EL VIATGE" : "CONTINUAR...";
+                btn.onclick = () => {
+                    step++;
+                    nextIntroStep();
+                };
+                optionsBox.appendChild(btn);
+            }
+
+            nextIntroStep();
+        }
+
+        function loadBoss(idx) {
+            if (idx >= BOSS_DB.length) { victory(); return; }
+            bossIdx = idx;
+            const data = BOSS_DB[idx];
+
+            playerHP = 100;
+            bossHP = 100;
+            usedQuestions = [];
+            updateHUD();
+
+            hud.classList.remove('hidden');
+
+            // Background & Music
+            view.style.backgroundImage = `url('${data.bg}')`;
+            document.getElementById('realm-name').innerText = data.realm;
+            document.getElementById('boss-name').innerText = data.name;
+            currentAudio.src = data.music;
+            currentAudio.play().catch(() => { });
+
+            // Character Sprites
+            bossSprite.classList.add('hidden');
+            bossSprite.src = data.img;
+            // Ensure object-fit is contain for sprites to separate characters from bg
+            bossSprite.style.objectFit = "contain";
+            bossSprite.style.opacity = "1";
+
+            mimirSprite.classList.remove('hidden');
+            mimirSprite.style.objectFit = "contain";
+            mimirSprite.style.opacity = "1";
+
+            endScr.classList.add('hidden'); // Hide end screen if coming from retry
+
+            dialoguePhase = 0; // Start with Mimir Intro
+            showDialogue(data.mimirIntro, "MIMIR");
+        }
+
+        function showDialogue(text, speaker) {
+            canAnswer = false;
+            dialogText.innerText = text;
+            optionsBox.innerHTML = '';
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-choice';
+            btn.style.gridColumn = "span 2";
+            btn.style.textAlign = "center";
+            btn.innerText = "CONTINUAR...";
+            btn.onclick = () => advanceDialogue();
+            optionsBox.appendChild(btn);
+
+            if (speaker === "MIMIR") {
+                mimirSprite.style.transform = "scale(1.1)";
+                mimirSprite.style.filter = "drop-shadow(0 0 30px var(--gold))";
+                bossSprite.style.transform = "scaleX(-1) scale(0.9)";
+                bossSprite.style.filter = "brightness(0.5)";
+            } else if (speaker === "BOSS") {
+                bossSprite.style.transform = "scaleX(-1) scale(1.1)";
+                bossSprite.style.filter = "drop-shadow(0 0 30px var(--blood))";
+                mimirSprite.style.transform = "scale(0.9)";
+                mimirSprite.style.filter = "brightness(0.5)";
+            }
+        }
+
+        function advanceDialogue() {
+            const data = BOSS_DB[bossIdx];
+            dialoguePhase++;
+
+            if (dialoguePhase === 1) { // Move to Boss Intro
+                bossSprite.classList.remove('hidden');
+                showDialogue(data.bossIntro, "BOSS");
+            } else if (dialoguePhase === 2) { // Start Combat
+                startCombat();
+            } else if (dialoguePhase === 3) { // Boss Outro
+                showDialogue(data.bossOutro, "BOSS");
+            } else if (dialoguePhase === 4) { // Mimir Outro
+                showDialogue(data.mimirOutro, "MIMIR");
+            } else if (dialoguePhase === 5) { // Load Next Boss
+                loadBoss(bossIdx + 1);
+            }
+        }
+
+        function startCombat() {
+            canAnswer = true;
+            mimirSprite.style.transform = "scale(1)";
+            mimirSprite.style.filter = "drop-shadow(0 0 20px rgba(0,0,0,0.5))";
+            bossSprite.style.transform = "scaleX(-1) scale(1)";
+            bossSprite.style.filter = "drop-shadow(0 0 30px rgba(0,0,0,0.8))";
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            const data = BOSS_DB[bossIdx];
+            let qIndex;
+
+            // Try to find a unique question
+            let available = data.questions.map((_, i) => i).filter(i => !usedQuestions.includes(i));
+
+            if (available.length === 0) {
+                // If all used, reset or reuse (shouldn't happen in normal gameplay given HP/Pool size)
+                available = data.questions.map((_, i) => i);
+                usedQuestions = [];
+            }
+
+            qIndex = available[Math.floor(Math.random() * available.length)];
+            usedQuestions.push(qIndex);
+
+            const q = data.questions[qIndex];
+
+            canAnswer = true;
+            dialogText.innerText = q.q;
+            optionsBox.innerHTML = '';
+
+            q.a.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-choice';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(i, q.correct, btn);
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(choice, correct, btn) {
+            if (!canAnswer) return;
+            canAnswer = false;
+
+            if (choice === correct) {
+                btn.classList.add('correct');
+                bossHP -= 34; // 3 correct to kill
+                bossSprite.classList.add('shake');
+                setTimeout(() => bossSprite.classList.remove('shake'), 400);
+            } else {
+                btn.classList.add('wrong');
+                playerHP -= 34; // 3 wrong to die (simulating 3 strikes)
+                view.classList.add('damage-flash');
+                setTimeout(() => view.classList.remove('damage-flash'), 300);
+            }
+
+            updateHUD();
+
+            setTimeout(() => {
+                if (bossHP <= 0) bossDefeated();
+                else if (playerHP <= 0) gameOver();
+                else nextQuestion();
+            }, 1000);
+        }
+
+        function updateHUD() {
+            document.getElementById('player-hp').style.width = Math.max(0, playerHP) + "%";
+            document.getElementById('boss-hp').style.width = Math.max(0, bossHP) + "%";
+        }
+
+        function bossDefeated() {
+            dialoguePhase = 2; // Setup for Boss Outro
+            advanceDialogue();
+        }
+
+        function gameOver() {
+            endScr.classList.remove('hidden');
+            ui.classList.add('hidden');
+            hud.classList.add('hidden');
+
+            document.getElementById('end-title').innerText = "HAS CAIGUT";
+            document.getElementById('end-title').style.color = "var(--blood)";
+            document.getElementById('end-msg').innerText = "Però Tyr et concedeix una segona oportunitat.";
+
+            // Rewrite generic button to use Tyr's Amulet
+            const btn = document.querySelector('#end-screen .btn-start');
+            btn.innerText = "USAR AMULET DE TYR";
+            btn.onclick = () => useAmulet();
+        }
+
+        function useAmulet() {
+            startScr.classList.add('hidden');
+            hud.classList.remove('hidden');
+            ui.classList.remove('hidden');
+            loadBoss(bossIdx);
+        }
+
+        function victory() {
+            endScr.classList.remove('hidden');
+            document.getElementById('end-title').innerText = "RAGNARÖK SUPERAT";
+            document.getElementById('end-title').style.color = "var(--gold)";
+            document.getElementById('end-msg').innerText = "Ets el mestre absolut de la història i la mitologia.";
+            ui.classList.add('hidden');
+            hud.classList.add('hidden');
+        }
+
+        document.getElementById('vol-slider').oninput = (e) => {
+            currentAudio.volume = e.target.value;
+        };
+
+    </script>
+</body>
+
+</html>

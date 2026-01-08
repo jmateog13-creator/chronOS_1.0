@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Arribada Tardana a l'Assaig</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cinzel:wght@400;700&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --velvet: #800020;
+            --velvet-dark: #4d0013;
+            --wood: #3e2723;
+            --spotlight: rgba(255, 255, 200, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            color: #fff;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 30%, #444 0%, #000 100%);
+            perspective: 1200px;
+            overflow: hidden;
+        }
+
+        /* THEATER CURTAINS */
+        .curtain {
+            position: absolute;
+            top: 0;
+            width: 15%;
+            height: 100%;
+            background: repeating-linear-gradient(to right,
+                    var(--velvet),
+                    var(--velvet) 20px,
+                    var(--velvet-dark) 40px);
+            z-index: 150;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            border-bottom: 10px solid var(--gold);
+        }
+
+        .curtain-left {
+            left: 0;
+            border-radius: 0 0 50px 0;
+        }
+
+        .curtain-right {
+            right: 0;
+            border-radius: 0 0 0 50px;
+        }
+
+        .curtain-top {
+            position: absolute;
+            top: -50px;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: repeating-linear-gradient(to bottom,
+                    var(--velvet),
+                    var(--velvet) 20px,
+                    var(--velvet-dark) 40px);
+            z-index: 160;
+            border-bottom: 8px solid var(--gold);
+            border-radius: 0 0 100% 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* STAGE */
+        #stage-floor {
+            position: absolute;
+            bottom: 0;
+            width: 140%;
+            left: -20%;
+            height: 40%;
+            background: linear-gradient(to bottom, #5d4037, #211);
+            transform: rotateX(45deg);
+            transform-origin: bottom;
+            border-top: 5px solid var(--gold);
+            box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.8);
+            z-index: 5;
+        }
+
+        /* UI HUD */
+        #ui-layer {
+            position: absolute;
+            bottom: 40px;
+            /* Moved to bottom */
+            left: 0;
+            width: 100%;
+            height: 100px;
+            pointer-events: none;
+            z-index: 200;
+            padding: 0 5%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .hud-badge {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(60, 60, 60, 0.8));
+            padding: 12px 25px;
+            border: 2px solid var(--gold);
+            border-radius: 4px;
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .error-dot {
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+        }
+
+        .error-dot.active {
+            background: #ff5252;
+            box-shadow: 0 0 10px #ff5252;
+        }
+
+        /* METRONOME / TENSION */
+        #tension-box {
+            position: absolute;
+            bottom: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        #tension-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, #4CAF50, #FFC107, #F44336);
+            transition: width 0.1s linear;
+        }
+
+        /* CONDUCTOR AREA */
+        #orchestra-pit {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 70;
+            /* Above player */
+        }
+
+        #maestro {
+            width: 220px;
+            height: 300px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center bottom;
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+            z-index: 2;
+        }
+
+        .pit-shadows {
+            position: absolute;
+            bottom: -20px;
+            width: 120%;
+            height: 100px;
+            background: url('https://www.transparenttextures.com/patterns/black-linen.png'),
+                linear-gradient(to top, #000 0%, transparent 100%);
+            z-index: 1;
+            opacity: 0.8;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 50px;
+        }
+
+        .musician-silhouette {
+            width: 40px;
+            height: 60px;
+            background: #111;
+            clip-path: polygon(20% 100%, 80% 100%, 100% 20%, 50% 0%, 0% 20%);
+            opacity: 0.6;
+        }
+
+        .maestro-back {
+            background-image: url('img/conductor-detras.png');
+        }
+
+        .maestro-front {
+            background-image: url('img/conductor_front.png');
+            transform: scale(1.1) rotateY(180deg);
+        }
+
+        #podium {
+            width: 250px;
+            height: 40px;
+            background: var(--wood);
+            border: 2px solid var(--gold);
+            margin-top: -5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 1);
+            position: relative;
+            z-index: 0;
+        }
+
+        /* PLAYER */
+        #player-path {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 100%;
+            z-index: 50;
+        }
+
+        #player {
+            position: absolute;
+            bottom: 30%;
+            /* Start higher up on the stage */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 240px;
+            background-image: url('img/jugador.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom;
+            z-index: 60;
+            transition: bottom 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.4s;
+        }
+
+        .sneaking {
+            animation: sneak 0.4s infinite alternate ease-in-out;
+        }
+
+        @keyframes sneak {
+            from {
+                transform: translateX(-50%) skewX(5deg) scaleY(0.95);
+            }
+
+            to {
+                transform: translateX(-50%) skewX(-5deg) scaleY(1.05);
+            }
+        }
+
+        /* QUESTIONS PANEL */
+        #question-panel {
+            position: absolute;
+            top: 20px;
+            /* Move to top to avoid blocking player */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 650px;
+            background: rgba(255, 255, 255, 0.98);
+            border: 4px solid var(--gold);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 20px var(--gold);
+            z-index: 300;
+            display: none;
+            color: #333;
+        }
+
+        h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--velvet);
+            font-size: 1.2rem;
+            margin: 0 0 15px 0;
+        }
+
+        #question-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            line-height: 1.3;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .lux-btn {
+            padding: 15px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            background: linear-gradient(to bottom, #eee, #ccc);
+            border: 2px solid var(--wood);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 var(--wood);
+        }
+
+        .lux-btn:hover {
+            background: var(--velvet);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .lux-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 var(--wood);
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 4.5rem;
+            color: var(--gold);
+            text-shadow: 0 0 30px var(--gold);
+            margin-bottom: 30px;
+        }
+
+        p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            color: #ddd;
+        }
+
+        .start-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .era-btn {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            padding: 15px 25px;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .era-btn:hover {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 20px var(--gold);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* SPOTLIGHT */
+        #spotlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, transparent 100px, rgba(0, 0, 0, 0.8) 300px);
+            pointer-events: none;
+            z-index: 80;
+            mix-blend-mode: multiply;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .alert-red {
+            background: rgba(255, 0, 0, 0.2) !important;
+            animation: pulse 0.5s infinite !important;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 0.1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Decoration -->
+        <div class="curtain curtain-left"></div>
+        <div class="curtain curtain-right"></div>
+        <div class="curtain-top"></div>
+        <div id="stage-floor"></div>
+        <div id="spotlight"></div>
+
+        <div id="ui-layer">
+            <div class="hud-badge" id="hud-era-display">ÈPOCA: <span id="era-val">-</span></div>
+            <div class="hud-badge" id="hud-progress-display">OBJECTIU: <span id="progress-val">0</span>%</div>
+            <div class="hud-badge">
+                ERRORS:
+                <div class="error-dot" id="e1"></div>
+                <div class="error-dot" id="e2"></div>
+                <div class="error-dot" id="e3"></div>
+            </div>
+        </div>
+
+        <div id="tension-box">
+            <div id="tension-bar"></div>
+        </div>
+
+        <div id="orchestra-pit">
+            <div id="maestro" class="maestro-back"></div>
+            <div id="podium"></div>
+            <div class="pit-shadows">
+                <div class="musician-silhouette"></div>
+                <div class="musician-silhouette" style="height: 70px;"></div>
+                <div class="musician-silhouette"></div>
+                <div class="musician-silhouette" style="height: 80px;"></div>
+                <div class="musician-silhouette"></div>
+            </div>
+        </div>
+
+        <div id="player-path">
+            <div id="player"></div>
+        </div>
+
+        <div id="question-panel">
+            <h3 id="era-label">ÈPOCA</h3>
+            <div id="question-text">Pregunta...</div>
+            <div class="options-grid">
+                <button class="lux-btn" onclick="checkAnswer(true)">CERT</button>
+                <button class="lux-btn" onclick="checkAnswer(false)">FALS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screens -->
+    <div id="start-screen" class="screen">
+        <h3 style="color: var(--gold); letter-spacing: 5px;">CHRONOS THEATER PRESENTS</h3>
+        <h1>L'ARRIBADA TARDANA</h1>
+        <p>Arriba a l'escenari sense que el Maestro et vegi. Respon les preguntes quan estigui d'esquenes i atura't quan
+            es giri!</p>
+        <div class="start-grid">
+            <button class="era-btn" onclick="initGame('EDAT MITJANA')">EDAT MITJANA</button>
+            <button class="era-btn" onclick="initGame('RENAIXEMENT')">RENAIXEMENT</button>
+            <button class="era-btn" onclick="initGame('BARROC')">BARROC</button>
+            <button class="era-btn" onclick="initGame('CLASSICISME')">CLASSICISME</button>
+            <button class="era-btn" onclick="initGame('ROMANTICISME')">ROMANTICISME</button>
+            <button class="era-btn" onclick="initGame('SEGLE XX')">SEGLE XX</button>
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="screen hidden">
+        <h1 id="over-title" style="color: #f44336;">ELIMINAT!</h1>
+        <p id="over-msg">El Maestro t'ha enxampat movent-te a deshora.</p>
+        <button class="era-btn" onclick="location.reload()">REINTENTAR</button>
+    </div>
+
+    <script>
+        // --- DATABASE ---
+        const QUESTIONS = {
+            "EDAT MITJANA": [
+                { q: "El Cant Gregorià és monòdic (una sola veu)?", a: true },
+                { q: "Els trobadors solien cantar en llatí?", a: false },
+                { q: "Guido d'Arezzo va ser clau per la notació musical?", a: true },
+                { q: "La polifonia va néixer abans que el cant gregorià?", a: false },
+                { q: "Els neumes eren signes per indicar l'altura del so?", a: true }
+            ],
+            "RENAIXEMENT": [
+                { q: "La impremta va aparèixer en aquesta època?", a: true },
+                { q: "L'escola flamenca es trobava al sud d'Itàlia?", a: false },
+                { q: "El Madrigal és una forma vocal profana?", a: true },
+                { q: "Josquin Des Prez va ser un gran mestre renaixentista?", a: true },
+                { q: "La monodia acompanyada és típica d'aquest període?", a: false }
+            ],
+            "BARROC": [
+                { q: "L'òpera neix a l'inici del Barroc?", a: true },
+                { q: "El Baix Continu desapareix en el Barroc?", a: false },
+                { q: "Bach va compondre moltes òperes?", a: false },
+                { q: "Antonio Vivaldi és conegut com 'Il Prete Rosso'?", a: true },
+                { q: "El concertó grosso oposa un grup a l'orquestra?", a: true }
+            ],
+            "CLASSICISME": [
+                { q: "Mozart va compondre 'La flauta màgica'?", a: true },
+                { q: "La Simfonia assoleix la seva forma clàssica ara?", a: true },
+                { q: "Beethoven va viure tota la vida en el Classicisme?", a: false },
+                { q: "L'equilibri i la claredat són ideals clàssics?", a: true },
+                { q: "L'orquestra clàssica ja no usa el clavicèmbal?", a: true }
+            ],
+            "ROMANTICISME": [
+                { q: "El sentiment i la passió dominen l'art?", a: true },
+                { q: "Wagner va ser famós per les seves simfonies?", a: false },
+                { q: "El piano és l'instrument rei del Romanticisme?", a: true },
+                { q: "Chopin era un famós compositor polonès?", a: true },
+                { q: "L'orquestra romàntica és més petita que la clàssica?", a: false }
+            ],
+            "SEGLE XX": [
+                { q: "Stravinsky va causar un escàndol amb 'La Consagració'?", a: true },
+                { q: "L'atonalitat nega l'existència d'un centre tonal?", a: true },
+                { q: "La música electrònica només usa flautes de fusta?", a: false },
+                { q: "El Jazz va influir en molts compositors clàssics?", a: true },
+                { q: "John Cage va compondre una obra de silenci?", a: true }
+            ]
+        };
+
+        // --- STATE ---
+        let currentEra = "";
+        let progress = 0;
+        let errors = 0;
+        let isSafe = true;
+        let gameActive = false;
+        let tension = 0;
+        let turnTimer = null;
+        let currentQ = null;
+
+        // --- AUDIO ENGINE ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playNote(freq, dur, type = 'sine') {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+        }
+
+        // --- GAMEPLAY ---
+        function initGame(era) {
+            currentEra = era;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('era-label').textContent = era;
+            document.getElementById('era-val').textContent = era;
+            gameActive = true;
+            nextTurn();
+        }
+
+        function nextTurn() {
+            if (!gameActive) return;
+
+            // Start Safe Phase
+            isSafe = true;
+            tension = 0;
+            document.getElementById('maestro').className = 'maestro-back';
+            document.getElementById('question-panel').style.display = 'block';
+            document.getElementById('spotlight').style.opacity = '0';
+
+            // Pick Question
+            const pool = QUESTIONS[currentEra];
+            currentQ = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('question-text').textContent = currentQ.q;
+
+            // Start Tension buildup (3-6 seconds)
+            const waitTime = Math.random() * 3000 + 3000;
+            const start = Date.now();
+
+            clearInterval(turnTimer);
+            turnTimer = setInterval(() => {
+                const elapsed = Date.now() - start;
+                tension = (elapsed / waitTime) * 100;
+                document.getElementById('tension-bar').style.width = tension + "%";
+
+                // Audio hint: Ascending scale
+                if (elapsed % 1000 < 50) {
+                    playNote(261.6 * (1 + (elapsed / waitTime)), 0.2);
+                }
+
+                if (elapsed >= waitTime) {
+                    clearInterval(turnTimer);
+                    turnMaestro();
+                }
+            }, 50);
+        }
+
+        function turnMaestro() {
+            isSafe = false;
+            document.getElementById('maestro').className = 'maestro-front';
+            document.getElementById('question-panel').style.display = 'none';
+            document.getElementById('spotlight').style.opacity = '1';
+
+            // Crash sound
+            playNote(100, 0.5, 'sawtooth');
+
+            // Wait 2-4 seconds before next turn
+            setTimeout(() => {
+                if (gameActive) nextTurn();
+            }, Math.random() * 2000 + 2000);
+        }
+
+        function checkAnswer(val) {
+            if (!gameActive || !isSafe) {
+                if (!isSafe) caught();
+                return;
+            }
+
+            if (val === currentQ.a) {
+                // Success
+                progress += 10;
+                playNote(523.25, 0.3); // High C
+                updateHUD();
+                movePlayer();
+
+                if (progress >= 100) win();
+                else nextQuestion(); // New question within same green light if fast
+            } else {
+                // Error
+                errors++;
+                playNote(150, 0.5, 'square');
+                updateHUD();
+                if (errors >= 3) gameOver("MASSA ERRORS", "Has fallat massa preguntes històriques.");
+            }
+        }
+
+        function nextQuestion() {
+            const pool = QUESTIONS[currentEra];
+            currentQ = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('question-text').textContent = currentQ.q;
+        }
+
+        function movePlayer() {
+            const p = document.getElementById('player');
+            p.classList.add('sneaking');
+            // Move from 30% to 55% (closer to maestro)
+            const targetBottom = 30 + (progress * 0.25);
+            p.style.bottom = targetBottom + "%";
+
+            // Perspective scaling: character gets smaller as they move back?
+            // Actually they should get smaller if moving AWAY from camera.
+            const scale = 1 - (progress * 0.003);
+            p.style.transform = `translateX(-50%) scale(${scale})`;
+
+            setTimeout(() => p.classList.remove('sneaking'), 400);
+        }
+
+        function caught() {
+            playNote(50, 1, 'sawtooth');
+            gameOver("T'HAN ENXAMPAT!", "El Maestro t'ha vist moure amb la llum vermella.");
+        }
+
+        function updateHUD() {
+            document.getElementById('progress-val').textContent = progress;
+            // Updated error dots
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`e${i}`);
+                if (i <= errors) dot.classList.add('active');
+                else dot.classList.remove('active');
+            }
+        }
+
+        function win() {
+            gameActive = false;
+            clearInterval(turnTimer);
+            const screen = document.getElementById('game-over-screen');
+            screen.classList.remove('hidden');
+            document.getElementById('over-title').textContent = "HAS ARRIBAT!";
+            document.getElementById('over-title').style.color = "var(--gold)";
+            document.getElementById('over-msg').textContent = "Felicitats! Has arribat a l'assaig dalt de l'escenari.";
+            playNote(523, 0.2);
+            playNote(659, 0.2);
+            playNote(783, 0.5);
+        }
+
+        function gameOver(title, msg) {
+            gameActive = false;
+            clearInterval(turnTimer);
+            const screen = document.getElementById('game-over-screen');
+            screen.classList.remove('hidden');
+            document.getElementById('over-title').textContent = title;
+            document.getElementById('over-msg').textContent = msg;
+        }
+
+        // Detect illegal clicks (simulating movement) during red light
+        document.getElementById('game-container').addEventListener('mousedown', (e) => {
+            if (gameActive && !isSafe && e.target.tagName !== 'BUTTON') {
+                caught();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

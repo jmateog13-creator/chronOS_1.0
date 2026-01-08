@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar de Trànsit: Control de Ritme</title>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Roboto+Mono:wght@500&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #windshield {
+            flex-grow: 1;
+            background: url('img/fons.jpg') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            overflow: hidden;
+            perspective: 800px;
+        }
+
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) rotateX(60deg);
+            width: 800px;
+            height: 1000px;
+            background: #444;
+            border-left: 20px solid #fff;
+            border-right: 20px solid #fff;
+        }
+
+        .lane-marker {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 100%;
+            background: repeating-linear-gradient(to bottom, #fc0 0, #fc0 50px, transparent 50px, transparent 100px);
+            animation: moveRoad 0.5s linear infinite;
+        }
+
+        @keyframes moveRoad {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 0 100px;
+            }
+        }
+
+        .car {
+            position: absolute;
+            bottom: 100px;
+            width: 160px;
+            height: 90px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+            padding: 5px;
+            z-index: 10;
+            color: #fff;
+            text-shadow: 0 1px 2px #000;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.1s linear;
+        }
+
+        /* Frontal lights effect */
+        .car::before,
+        .car::after {
+            content: "";
+            position: absolute;
+            bottom: 10px;
+            width: 15px;
+            height: 15px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #fff;
+            opacity: 0.8;
+        }
+
+        .car::before {
+            left: 10px;
+        }
+
+        .car::after {
+            right: 10px;
+        }
+
+        .car-concept {
+            background: #fff;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 0.85rem;
+            border: 2px solid #000;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            z-index: 5;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        #dashboard {
+            height: 250px;
+            background: #222;
+            border-top: 5px solid #111;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
+            position: relative;
+            z-index: 20;
+        }
+
+        .panel-box {
+            background: #111;
+            border: 2px solid #555;
+            padding: 10px;
+            border-radius: 10px;
+            width: 25%;
+            text-align: center;
+        }
+
+        .label {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-family: 'Black Ops One', cursive;
+            font-size: 1.5rem;
+            color: #0f0;
+        }
+
+        #current-era {
+            color: #fc0;
+            font-size: 1.2rem;
+        }
+
+        #btn-shoot {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(#e74c3c, #c0392b);
+            border: 5px solid #8e1c14;
+            color: #fff;
+            font-family: 'Black Ops One';
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+        }
+
+        #btn-shoot:active {
+            transform: scale(0.95);
+        }
+
+        /* HUD & Scanlines */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        .hud-frame {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 2px solid rgba(0, 255, 0, 0.2);
+            pointer-events: none;
+            z-index: 45;
+        }
+
+        .hud-frame::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 40px;
+            height: 40px;
+            border-top: 4px solid #0f0;
+            border-left: 4px solid #0f0;
+        }
+
+        .hud-frame::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 40px;
+            height: 40px;
+            border-bottom: 4px solid #0f0;
+            border-right: 4px solid #0f0;
+        }
+
+        #flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .anim-flash {
+            animation: flash 0.2s;
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .message-popup {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #fc0;
+            color: #fc0;
+            padding: 20px;
+            font-size: 1.5rem;
+            z-index: 60;
+            display: none;
+            text-align: center;
+        }
+
+        #start-screen,
+        #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        button.menu-btn {
+            background: #fc0;
+            color: #000;
+            border: none;
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Black Ops One';
+            transition: all 0.2s;
+            width: 280px;
+        }
+
+        button.menu-btn:hover {
+            transform: scale(1.05);
+            background: #fff;
+        }
+
+        button.menu-btn.completed {
+            background: #2ecc71;
+            color: #fff;
+            position: relative;
+        }
+
+        button.menu-btn.completed::after {
+            content: "✓ COMPLETAT";
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #27ae60;
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* Volume Slider Styling */
+        #volume-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+            z-index: 100;
+        }
+
+        #volume-container label {
+            margin-right: 10px;
+            font-size: 0.8rem;
+            color: #0f0;
+        }
+
+        input[type=range] {
+            cursor: pointer;
+            accent-color: #0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="windshield">
+        <div class="road">
+            <div class="lane-marker"></div>
+        </div>
+        <div class="scanlines"></div>
+        <div class="hud-frame"></div>
+        <div id="flash"></div>
+        <div id="feedback-msg" class="message-popup">MULTA CORRECTA!</div>
+    </div>
+    <div id="dashboard">
+        <div class="panel-box">
+            <div class="label">ZONA VIGENT (TARGET)</div>
+            <div class="value" id="current-era">---</div>
+        </div>
+        <button id="btn-shoot" onclick="shootRadar()">MULTAR!</button>
+        <div class="panel-box">
+            <div class="label">INFRACTORS CAÇATS</div>
+            <div class="value" id="score-val">0 / 10</div>
+        </div>
+        <div class="panel-box">
+            <div class="label">ERRORS (STRIKES)</div>
+            <div class="value" id="strikes-val" style="color: #e74c3c;">0 / 3</div>
+        </div>
+    </div>
+    <div id="start-screen">
+        <h1 style="font-family: 'Black Ops One'; font-size: 2.5rem; color: #fc0; margin-bottom: 5px;">RADAR DE TRÀNSIT
+        </h1>
+        <p style="max-width: 600px; font-size: 1rem; color: #888; margin-top: 0;">UNITAT DE VIGILÀNCIA TEMPORAL</p>
+
+        <div
+            style="background: rgba(0,255,0,0.1); border: 1px solid rgba(0,255,0,0.3); padding: 15px; border-radius: 10px; max-width: 500px; margin-bottom: 20px;">
+            <p style="font-size: 0.9rem; margin: 0;"><b>MANUAL D'OPERACIONS:</b><br>
+                1. Selecciona un sector temporal per patrullar.<br>
+                2. Multa (prem el botó) només els conceptes <b>ERRONIS</b> per a l'època.<br>
+                3. No multis conceptes correctes o perdràs integritat.<br>
+                4. Objectiu: 10 interrupcions per sector.</p>
+        </div>
+
+        <div class="era-grid" id="era-selector">
+            <!-- Buttons generated via JS -->
+        </div>
+
+        <div id="volume-container">
+            <label>SÒ</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <audio id="bg-music" loop>
+            <source src="audio/Neon Meter Running.m4a" type="audio/mpeg">
+        </audio>
+    </div>
+    <div id="game-over-screen" style="display: none;">
+        <h1 id="go-title"
+            style="font-family: 'Black Ops One'; font-size: 3rem; border-bottom: 3px solid #fff; padding-bottom: 20px;">
+            GAME OVER</h1>
+        <p id="go-msg" style="font-size: 1.5rem;">...</p>
+        <button class="menu-btn" onclick="returnToSelector()">TORNAR AL MENÚ</button>
+    </div>
+    <script>
+        const DB = {
+            "EDAT MITJANA": { legal: ["Ritme Lliure", "Monodia", "Cant Gregorià", "Neumes", "Trobador"], illegal: ["Polifonia Complexa", "Orquestra", "Rubato", "Piano", "Sintetitzador"] },
+            "RENAIXEMENT": { legal: ["Polifonia Imitativa", "A Capella", "Equilibri", "Madrigal"], illegal: ["Basso Continuo", "Atonalitat", "Solo Virtuós", "Orquestra Simfònica"] },
+            "BARROC": { legal: ["Ritme Mecànic", "Basso Continuo", "Contrast Terrassat", "Clavicèmbal"], illegal: ["Rubato", "Simetria Clàssica", "Atonalitat", "Piano Romàntic"] },
+            "CLASSICISME": { legal: ["Simetria", "Fraseig 4+4", "Melodia Acompanyada", "Claredat"], illegal: ["Basso Continuo", "Caos", "Polifonia Densa", "Sorollisme"] },
+            "ROMANTICISME": { legal: ["Rubato", "Passió", "Virtuosisme", "Orquestra Gegant"], illegal: ["Ritme Mecànic", "Simetria Freda", "Monodia", "Clavicèmbal"] },
+            "SEGLE XX": { legal: ["Polirritmia", "Atonalitat", "Canvis Bruscos", "Electrònica"], illegal: ["Tonalitat Funcional", "Basso Continuo", "Harmonia Dolça", "Cant Gregorià"] }
+        };
+        let currentEra = "", score = 0, strikes = 0, gameActive = false, cars = [];
+        let completedEras = JSON.parse(localStorage.getItem('radar_completed')) || [];
+
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        // Setup Volume
+        const savedVol = localStorage.getItem('radar_volume') || 0.5;
+        bgMusic.volume = savedVol;
+        volSlider.value = savedVol;
+
+        volSlider.addEventListener('input', () => {
+            bgMusic.volume = volSlider.value;
+            localStorage.setItem('radar_volume', volSlider.value);
+        });
+
+        function updateEraButtons() {
+            const container = document.getElementById('era-selector');
+            container.innerHTML = '';
+            Object.keys(DB).forEach(era => {
+                const btn = document.createElement('button');
+                btn.className = 'menu-btn';
+                if (completedEras.includes(era)) btn.classList.add('completed');
+                btn.textContent = era;
+                btn.onclick = () => startGame(era);
+                container.appendChild(btn);
+            });
+        }
+
+        updateEraButtons();
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(t) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain(), n = audioCtx.currentTime;
+            o.connect(g); g.connect(audioCtx.destination);
+            if (t === 'shoot') { o.frequency.setValueAtTime(800, n); o.frequency.exponentialRampToValueAtTime(100, n + 0.1); g.gain.setValueAtTime(0.2, n); g.gain.linearRampToValueAtTime(0, n + 0.1); o.start(n); o.stop(n + 0.1); }
+            else if (t === 'success') { o.frequency.setValueAtTime(600, n); o.frequency.setValueAtTime(1200, n + 0.1); g.gain.setValueAtTime(0.2, n); g.gain.linearRampToValueAtTime(0, n + 0.3); o.start(n); o.stop(n + 0.3); }
+            else { o.type = 'sawtooth'; o.frequency.setValueAtTime(150, n); o.frequency.linearRampToValueAtTime(50, n + 0.3); g.gain.setValueAtTime(0.3, n); g.gain.linearRampToValueAtTime(0, n + 0.3); o.start(n); o.stop(n + 0.3); }
+        }
+
+        function startGame(era) {
+            currentEra = era;
+            document.getElementById('current-era').textContent = currentEra;
+            score = 0; strikes = 0; cars = []; updateHUD();
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            gameActive = true;
+
+            if (bgMusic.paused) bgMusic.play().catch(e => console.log("Audio blocked"));
+
+            spawnLoop(); requestAnimationFrame(gameLoop);
+        }
+
+        function spawnLoop() {
+            if (!gameActive) return;
+            // SLOWER: increased delay from min 1000 to min 1500
+            spawnCar(); setTimeout(spawnLoop, Math.max(1500, 3500 - (score * 150)));
+        }
+
+        function spawnCar() {
+            const eras = Object.keys(DB);
+            const carEra = eras[Math.floor(Math.random() * eras.length)];
+            const eraData = DB[carEra];
+
+            const isIllegal = (carEra !== currentEra);
+            const concept = eraData.legal[Math.floor(Math.random() * eraData.legal.length)];
+
+            const el = document.createElement('div');
+            el.className = 'car';
+            el.innerHTML = `<div class="car-concept">${concept}</div>`;
+
+            const colors = ['#c0392b', '#2980b9', '#f39c12', '#27ae60', '#8e44ad'];
+            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+            document.getElementById('windshield').appendChild(el);
+            // SLOWER: reduced speed from 0.005 to 0.003
+            cars.push({ el, concept, isIllegal, progress: 0, speed: 0.003 * (1 + score * 0.05), active: true });
+        }
+        function gameLoop() {
+            if (!gameActive) return;
+            cars.forEach(c => {
+                if (!c.active) return;
+                c.progress += c.speed;
+                const scale = 0.2 + (c.progress * 1.5);
+                c.el.style.top = `${40 + (c.progress * 80)}%`;
+                c.el.style.left = `50%`; // Simplified center lane for clarity, normally would random x
+                c.el.style.transform = `translateX(-50%) scale(${scale})`;
+                c.el.style.zIndex = Math.floor(c.progress * 100);
+                if (c.progress > 1.2) {
+                    c.active = false; c.el.remove();
+                    if (c.isIllegal) triggerFail("SE T'HA ESCAPAT UN INFRACTOR!");
+                }
+            });
+            requestAnimationFrame(gameLoop);
+        }
+        function shootRadar() {
+            if (!gameActive) return;
+            playSound('shoot');
+            const f = document.getElementById('flash'); f.className = ''; void f.offsetWidth; f.className = 'anim-flash';
+            let target = null, maxP = -1;
+            cars.forEach(c => { if (c.active && c.progress > 0.6 && c.progress < 1.0 && c.progress > maxP) { maxP = c.progress; target = c; } });
+            if (target) {
+                if (target.isIllegal) { score++; playSound('success'); showFeedback("CAÇAT!", true); target.active = false; target.el.remove(); }
+                else { triggerFail("ERROR! VEHICLE LEGAL!"); }
+            }
+            updateHUD(); checkWin();
+        }
+        function triggerFail(m) { strikes++; playSound('fail'); showFeedback(m, false); updateHUD(); checkWin(); }
+        function showFeedback(t, g) { const f = document.getElementById('feedback-msg'); f.textContent = t; f.style.color = g ? '#0f0' : '#f00'; f.style.borderColor = g ? '#0f0' : '#f00'; f.style.display = 'block'; setTimeout(() => f.style.display = 'none', 1000); }
+        function updateHUD() { document.getElementById('score-val').textContent = score + "/10"; document.getElementById('strikes-val').textContent = strikes + "/3"; }
+        function checkWin() {
+            if (score >= 10) endGame(true); else if (strikes >= 3) endGame(false);
+        }
+        function endGame(w) {
+            gameActive = false;
+
+            if (w) {
+                if (!completedEras.includes(currentEra)) {
+                    completedEras.push(currentEra);
+                    localStorage.setItem('radar_completed', JSON.stringify(completedEras));
+                }
+            }
+
+            const t = document.getElementById('go-title'), m = document.getElementById('go-msg');
+            t.textContent = w ? "BONA FEINA AGENT!" : "PLAÇA RETIRADA";
+            t.style.color = w ? "#0f0" : "#e74c3c";
+            m.textContent = w ? "Torn finalitzat correctament." : "Has comès errors greus.";
+            document.getElementById('game-over-screen').style.display = 'flex';
+
+            // Re-render the menu buttons to show latest green checkmarks
+            updateEraButtons();
+        }
+
+        function returnToSelector() {
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        }
+    </script>
+</body>
+
+</html>

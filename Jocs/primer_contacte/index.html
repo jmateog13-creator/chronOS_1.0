@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIMER CONTACTE - ARXIU CLASSIFICAT</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        :root {
+            --vhs-green: #2ecc71;
+            --vhs-blue: #3498db;
+            --vhs-red: #e74c3c;
+            --vhs-white: #eeeeee;
+            --bg-dark: #121212;
+            --scanline-color: rgba(18, 16, 16, 0.1);
+            --vhs-completed: #2ecc71;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'VT323', monospace;
+            background-color: #000;
+            color: var(--vhs-white);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            background:
+                linear-gradient(rgba(18, 16, 16, 0.4), rgba(18, 16, 16, 0.4)),
+                url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0), rgba(18, 16, 16, 0.1) 50%, rgba(18, 16, 16, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* VHS Overlays */
+        .vhs-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            overflow: hidden;
+            background: radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
+        }
+
+        .noise {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/black-linen.png');
+            opacity: 0.1;
+            animation: grain 0.5s steps(10) infinite;
+        }
+
+        @keyframes grain {
+
+            0%,
+            100% {
+                transform: translate(0, 0, 0)
+            }
+
+            10% {
+                transform: translate(-5%, -10%)
+            }
+
+            30% {
+                transform: translate(3%, -15%)
+            }
+
+            50% {
+                transform: translate(12%, 9%)
+            }
+
+            70% {
+                transform: translate(9%, 4%)
+            }
+
+            90% {
+                transform: translate(-1%, 7%)
+            }
+        }
+
+        .hologram-container {
+            position: relative;
+            z-index: 5;
+            width: 90%;
+            max-width: 850px;
+            background: #050505;
+            border: 1px solid #333;
+            padding: 2.5rem;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            image-rendering: pixelated;
+        }
+
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, var(--scanline-color) 50%);
+            background-size: 100% 3px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin: 0 0 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: var(--vhs-white);
+            text-shadow: 3px 0px 1px var(--vhs-red), -3px 0px 1px var(--vhs-blue);
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-era {
+            background: #1a1a1a;
+            color: var(--vhs-white);
+            border: 1px solid #444;
+            padding: 1.2rem;
+            font-size: 1.4rem;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 2px 2px 4px black;
+            overflow: hidden;
+        }
+
+        .btn-era::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            transition: background 0.3s;
+            z-index: 0;
+        }
+
+        .btn-era span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-era:hover::before {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-era[data-era="edat_mitjana"] {
+            background-image: url('img/mitjana.jpg');
+        }
+
+        .btn-era[data-era="renaixement"] {
+            background-image: url('img/renaixement.jpg');
+        }
+
+        .btn-era[data-era="barroc"] {
+            background-image: url('img/barroc.jpg');
+        }
+
+        .btn-era[data-era="classicisme"] {
+            background-image: url('img/classicisme.jpg');
+        }
+
+        .btn-era[data-era="romanticisme"] {
+            background-image: url('img/romanticisme.jpg');
+        }
+
+        .btn-era[data-era="segle_xx"] {
+            background-image: url('img/segleXX.jpg');
+        }
+
+        .btn-era.completed {
+            border-color: var(--vhs-completed);
+            box-shadow: 0 0 15px var(--vhs-completed);
+        }
+
+        .btn-era.completed::after {
+            content: "COMPLETAT";
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: var(--vhs-completed);
+            z-index: 2;
+        }
+
+        /* Volume Control */
+        #volume-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #444;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #volume-container label {
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #333;
+            border: 1px solid #111;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 15px;
+            width: 8px;
+            background: var(--vhs-white);
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -6px;
+            border: 1px solid #000;
+        }
+
+        /* Instruction Screen */
+        #instruction-screen {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .instruction-box {
+            background: rgba(40, 40, 40, 0.5);
+            border: 1px solid #444;
+            padding: 20px;
+            margin: 20px 0;
+            line-height: 1.4;
+            font-size: 1.2rem;
+        }
+
+        .instruction-box ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        /* Game Interface */
+        #game-interface {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #hud {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+        }
+
+        /* Sequence Display */
+        #sequence-display {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .seq-item {
+            width: 140px;
+            height: 140px;
+            border: 1px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.6rem;
+            background: #000 url('img/senyaalienigena.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 5px 5px 15px rgba(0, 0, 0, 0.5);
+            color: #3f3;
+            overflow: hidden;
+        }
+
+        .seq-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 0;
+        }
+
+        .seq-item span {
+            position: relative;
+            z-index: 1;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 4px;
+            text-shadow:
+                0 0 5px rgba(51, 255, 51, 0.8),
+                0 0 10px rgba(51, 255, 51, 0.5),
+                2px 2px 2px black;
+            letter-spacing: 1px;
+        }
+
+        .seq-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.05) 50%, transparent 55%);
+            pointer-events: none;
+        }
+
+        .seq-item.unknown {
+            border-color: var(--magenta);
+            color: var(--magenta);
+            box-shadow: 0 0 10px var(--magenta);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Keypad */
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .key-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--cyan);
+            color: white;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-family: 'Rajdhani', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .key-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .key-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+            border: 5px solid transparent;
+            box-sizing: border-box;
+        }
+
+        #feedback-overlay.error-state {
+            animation: red-pulse 2s infinite;
+            border-color: rgba(255, 0, 0, 0.3);
+        }
+
+        @keyframes red-pulse {
+            0% {
+                background: rgba(20, 0, 0, 0.95);
+            }
+
+            50% {
+                background: rgba(50, 0, 0, 0.95);
+            }
+
+            100% {
+                background: rgba(20, 0, 0, 0.95);
+            }
+        }
+
+        #feedback-msg {
+            font-family: 'VT323', monospace;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .glitch-text {
+            animation: glitch 0.3s infinite;
+            text-shadow: 2px 0 var(--vhs-red), -2px 0 var(--vhs-green);
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(0);
+            }
+
+            20% {
+                transform: translate(-2px, 2px);
+            }
+
+            40% {
+                transform: translate(-2px, -2px);
+            }
+
+            60% {
+                transform: translate(2px, 2px);
+            }
+
+            80% {
+                transform: translate(2px, -2px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        .system-logs {
+            font-family: 'VT323', monospace;
+            color: var(--vhs-red);
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.8;
+            max-width: 80%;
+            border-left: 2px solid var(--vhs-red);
+            padding-left: 15px;
+        }
+
+        .system-log-line {
+            margin: 5px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid transparent;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="vhs-overlay">
+        <div class="noise"></div>
+    </div>
+
+    <div id="game-container">
+        <!-- VCR Status Indicators -->
+        <div class="vcr-timer" id="vcr-timer">00:00:00</div>
+        <div class="rec-indicator">
+            <div class="rec-dot"></div>
+            <span>PLAY</span>
+        </div>
+
+        <div class="hologram-container">
+            <div class="scanline"></div>
+
+            <!-- Instruction Screen -->
+            <div id="instruction-screen">
+                <p style="margin-bottom: 0px; font-size: 1.5rem; opacity: 0.7;">INSTRUCCIONS DE DESCODIFICACIÓ</p>
+                <h1>MANUAL D'ÚS</h1>
+
+                <div class="instruction-box">
+                    <p>Benvingut, agent. La teva missió és interceptar i validar les senyals enviades a través del
+                        temps.</p>
+                    <ul>
+                        <li>Selecciona un <strong>ARXIU TEMPORAL</strong> per començar.</li>
+                        <li>Observa la <strong>SEQÜÈNCIA</strong> de conceptes musicals.</li>
+                        <li>Descodifica l'últim element per completar la sèrie.</li>
+                        <li>Tens un marge de <strong>3 ERRORS</strong> abans que el sistema col·lapsi.</li>
+                        <li>L'objectiu és assegurar <strong>10 SECTORS</strong> per cada època.</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn-era" onclick="showEraSelection()"><span>INICIAR SISTEMA</span></button>
+                </div>
+            </div>
+
+            <!-- Start Screen (Era Selection) -->
+            <div id="start-screen" class="hidden">
+                <p style="margin-bottom: 0px; font-size: 1.5rem; opacity: 0.7;">PROJECTE CLASSIFICAT #88-C</p>
+                <h1>PRIMER CONTACTE</h1>
+                <p style="font-size: 1.5rem;">DESCODIQUER SENYAL ANALÒGICA...</p>
+                <div class="era-grid">
+                    <button class="btn-era" data-era="edat_mitjana"><span>ARXIU 01: MEDIEVAL</span></button>
+                    <button class="btn-era" data-era="renaixement"><span>ARXIU 02: RENAIXEMENT</span></button>
+                    <button class="btn-era" data-era="barroc"><span>ARXIU 03: BARROC</span></button>
+                    <button class="btn-era" data-era="classicisme"><span>ARXIU 04: CLASSICISME</span></button>
+                    <button class="btn-era" data-era="romanticisme"><span>ARXIU 05: ROMANTICISME</span></button>
+                    <button class="btn-era" data-era="segle_xx"><span>ARXIU 06: SEGLE XX</span></button>
+                </div>
+            </div>
+
+            <!-- Game Interface -->
+            <div id="game-interface" class="hidden">
+                <div id="hud">
+                    <span>SECTOR: <span id="score">0</span>/10</span>
+                    <span style="color:var(--vhs-red)">ERRORS: <span id="lives">0</span>/3</span>
+                </div>
+
+                <div id="sequence-display">
+                    <!-- Sequence items injected here -->
+                </div>
+
+                <div id="keypad">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <div id="feedback-msg"></div>
+            <div id="error-logs" class="system-logs hidden">
+                <div class="system-log-line">> CRITICAL_FAILURE: PARITY_CHECK_FAILED</div>
+                <div class="system-log-line">> MEMORY_DUMP: STATUS_OVERFLOW_0x7F</div>
+                <div class="system-log-line">> SIGNAL_CORRUPTED: SYNCHRONIZATION_LOST</div>
+                <div class="system-log-line">> SYSTEM_LOCKDOWN_ACTIVE</div>
+            </div>
+            <button class="btn-era" onclick="returnToMenu()"><span>TORNAR AL MENÚ</span></button>
+        </div>
+
+        <!-- Volume Control -->
+        <div id="volume-container">
+            <label>VOL</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+        </div>
+
+        <audio id="bg-music" loop>
+            <source src="audio/Magnetic Static Ritual.m4a" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Each entry: { seq: ["A", "B", "C"], ans: "D", decoys: ["X", "Y", "Z"], logic: "Explanation" }
+        const DB = {
+            edat_mitjana: [
+                { seq: ["Monodia", "Cant Gregorià", "Religiós"], ans: "Llatí", decoys: ["Polifonia", "Piano", "Atonal"], logic: "Característiques del Cant Gregorià" },
+                { seq: ["Guido d'Arezzo", "Ut-Re-Mi", "Tetragrama"], ans: "Mà Guidoniana", decoys: ["Pentagrama", "Clau de Sol", "Tablatura"], logic: "Invencions de Guido" },
+                { seq: ["Trobador", "Joglars", "Cantigas"], ans: "Llengua Vulgar", decoys: ["Llatí", "Missa", "Organum"], logic: "Música Profana" },
+                { seq: ["Leonin", "Perotin", "Notre Dame"], ans: "Ars Antiqua", decoys: ["Ars Nova", "Renaixement", "Barroc"], logic: "Escola de Notre Dame" },
+                { seq: ["Viola de Roda", "Llaüt", "Saltiri"], ans: "Instruments Medievals", decoys: ["Violí", "Piano", "Clarinet"], logic: "Instruments de l'època" },
+                { seq: ["Kyrie", "Gloria", "Credo"], ans: "Sanctus", decoys: ["Introito", "Aleluya", "Requiem"], logic: "Parts de la Missa" },
+                { seq: ["Monodia", "Organum", "Motet"], ans: "Polifonia", decoys: ["Homofonia", "Melodia Acompanyada", "Soroll"], logic: "Evolució de la textura" },
+                { seq: ["Alfons X", "Santa Maria", "Miracles"], ans: "Cantigas", decoys: ["Missa", "Opera", "Lied"], logic: "Obres d'Alfons X" },
+                { seq: ["Neumes", "Notes Quadrades", "4 Línies"], ans: "Notació Medieval", decoys: ["Notació Moderna", "Tablatura", "Gràfic"], logic: "Escriptura musical" },
+                { seq: ["Adam de la Halle", "Bernart de Ventadorn", "Guillem de Peitieu"], ans: "Trobadors", decoys: ["Monjos", "Compositors Clàssics", "Rockstars"], logic: "Noms de Trobadors" }
+            ],
+            renaixement: [
+                { seq: ["Soprano", "Contralt", "Tenor"], ans: "Baix", decoys: ["Baríton", "Mezzo", "Castrato"], logic: "Veus de la Polifonia" },
+                { seq: ["Josquin", "Palestrina", "Victoria"], ans: "Lassus", decoys: ["Bach", "Mozart", "Beethoven"], logic: "Grans Polifonistes" },
+                { seq: ["Kyrie", "Gloria", "Credo"], ans: "Agnus Dei", decoys: ["Introit", "Gradual", "Ofertorium"], logic: "Ordinari de la Missa" },
+                { seq: ["Viola da Gamba", "Llaüt", "Flauta de Bec"], ans: "Consort", decoys: ["Orquestra", "Banda", "Grup de Rock"], logic: "Agrupacions instrumentals" },
+                { seq: ["Humanisme", "Raó", "Equilibri"], ans: "Antropocentrisme", decoys: ["Teocentrisme", "Caos", "Emoció"], logic: "Pensament Renaixentista" },
+                { seq: ["Madrigal", "Villancico", "Ensalada"], ans: "Chanson", decoys: ["Missa", "Motet", "Coral"], logic: "Formes Profanes" },
+                { seq: ["Luter", "Reforma", "Alemany"], ans: "Coral", decoys: ["Missa Llatina", "Motet", "Gregorià"], logic: "Música Protestant" },
+                { seq: ["Trento", "Contrareforma", "Claredat"], ans: "Palestrina", decoys: ["Luter", "Josquin", "Machaut"], logic: "Concili de Trento" },
+                { seq: ["Petrucci", "Gutenberg", "Venècia"], ans: "Impremta Musical", decoys: ["Manuscrit", "Fotocòpia", "Internet"], logic: "Difusió musical" },
+                { seq: ["Pavana", "Gallarda", "Branle"], ans: "Danses", decoys: ["Sonates", "Simfonies", "Operes"], logic: "Balls de l'època" }
+            ],
+            barroc: [
+                { seq: ["Allemande", "Courante", "Sarabande"], ans: "Gigue", decoys: ["Sonata", "Fuga", "Minuet"], logic: "Parts de la Suite" },
+                { seq: ["Bach", "Händel", "Vivaldi"], ans: "Purcell", decoys: ["Mozart", "Haydn", "Beethoven"], logic: "Compositors Barrocs" },
+                { seq: ["Exposició", "Desenvolupament", "Reexposició"], ans: "Fuga", decoys: ["Sonata", "Rondo", "Lied"], logic: "Estructura de la Fuga (simplificada)" },
+                { seq: ["Violí", "Viola", "Violoncel"], ans: "Contrabaix", decoys: ["Piano", "Guitarra", "Flauta"], logic: "Família de Corda" },
+                { seq: ["Orfeo", "Dido i Eneas", "Juli Cèsar"], ans: "Òpera", decoys: ["Missa", "Oratori", "Cantata"], logic: "Títols d'Òperes" },
+                { seq: ["Recitatiu", "Ària", "Cor"], ans: "Obertura", decoys: ["Sonata", "Concert", "Fuga"], logic: "Parts de l'Òpera" },
+                { seq: ["Clavecí", "Violoncel", "Fagot"], ans: "Baix Continu", decoys: ["Melodia", "Solo", "Acompanyament"], logic: "Instruments del Baix Continu" },
+                { seq: ["Terrasses", "Contrast", "Clarobscur"], ans: "Dinàmica Barroca", decoys: ["Crescendo", "Diminuendo", "Pla"], logic: "Característiques d'estil" },
+                { seq: ["Concertino", "Ripieno", "Tutti"], ans: "Concerto Grosso", decoys: ["Concert Solista", "Simfonia", "Sonata"], logic: "Tipus de Concert" },
+                { seq: ["Stradivarius", "Guarneri", "Amati"], ans: "Luthiers", decoys: ["Compositors", "Cantants", "Pintors"], logic: "Constructors de violins" }
+            ],
+            classicisme: [
+                { seq: ["Haydn", "Mozart", "Beethoven"], ans: "Escola de Viena", decoys: ["Escola de París", "Escola de Londres", "Escola de Berlín"], logic: "Els tres grans" },
+                { seq: ["Exposició", "Desenvolupament", "Reexposició"], ans: "Forma Sonata", decoys: ["Rondo", "Tema i Variacions", "Minuet"], logic: "Estructura primer moviment" },
+                { seq: ["Allegro", "Adagio", "Minuet"], ans: "Presto", decoys: ["Largo", "Andante", "Moderato"], logic: "Moviments de la Simfonia" },
+                { seq: ["Violí 1", "Violí 2", "Viola"], ans: "Violoncel", decoys: ["Contrabaix", "Piano", "Clarinet"], logic: "Quartet de Corda" },
+                { seq: ["Equilibri", "Proporció", "Senzillesa"], ans: "Bellesa Ideal", decoys: ["Exageració", "Contrast", "Caos"], logic: "Estètica Clàssica" },
+                { seq: ["Piano", "Clarinet", "Trompa"], ans: "Orquestra Clàssica", decoys: ["Orquestra Barroca", "Banda de Rock", "Grup de Jazz"], logic: "Nous instruments" },
+                { seq: ["Crescendo", "Diminuendo", "Sforzato"], ans: "Dinàmica Gradual", decoys: ["Dinàmica de Terrasses", "Pla", "Silenci"], logic: "Novetats expressives" },
+                { seq: ["Noces de Fígaro", "Don Giovanni", "Flauta Màgica"], ans: "Òperes de Mozart", decoys: ["Òperes de Verdi", "Òperes de Wagner", "Òperes de Rossini"], logic: "Obres de Mozart" },
+                { seq: ["A", "B", "A", "C"], ans: "A (Rondó)", decoys: ["D", "E", "F"], logic: "Estructura Rondó" },
+                { seq: ["Gluck", "Reforma", "Senzillesa"], ans: "Òpera Seriosa", decoys: ["Òpera Bufa", "Singspiel", "Zarzuela"], logic: "Reforma de l'òpera" }
+            ],
+            romanticisme: [
+                { seq: ["Schubert", "Schumann", "Brahms"], ans: "Lied", decoys: ["Òpera", "Simfonia", "Concert"], logic: "Mestres del Lied" },
+                { seq: ["Verdi", "Puccini", "Rossini"], ans: "Òpera Italiana", decoys: ["Òpera Alemanya", "Òpera Francesa", "Òpera Russa"], logic: "Nacionalitat" },
+                { seq: ["Wagner", "Leitmotiv", "Obra d'Art Total"], ans: "Drama Musical", decoys: ["Òpera Bufa", "Singspiel", "Opereta"], logic: "Concepte Wagnerià" },
+                { seq: ["Chopin", "Liszt", "Rubinstein"], ans: "Piano Virtuós", decoys: ["Violí Virtuós", "Cantant", "Director"], logic: "Instrumentistes" },
+                { seq: ["Simfonia Fantàstica", "Moldava", "Aprenent de Bruixot"], ans: "Música Programàtica", decoys: ["Música Pura", "Música Absoluta", "Música de Cambra"], logic: "Descriuen històries" },
+                { seq: ["Txaikovski", "Dvorak", "Grieg"], ans: "Nacionalisme", decoys: ["Impressionisme", "Expressionisme", "Futurisme"], logic: "Moviment Nacionalista" },
+                { seq: ["Rubato", "Expressivitat", "Sentiment"], ans: "Subjectivisme", decoys: ["Objectivisme", "Racionalisme", "Fredor"], logic: "Estètica Romàntica" },
+                { seq: ["Tuba", "Contrafagot", "Corn Anglès"], ans: "Orquestra Romàntica", decoys: ["Orquestra Barroca", "Orquestra Clàssica", "Quartet"], logic: "Ampliació orquestral" },
+                { seq: ["Lied", "Nocturn", "Estudi"], ans: "Petites Formes", decoys: ["Simfonia", "Concert", "Òpera"], logic: "Formes breus" },
+                { seq: ["Beethoven", "9a Simfonia", "Himne Alegria"], ans: "Pont al Romanticisme", decoys: ["Classicisme Pur", "Barroc Tardà", "Segle XX"], logic: "Transició" }
+            ],
+            segle_xx: [
+                { seq: ["Debussy", "Ravel", "Satie"], ans: "Impressionisme", decoys: ["Expressionisme", "Futurisme", "Dadaisme"], logic: "Estil Francès" },
+                { seq: ["Schoenberg", "Berg", "Webern"], ans: "Segona Escola de Viena", decoys: ["Primera Escola de Viena", "Grup dels Cinc", "Les Six"], logic: "Dodecafonisme" },
+                { seq: ["Stravinsky", "Consagració", "Escàndol"], ans: "Ballets Russos", decoys: ["Òpera de París", "Scala de Milà", "Broadway"], logic: "Context estrena" },
+                { seq: ["Russolo", "Soroll", "Màquines"], ans: "Futurisme", decoys: ["Passat", "Present", "Eternitat"], logic: "Moviment italià" },
+                { seq: ["Cage", "4'33''", "Silenci"], ans: "Aleatorietat", decoys: ["Control", "Partitura", "Melodia"], logic: "Música experimental" },
+                { seq: ["Sintetitzador", "Theremin", "Ondes Martenot"], ans: "Música Electrònica", decoys: ["Música Acústica", "Música Vocal", "Música Tradicional"], logic: "Instruments elèctrics" },
+                { seq: ["Reich", "Glass", "Riley"], ans: "Minimalisme", decoys: ["Maximalisme", "Complexitat", "Caos"], logic: "Repetició" },
+                { seq: ["Jazz", "Blues", "Ragtime"], ans: "Música Afroamericana", decoys: ["Música Europea", "Música Asiàtica", "Música Antiga"], logic: "Arrels del Jazz" },
+                { seq: ["Atonalitat", "Dissonància", "Trencament"], ans: "Segle XX", decoys: ["Segle XIX", "Segle XVIII", "Segle XVII"], logic: "Característiques generals" },
+                { seq: ["Boulez", "Stockhausen", "Xenakis"], ans: "Avantguarda", decoys: ["Retaguarda", "Tradició", "Conservadorisme"], logic: "Post-guerra" }
+            ]
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let score = 0;
+        let lives = 0;
+        let gameActive = false;
+        let currentSequence = null;
+        let sequenceQueue = [];
+        let completedEras = JSON.parse(localStorage.getItem('primer_contacte_completed')) || [];
+
+        // --- AUDIO ---
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        // Restore volume
+        if (volSlider) {
+            volSlider.value = localStorage.getItem('primer_contacte_volume') || 0.5;
+            bgMusic.volume = volSlider.value;
+
+            volSlider.addEventListener('input', (e) => {
+                bgMusic.volume = e.target.value;
+                localStorage.setItem('primer_contacte_volume', e.target.value);
+            });
+        }
+
+        function startAudio() {
+            if (bgMusic && bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio play blocked by browser"));
+            }
+        }
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'beep') {
+                // Lo-fi tape noise
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'success') {
+                // 8-bit success
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.setValueAtTime(800, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'error') {
+                // Harsh tape distortion
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(30, now + 0.5);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // --- VCR TIMER ---
+        function updateVCRTimer() {
+            const timer = document.getElementById('vcr-timer');
+            setInterval(() => {
+                const now = new Date();
+                const h = String(now.getHours()).padStart(2, '0');
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                timer.textContent = `${h}:${m}:${s}`;
+            }, 1000);
+        }
+        updateVCRTimer();
+
+        // --- LOGIC ---
+        function showEraSelection() {
+            startAudio();
+            document.getElementById('instruction-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('start-screen').style.display = 'block'; // Reset display if it was set to none
+            updateCompletedUI();
+        }
+
+        function returnToMenu() {
+            document.getElementById('feedback-overlay').style.display = 'none';
+            document.getElementById('game-interface').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('start-screen').style.display = 'block';
+            updateCompletedUI();
+        }
+
+        function updateCompletedUI() {
+            document.querySelectorAll('#start-screen .btn-era').forEach(btn => {
+                const era = btn.dataset.era;
+                if (completedEras.includes(era)) {
+                    btn.classList.add('completed');
+                }
+            });
+        }
+
+        document.querySelectorAll('#start-screen .btn-era').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentEra = btn.dataset.era;
+                startGame();
+            });
+        });
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-interface').classList.remove('hidden');
+
+            score = 0;
+            lives = 0;
+            gameActive = true;
+
+            // Load and shuffle sequences
+            sequenceQueue = [...DB[currentEra]];
+            sequenceQueue.sort(() => Math.random() - 0.5);
+
+            updateHUD();
+            nextSequence();
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function nextSequence() {
+            if (score >= 10 || sequenceQueue.length === 0) {
+                endGame(true);
+                return;
+            }
+            if (lives >= 3) {
+                endGame(false);
+                return;
+            }
+
+            currentSequence = sequenceQueue.pop();
+
+            // Display Sequence
+            const display = document.getElementById('sequence-display');
+            display.innerHTML = '';
+
+            currentSequence.seq.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'seq-item';
+                div.innerHTML = `<span>${item}</span>`;
+                display.appendChild(div);
+            });
+
+            const unknown = document.createElement('div');
+            unknown.className = 'seq-item unknown';
+            unknown.innerHTML = `<span>?</span>`;
+            display.appendChild(unknown);
+
+            // Display Options
+            const keypad = document.getElementById('keypad');
+            keypad.innerHTML = '';
+
+            let options = [currentSequence.ans, ...currentSequence.decoys];
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'key-btn';
+                btn.textContent = opt;
+                btn.onclick = () => handleAnswer(opt);
+                keypad.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(answer) {
+            if (!gameActive) return;
+
+            if (answer === currentSequence.ans) {
+                score++;
+                playSound('success');
+                // Visual feedback on the unknown box
+                const unknown = document.querySelector('.seq-item.unknown');
+                unknown.textContent = answer;
+                unknown.style.borderColor = 'var(--cyan)';
+                unknown.style.color = 'var(--cyan)';
+                unknown.classList.remove('unknown');
+
+                setTimeout(nextSequence, 1000);
+            } else {
+                lives++;
+                playSound('error');
+                // Visual shake
+                document.getElementById('game-container').animate([
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-10px)' },
+                    { transform: 'translateX(10px)' },
+                    { transform: 'translateX(0)' }
+                ], { duration: 300 });
+
+                updateHUD();
+                if (lives >= 3) {
+                    setTimeout(() => endGame(false), 500);
+                }
+            }
+            updateHUD();
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            const overlay = document.getElementById('feedback-overlay');
+            const msg = document.getElementById('feedback-msg');
+            const logs = document.getElementById('error-logs');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                msg.textContent = "CONNEXIÓ ESTABLERTA. MISSATGE REBUT.";
+                msg.style.color = "var(--vhs-green)";
+                msg.classList.remove('glitch-text');
+                overlay.classList.remove('error-state');
+                logs.classList.add('hidden');
+                playSound('success');
+
+                if (!completedEras.includes(currentEra)) {
+                    completedEras.push(currentEra);
+                    localStorage.setItem('primer_contacte_completed', JSON.stringify(completedEras));
+                }
+            } else {
+                msg.textContent = "FATAL ERROR: DESCONNEXIÓ";
+                msg.style.color = "var(--vhs-red)";
+                msg.classList.add('glitch-text');
+                overlay.classList.add('error-state');
+                logs.classList.remove('hidden');
+                playSound('error');
+            }
+        }
+
+    </script>
+</body>
+
+</html>

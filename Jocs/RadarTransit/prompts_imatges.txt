@@ -1,0 +1,62 @@
+# PROMPTS PER A MILLORAR VISUALMENT "RADAR DE TRÀNSIT"
+
+Aquests prompts estan optimitzats per a eines d'IA generativa d'imatges. L'objectiu és donar-li un estil "Time Police / Retro-Futurista" que encaixi amb la interfície militar del joc.
+
+---
+
+## 1. BACKGROUND: INTERIOR DE LA PATRULLA (Windshield)
+Aquest fons anirà darrere la carretera. Ha de semblar que estem dins d'un vehicle de vigilància.
+
+**Prompt:**
+> View from inside a futuristic police car dashboard looking out through a large windshield at a long, infinite highway at night. Neon cyberpunk aesthetic, digital HUD elements reflected on the glass, soft glowing dashboard lights in green and amber. High detail, cinematic lighting, 8k, vaporwave colors, 16:9 aspect ratio.
+
+---
+
+## 2. CARRETERA I ENTORN
+Si prefereixes un estil més realista o pintat.
+
+**Prompt:**
+> A futuristic highway leading to the horizon, perspective view from a car, long straight road with glowing lane markers. Surroundings are a mix of different historical eras blending into each other: medieval castles on one side, futuristic skyscrapers on the other. Stylized digital art, synthwave vibe, deep blues and purples.
+
+---
+
+## 3. VEHICLES (COTRES) - VISTA FRONTAL (DE FRONT)
+Aquests prompts estan dissenyats per a una perspectiva de front, com si el cotxe vingués directament cap a tu a la carretera.
+
+**Prompt 1: Vehicle Medieval (Carruatge)**
+> Front view of a medieval wooden horse-drawn carriage coming towards the camera, rustic textures, rough wood, hay bales, isolated on white background, game sprite style.
+
+**Prompt 2: Vehicle Barroc/Clàssic (Berlina Reial)**
+> Front view of an ornate 18th-century royal carriage, golden decorations, velvet curtains, symmetrical and imposing, isolated on white background, high detail.
+
+**Prompt 3: Vehicle Romàntic (Locomotora de vapor de carrer)**
+> Front view of a 19th-century steam-powered vehicle, large brass boiler in front, smokestack, glowing firebox, steampunk aesthetic, coming towards camera, isolated on white background.
+
+**Prompt 4: Vehicle Segle XX (Cotxe Clàssic anys 50)**
+> Front view of a vintage 1950s car, iconic chrome grill and round headlights, turquoise paint, shiny finish, isolated on white background, retro look.
+
+**Prompt 5: Vehicle Futurista / Time Police (Patrulla Cyberpunk)**
+> Front view of a sleek futuristic police interceptor, aggressive glowing red and blue LED lights, aerodynamic matte black body, menacing look, coming towards camera, isolated on white background.
+
+---
+
+## 4. DASHBOARD (PANEL DE CONTROL)
+Per substituir la caixa negra de sota.
+
+**Prompt:**
+> Close up of a military-grade surveillance dashboard, heavy metal texture, tactile switches, green monochrome CRT screens displaying waveforms, analog dials, gritty and weathered look, "Time-Police" aesthetic, top-down perspective, high resolution.
+
+---
+
+## 5. EFECTES DE RADAR (HUD)
+Per posar a sobre la pantalla.
+
+**Prompt:**
+> Circular sonar radar interface, green glowing lines, digital scanning grid, military UI, transparent background, vector style, clean and sharp.
+
+---
+
+### CONSELLS PER A LA IMPLEMENTACIÓ:
+1. **Fons:** Posa la imatge del windshield com a `background-image` del `#windshield`.
+2. **Dashboard:** Usa la imatge del dashboard com a fons del div `#dashboard`.
+3. **Cotxes:** Pots canviar els `div` de `.car` per `img` o usar `background-image` amb les fotos que generis.

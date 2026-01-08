@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Refugi: Protocol de Veritat</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="monitor-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Fallout Start Screen -->
+    <div id="start-screen" class="modal terminal-screen">
+        <div class="terminal-content">
+            <h1 class="glitch" data-text="REFUGI PROTOCOL">REFUGI PROTOCOL</h1>
+            <div class="scan-line"></div>
+            <p>> SYSTEM BOOT...</p>
+            <p>> CONNECTING TO ARCHIVE...</p>
+            <p>> AWAITING USER INPUT_</p>
+            <br>
+            <button id="start-btn" class="terminal-btn">[ INICIAR PROTOCOL ]</button>
+        </div>
+    </div>
+
+    <!-- Era Selector Menu (Pip-Boy Style) -->
+    <div id="era-menu" class="modal hidden">
+        <div class="pip-boy-frame">
+            <h2>SELECT ERA DATABASE</h2>
+            <div class="grid-eras">
+                <button class="era-btn" data-era="EDAT MITJANA">EDAT MITJANA</button>
+                <button class="era-btn" data-era="RENAIXEMENT">RENAIXEMENT</button>
+                <button class="era-btn" data-era="BARROC">BARROC</button>
+                <button class="era-btn" data-era="CLASSICISME">CLASSICISME</button>
+                <button class="era-btn" data-era="ROMANTICISME">ROMANTICISME</button>
+                <button class="era-btn" data-era="SEGLE XX">SEGLE XX</button>
+            </div>
+            <button id="back-to-start" class="terminal-btn small">[ LOGOUT ]</button>
+        </div>
+    </div>
+
+    <div id="game-ui" class="hidden-ui">
+        <!-- Main Game Container -->
+        <header>
+            <div class="hud-box">
+                <span>SYSTEM:</span>
+                <span id="system-status" class="blink">ONLINE</span>
+            </div>
+            <div class="hud-box">
+                <span id="current-era-display">ERA: UNKNOWN</span>
+            </div>
+            <div class="hud-box">
+                <span>PROCESSED:</span>
+                <span id="score">0</span> / 10
+            </div>
+            <!-- Volume Control -->
+            <div class="hud-box volume-control">
+                <span>VOL:</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <button id="abort-btn" class="hud-btn">X</button>
+        </header>
+
+        <!-- Background Audio -->
+        <audio id="bg-music" loop>
+            <source src="audio/Fallout_Sandstorm.m4a" type="audio/mpeg">
+        </audio>
+
+        <!-- Main Viewport -->
+        <main>
+            <!-- The Booth Window -->
+            <div id="booth-window">
+                <div id="shutter" class="shutter-open"></div>
+                <div id="visitor-container">
+                    <!-- Silhouette SVG will be injected here -->
+                    <div id="visitor-silhouette"></div>
+                </div>
+                <div id="speech-bubble" class="hidden">
+                    <p id="visitor-statement">Carregant informació...</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div id="control-panel">
+                <button id="btn-allow" class="control-btn allow">OBRIR (VERITAT)</button>
+                <div id="feedback-display">ESPERANT...</div>
+                <button id="btn-deny" class="control-btn deny">TANCAR (MENTIDA)</button>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="hidden">
+        <h1 class="glitch" data-text="GAME OVER">GAME OVER</h1>
+        <p>PROTOCOL VIOLAT.</p>
+        <p id="death-reason">Has deixat entrar una mentida.</p>
+        <button onclick="location.reload()">REINICIAR SISTEMA</button>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victory-screen" class="hidden">
+        <h1>ACCÉS GARANTIT</h1>
+        <p>Torn de guàrdia finalitzat amb èxit.</p>
+        <p>La història està segura.</p>
+        <button onclick="location.reload()">NOVA TORN</button>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

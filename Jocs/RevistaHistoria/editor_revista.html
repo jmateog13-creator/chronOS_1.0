@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revista Musical - Premium Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-desk: #dcd0bc;
+            --paper: #fffcf5;
+            --ink: #1a1a1a;
+            --accent: #b03020;
+            --accent-hover: #d43f2d;
+            --tray-bg: #2d1b18;
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.15);
+            --shadow-hard: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-desk);
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            font-family: 'Outfit', sans-serif;
+            color: var(--ink);
+            user-select: none;
+            transition: background-image 0.8s ease;
+        }
+
+        /* PREMIUM TEXTURES */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: url('https://www.transparenttextures.com/patterns/natural-paper.png');
+            opacity: 0.4;
+            z-index: 5000;
+        }
+
+        /* SCREENS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* INTRO SCREEN */
+        #intro-screen {
+            background: radial-gradient(circle at center, #f5efe6 0%, #e0d5c1 100%);
+        }
+
+        .intro-box {
+            background: white;
+            padding: 50px;
+            border-radius: 4px;
+            box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.1), -20px -20px 60px rgba(255, 255, 255, 0.5);
+            max-width: 650px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .intro-box h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--ink);
+            letter-spacing: -1px;
+        }
+
+        /* BUTTONS */
+        .btn-premium {
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: var(--ink);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hard);
+            background: var(--accent);
+        }
+
+        /* MENU SCREEN */
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            perspective: 1000px;
+        }
+
+        .era-card {
+            background: white;
+            padding: 30px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            width: 200px;
+        }
+
+        .era-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: var(--shadow-hard);
+        }
+
+        /* HUD */
+        .hud-premium {
+            width: 94%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            z-index: 50;
+        }
+
+        .hud-title h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin: 0;
+            color: white;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .hud-title small {
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+        }
+
+        /* MAGAZINE SPREAD */
+        #magazine-spread {
+            width: 94%;
+            max-width: 1100px;
+            height: 55vh;
+            /* Reduced height to leave space for tray without overlap */
+            background: var(--paper);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border-radius: 2px;
+            overflow: hidden;
+            /* Ensure anything placed doesn't leak out */
+        }
+
+        /* Center Binding */
+        #magazine-spread::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            transform: translateX(-50%);
+            background: linear-gradient(to right,
+                    rgba(0, 0, 0, 0.1) 0%,
+                    rgba(0, 0, 0, 0.3) 45%,
+                    rgba(0, 0, 0, 0.4) 50%,
+                    rgba(0, 0, 0, 0.3) 55%,
+                    rgba(0, 0, 0, 0) 100%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .page {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 10px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* DROP ZONE PREMIUM */
+        .drop-zone {
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ccc;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            /* CRITICAL: Clips images to the slot */
+        }
+
+        .drop-zone.hover {
+            background: rgba(176, 48, 32, 0.05);
+            border: 1px dashed var(--accent);
+            color: var(--accent);
+        }
+
+        .drop-zone.filled {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* PLACED IMAGE CONTAINER */
+        .placed-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .placed-image-container img {
+            max-width: 100%;
+            max-height: 80%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .placed-image-container small {
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-top: 4px;
+            color: var(--ink);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* TRAY PREMIUM */
+        #tray {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 22vh;
+            background: var(--tray-bg);
+            background-image: radial-gradient(circle at 50% 50%, #3e2723 0%, #1d100e 100%);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            padding: 0 40px;
+            gap: 20px;
+            box-shadow: inset 0 20px 40px rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 100;
+            /* Above the magazine spread if they overlap */
+        }
+
+        /* ITEM PREMIUM */
+        .item {
+            background: white;
+            padding: 8px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            border-radius: 1px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .item img {
+            max-width: 100%;
+            max-height: 70%;
+            object-fit: contain;
+        }
+
+        .item small {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 5px;
+            text-align: center;
+            text-transform: uppercase;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hard);
+        }
+
+        /* Shapes - Optimized for height */
+        .item.vertical {
+            height: 140px;
+            width: 90px;
+        }
+
+        .item.horizontal {
+            width: 140px;
+            height: 90px;
+        }
+
+        .item.square {
+            width: 110px;
+            height: 110px;
+        }
+
+        /* MODALS PREMIUM */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            /* Topmost layer */
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            box-shadow: 20px 20px 0 var(--ink);
+            border: 1px solid var(--ink);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin: 0 0 15px;
+        }
+
+        /* UI CLEANUP */
+        .volume-glass {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 8px 15px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            color: white;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- INTRO SCREEN -->
+    <div id="intro-screen" class="screen active">
+        <div class="intro-box">
+            <h1>Revista de la Història</h1>
+            <p>Ets l'editor en cap d'una publicació de prestigi. Reorganitza els elements musicals de cada època per
+                completar l'edició especial d'avui.</p>
+            <button class="btn-premium" onclick="startGame()">Començar</button>
+        </div>
+    </div>
+
+    <!-- MODAL SYSTEM -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content" id="modal-content">
+            <h3 id="modal-title">Atenció</h3>
+            <p id="modal-message">Missatge de l'editorial.</p>
+            <button class="btn-premium" onclick="closeModal()"
+                style="padding: 10px 30px; font-size: 0.9rem;">ENTÈS</button>
+        </div>
+    </div>
+
+    <!-- MENU -->
+    <div id="menu-screen" class="screen">
+        <h1
+            style="color: white; font-family: 'Playfair Display'; font-size: 3.5rem; text-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 50px;">
+            Arxiu Històric</h1>
+        <div class="era-grid">
+            <div class="era-card" onclick="startLevel('medieval')">
+                <h3>Edat Mitjana</h3>
+            </div>
+            <div class="era-card" onclick="startLevel('renaixement')">
+                <h3>Renaixement</h3>
+            </div>
+            <div class="era-card" onclick="startLevel('barroc')">
+                <h3>Barroc</h3>
+            </div>
+            <div class="era-card" onclick="startLevel('classicisme')">
+                <h3>Classicisme</h3>
+            </div>
+            <div class="era-card" onclick="startLevel('romanticisme')">
+                <h3>Romanticisme</h3>
+            </div>
+            <div class="era-card" onclick="startLevel('segle20')">
+                <h3>Segle XX</h3>
+            </div>
+        </div>
+
+        <div class="volume-glass" style="margin-top: 60px;">
+            <span>Volume</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" oninput="updateVolume()">
+        </div>
+    </div>
+
+    <!-- EDITOR -->
+    <div id="editor-screen" class="screen">
+        <div class="hud-premium">
+            <button onclick="location.reload()"
+                style="background:none; border:none; cursor:pointer; font-family: 'Outfit'; letter-spacing: 2px; text-transform: uppercase; color: white; opacity: 0.8;">
+                ⬅ Sortir
+            </button>
+            <div class="hud-title" style="text-align: center;">
+                <h2 id="era-title">Era</h2>
+                <small id="level-indicator">Edició 1/3</small>
+            </div>
+            <button id="btn-print" class="btn-premium" onclick="validateMagazine()"
+                style="padding: 10px 20px; font-size: 0.8rem; background: var(--paper); color: var(--ink);">
+                IMPRIMIR EDICIÓ ⎙
+            </button>
+        </div>
+
+        <div id="magazine-spread">
+            <div class="page" id="page-left">
+                <div
+                    style="grid-column: 1 / -1; grid-row: 1 / 2; font-family: 'Playfair Display'; font-size: 1.8rem; border-bottom: 1px solid var(--ink); display: flex; align-items: flex-end; padding-bottom: 5px; margin-bottom: 15px; color: #444;">
+                    CRÒNICA MUSICAL
+                </div>
+            </div>
+            <div class="page" id="page-right"></div>
+        </div>
+
+        <div id="tray"></div>
+    </div>
+
+    <!-- VICTORY -->
+    <div id="victory-screen" class="screen" style="background: var(--ink); color: white;">
+        <div id="magazine-cover" style="padding: 60px; border: 1px solid white; text-align: center;">
+            <h1 style="font-family: 'Playfair Display'; font-size: 4rem; margin: 0;">MÚSICA</h1>
+            <h2 style="font-family: 'Outfit'; font-weight: 300; letter-spacing: 5px; margin: 20px 0;">ARXIU COMPLET</h2>
+            <button class="btn-premium" onclick="location.reload()" style="background: white; color: var(--ink);">TORNAR
+                AL MENÚ</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop src="audio/Midnight Pages.m4a"></audio>
+
+    <script>
+        const MAGAZINE_DB = {
+            medieval: {
+                name: "L'Edat Mitjana",
+                style: "Grabado",
+                levels: [
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Figura Mística", page: "left", area: "2 / 1 / 5 / 4" },
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Corda Pinçada", page: "right", area: "5 / 1 / 7 / 4" }
+                        ],
+                        items: [
+                            { id: "hildegard", type: "composer", shape: "vertical", emoji: "🧕", name: "Hildegard von Bingen", era: "medieval" },
+                            { id: "llaut", type: "instrument", shape: "horizontal", emoji: "🎸", name: "Llaüt Medieval", era: "medieval" }
+                        ],
+                        distractors: [
+                            { id: "guitarraelectrica", type: "instrument", shape: "vertical", emoji: "🎸", name: "Guitarra Elèctrica", era: "anachronism" },
+                            { id: "televisio", type: "other", shape: "square", emoji: "📺", name: "Televisió", era: "anachronism" }
+                        ]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "context", shape: "square", label: "Vida Monàstica", page: "left", area: "2 / 2 / 5 / 5" },
+                            { id: "s2", type: "symbol", shape: "square", label: "Notació Primordial", page: "right", area: "2 / 2 / 4 / 4" },
+                            { id: "s3", type: "composer", shape: "vertical", label: "Teòric Medieval", page: "right", area: "4 / 4 / 7 / 6" }
+                        ],
+                        items: [
+                            { id: "monestir", type: "context", shape: "square", emoji: "🏰", name: "Monestir", era: "medieval" },
+                            { id: "neumes", type: "symbol", shape: "square", emoji: "🎼", name: "Neumes", era: "medieval" },
+                            { id: "guido", type: "composer", shape: "vertical", emoji: "📜", name: "Guido d'Arezzo", era: "medieval" }
+                        ],
+                        distractors: [
+                            { id: "cotxe", type: "other", shape: "square", emoji: "🚗", name: "Cotxe Esportiu", era: "anachronism" },
+                            { id: "movil", type: "other", shape: "vertical", emoji: "📱", name: "Smartphone", era: "anachronism" }
+                        ]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Compositora", page: "left", area: "2 / 1 / 5 / 3" },
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Instrument", page: "left", area: "5 / 1 / 7 / 4" },
+                            { id: "s3", type: "context", shape: "square", label: "Arquitectura", page: "right", area: "2 / 4 / 5 / 7" },
+                            { id: "s4", type: "symbol", shape: "square", label: "Teoria", page: "right", area: "2 / 1 / 4 / 3" }
+                        ],
+                        items: [
+                            { id: "hildegard", type: "composer", shape: "vertical", emoji: "🧕", name: "Hildegard von Bingen", era: "medieval" },
+                            { id: "llaut", type: "instrument", shape: "horizontal", emoji: "🎸", name: "Llaüt Medieval", era: "medieval" },
+                            { id: "monestir", type: "context", shape: "square", emoji: "🏰", name: "Monestir", era: "medieval" },
+                            { id: "neumes", type: "symbol", shape: "square", emoji: "🎼", name: "Neumes", era: "medieval" }
+                        ],
+                        distractors: [
+                            { id: "dj", type: "instrument", shape: "horizontal", emoji: "🎧", name: "Taula de DJ", era: "anachronism" },
+                            { id: "vambes", type: "other", shape: "square", emoji: "👟", name: "Sabatilles Nike", era: "anachronism" }
+                        ]
+                    }
+                ]
+            },
+            renaixement: {
+                name: "El Renaixement",
+                style: "Tinta China",
+                levels: [
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Mestre Sacre", page: "left", area: "2 / 2 / 6 / 5" },
+                            { id: "s2", type: "context", shape: "horizontal", label: "Cúpula Artística", page: "right", area: "2 / 2 / 4 / 7" }
+                        ],
+                        items: [
+                            { id: "palestrina", type: "composer", shape: "vertical", emoji: "⛪", name: "Palestrina", era: "renaixement" },
+                            { id: "sixtina", type: "context", shape: "horizontal", emoji: "🎨", name: "Capella Sixtina", era: "renaixement" }
+                        ],
+                        distractors: [{ id: "televisio", type: "other", shape: "vertical", emoji: "📺", name: "TV Sketch", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "context", shape: "horizontal", label: "Pintura Fresca", page: "right", area: "2 / 1 / 4 / 7" },
+                            { id: "s2", type: "instrument", shape: "vertical", label: "L'Arc de Gamba", page: "left", area: "3 / 1 / 6 / 3" }
+                        ],
+                        items: [
+                            { id: "sixtina", type: "context", shape: "horizontal", emoji: "🎨", name: "Capella Sixtina", era: "renaixement" },
+                            { id: "viola", type: "instrument", shape: "vertical", emoji: "🎻", name: "Viola da Gamba", era: "renaixement" }
+                        ],
+                        distractors: [{ id: "cotxe", type: "other", shape: "horizontal", emoji: "🚗", name: "Cotxe", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Geni Polifònic", page: "left", area: "2 / 1 / 6 / 4" },
+                            { id: "s2", type: "context", shape: "horizontal", label: "Vaticà", page: "right", area: "2 / 1 / 4 / 7" },
+                            { id: "s3", type: "instrument", shape: "vertical", label: "Viola", page: "right", area: "4 / 1 / 7 / 3" }
+                        ],
+                        items: [
+                            { id: "palestrina", type: "composer", shape: "vertical", emoji: "⛪", name: "Palestrina", era: "renaixement" },
+                            { id: "sixtina", type: "context", shape: "horizontal", emoji: "🎨", name: "Capella Sixtina", era: "renaixement" },
+                            { id: "viola", type: "instrument", shape: "vertical", emoji: "🎻", name: "Viola da Gamba", era: "renaixement" }
+                        ],
+                        distractors: [{ id: "movil", type: "other", shape: "vertical", emoji: "📱", name: "Smartphone", era: "anachronism" }]
+                    }
+                ]
+            },
+            barroc: {
+                name: "El Barroc",
+                style: "Acuarela",
+                levels: [
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Geni del Fuga", page: "left", area: "2/2/6/5" },
+                            { id: "s2", type: "context", shape: "square", label: "Cort Reial", page: "right", area: "2/2/5/6" }
+                        ],
+                        items: [
+                            { id: "bach", type: "composer", shape: "vertical", emoji: "🎹", name: "J.S. Bach", era: "barroc" },
+                            { id: "versalles", type: "context", shape: "square", emoji: "⛲", name: "Versalles", era: "barroc" }
+                        ],
+                        distractors: [{ id: "televisio", type: "other", shape: "vertical", emoji: "💻", name: "Pantalla", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Teclat Mecànic", page: "right", area: "2/1/4/7" },
+                            { id: "s3", type: "context", shape: "square", label: "Palau", page: "left", area: "2/2/5/6" }
+                        ],
+                        items: [
+                            { id: "clave", type: "instrument", shape: "horizontal", emoji: "🎹", name: "Clavicèmbal", era: "barroc" },
+                            { id: "versalles", type: "context", shape: "square", emoji: "⛲", name: "Versalles", era: "barroc" }
+                        ],
+                        distractors: [{ id: "dj", type: "other", shape: "horizontal", emoji: "🎧", name: "DJ Set", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Cantata", page: "left", area: "2/1/5/4" },
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Clavicèmbal", page: "left", area: "5/1/7/7" },
+                            { id: "s3", type: "context", shape: "square", label: "Reialesa", page: "right", area: "2/2/5/6" }
+                        ],
+                        items: [
+                            { id: "bach", type: "composer", shape: "vertical", emoji: "🎹", name: "J.S. Bach", era: "barroc" },
+                            { id: "clave", type: "instrument", shape: "horizontal", emoji: "🎹", name: "Clavicèmbal", era: "barroc" },
+                            { id: "versalles", type: "context", shape: "square", emoji: "⛲", name: "Versalles", era: "barroc" }
+                        ],
+                        distractors: [{ id: "vambes", type: "other", shape: "square", emoji: "👟", name: "Sabatilles", era: "anachronism" }]
+                    }
+                ]
+            },
+            classicisme: {
+                name: "El Classicisme",
+                style: "Puntillisme",
+                levels: [
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Salzburg", page: "left", area: "2/2/6/5" },
+                            { id: "s2", type: "context", shape: "square", label: "Opera House", page: "right", area: "2/2/4/4" }
+                        ],
+                        items: [
+                            { id: "mozart", type: "composer", shape: "vertical", emoji: "🎼", name: "W.A. Mozart", era: "classicisme" },
+                            { id: "viennaopera", type: "context", shape: "square", emoji: "🏛️", name: "Òpera de Viena", era: "classicisme" }
+                        ],
+                        distractors: [{ id: "guitarraelectrica", type: "instrument", shape: "vertical", emoji: "🎸", name: "Guitarra Elèctrica", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Hammer Piano", page: "right", area: "2/1/4/7" },
+                            { id: "s3", type: "composer", shape: "vertical", label: "Mozart", page: "left", area: "2/2/6/5" }
+                        ],
+                        items: [
+                            { id: "earlypiano", type: "instrument", shape: "horizontal", emoji: "🎹", name: "Piano Forte", era: "classicisme" },
+                            { id: "mozart", type: "composer", shape: "vertical", emoji: "🎼", name: "W.A. Mozart", era: "classicisme" }
+                        ],
+                        distractors: [{ id: "bateria", type: "instrument", shape: "horizontal", emoji: "🥁", name: "Bateria", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Prodigi", page: "left", area: "2/2/6/6" },
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Pianoforte", page: "right", area: "5/1/7/7" },
+                            { id: "s3", type: "context", shape: "square", label: "Viena", page: "right", area: "2/2/4/4" }
+                        ],
+                        items: [
+                            { id: "mozart", type: "composer", shape: "vertical", emoji: "🎼", name: "W.A. Mozart", era: "classicisme" },
+                            { id: "earlypiano", type: "instrument", shape: "horizontal", emoji: "🎹", name: "Piano Forte", era: "classicisme" },
+                            { id: "viennaopera", type: "context", shape: "square", emoji: "🏛️", name: "Òpera de Viena", era: "classicisme" }
+                        ],
+                        distractors: [{ id: "hamburguesa", type: "other", shape: "square", emoji: "🍔", name: "Burger", era: "anachronism" }]
+                    }
+                ]
+            },
+            romanticisme: {
+                name: "El Romanticisme",
+                style: "Art Deco",
+                levels: [
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Simfonia", page: "left", area: "2/2/6/5" },
+                            { id: "s2", type: "symbol", shape: "square", label: "Passió", page: "right", area: "5/2/7/4" }
+                        ],
+                        items: [
+                            { id: "beethoven", type: "composer", shape: "vertical", emoji: "🦁", name: "L.V. Beethoven", era: "romanticisme" },
+                            { id: "amor", type: "symbol", shape: "square", emoji: "💔", name: "Amor Tràgic", era: "romanticisme" }
+                        ],
+                        distractors: [{ id: "robot", type: "other", shape: "vertical", emoji: "🤖", name: "Android", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s2", type: "context", shape: "horizontal", label: "Paisatge", page: "right", area: "2/1/4/7" },
+                            { id: "s3", type: "composer", shape: "vertical", label: "Geni", page: "left", area: "2/2/6/5" }
+                        ],
+                        items: [
+                            { id: "tempesta", type: "context", shape: "horizontal", emoji: "🌲", name: "Natura i Tempesta", era: "romanticisme" },
+                            { id: "beethoven", type: "composer", shape: "vertical", emoji: "🦁", name: "L.V. Beethoven", era: "romanticisme" }
+                        ],
+                        distractors: [{ id: "coet", type: "other", shape: "horizontal", emoji: "🚀", name: "Coet", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Sordesa", page: "left", area: "2/1/6/5" },
+                            { id: "s2", type: "context", shape: "horizontal", label: "Raim", page: "right", area: "2/1/4/7" },
+                            { id: "s3", type: "symbol", shape: "square", label: "Sentiment", page: "right", area: "5/2/7/4" }
+                        ],
+                        items: [
+                            { id: "beethoven", type: "composer", shape: "vertical", emoji: "🦁", name: "L.V. Beethoven", era: "romanticisme" },
+                            { id: "tempesta", type: "context", shape: "horizontal", emoji: "🌲", name: "Natura i Tempesta", era: "romanticisme" },
+                            { id: "amor", type: "symbol", shape: "square", emoji: "💔", name: "Amor Tràgic", era: "romanticisme" }
+                        ],
+                        distractors: [{ id: "movil", type: "other", shape: "square", emoji: "📱", name: "Smartphone", era: "anachronism" }]
+                    }
+                ]
+            },
+            segle20: {
+                name: "Segle XX",
+                style: "Bauhaus",
+                levels: [
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Dodecafonisme", page: "left", area: "2/2/6/5" },
+                            { id: "s2", type: "symbol", shape: "square", label: "Atles", page: "right", area: "2/2/4/4" }
+                        ],
+                        items: [
+                            { id: "stravinsky", type: "composer", shape: "vertical", emoji: "🌪️", name: "I. Stravinsky", era: "segle20" },
+                            { id: "silenci", type: "symbol", shape: "square", emoji: "🔇", name: "4'33''", era: "segle20" }
+                        ],
+                        distractors: [{ id: "caballer", type: "composer", shape: "vertical", emoji: "⚔️", name: "Cavaller", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Sintes", page: "right", area: "2/1/4/7" },
+                            { id: "s3", type: "symbol", shape: "square", label: "Concept", page: "left", area: "2/2/4/4" }
+                        ],
+                        items: [
+                            { id: "sinte", type: "instrument", shape: "horizontal", emoji: "🎛️", name: "Sintetitzador", era: "segle20" },
+                            { id: "silenci", type: "symbol", shape: "square", emoji: "🔇", name: "4'33''", era: "segle20" }
+                        ],
+                        distractors: [{ id: "piramide", type: "context", shape: "horizontal", emoji: "🔺", name: "Piràmide", era: "anachronism" }]
+                    },
+                    {
+                        slots: [
+                            { id: "s1", type: "composer", shape: "vertical", label: "Segle XX", page: "left", area: "2/2/6/6" },
+                            { id: "s2", type: "instrument", shape: "horizontal", label: "Electrònica", page: "right", area: "5/1/7/7" },
+                            { id: "s3", type: "symbol", shape: "square", label: "John Cage", page: "right", area: "2/2/4/4" }
+                        ],
+                        items: [
+                            { id: "stravinsky", type: "composer", shape: "vertical", emoji: "🌪️", name: "I. Stravinsky", era: "segle20" },
+                            { id: "sinte", type: "instrument", shape: "horizontal", emoji: "🎛️", name: "Sintetitzador", era: "segle20" },
+                            { id: "silenci", type: "symbol", shape: "square", emoji: "🔇", name: "4'33''", era: "segle20" }
+                        ],
+                        distractors: [{ id: "cotxe", type: "other", shape: "square", emoji: "🚗", name: "SUV", era: "anachronism" }]
+                    }
+                ]
+            }
+        };
+
+        let currentEra = null;
+        let currentLevel = 0;
+        let filledSlots = 0;
+        const bgMusic = document.getElementById('bg-music');
+
+        function startGame() {
+            document.getElementById('intro-screen').classList.remove('active');
+            document.getElementById('menu-screen').classList.add('active');
+            bgMusic.play().catch(e => console.log("Autoplay blocked", e));
+        }
+
+        function updateVolume() {
+            bgMusic.volume = document.getElementById('volume-slider').value;
+        }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'paper') {
+                const bufferSize = audioCtx.sampleRate * 0.1;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                noise.connect(gain);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                noise.start(now);
+            } else if (type === 'crumple') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.linearRampToValueAtTime(60, now + 0.2);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'print') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 1.2);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0, now + 1.2);
+                osc.start(now);
+                osc.stop(now + 1.2);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.linearRampToValueAtTime(80, now + 0.4);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        function showModal(title, message, callback) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-overlay').classList.add('active');
+            window.modalCallback = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+            if (window.modalCallback) {
+                window.modalCallback();
+                window.modalCallback = null;
+            }
+        }
+
+        function startLevel(era, level = 0) {
+            currentEra = era;
+            currentLevel = level;
+            filledSlots = 0;
+            const eraData = MAGAZINE_DB[era];
+            const levelData = eraData.levels[level];
+
+            document.getElementById('menu-screen').classList.remove('active');
+            const editor = document.getElementById('editor-screen');
+            editor.classList.add('active');
+
+            document.body.style.backgroundImage = `url('img/fons_${era}.jpg')`;
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundPosition = "center";
+
+            document.getElementById('era-title').innerText = eraData.name;
+            document.getElementById('level-indicator').innerText = `Edició ${level + 1}/3 • Estil: ${eraData.style}`;
+
+            const leftPage = document.getElementById('page-left');
+            const rightPage = document.getElementById('page-right');
+            Array.from(leftPage.children).forEach(c => { if (!c.innerText.includes('CRÒNICA')) c.remove() });
+            rightPage.innerHTML = '';
+
+            levelData.slots.forEach(slot => {
+                const el = document.createElement('div');
+                el.className = 'drop-zone';
+                el.style.gridArea = slot.area;
+                el.innerText = slot.label;
+                el.dataset.id = slot.id;
+                el.dataset.type = slot.type;
+                el.dataset.shape = slot.shape;
+                el.dataset.label = slot.label;
+
+                el.ondragover = (e) => { e.preventDefault(); el.classList.add('hover'); };
+                el.ondragleave = () => el.classList.remove('hover');
+                el.ondrop = (e) => handleDrop(e, el);
+
+                if (slot.page === 'left') leftPage.appendChild(el);
+                else rightPage.appendChild(el);
+            });
+
+            const tray = document.getElementById('tray');
+            tray.innerHTML = '';
+            const dists = levelData.distractors || [];
+            const pool = [...levelData.items, ...dists].sort(() => Math.random() - 0.5);
+            pool.forEach(item => createTrayItem(item));
+        }
+
+        function createTrayItem(item) {
+            const tray = document.getElementById('tray');
+            const el = document.createElement('div');
+            el.className = `item ${item.shape}`;
+            el.draggable = true;
+
+            const imgSrc = `img/${item.id}.jpg`;
+            el.innerHTML = `
+                <img src="${imgSrc}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <div class="emoji-tray" style="display:none; font-size: 2rem;">${item.emoji}</div>
+                <small>${item.name}</small>
+            `;
+            el.dataset.json = JSON.stringify(item);
+
+            el.ondragstart = (e) => {
+                e.dataTransfer.setData('application/json', el.dataset.json);
+                el.classList.add('dragging');
+            };
+            el.ondragend = () => el.classList.remove('dragging');
+            tray.appendChild(el);
+        }
+
+        function handleDrop(e, slot) {
+            e.preventDefault();
+            slot.classList.remove('hover');
+            if (slot.classList.contains('filled')) return;
+
+            const data = JSON.parse(e.dataTransfer.getData('application/json'));
+            const isShapeCorrect = data.shape === slot.dataset.shape;
+
+            if (isShapeCorrect) {
+                playSound('paper');
+                slot.classList.add('filled');
+                const imgSrc = `img/${data.id}.jpg`;
+                slot.innerHTML = `
+                    <div class="placed-image-container">
+                        <img src="${imgSrc}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <div class="emoji-placed" style="display:none; font-size: 2.5rem;">${data.emoji}</div>
+                        <small>${data.name}</small>
+                    </div>
+                `;
+                slot.dataset.placedEra = data.era;
+                slot.dataset.placedType = data.type;
+                slot.onclick = () => handleRemove(slot, data);
+                const draggingItem = document.querySelector('.item.dragging');
+                if (draggingItem) draggingItem.remove();
+                filledSlots++;
+            } else {
+                playSound('crumple');
+                slot.style.borderColor = "red";
+                setTimeout(() => slot.style.borderColor = "rgba(0,0,0,0.1)", 500);
+            }
+        }
+
+        function handleRemove(slot, itemData) {
+            playSound('paper');
+            slot.classList.remove('filled');
+            slot.innerHTML = slot.dataset.label;
+            slot.onclick = null;
+            delete slot.dataset.placedEra;
+            delete slot.dataset.placedType;
+            createTrayItem(itemData);
+            filledSlots--;
+        }
+
+        function validateMagazine() {
+            const levelData = MAGAZINE_DB[currentEra].levels[currentLevel];
+            const totalSlots = levelData.slots.length;
+
+            if (filledSlots < totalSlots) {
+                showModal("Edició Incompleta", "Encara queden espais buits en la maqueta de la revista.", null);
+                return;
+            }
+
+            let errors = 0;
+            document.querySelectorAll('.drop-zone').forEach(slot => {
+                const isEraCorrect = slot.dataset.placedEra === currentEra;
+                const isTypeCorrect = slot.dataset.placedType === slot.dataset.type;
+
+                if (!isEraCorrect || !isTypeCorrect) {
+                    errors++;
+                    slot.style.boxShadow = "inset 0 0 0 3px var(--accent)";
+                    setTimeout(() => slot.style.boxShadow = "inset 0 2px 5px rgba(0,0,0,0.05)", 1500);
+                }
+            });
+
+            if (errors > 0) {
+                playSound('error');
+                showModal("Error Editorial", "Alguns retalls no corresponen a l'època o la secció indicada.", null);
+            } else {
+                playSound('print');
+                if (currentLevel < 2) {
+                    showModal("Impressió Correcta", "L'edició ha estat aprovada. Passem a la següent entrega!", () => {
+                        startLevel(currentEra, currentLevel + 1);
+                    });
+                } else {
+                    showModal("Èxit de Vendes", "Has completat totes les edicions del nostre monogràfic. Una obra mestra!", () => {
+                        document.getElementById('editor-screen').classList.remove('active');
+                        document.getElementById('victory-screen').classList.add('active');
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

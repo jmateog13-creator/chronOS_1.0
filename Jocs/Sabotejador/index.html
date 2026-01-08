@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocol: HISTÒRIA DE LA MÚSICA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Montserrat:wght@400;700&family=Cinzel:wght@400;900&family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;1,900&family=Italianno&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* --- ESTILS BASE --- */
+        :root {
+            --primary: #00fff9;
+            --secondary: #ff00c1;
+            --bg-color: #050505;
+            --text-color: #e0e0e0;
+            --font-body: 'Montserrat', sans-serif;
+            --font-display: 'Share Tech Mono', monospace;
+            --panel-bg: rgba(17, 24, 39, 0.95);
+            --bg-image: none;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.5s ease;
+            background-image: url('img/img%20tribunal/bg_courtroom.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+
+        /* --- TEMES PER ÈPOCA --- */
+
+        /* 1. EDAT MITJANA (Matrix / Codi Verd) */
+        body.theme-medieval {
+            --primary: #00ff41;
+            --secondary: #008f11;
+            --bg-color: #000000;
+            --font-display: 'UnifrakturMaguntia', cursive;
+            --font-body: 'Share Tech Mono', monospace;
+            --panel-bg: rgba(0, 20, 0, 0.95);
+        }
+
+        /* 2. RENAIXEMENT (Humanisme / Paper i Tinta) */
+        body.theme-renaissance {
+            --primary: #d4af37;
+            /* Or antic */
+            --secondary: #8b4513;
+            /* Cuir */
+            --bg-color: #2c1810;
+            --font-display: 'Italianno', cursive;
+            --font-body: 'Cinzel', serif;
+            --panel-bg: rgba(44, 24, 16, 0.95);
+        }
+
+        /* Ajust de mida per la font Italianno que és petita */
+        body.theme-renaissance h1,
+        body.theme-renaissance h2,
+        body.theme-renaissance .font-display {
+            font-size: 1.2em;
+            letter-spacing: 2px;
+        }
+
+        /* 3. BARROC (Reialesa / Or i Porpra) */
+        body.theme-baroque {
+            --primary: #ffd700;
+            --secondary: #9b59b6;
+            --bg-color: #1a0b1a;
+            --font-display: 'Cinzel', serif;
+            --font-body: 'Cinzel', serif;
+            --panel-bg: rgba(40, 10, 40, 0.95);
+        }
+
+        /* 4. CLASSICISME (Ordre / Blau i Blanc) */
+        body.theme-classicism {
+            --primary: #00bfff;
+            /* Blau Cel */
+            --secondary: #ffffff;
+            --bg-color: #001f3f;
+            --font-display: 'Montserrat', sans-serif;
+            --font-body: 'Montserrat', sans-serif;
+            --panel-bg: rgba(0, 31, 63, 0.95);
+        }
+
+        /* 5. ROMANTICISME (Tempesta / Vermell i Negre) */
+        body.theme-romantic {
+            --primary: #ff3333;
+            --secondary: #ffffff;
+            --bg-color: #0f0505;
+            --font-display: 'Playfair Display', serif;
+            --font-body: 'Montserrat', sans-serif;
+            --panel-bg: rgba(20, 0, 0, 0.9);
+        }
+
+        /* 6. SEGLE XX (Futurista / Neó) */
+        body.theme-modern {
+            --primary: #ff00c1;
+            --secondary: #00fff9;
+            --bg-color: #050505;
+            --font-display: 'Share Tech Mono', monospace;
+            --font-body: 'Montserrat', sans-serif;
+            --panel-bg: rgba(17, 24, 39, 0.95);
+        }
+
+        /* --- CLASSES D'UTILITAT --- */
+        .font-display {
+            font-family: var(--font-display);
+        }
+
+        .text-primary {
+            color: var(--primary);
+        }
+
+        .border-primary {
+            border-color: var(--primary);
+        }
+
+        .bg-primary {
+            background-color: var(--primary);
+        }
+
+        .hacked-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 2px solid var(--primary);
+            transition: 0.3s;
+            filter: sepia(1) hue-rotate(70deg) saturate(4) brightness(0.7) contrast(1.2);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        #game-header-img {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.15;
+            pointer-events: none;
+            filter: sepia(1) hue-rotate(70deg) saturate(5) contrast(1.5);
+            z-index: 0;
+        }
+
+        /* Mecàniques de text */
+        .phrase {
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .phrase:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-bottom-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .phrase.found {
+            background-color: rgba(255, 0, 0, 0.3);
+            text-decoration: line-through;
+            color: #ff5555;
+            pointer-events: none;
+            border: 1px dashed red;
+        }
+
+        .phrase.wrong {
+            animation: flashRed 0.5s;
+        }
+
+        @keyframes flashRed {
+            50% {
+                background-color: rgba(255, 0, 0, 0.5);
+            }
+        }
+
+        .hidden-screen {
+            display: none !important;
+        }
+
+        /* Botons */
+        .cyber-btn {
+            background: transparent;
+            color: var(--primary);
+            font-family: var(--font-display);
+            text-transform: uppercase;
+            border: 1px solid var(--primary);
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            letter-spacing: 2px;
+            font-weight: bold;
+            position: relative;
+            z-index: 10;
+        }
+
+        .cyber-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .glitch-text {
+            animation: glitch 1s linear infinite;
+        }
+
+        @keyframes glitch {
+
+            2%,
+            64% {
+                transform: translate(2px, 0) skew(0deg);
+            }
+
+            4%,
+            60% {
+                transform: translate(-2px, 0) skew(0deg);
+            }
+
+            62% {
+                transform: translate(0, 0) skew(5deg);
+            }
+        }
+
+        .scanline {
+            width: 100%;
+            height: 5px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            animation: scan 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: -10%;
+            }
+
+            100% {
+                top: 110%;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col relative text-gray-200">
+
+    <div class="scanline"></div>
+
+    <!-- HEADER GLOBAL -->
+    <header
+        class="w-full bg-black/80 border-b border-gray-800 p-4 flex justify-between items-center z-40 sticky top-0 backdrop-blur-md">
+        <div class="flex items-center gap-6">
+            <div class="font-display text-lg tracking-widest text-white">
+                <i class="fas fa-database text-primary"></i> ARCHIVE_V.3.0
+            </div>
+            <div class="flex items-center gap-2 bg-gray-900/50 px-3 py-1 rounded-full border border-gray-700">
+                <i class="fas fa-volume-up text-xs text-gray-400"></i>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                    class="w-20 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                    oninput="updateVolume(this.value)">
+            </div>
+        </div>
+        <button onclick="goToIntro()"
+            class="text-xs md:text-sm hover:text-primary text-gray-400 transition-colors uppercase font-bold tracking-widest flex items-center gap-2">
+            <i class="fas fa-power-off"></i> Reiniciar
+        </button>
+    </header>
+
+    <!-- 0. PANTALLA INTRO -->
+    <section id="intro-screen" class="flex-grow flex flex-col items-center justify-center p-6 z-30">
+        <div
+            class="max-w-2xl bg-gray-900 border-2 border-red-500 p-8 rounded-lg shadow-[0_0_30px_rgba(255,0,0,0.4)] text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-red-500 animate-pulse"></div>
+
+            <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-6 animate-pulse"></i>
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 font-display text-white glitch-text">ALERTA DE SEGURETAT</h1>
+
+            <p class="text-xl mb-6 text-gray-300 font-body">
+                Agent, el hacker "Crononauta" ha corromput la línia temporal. Les dades estan bloquejades. Has de
+                netejar cada era per accedir a la següent.
+            </p>
+
+            <div
+                class="bg-black/80 p-6 rounded-lg text-left font-display text-sm mb-8 border border-green-800 shadow-[inset_0_0_20px_rgba(0,255,65,0.1)]">
+                <div class="text-primary mb-2 uppercase tracking-tighter font-bold">Instruccions de Missió:</div>
+                <ul class="text-green-400 space-y-1 list-none p-0">
+                    <li><i class="fas fa-caret-right mr-2"></i> Identifica anacronismes (errors temporals) als textos.
+                    </li>
+                    <li><i class="fas fa-caret-right mr-2"></i> Fes clic sobre la frase corrupta per eliminar-la.</li>
+                    <li><i class="fas fa-caret-right mr-2"></i> Has de trobar 3 errors per document.</li>
+                    <li><i class="fas fa-caret-right mr-2"></i> Completa 3 documents per restaurar l'era.</li>
+                </ul>
+                <div class="mt-4 text-xs opacity-50 border-t border-green-900 pt-2">
+                    STATUS: 6 ERAS DETECTADES (M.MITJANA - S.XX)
+                </div>
+            </div>
+
+            <button onclick="goToMainMenu()"
+                class="cyber-btn bg-red-900/50 border-red-500 text-red-100 hover:bg-red-600 hover:text-white w-full text-xl py-4">
+                INICIAR SEQÜÈNCIA
+            </button>
+        </div>
+    </section>
+
+    <!-- 1. PANTALLA SELECCIÓ DE MISSIÓ -->
+    <section id="main-menu" class="hidden-screen flex-grow flex flex-col items-center justify-center p-6">
+        <h1 class="text-5xl font-bold font-display text-white mb-4 text-center"
+            style="text-shadow: 4px 4px 0px var(--primary);">
+            LÍNIA TEMPORAL
+        </h1>
+        <p
+            class="text-primary font-mono tracking-widest text-center mb-8 bg-black/50 px-4 py-2 rounded border border-primary">
+            COMPLETA UNA ERA PER DESBLOQUEJAR LA SEGÜENT
+        </p>
+
+        <!-- GRID DE MISSIONS GENERAT DINÀMICAMENT -->
+        <div id="missions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl w-full">
+            <!-- Es plena amb JS -->
+        </div>
+    </section>
+
+    <!-- 2. PANTALLA DE JOC -->
+    <section id="game-screen" class="hidden-screen flex-grow flex flex-col items-center p-4 w-full">
+
+        <!-- HUD JOC -->
+        <div
+            class="w-full max-w-5xl flex justify-between items-center mb-8 bg-black/60 backdrop-blur p-4 border-2 border-primary shadow-[0_0_15px_rgba(0,0,0,0.5)] rounded-xl sticky top-20 z-30">
+            <div class="flex items-center space-x-4">
+                <div class="text-primary font-display text-xl">
+                    <i class="fas fa-shield-virus animate-pulse"></i> <span id="doc-progress-label">DOC 1/3</span>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-gray-400 text-xs font-mono uppercase tracking-widest">Amenaces</div>
+                <div class="text-4xl font-bold text-white font-display"><span id="score" class="text-primary">0</span> /
+                    <span id="target-score">3</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DOCUMENT -->
+        <div class="bg-gray-100 text-gray-900 p-8 md:p-12 rounded-sm shadow-2xl max-w-5xl w-full relative overflow-hidden transition-all duration-500"
+            style="min-height: 60vh; z-index: 10;">
+            <!-- Background Decoration (Era Image) -->
+            <img id="game-header-img" src="" class="absolute inset-0 w-full h-full opacity-10 pointer-events-none"
+                style="object-fit: cover;">
+
+            <div
+                class="absolute top-8 right-8 border-4 border-red-600 text-red-600 px-4 py-2 font-display text-xl font-bold transform rotate-12 opacity-70 mix-blend-multiply">
+                WARNING: MODIFIED
+            </div>
+
+            <h2 id="doc-title" class="text-4xl font-bold mb-8 border-b-4 border-black pb-4 font-display"></h2>
+
+            <div class="prose lg:prose-xl text-justify leading-relaxed" id="article-content">
+                <!-- TEXT -->
+            </div>
+
+            <div class="mt-16 pt-6 border-t-2 border-gray-300 flex justify-between text-sm font-mono text-gray-600">
+                <span>ID: <span id="doc-id">...</span></span>
+                <span>ORIGIN: EARTH_ARCHIVE_EU</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. PANTALLA FINAL (WIN) -->
+    <section id="win-screen"
+        class="hidden-screen fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-6 text-center backdrop-blur-xl">
+        <div
+            class="max-w-xl w-full bg-gray-900 border-2 border-primary p-10 rounded-2xl shadow-[0_0_50px_var(--primary)] relative overflow-hidden">
+            <div
+                class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none">
+            </div>
+
+            <div class="relative z-10">
+                <i class="fas fa-check-circle text-7xl text-primary mb-6 animate-bounce"></i>
+                <h2 class="text-4xl font-bold text-white font-display mb-4">ERA RESTAURADA</h2>
+                <p class="text-gray-300 mb-8 font-body text-lg">Has netejat la línia temporal amb èxit.</p>
+
+                <div class="bg-black/50 p-6 rounded text-left font-mono text-sm text-primary mb-8 space-y-2 border border-primary/30"
+                    id="win-details"></div>
+
+                <button onclick="goToMainMenu()"
+                    class="cyber-btn w-full hover:bg-white hover:text-black font-bold text-lg">
+                    TORNAR A LA BASE (SEGÜENT NIVELL)
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div id="feedback-msg"
+        class="fixed bottom-10 left-1/2 transform -translate-x-1/2 px-8 py-4 rounded-full shadow-2xl border-2 font-display text-xl hidden z-[110] text-center bg-gray-900 text-white min-w-[300px]">
+    </div>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DADES DEL JOC (EXPANDIT) ---
+        // 'locked' indica l'estat inicial.
+        const missionsData = {
+            medieval: {
+                key: 'medieval',
+                title: "1. EDAT MITJANA",
+                id: "MED_1024",
+                theme: "theme-medieval",
+                locked: false,
+                img: "img/mitjana.jpg",
+                pool: [
+                    // CORRECTES (20)
+                    { text: "L'Edat Mitjana és un llarg període on la música religiosa dominava els monestirs.", type: "normal" },
+                    { text: "Els monjos cantaven cant gregorià, una sola melodia sense acompanyament.", type: "normal" },
+                    { text: "Guido d'Arezzo va donar nom a les notes musicals basant-se en un himne a Sant Joan.", type: "normal" },
+                    { text: "Els trobadors eren poetes i músics cultes que cantaven a l'amor cortès.", type: "normal" },
+                    { text: "Els joglars eren artistes itinerants que entretenien el poble amb música i malabars.", type: "normal" },
+                    { text: "El llaüt i la viola de roda eren instruments populars de l'època.", type: "normal" },
+                    { text: "L'Organum va ser una de les primeres formes de polifonia.", type: "normal" },
+                    { text: "L'Ars Nova va introduir una notació rítmica més precisa al segle XIV.", type: "normal" },
+                    { text: "Les Cantigues de Santa Maria són un tresor de la música medieval hispànica.", type: "normal" },
+                    { text: "El Misteri d'Elx és un drama sacre que s'ha representat des de l'Edat Mitjana.", type: "normal" },
+                    { text: "La Dansa de la Mort recordava que la mort iguala a tothom, rics i pobres.", type: "normal" },
+                    { text: "Els neumes eren els signes que s'escrivien sobre el text per indicar la melodia.", type: "normal" },
+                    { text: "Leonin i Perotin van ser mestres de l'Escola de Notre Dame de París.", type: "normal" },
+                    { text: "Guillaume de Machaut va ser un compositor i poeta molt important de l'Ars Nova.", type: "normal" },
+                    { text: "La textura predominant durant gran part del període va ser la monodia.", type: "normal" },
+                    { text: "El cant gregorià es cantava en llatí i tenia un ritme lliure.", type: "normal" },
+                    { text: "Hildegard von Bingen va ser una abadessa que va compondre música mística.", type: "normal" },
+                    { text: "La música profana tractava temes com l'amor, la natura i la sàtira.", type: "normal" },
+                    { text: "El saltiri i l'arpa eren instruments de corda utilitzats sovint.", type: "normal" },
+                    { text: "Els manuscrits es copiaven a mà als scriptoriums dels monestirs.", type: "normal" },
+
+                    // FAKES (7)
+                    { text: "Per organitzar els cors, els monjos feien servir grups de WhatsApp.", type: "fake", reason: "Error: No existien els mòbils!" },
+                    { text: "Els trobadors es desplaçaven ràpidament gràcies als seus patinets elèctrics.", type: "fake", reason: "Anacronisme: Els patinets són moderns." },
+                    { text: "Sovint, acompanyaven el llaüt amb efectes de so digitals.", type: "fake", reason: "Absurd: No hi havia tecnologia digital." },
+                    { text: "Els monjos llegien les partitures en tablets de pedra tàctils.", type: "fake", reason: "Fals: Les tablets són del segle XXI." },
+                    { text: "Els concerts medievals utilitzaven grans altaveus Bluetooth.", type: "fake", reason: "Error: No hi havia electricitat ni Bluetooth." },
+                    { text: "El Papa Gregori va pujar el seu cant a Spotify perquè tothom l'escoltés.", type: "fake", reason: "Anacronisme: Spotify no existia l'any 600." },
+                    { text: "Les catedrals tenien Wi-Fi gratuït per als pelegrins que volien fer fotos.", type: "fake", reason: "Fals: No hi havia xarxes sense fils." }
+                ]
+            },
+            renaissance: {
+                key: 'renaissance',
+                title: "2. RENAIXEMENT",
+                id: "REN_1500",
+                theme: "theme-renaissance",
+                locked: true,
+                img: "img/renaixement.jpg",
+                pool: [
+                    // CORRECTES (20)
+                    { text: "El Renaixement suposa el renaixement de la cultura clàssica i l'Humanisme.", type: "normal" },
+                    { text: "La invenció de la impremta musical va permetre difondre les obres ràpidament.", type: "normal" },
+                    { text: "La polifonia arriba al seu esplendor amb compositors com Palestrina.", type: "normal" },
+                    { text: "El Madrigal és una composició vocal profana molt expressiva.", type: "normal" },
+                    { text: "La Chanson francesa i el Villancico espanyol eren formes populars.", type: "normal" },
+                    { text: "La Reforma Protestant de Luter va introduir el coral en alemany.", type: "normal" },
+                    { text: "La Contrareforma Catòlica buscava claredat en el text de la música sacra.", type: "normal" },
+                    { text: "L'Escola Franco-Flamenca va dominar el panorama musical europeu.", type: "normal" },
+                    { text: "Josquin des Prez va ser un mestre de la polifonia vocal.", type: "normal" },
+                    { text: "Tomás Luis de Victoria és el gran representant del Renaixement espanyol.", type: "normal" },
+                    { text: "La viola da gamba era un instrument de corda molt apreciat.", type: "normal" },
+                    { text: "Es ballaven danses de cort com la Pavana i la Gallarda.", type: "normal" },
+                    { text: "La textura típica era a quatre veus mixtes.", type: "normal" },
+                    { text: "La música buscava l'equilibri, la proporció i la serenitat.", type: "normal" },
+                    { text: "Orlando di Lasso va ser un compositor molt prolífic i internacional.", type: "normal" },
+                    { text: "El mecenatge de les arts per part de nobles i església era fonamental.", type: "normal" },
+                    { text: "Molta música vocal s'interpretava 'a cappella', sense instruments.", type: "normal" },
+                    { text: "A Venècia, els Gabrieli componien música per a dos cors (policoral).", type: "normal" },
+                    { text: "El llaüt era l'instrument domèstic per excel·lència.", type: "normal" },
+                    { text: "Al final del període, comença a néixer l'òpera a Florència.", type: "normal" },
+
+                    // FAKES (7)
+                    { text: "Petrucci imprimia partitures amb impressores làser 3D.", type: "fake", reason: "Error: La impremta era mecànica." },
+                    { text: "Els cantants de madrigals feien servir 'Auto-Tune' per afinar.", type: "fake", reason: "Fals: L'afinació era natural." },
+                    { text: "Mentre ballaven, es projectaven vídeos de TikTok al fons.", type: "fake", reason: "Anacronisme: No xarxes socials." },
+                    { text: "Els compositors componien usant teclats Casio.", type: "fake", reason: "Absurd: Els sintetitzadors no existien." },
+                    { text: "Els cors gravaven els seus assajos amb iPhones.", type: "fake", reason: "Error: No hi havia telèfons intel·ligents." },
+                    { text: "Luter va penjar les seves 95 tesis fent un fil a Twitter.", type: "fake", reason: "Fals: Twitter és una xarxa social del segle XXI." },
+                    { text: "Leonardo da Vinci va dissenyar el primer dron per gravar videoclips.", type: "fake", reason: "Anacronisme: Els drons són tecnologies actuals." }
+                ]
+            },
+            baroque: {
+                key: 'baroque',
+                title: "3. BARROC",
+                id: "BAR_1700",
+                theme: "theme-baroque",
+                locked: true,
+                img: "img/barroc.jpg",
+                pool: [
+                    // CORRECTES (20)
+                    { text: "El Barroc és l'època del baix continu i el contrast.", type: "normal" },
+                    { text: "Monteverdi va ser clau en el naixement de l'òpera amb l'Orfeo.", type: "normal" },
+                    { text: "J.S. Bach va ser un mestre absolut de la fuga i el contrapunt.", type: "normal" },
+                    { text: "Vivaldi va escriure 'Les Quatre Estacions' i molts concerts per a violí.", type: "normal" },
+                    { text: "Händel va triomfar a Londres amb els seus oratoris com 'El Messies'.", type: "normal" },
+                    { text: "Els castrati eren les grans estrelles de l'òpera barroca.", type: "normal" },
+                    { text: "El clavecí era l'instrument de teclat principal i marcava el ritme.", type: "normal" },
+                    { text: "Els luthiers com Stradivarius van crear violins insuperables.", type: "normal" },
+                    { text: "La Suite era una col·lecció de danses de diferents països.", type: "normal" },
+                    { text: "La Cantata era una obra vocal religiosa molt comuna a Alemanya.", type: "normal" },
+                    { text: "La 'Teoria dels Afectes' buscava moure les emocions de l'oient.", type: "normal" },
+                    { text: "L'orquestra barroca es basava en la corda i el baix continu.", type: "normal" },
+                    { text: "Els músics improvisaven molta ornamentació sobre les notes escrites.", type: "normal" },
+                    { text: "Lully va crear l'òpera francesa a la cort de Lluís XIV.", type: "normal" },
+                    { text: "Purcell és el compositor més destacat del barroc anglès.", type: "normal" },
+                    { text: "El Concert Grosso contrastava un grup petit amb tota l'orquestra.", type: "normal" },
+                    { text: "La Passió segons Sant Mateu de Bach és una obra monumental.", type: "normal" },
+                    { text: "L'art barroc és recarregat, dinàmic i dramàtic.", type: "normal" },
+                    { text: "El recitatiu servia per avançar l'acció a les òperes.", type: "normal" },
+                    { text: "L'Ària Da Capo tenia una estructura A-B-A.", type: "normal" },
+
+                    // FAKES (7)
+                    { text: "Per concentrar-se, Bach escoltava podcasts de 'true crime'.", type: "fake", reason: "Impossible: No hi havia auriculars." },
+                    { text: "Els castrati venien el seu marxandatge i samarretes online.", type: "fake", reason: "Error: No existia el comerç electrònic." },
+                    { text: "La 'Música Aquàtica' sonava en un vaixell amb motor dièsel.", type: "fake", reason: "Anacronisme: Vaixells a rem o vela." },
+                    { text: "Vivaldi tocava una guitarra elèctrica Fender en els solos.", type: "fake", reason: "Fals: La guitarra elèctrica és del s.XX." },
+                    { text: "Els concerts es retransmetien en directe per Zoom.", type: "fake", reason: "Absurd: No hi havia internet." },
+                    { text: "Händel responia els correus electrònics de la reina a mig matí.", type: "fake", reason: "Error: L'email és una eina moderna." },
+                    { text: "L'òpera es veia molt millor gràcies a les ulleres de realitat virtual.", type: "fake", reason: "Fals: No existia la VR barroca." }
+                ]
+            },
+            classicism: {
+                key: 'classicism',
+                title: "4. CLASSICISME",
+                id: "CLA_1780",
+                theme: "theme-classicism",
+                locked: true,
+                img: "img/classicisme.jpg",
+                pool: [
+                    // CORRECTES (20)
+                    { text: "El Classicisme busca l'equilibri, la claredat i la bellesa formal.", type: "normal" },
+                    { text: "Viena es va convertir en la capital musical d'Europa.", type: "normal" },
+                    { text: "La Forma Sonata va ser l'estructura més important per al primer moviment.", type: "normal" },
+                    { text: "Haydn és considerat el pare de la simfonia i del quartet de corda.", type: "normal" },
+                    { text: "Mozart va ser un nen prodigi que va compondre obres mestres de tots els gèneres.", type: "normal" },
+                    { text: "Beethoven va començar la seva carrera seguint els models clàssics.", type: "normal" },
+                    { text: "El pianoforte va substituir el clavecí com a instrument de teclat.", type: "normal" },
+                    { text: "L'orquestra simfònica es va estandarditzar amb seccions de vent fusta.", type: "normal" },
+                    { text: "L'Òpera Buffa tractava temes quotidians amb humor.", type: "normal" },
+                    { text: "La melodia acompanyada va substituir el contrapunt complex.", type: "normal" },
+                    { text: "Les frases musicals solien ser simètriques, de 8 compassos.", type: "normal" },
+                    { text: "Van aparèixer els primers concerts públics pagant entrada.", type: "normal" },
+                    { text: "El clarinet es va incorporar definitivament a l'orquestra.", type: "normal" },
+                    { text: "Gluck va reformar l'òpera per fer-la més natural i dramàtica.", type: "normal" },
+                    { text: "L'Escola de Mannheim va ser famosa pels seus crescendos orquestrals.", type: "normal" },
+                    { text: "El Singspiel, com 'La Flauta Màgica', combinava cant i diàleg parlat.", type: "normal" },
+                    { text: "L'estil galant era elegant, senzill i agradable.", type: "normal" },
+                    { text: "El quartet de corda consta de dos violins, viola i violoncel.", type: "normal" },
+                    { text: "La música de cambra es tocava en salons privats.", type: "normal" },
+                    { text: "El baix continu va desaparèixer gradualment.", type: "normal" },
+
+                    // FAKES (7)
+                    { text: "Mozart actualitzava el seu blog de viatges diàriament.", type: "fake", reason: "Fals: Els blogs són del segle XXI." },
+                    { text: "El pianoforte va substituir el sintetitzador Moog.", type: "fake", reason: "Error: Els sintetitzadors són moderns." },
+                    { text: "Beethoven feia servir micròfons per parlar amb el públic.", type: "fake", reason: "Anacronisme: No hi havia amplificació." },
+                    { text: "A les festes de Viena sonava música Techno.", type: "fake", reason: "Absurd: El Techno és electrònic." },
+                    { text: "Els músics llegien les partitures en iPads.", type: "fake", reason: "Fals: No hi havia tablets." },
+                    { text: "Haydn buscava un nou violoncel·lista a través de LinkedIn.", type: "fake", reason: "Error: No hi havia xarxes laborals digitals." },
+                    { text: "Les simfonies es distribuïen en memòries USB a la sortida.", type: "fake", reason: "Fals: No existien els llapis de memòria." }
+                ]
+            },
+            romantic: {
+                key: 'romantic',
+                title: "5. ROMANTICISME",
+                id: "ROM_1850",
+                theme: "theme-romantic",
+                locked: true,
+                img: "img/romanticisme.jpg",
+                pool: [
+                    // CORRECTES (20)
+                    { text: "El Romanticisme trenca les regles per expressar sentiments intensos.", type: "normal" },
+                    { text: "El piano és l'instrument rei, amb virtuosos com Chopin i Liszt.", type: "normal" },
+                    { text: "L'orquestra es fa gegantina per expressar grans drames sonors.", type: "normal" },
+                    { text: "Wagner va crear el concepte d'obra d'art total a les seves òperes.", type: "normal" },
+                    { text: "El Leitmotiv és un tema musical associat a un personatge o idea.", type: "normal" },
+                    { text: "El Nacionalisme musical s'inspira en el folklore de cada país.", type: "normal" },
+                    { text: "El Lied és una cançó per a veu i piano basada en un poema.", type: "normal" },
+                    { text: "El Poema Simfònic és música orquestral que narra una història.", type: "normal" },
+                    { text: "Verdi va ser el gran mestre de l'òpera italiana del segle XIX.", type: "normal" },
+                    { text: "Txaikovski va compondre ballets famosos com 'El Llac dels Cignes'.", type: "normal" },
+                    { text: "L'artista romàntic es veia com un geni incomprès i solitari.", type: "normal" },
+                    { text: "Schubert va escriure més de 600 Lieder.", type: "normal" },
+                    { text: "Berlioz va utilitzar nous efectes orquestrals a la Simfonia Fantàstica.", type: "normal" },
+                    { text: "El Rubato permetia als intèrprets flexibilitat en el ritme.", type: "normal" },
+                    { text: "Brahms va mantenir les formes clàssiques dins l'esperit romàntic.", type: "normal" },
+                    { text: "Dvorak va compondre la 'Simfonia del Nou Món' als Estats Units.", type: "normal" },
+                    { text: "Clara Schumann va ser una gran pianista i compositora.", type: "normal" },
+                    { text: "L'òpera verista de Puccini buscava el realisme emocional.", type: "normal" },
+                    { text: "El cromatisme i les harmonies riques eren comuns.", type: "normal" },
+                    { text: "La música programàtica intenta descriure escenes o històries.", type: "normal" },
+
+                    // FAKES (7)
+                    { text: "Liszt trencava la seva guitarra elèctrica a l'escenari.", type: "fake", reason: "Absurd: Tocava el piano." },
+                    { text: "Wagner dissenyava decorats amb programari 3D.", type: "fake", reason: "Fals: No hi havia ordinadors." },
+                    { text: "Txaikovski sincronitzava els canons amb walkie-talkies.", type: "fake", reason: "Anacronisme: La ràdio és posterior." },
+                    { text: "Les simfonies es gravaven digitalment en CD.", type: "fake", reason: "Error: La gravació digital és moderna." },
+                    { text: "Schubert componia música generada per Intel·ligència Artificial.", type: "fake", reason: "Fals: La IA és actual." },
+                    { text: "Chopin feia servir Uber per anar de París a Mallorca.", type: "fake", reason: "Error: No existien les apps de transport." },
+                    { text: "Berlioz projectava hologramas 5D a la 'Simfonia Fantàstica'.", type: "fake", reason: "Fals: Els hologrames són tecnologia futura." }
+                ]
+            },
+            modern: {
+                key: 'modern',
+                title: "6. SEGLE XX",
+                id: "MOD_1900",
+                theme: "theme-modern",
+                locked: true,
+                img: "img/segleXX.jpg",
+                pool: [
+                    { text: "El segle XX és l'era de la ruptura, l'experimentació i les avantguardes.", type: "normal" },
+                    { text: "Stravinsky va causar un escàndol amb 'La Consagració de la Primavera'.", type: "normal" },
+                    { text: "Arnold Schönberg va inventar el dodecafonisme per trencar amb la tonalitat.", type: "normal" },
+                    { text: "El Jazz va néixer a Nova Orleans barrejant ritmes africans i harmonia europea.", type: "normal" },
+                    { text: "L'electrònica i els sintetitzadors van revolucionar el so a partir dels anys 60.", type: "normal" },
+                    { text: "John Cage va compondre 4'33'', una obra basada totalment en el silenci.", type: "normal" },
+                    { text: "El rock and roll va esclatar als anys 50 amb imatges com Elvis Presley.", type: "normal" },
+                    { text: "L'impressionisme de Debussy cercava crear atmosferes sonores noves.", type: "normal" },
+                    { text: "La tecnologia permet per primer cop gravar i difondre la música massivament.", type: "normal" },
+                    { text: "El minimalisme de Steve Reich es basa en la repetició de patrons senzills.", type: "normal" },
+                    { text: "Les bandes sonores de cinema es converteixen en un gènere molt popular.", type: "normal" },
+                    { text: "Apareixen els festivals de música gegants com Woodstock.", type: "normal" },
+                    { text: "La ràdio i la televisió van ser claus per a la difusió de l'estrella del pop.", type: "normal" },
+                    { text: "La música dodecafònica fa servir les 12 notes de l'escala cromàtica.", type: "normal" },
+                    { text: "El blues és la base per a molts estils de la música popular moderna.", type: "normal" },
+
+                    { text: "Pavarotti feia servir un satèl·lit personal per escoltar el seu propi eco.", type: "fake", reason: "Absurd: No existien satèl·lits privats per a això." },
+                    { text: "Stravinsky va compondre un ballet que es ballava dins d'una nau espacial.", type: "fake", reason: "Fals: No hi havia dansa espacial el 1913." },
+                    { text: "Els Beatles volaven en drons per sobre del públic als seus concerts.", type: "fake", reason: "Anacronisme: Els drons són tecnologies actuals." }
+                ]
+            }
+        };
+
+        // Ordre de desbloqueig
+        const missionOrder = ['medieval', 'renaissance', 'baroque', 'classicism', 'romantic', 'modern'];
+
+        let currentMissionKey = null;
+        let errorsFound = 0;
+        const totalErrors = 3;
+        let currentFakeItems = [];
+        let currentDocumentIndex = 0;
+        const docsPerEra = 3;
+
+        // --- SISTEMA DE NAVEGACIÓ ---
+        function switchScreen(id) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden-screen'));
+            document.getElementById(id).classList.remove('hidden-screen');
+            window.scrollTo(0, 0);
+        }
+
+        function goToIntro() {
+            document.body.className = '';
+            document.getElementById('win-screen').classList.add('hidden-screen');
+            switchScreen('intro-screen');
+        }
+
+        function goToMainMenu() {
+            document.body.className = '';
+            document.getElementById('win-screen').classList.add('hidden-screen');
+            renderMissionMenu(); // Re-renderitzar per actualitzar candaus
+            switchScreen('main-menu');
+        }
+
+        // --- RENDERITZAR MENÚ DE MISSIONS ---
+        function renderMissionMenu() {
+            const grid = document.getElementById('missions-grid');
+            grid.innerHTML = ''; // Netejar
+
+            missionOrder.forEach(key => {
+                const m = missionsData[key];
+
+                const card = document.createElement('div');
+                card.className = `mission-card rounded-lg bg-gray-900 border border-gray-700 overflow-hidden shadow-lg transition-all transform ${m.locked ? 'locked' : 'cursor-pointer hover:-translate-y-2 hover:border-' + getThemeColor(m.theme)}`;
+
+                // Si està bloquejat, no té onclick
+                if (!m.locked) {
+                    card.onclick = () => selectMission(key);
+                }
+
+                // Estat visual
+                const statusBadge = m.locked
+                    ? `<div class="absolute top-0 right-0 bg-gray-600 text-gray-300 text-xs px-2 py-1 font-bold"><i class="fas fa-lock"></i> BLOQUEJAT</div>`
+                    : `<div class="absolute top-0 right-0 bg-red-600 text-white text-xs px-2 py-1 font-bold animate-pulse">INFECTAT</div>`;
+
+                const lockIcon = m.locked
+                    ? `<div class="absolute inset-0 flex items-center justify-center bg-black/60 z-20"><i class="fas fa-lock text-5xl text-gray-500"></i></div>`
+                    : '';
+
+                card.innerHTML = `
+                    <div class="relative">
+                        ${lockIcon}
+                        <img src="${m.img}" class="hacked-img" alt="${m.title}">
+                    </div>
+                    <div class="p-4 relative">
+                        ${statusBadge}
+                        <h3 class="text-xl font-bold text-white mb-2 font-display ${m.locked ? 'text-gray-500' : ''}">${m.title}</h3>
+                        <p class="text-xs text-gray-400 font-mono mb-2">ID: ${m.id}</p>
+                        ${!m.locked ? `<div class="w-full bg-gray-800 h-1"><div class="bg-red-500 h-full w-full"></div></div>` : ''}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function getThemeColor(theme) {
+            // Retorna un color de tailwind per al hover
+            if (theme === 'theme-medieval') return 'green-500';
+            if (theme === 'theme-renaissance') return 'yellow-600';
+            if (theme === 'theme-baroque') return 'purple-500';
+            if (theme === 'theme-classicism') return 'blue-500';
+            if (theme === 'theme-romantic') return 'red-500';
+            return 'gray-500';
+        }
+
+        // --- LÒGICA DE JOC ---
+        function selectMission(key) {
+            const m = missionsData[key];
+            if (m.locked) return; // Seguretat extra
+
+            currentMissionKey = key;
+            currentDocumentIndex = 0;
+            startNextDocument();
+        }
+
+        function startNextDocument() {
+            const m = missionsData[currentMissionKey];
+            errorsFound = 0;
+            currentFakeItems = [];
+            document.getElementById('score').innerText = '0';
+            document.getElementById('doc-progress-label').innerText = `DOC ${currentDocumentIndex + 1}/3`;
+
+            // Aplicar tema
+            document.body.className = m.theme;
+
+            // Diferents títols segons el document
+            const docTitles = [
+                `${m.title} - ARXIU_RELIGIÓ`,
+                `${m.title} - SOCIETAT_I_CULTURA`,
+                `${m.title} - INSTRUMENTS_I_ART`
+            ];
+
+            // UI
+            document.getElementById('doc-title').innerText = docTitles[currentDocumentIndex];
+            document.getElementById('doc-id').innerText = `${m.id}_part_${currentDocumentIndex + 1}`;
+            document.getElementById('game-header-img').src = m.img;
+
+            // GENERAR CONTINGUT ALEATORI
+            // Volem 3 errors (fakes) i 7 correctes, per exemple, per fer un total de 10 frases.
+            const fakes = m.pool.filter(i => i.type === 'fake');
+            const normals = m.pool.filter(i => i.type === 'normal');
+
+            // Barrejar arrays
+            const shuffledFakes = fakes.sort(() => 0.5 - Math.random());
+            const shuffledNormals = normals.sort(() => 0.5 - Math.random());
+
+            // Seleccionar 3 fakes i 7 normals
+            const selectedFakes = shuffledFakes.slice(0, 3);
+            const selectedNormals = shuffledNormals.slice(0, 7);
+
+            // Combinar i barrejar de nou
+            const levelContent = [...selectedFakes, ...selectedNormals].sort(() => 0.5 - Math.random());
+
+            renderText(levelContent);
+            switchScreen('game-screen');
+        }
+
+        function renderText(content) {
+            const container = document.getElementById('article-content');
+            container.innerHTML = '';
+
+            content.forEach((item) => {
+                const span = document.createElement('span');
+                span.innerText = item.text;
+                span.className = 'phrase';
+                const space = document.createTextNode(' ');
+
+                span.addEventListener('click', () => handleInteraction(span, item));
+
+                container.appendChild(span);
+                container.appendChild(space);
+            });
+        }
+
+        function handleInteraction(element, item) {
+            if (element.classList.contains('found')) return;
+
+            if (item.type === 'fake') {
+                element.classList.add('found');
+                errorsFound++;
+                currentFakeItems.push(item); // Guardar per al resum final
+                document.getElementById('score').innerText = errorsFound;
+                showFeedback(`DETECTAT: ${item.reason}`, 'success');
+
+                if (errorsFound === totalErrors) {
+                    setTimeout(() => {
+                        currentDocumentIndex++;
+                        if (currentDocumentIndex < docsPerEra) {
+                            showFeedback("DOCUMENT NETEJAT. CARREGANT SEGÜENT SECCIÓ...", 'success');
+                            setTimeout(startNextDocument, 1500);
+                        } else {
+                            handleLevelComplete();
+                        }
+                    }, 1500);
+                }
+            } else {
+                element.classList.add('wrong');
+                showFeedback("INFORMACIÓ CORRECTA. SEGUEIX BUSCANT.", 'error');
+                setTimeout(() => element.classList.remove('wrong'), 500);
+            }
+        }
+
+        function handleLevelComplete() {
+            // Desbloquejar següent nivell
+            const currentIndex = missionOrder.indexOf(currentMissionKey);
+            if (currentIndex < missionOrder.length - 1) {
+                const nextKey = missionOrder[currentIndex + 1];
+                missionsData[nextKey].locked = false;
+            }
+
+            showWinScreen();
+        }
+
+        function showWinScreen() {
+            const details = document.getElementById('win-details');
+            details.innerHTML = '';
+
+            // Mostrar els errors que hem trobat en aquesta partida
+            currentFakeItems.forEach((err, idx) => {
+                const p = document.createElement('div');
+                p.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> <strong>ERROR ${idx + 1}:</strong> ${err.reason}`;
+                details.appendChild(p);
+            });
+
+            switchScreen('win-screen');
+
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    `sabotejador_${currentMissionKey}`,
+                    `Guardian del Temps: ${missionsData[currentMissionKey].title}`,
+                    'Has restaurat la línia temporal amb èxit!',
+                    '../../img/card_sabotejador.png'
+                );
+            }
+        }
+
+        function showFeedback(text, type) {
+            const el = document.getElementById('feedback-msg');
+            el.innerText = text;
+            el.classList.remove('hidden');
+
+            if (type === 'success') {
+                el.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-8 py-4 rounded-full shadow-2xl border-2 font-display text-xl z-[120] text-center transition-all bg-black text-primary border-primary shadow-[0_0_20px_var(--primary)]`;
+            } else {
+                el.className = `fixed bottom-10 left-1/2 transform -translate-x-1/2 px-8 py-4 rounded-full shadow-2xl border-2 font-display text-xl z-[120] text-center transition-all bg-red-900 text-white border-red-500 animate-pulse`;
+            }
+
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        // --- AUDIO SYSTEM ---
+        const bgMusic = new Audio('audio/Root Access Romance.m4a');
+        bgMusic.loop = true;
+
+        function updateVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        function startMusic() {
+            bgMusic.play().catch(e => console.warn("Audio interaction needed"));
+        }
+
+        // INICI
+        goToIntro();
+        // Start music on first click to bypass browser restrictions
+        document.addEventListener('click', startMusic, { once: true });
+
+    </script>
+</body>
+
+</html>
