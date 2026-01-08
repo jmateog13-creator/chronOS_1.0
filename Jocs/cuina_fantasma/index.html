@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Cuina Fantasma</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;700&display=swap');
+
+        :root {
+            --stainless-steel: #e0e0e0;
+            --kitchen-tile: #ffffff;
+            --backpack-yellow: #f1c40f;
+            --backpack-orange: #e67e22;
+            --alert-red: #e74c3c;
+            --success-green: #2ecc71;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+            background-color: #333;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            /* Tile pattern */
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 900px;
+            position: relative;
+            background: var(--kitchen-tile);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            border: 10px solid #999;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: var(--backpack-orange);
+            margin: 0 0 1rem 0;
+            text-shadow: 2px 2px 0 #333;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu-btn {
+            background: var(--backpack-yellow);
+            border: 3px solid var(--backpack-orange);
+            color: #333;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-family: 'Fredoka One', cursive;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.1s;
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.05);
+            background: #f39c12;
+        }
+
+        .menu-btn.completed::after {
+            content: ' ✅';
+        }
+
+        /* Game Interface */
+        #kitchen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* HUD */
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 30px;
+            background: #333;
+            color: white;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            border-bottom: 5px solid #555;
+            z-index: 15;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #bgm-slider {
+            width: 100px;
+            accent-color: var(--backpack-orange);
+            cursor: pointer;
+        }
+
+        /* Conveyor Area - The S-Path */
+        #conveyor-belt-area {
+            height: 450px;
+            background: #bbb;
+            position: relative;
+            padding: 20px 0;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .track {
+            position: absolute;
+            height: 80px;
+            background: repeating-linear-gradient(90deg,
+                    #888,
+                    #888 25px,
+                    #777 25px,
+                    #777 50px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border-top: 4px solid #666;
+            border-bottom: 4px solid #666;
+        }
+
+        .row-1 {
+            top: 30px;
+            left: 0;
+            right: 50px;
+        }
+
+        .row-2 {
+            top: 160px;
+            left: 50px;
+            right: 0;
+        }
+
+        .row-3 {
+            top: 290px;
+            left: 0;
+            right: 50px;
+        }
+
+        .track-corner {
+            position: absolute;
+            width: 100px;
+            height: 130px;
+            background: #888;
+            border: 4px solid #666;
+        }
+
+        .corner-1 {
+            top: 70px;
+            left: -30px;
+            border-radius: 50px 0 0 50px;
+            border-right: none;
+        }
+
+        .corner-2 {
+            top: 200px;
+            right: -30px;
+            border-radius: 0 50px 50px 0;
+            border-left: none;
+        }
+
+        #ingredients-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Prep Area */
+        #prep-area {
+            flex: 1;
+            background: radial-gradient(circle, #fff, #eee);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-top: 5px solid #ccc;
+        }
+
+        /* Backpack */
+        #backpack {
+            width: 250px;
+            height: 280px;
+            background-image: url('img/mochila.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 30px;
+            transition: transform 0.1s;
+            pointer-events: auto;
+        }
+
+        #backpack::before {
+            display: none;
+        }
+
+        #backpack-lid {
+            display: none;
+        }
+
+        #backpack.open #backpack-lid {
+            display: none;
+        }
+
+        .backpack-slot {
+            width: 80%;
+            height: 80%;
+            background: transparent;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka One', cursive;
+            color: transparent;
+            font-size: 1.5rem;
+        }
+
+        /* Ingredients */
+        .ingredient {
+            position: absolute;
+            width: 160px;
+            height: 130px;
+            background: white;
+            border: 3px solid #333;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 6px 0 #bbb;
+            transition: transform 0.1s;
+            font-size: 1.1rem;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            pointer-events: auto;
+            overflow: hidden;
+        }
+
+        .ingredient img {
+            width: 100%;
+            height: 85px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .ingredient:active {
+            cursor: grabbing;
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        .ingredient-icon {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+            color: white;
+        }
+
+        #feedback-msg {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bgm" loop>
+        <source src="audio/Grand Piazza Dream.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>LA CUINA FANTASMA</h1>
+            <p>Prepara la comanda per al Rider! Només ingredients de l'època.</p>
+            <div class="menu-grid">
+                <button class="menu-btn" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="menu-btn" data-era="renaixement">Renaixement</button>
+                <button class="menu-btn" data-era="barroc">Barroc</button>
+                <button class="menu-btn" data-era="classicisme">Classicisme</button>
+                <button class="menu-btn" data-era="romanticisme">Romanticisme</button>
+                <button class="menu-btn" data-era="segle_xx">Segle XX</button>
+            </div>
+        </div>
+
+        <!-- Game Interface -->
+        <div id="kitchen" class="hidden">
+            <div id="hud">
+                <div class="volume-control">
+                    <span>🔊</span>
+                    <input type="range" id="bgm-slider" min="0" max="1" step="0.1" value="0.5"
+                        oninput="setVolume(this.value)">
+                </div>
+                <div class="hud-stats">
+                    <span>COMANDA: <span id="score">0</span>/10</span>
+                    <span style="color:var(--alert-red); margin-left: 20px;">QUEIXES: <span id="lives">0</span>/3</span>
+                </div>
+            </div>
+
+            <div id="conveyor-belt-area">
+                <!-- Three rows of track -->
+                <div class="track row-1"></div>
+                <div class="track-corner corner-1"></div>
+                <div class="track row-2"></div>
+                <div class="track-corner corner-2"></div>
+                <div class="track row-3"></div>
+
+                <!-- Ingredients will be absolute positioned here -->
+                <div id="ingredients-layer"></div>
+            </div>
+
+            <div id="prep-area">
+                <div id="backpack">
+                    <div id="backpack-lid"></div>
+                    <div class="backpack-slot">DROP HERE</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <div id="feedback-msg"></div>
+            <button class="menu-btn" onclick="location.reload()">NOVA COMANDA</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: [
+                { name: "Sopa de Monodia", img: "img/sopademonodia.png" },
+                { name: "Estofat de Trobador", img: "img/estofatdetrovador.png" },
+                { name: "Cant Gregorià", img: "img/cantgregoria.png" },
+                { name: "Neumes Fregits", img: "img/neumesfregits.png" },
+                { name: "Llaüt Picant", img: "img/llautpicant.png" }
+            ],
+            renaixement: [
+                { name: "Palestrina Pizza", img: "img/palestrinapizza.png" },
+                { name: "Madrigal Dolç", img: "img/madrigaldolç.png" },
+                { name: "Josquin Nuggets", img: "img/josquinnuggets.png" },
+                { name: "Polifonia Farcida", img: "img/polifoniafarcida.png" },
+                { name: "Renaixement Burger", img: "img/renaixementbutger.png" }
+            ],
+            barroc: [
+                { name: "Bach Burger", img: "img/bachburguer.png" },
+                { name: "Fuga de Xocolata", img: "img/fugadexocolata.png" },
+                { name: "Vivaldi Pasta", img: "img/vivaldipasta.png" },
+                { name: "Baix Continu Soup", img: "img/baixcontinusoup.png" },
+                { name: "Clavicèmbal Cake", img: "img/clavicembalcake.png" }
+            ],
+            classicisme: [
+                { name: "Mozart-Kuchen", img: "img/mozartkuchen.png" },
+                { name: "Quartet de Formatges", img: "img/quartetdeformatges.png" },
+                { name: "Haydn Hot Dog", img: "img/haydnhotdog.png" },
+                { name: "Sonata Salad", img: "img/sonatasalad.png" },
+                { name: "Beethoven Beer", img: "img/beethovenbeer.png" }
+            ],
+            romanticisme: [
+                { name: "Verdi Lasagna", img: "img/verdilasagna.png" },
+                { name: "Lied de Maduixa", img: "img/lieddemaduixa.png" },
+                { name: "Wagner Wurst", img: "img/wagnerwurst.png" },
+                { name: "Chopin Soufflé", img: "img/chopinsufle.png" },
+                { name: "Rubato Risotto", img: "img/rissotorubato-removebg-preview.png" }
+            ],
+            segle_xx: [
+                { name: "Sushi de Stravinsky", img: "img/sushidstravinsky.png" },
+                { name: "Dodeca-Tacos", img: "img/dodecatacos.png" },
+                { name: "Jazz Jam", img: "img/jazzjam-removebg-preview.png" },
+                { name: "Minimalist Mousse", img: "img/minimalistmousse-removebg-preview.png" },
+                { name: "Cage's Silence Soup", img: "img/cagesilentsoup-removebg-preview.png" }
+            ]
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let score = 0;
+        let lives = 0;
+        let gameActive = false;
+        let spawnRate = 3500;
+        let speedMultiplier = 0.0006; // Progress per frame
+        let activeIngredients = [];
+        let spawnTimeout = null;
+        let gameLoopId = null;
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function setVolume(val) {
+            const bgm = document.getElementById('bgm');
+            if (bgm) bgm.volume = val;
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'clack') {
+                const bufferSize = audioCtx.sampleRate * 0.1;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+                noise.start(now);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                gainNode.gain.setValueAtTime(0.4, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'bell') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'success') {
+                // Happy chord/reward sound
+                const freqs = [523.25, 659.25, 783.99, 1046.50]; // C Major arpeggio
+                freqs.forEach((f, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(f, now + (i * 0.05));
+                    g.gain.setValueAtTime(0.2, now + (i * 0.05));
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.start(now + (i * 0.05));
+                    o.stop(now + 0.5);
+                });
+            }
+        }
+
+        // --- LOGIC ---
+        document.querySelectorAll('.menu-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.closest('#feedback-overlay')) return;
+                currentEra = btn.dataset.era;
+                startGame();
+            });
+        });
+
+        function startGame() {
+            const bgm = document.getElementById('bgm');
+            bgm.volume = document.getElementById('bgm-slider').value;
+            bgm.play().catch(() => { });
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('kitchen').classList.remove('hidden');
+
+            score = 0;
+            lives = 0;
+            spawnRate = 3500;
+            speedMultiplier = 0.0006;
+            gameActive = true;
+            activeIngredients = [];
+            document.getElementById('ingredients-layer').innerHTML = '';
+
+            updateHUD();
+            playSound('bell');
+            checkCompletedEras();
+
+            spawnIngredient();
+            gameLoop();
+        }
+
+        function checkCompletedEras() {
+            const completed = JSON.parse(localStorage.getItem('cuina_fantasma_completed') || '[]');
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                const era = btn.dataset.era;
+                if (completed.includes(era)) {
+                    btn.classList.add('completed');
+                }
+            });
+        }
+        // Run on load
+        checkCompletedEras();
+
+        function spawnIngredient() {
+            if (!gameActive) return;
+
+            // 60% correct, 40% incorrect
+            const isCorrect = Math.random() < 0.6;
+            let itemData;
+
+            if (isCorrect) {
+                const pool = DB[currentEra];
+                itemData = pool[Math.floor(Math.random() * pool.length)];
+            } else {
+                const eras = Object.keys(DB).filter(e => e !== currentEra);
+                const randomEra = eras[Math.floor(Math.random() * eras.length)];
+                itemData = DB[randomEra][Math.floor(Math.random() * DB[randomEra].length)];
+            }
+
+            const el = document.createElement('div');
+            el.className = 'ingredient';
+            el.id = `ing-${Date.now()}`;
+
+            if (itemData.img) {
+                el.innerHTML = `<img src="${itemData.img}" onerror="this.outerHTML='<div class=\'ingredient-icon\'>🍲</div>'"><div>${itemData.name}</div>`;
+            } else {
+                el.innerHTML = `<div class="ingredient-icon">🍲</div><div>${itemData.name}</div>`;
+            }
+
+            el.draggable = true;
+            document.getElementById('ingredients-layer').appendChild(el);
+
+            activeIngredients.push({
+                element: el,
+                progress: 0,
+                isCorrect: isCorrect
+            });
+
+            el.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', JSON.stringify({ id: el.id, isCorrect }));
+            });
+
+            el.addEventListener('touchstart', handleTouchStart, { passive: false });
+            el.addEventListener('touchmove', handleTouchMove, { passive: false });
+            el.addEventListener('touchend', handleTouchEnd);
+
+            spawnTimeout = setTimeout(spawnIngredient, spawnRate);
+        }
+
+        function getPathCoordinates(progress) {
+            const W = document.getElementById('conveyor-belt-area').clientWidth;
+            let x, y;
+
+            if (progress <= 0.3) {
+                const p = progress / 0.3;
+                x = W - (p * (W - 50));
+                y = 30;
+            } else if (progress <= 0.4) {
+                const p = (progress - 0.3) / 0.1;
+                x = 10 + (1 - p) * 40;
+                y = 30 + (p * 130);
+            } else if (progress <= 0.7) {
+                const p = (progress - 0.4) / 0.3;
+                x = 10 + (p * (W - 60));
+                y = 160;
+            } else if (progress <= 0.8) {
+                const p = (progress - 0.7) / 0.1;
+                x = (W - 50) + (p * 40);
+                y = 160 + (p * 130);
+            } else {
+                const p = (progress - 0.8) / 0.2;
+                x = (W - 10) - (p * (W - 60));
+                y = 290;
+            }
+            return { x, y };
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            for (let i = activeIngredients.length - 1; i >= 0; i--) {
+                const item = activeIngredients[i];
+                item.progress += speedMultiplier;
+
+                if (item.progress >= 1) {
+                    item.element.remove();
+                    activeIngredients.splice(i, 1);
+                    continue;
+                }
+
+                const coords = getPathCoordinates(item.progress);
+                item.element.style.left = coords.x + 'px';
+                item.element.style.top = coords.y + 'px';
+            }
+
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        const backpack = document.getElementById('backpack');
+        backpack.addEventListener('dragover', e => { e.preventDefault(); backpack.classList.add('open'); });
+        backpack.addEventListener('dragleave', () => backpack.classList.remove('open'));
+        backpack.addEventListener('drop', e => {
+            e.preventDefault();
+            backpack.classList.remove('open');
+            try {
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                handleDrop(data.id, data.isCorrect);
+            } catch (e) { }
+        });
+
+        function handleDrop(id, isCorrect) {
+            const el = document.getElementById(id);
+            if (el) {
+                const index = activeIngredients.findIndex(i => i.element.id === id);
+                if (index > -1) activeIngredients.splice(index, 1);
+                el.remove();
+            }
+
+            if (isCorrect) {
+                score++;
+                playSound('success');
+                if (score % 4 === 0) {
+                    speedMultiplier += 0.0003;
+                    spawnRate = Math.max(1200, spawnRate - 300);
+                }
+            } else {
+                lives++;
+                playSound('error');
+                backpack.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-5deg)' }, { transform: 'rotate(5deg)' }, { transform: 'rotate(0)' }], { duration: 300 });
+            }
+
+            updateHUD();
+            if (lives >= 3) endGame(false);
+            else if (score >= 10) endGame(true);
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            clearTimeout(spawnTimeout);
+            cancelAnimationFrame(gameLoopId);
+            document.getElementById('bgm').pause();
+
+            const overlay = document.getElementById('feedback-overlay');
+            const msg = document.getElementById('feedback-msg');
+            overlay.style.display = 'flex';
+
+            if (win) {
+                msg.textContent = "COMANDA LLESTA PER ENTREGAR!";
+                msg.style.color = "#2ecc71";
+                playSound('success');
+
+                // Mark era as completed
+                const completed = JSON.parse(localStorage.getItem('cuina_fantasma_completed') || '[]');
+                if (!completed.includes(currentEra)) {
+                    completed.push(currentEra);
+                    localStorage.setItem('cuina_fantasma_completed', JSON.stringify(completed));
+                }
+
+                // Prepare expansion for next level
+                overlay.innerHTML = `
+                    <div id="feedback-msg" style="color:#2ecc71">¡ENHORABONA! COMANDA ENTREGADA</div>
+                    <p style="color:white; font-size:1.5rem">Tria la següent època al menú.</p>
+                    <button class="menu-btn" onclick="location.reload()">TORNAR AL MENÚ</button>
+                `;
+            } else {
+                msg.textContent = "REPUTACIÓ PER TERRA! PLATS CADUCATS.";
+                msg.style.color = "#e74c3c";
+                overlay.innerHTML = `
+                    <div id="feedback-msg" style="color:#e74c3c">REPUTACIÓ PER TERRA!</div>
+                    <button class="menu-btn" onclick="location.reload()">TORNAR A INTENTAR</button>
+                `;
+                playSound('error');
+            }
+        }
+
+        let touchClone = null;
+        let touchData = null;
+        function handleTouchStart(e) {
+            const touch = e.touches[0];
+            const item = activeIngredients.find(i => i.element === this);
+            if (!item) return;
+            touchData = { id: this.id, isCorrect: item.isCorrect };
+            touchClone = this.cloneNode(true);
+            touchClone.style.position = 'fixed';
+            touchClone.style.zIndex = 1000;
+            touchClone.style.pointerEvents = 'none';
+            document.body.appendChild(touchClone);
+            moveClone(touch);
+            backpack.classList.add('open');
+        }
+
+        function handleTouchMove(e) { if (touchClone) { e.preventDefault(); moveClone(e.touches[0]); } }
+
+        function handleTouchEnd(e) {
+            if (touchClone) {
+                const touch = e.changedTouches[0];
+                const rect = backpack.getBoundingClientRect();
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right && touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                    handleDrop(touchData.id, touchData.isCorrect);
+                }
+                touchClone.remove();
+                touchClone = null;
+                backpack.classList.remove('open');
+            }
+        }
+
+        function moveClone(t) {
+            touchClone.style.left = (t.clientX - 65) + 'px';
+            touchClone.style.top = (t.clientY - 50) + 'px';
+        }
+    </script>
+</body>
+
+</html>

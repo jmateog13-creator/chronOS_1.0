@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estat de la Bateria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --card-color: #ffffff;
+            --accent-color: #007aff;
+            /* iOS Blue */
+            --danger-color: #ff3b30;
+            --success-color: #34c759;
+            --text-primary: #1c1c1e;
+            --text-secondary: #8e8e93;
+            --border-color: #d1d1d6;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .app-window {
+            width: 400px;
+            background: var(--card-color);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+            max-height: 800px;
+        }
+
+        .header {
+            background: var(--bg-color);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 4px 10px;
+            border-radius: 15px;
+        }
+
+        /* BATTERY ICON */
+        .battery-display {
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .battery-case {
+            width: 120px;
+            height: 60px;
+            border: 4px solid var(--text-primary);
+            border-radius: 10px;
+            position: relative;
+            padding: 4px;
+        }
+
+        .battery-case::after {
+            content: "";
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 20px;
+            background: var(--text-primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .battery-level {
+            height: 100%;
+            width: 0%;
+            background: var(--success-color);
+            border-radius: 4px;
+            transition: width 0.3s ease, background-color 0.3s;
+        }
+
+        .battery-percentage {
+            font-size: 3rem;
+            font-weight: 200;
+            color: var(--text-primary);
+        }
+
+        .content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .setting-group {
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .setting-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* CUSTOM SLIDER */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        .status-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--accent-color);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .save-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 20px;
+            width: 100%;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .save-btn:active {
+            opacity: 0.8;
+        }
+
+        /* MODAL OVERLAY */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .modal-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .steps-viz {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding: 0 5px;
+        }
+
+        .step-dot {
+            width: 2px;
+            height: 6px;
+            background: var(--text-secondary);
+            opacity: 0.3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="modal-overlay">
+        <div class="modal-box" id="instruction-box">
+            <div class="modal-title">🔋 Sincronització de Bateria</div>
+            <p style="text-align: left; margin-bottom: 15px;">
+                <strong>Època:</strong> <span id="target-era-span"
+                    style="color:var(--accent-color); font-weight:bold;">...</span>
+            </p>
+            <p style="text-align: left; color:#666;" id="target-desc">...</p>
+            <button class="modal-btn" onclick="closeModal()">CONFIGURAR</button>
+        </div>
+
+        <div class="modal-box" id="feedback-box" style="display:none;">
+            <div class="modal-title" id="feedback-title">...</div>
+            <p id="feedback-msg">...</p>
+            <button class="modal-btn" id="feedback-btn" onclick="handleFeedback()">...</button>
+        </div>
+    </div>
+
+    <div class="app-window">
+        <div class="header">
+            <h1>Bateria del Temps</h1>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div
+                    style="background: rgba(0, 0, 0, 0.05); padding: 6px 12px; border-radius: 15px; font-weight: 600; color: var(--accent-color);">
+                    <span id="success-counter">0/6</span> ✓
+                </div>
+                <div class="volume-container">
+                    <span id="vol-icon" style="cursor:pointer;" onclick="toggleMute()">🔊</span>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5" style="width: 60px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="battery-display">
+            <div class="battery-case">
+                <div class="battery-level" id="battery-level"></div>
+            </div>
+            <div class="battery-percentage" id="battery-perc">0%</div>
+        </div>
+
+        <div class="content">
+            <div class="setting-group">
+                <span class="setting-label">Mode de Càrrega (Època)</span>
+                <input type="range" min="0" max="5" step="1" value="0" id="energy-slider"
+                    oninput="updateDisplay(this.value)">
+                <div class="steps-viz">
+                    <div class="step-dot"></div>
+                    <div class="step-dot"></div>
+                    <div class="step-dot"></div>
+                    <div class="step-dot"></div>
+                    <div class="step-dot"></div>
+                    <div class="step-dot"></div>
+                </div>
+                <div class="status-text" id="status-text">...</div>
+            </div>
+            <div id="system-feedback" style="text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                Sincronitzant flux temporal...
+            </div>
+        </div>
+
+        <button class="save-btn" onclick="validate()">CONNEXIÓ AL SISTEMA</button>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/bg_music.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // --- DATABASE ---
+        const ENERGY_LEVELS = [
+            { era: "EDAT MITJANA", hint: "Bateria de baix consum. Només veus, sense despesa instrumental.", percentage: 15 },
+            { era: "RENAIXEMENT", hint: "Càrrega equilibrada. Polifonia vocal optimitzada.", percentage: 32 },
+            { era: "BARROC", hint: "Flux continu de corrent. Baix continu i ornamentació activa.", percentage: 48 },
+            { era: "CLASSICISME", hint: "Eficiència estructural. Ordre i proporció en el voltatge.", percentage: 65 },
+            { era: "ROMANTICISME", hint: "Alt voltatge emocional. Orquestres de gran capacitat.", percentage: 85 },
+            { era: "SEGLE XX", hint: "Càrrega experimental. Trencament de pols i corrent altern.", percentage: 100 }
+        ];
+
+        const SLIDER_STEPS = [
+            "POLS GREGORIÀ",
+            "FLUX POLIFÒNIC",
+            "CORRENT CONTINU",
+            "FORMA SIMÈTRICA",
+            "VOLTATGE PASSIONAL",
+            "CÀRREGA ATONAL"
+        ];
+
+        // --- STATE ---
+        let currentRound = 0;
+        let musicStarted = false;
+        let successCount = 0;
+        let randomizedEras = [];
+        let usedEras = new Set();
+
+        // --- DOM ---
+        const batteryLevel = document.getElementById('battery-level');
+        const batteryPercText = document.getElementById('battery-perc');
+        const statusText = document.getElementById('status-text');
+        const energySlider = document.getElementById('energy-slider');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const instructionBox = document.getElementById('instruction-box');
+        const feedbackBox = document.getElementById('feedback-box');
+
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+        const volIcon = document.getElementById('vol-icon');
+
+        function init() {
+            // Volume
+            bgMusic.volume = 0.5;
+            volSlider.addEventListener('input', (e) => {
+                bgMusic.volume = e.target.value;
+                volIcon.textContent = parseFloat(e.target.value) === 0 ? "🔇" : "🔊";
+            });
+
+            // Randomize eras
+            randomizedEras = [...ENERGY_LEVELS].sort(() => Math.random() - 0.5);
+
+            startRound();
+        }
+
+        function startRound() {
+            if (successCount >= 6) {
+                showFinalVictory();
+                return;
+            }
+
+            // Get a random era that hasn't been used yet
+            let level;
+            do {
+                const randomIndex = Math.floor(Math.random() * ENERGY_LEVELS.length);
+                level = ENERGY_LEVELS[randomIndex];
+            } while (usedEras.has(level.era));
+
+            usedEras.add(level.era);
+
+            // Show instruction
+            modalOverlay.style.display = 'flex';
+            instructionBox.style.display = 'block';
+            feedbackBox.style.display = 'none';
+            document.getElementById('target-era-span').textContent = level.era;
+            document.getElementById('target-desc').textContent = level.hint;
+
+            // Reset UI for round
+            energySlider.value = 0;
+            updateDisplay(0);
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+            if (!musicStarted) {
+                bgMusic.play().catch(e => console.log("Music play blocked"));
+                musicStarted = true;
+            }
+        }
+
+        function updateDisplay(val) {
+            const idx = parseInt(val);
+            statusText.textContent = SLIDER_STEPS[idx];
+
+            // Visual battery fill preview (relative to slider)
+            const previewPerc = (idx + 1) * 16.6;
+            batteryLevel.style.width = previewPerc + "%";
+            batteryPercText.textContent = Math.round(previewPerc) + "%";
+
+            // Color shift based on charge level
+            if (idx < 2) batteryLevel.style.backgroundColor = "#ff9500"; // Orange
+            else if (idx < 4) batteryLevel.style.backgroundColor = "#ffcc00"; // Yellow
+            else batteryLevel.style.backgroundColor = "#34c759"; // Green
+        }
+
+        function validate() {
+            const val = parseInt(energySlider.value);
+
+            // Find which era the user selected
+            const selectedEra = ENERGY_LEVELS[val];
+
+            // Find the target era from the modal
+            const targetEraName = document.getElementById('target-era-span').textContent;
+            const targetEra = ENERGY_LEVELS.find(e => e.era === targetEraName);
+
+            if (selectedEra.era === targetEra.era) {
+                successCount++;
+                document.getElementById('success-counter').textContent = `${successCount}/6`;
+                showFeedback("✓ CÀRREGA CORRECTA", `La bateria de l'${targetEra.era} s'ha sincronitzat al ${targetEra.percentage}%.`, "SEGÜENT", true);
+            } else {
+                let msg = selectedEra.percentage < targetEra.percentage ? "⚠ VOLTATGE INSUFICIENT per a aquesta època." : "⚠ SOBRECÀRREGA DETECTADA. Massa avançat!";
+                showFeedback("⚠ ERROR DE SISTEMA", msg, "REVISAR", false);
+            }
+        }
+
+        function showFeedback(title, msg, btnText, isSuccess) {
+            modalOverlay.style.display = 'flex';
+            instructionBox.style.display = 'none';
+            feedbackBox.style.display = 'block';
+
+            document.getElementById('feedback-title').textContent = title;
+            document.getElementById('feedback-title').style.color = isSuccess ? "var(--success-color)" : "var(--danger-color)";
+            document.getElementById('feedback-msg').textContent = msg;
+            document.getElementById('feedback-btn').textContent = btnText;
+            document.getElementById('feedback-btn').onclick = isSuccess ? () => { startRound(); } : () => { modalOverlay.style.display = 'none'; };
+        }
+
+        function showFinalVictory() {
+            modalOverlay.style.display = 'flex';
+            instructionBox.style.display = 'none';
+            feedbackBox.style.display = 'block';
+
+            document.getElementById('feedback-title').textContent = "🔋 SISTEMA COMPLET";
+            document.getElementById('feedback-title').style.color = "var(--accent-color)";
+            document.getElementById('feedback-msg').textContent = "Has sincronitzat totes les èpoques. La cronobateria està al 100%.";
+            document.getElementById('feedback-btn').textContent = "REINICIAR";
+            document.getElementById('feedback-btn').onclick = () => { location.reload(); };
+        }
+
+        function toggleMute() {
+            if (bgMusic.muted) {
+                bgMusic.muted = false;
+                volIcon.textContent = "🔊";
+            } else {
+                bgMusic.muted = true;
+                volIcon.textContent = "🔇";
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

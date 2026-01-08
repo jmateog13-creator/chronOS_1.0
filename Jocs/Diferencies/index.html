@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Quadern del Temps</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Indie+Flower&family=Patrick+Hand&display=swap');
+
+        :root {
+            --paper-bg: #fdf6e3;
+            --ink-color: #2c3e50;
+            --tape-color: rgba(255, 255, 255, 0.4);
+            --red-ink: #c0392b;
+            --highlight: #f1c40f;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #eee;
+            background-image: url('https://www.transparenttextures.com/patterns/notebook.png');
+            color: var(--ink-color);
+            font-family: 'Indie Flower', cursive;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* UI HEADER - Notebook Header */
+        header {
+            width: 90%;
+            max-width: 1000px;
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: rotate(-1deg);
+            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        header::after {
+            /* Tape effect */
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 35px;
+            background: var(--tape-color);
+            border-left: 1px dashed rgba(0, 0, 0, 0.1);
+            border-right: 1px dashed rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 21;
+        }
+
+        h1 {
+            font-family: 'Patrick Hand', cursive;
+            margin: 0;
+            font-size: 2rem;
+            color: var(--ink-color);
+            text-decoration: underline;
+            text-decoration-color: var(--red-ink);
+            text-decoration-style: wavy;
+        }
+
+        .stats {
+            display: flex;
+            gap: 25px;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: var(--red-ink);
+        }
+
+        /* GAME BOARD */
+        #game-container {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            flex: 1;
+            margin: 20px 0;
+            background: white;
+            border: 10px solid white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            border-radius: 5px;
+            transform: rotate(1deg);
+        }
+
+        /* Blurred Background */
+        #bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(4px) sepia(30%);
+            transition: filter 0.5s;
+            pointer-events: none;
+            /* Let clicks pass through if needed, but usually items are on top */
+        }
+
+        /* ITEMS - POLAROID / CUTOUT STYLE */
+        /* ITEMS - POLAROID / CUTOUT STYLE */
+        .game-item {
+            position: absolute;
+            width: 180px;
+            /* Increased size */
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s, z-index 0s;
+            z-index: 10;
+            padding: 8px;
+            background: white;
+            box-shadow: 3px 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-item img {
+            width: 100%;
+            height: auto;
+            pointer-events: none;
+            display: block;
+        }
+
+        /* Tape on items */
+        .game-item::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 30%;
+            width: 40%;
+            height: 30px;
+            background: rgba(255, 255, 230, 0.6);
+            transform: rotate(-2deg);
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            z-index: 11;
+        }
+
+        /* LABEL ON HOVER */
+        .item-label {
+            position: absolute;
+            bottom: -30px;
+            background: #fff9c4;
+            /* Post-it yellow */
+            color: #333;
+            padding: 2px 10px;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            transform: rotate(-2deg);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 30;
+        }
+
+        .game-item:hover {
+            transform: scale(1.15) !important;
+            z-index: 50;
+            /* Bring to very front */
+        }
+
+        .game-item:hover .item-label {
+            opacity: 1;
+        }
+
+        /* Found / Circle Effect */
+        .found {
+            pointer-events: none;
+        }
+
+        .found::after {
+            content: '';
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            border: 5px solid var(--red-ink);
+            border-radius: 50% 40% 60% 30% / 30% 50% 60% 40%;
+            animation: drawCircle 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes drawCircle {
+            from {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* FEEDBACK (Handwritten Notes) */
+        #tooltip {
+            position: absolute;
+            background: #fff9c4;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 2px;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.2rem;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            transform: rotate(-3deg);
+            max-width: 200px;
+            text-align: center;
+        }
+
+        /* MODALS */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .paper-modal {
+            background: #fff;
+            padding: 40px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transform: rotate(1deg);
+            position: relative;
+        }
+
+        .paper-modal::before {
+            /* Top Tape */
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-family: 'Patrick Hand', cursive;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--ink-color);
+        }
+
+        .btn {
+            background: transparent;
+            border: 3px solid var(--ink-color);
+            color: var(--ink-color);
+            padding: 10px 30px;
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            transition: transform 0.1s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05) rotate(-2deg);
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Feedback Red Ink */
+        #feedback-msg {
+            position: absolute;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 2.5rem;
+            color: var(--red-ink);
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 50;
+            transform: rotate(-10deg);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="modal active">
+        <div class="paper-modal">
+            <h2>DIARI DE CAMP</h2>
+            <p style="font-size: 1.5rem">
+                Hem detectat objectes que no quadren amb l'època.
+                <br><br>
+                Ajuda'm a identificar els intrusos abans que canviïn la història!
+            </p>
+            <button class="btn" onclick="startGame()">OBRIR QUADERN</button>
+        </div>
+    </div>
+
+    <!-- UI -->
+    <header>
+        <h1>EL QUADERN DE VIATGE</h1>
+        <div class="stats">
+            <span>ÈPOCA: <span id="level-display" class="stat-value">...</span></span>
+            <span>TROBATS: <span id="anomalies-display" class="stat-value">0/3</span></span>
+            <span>PUNTS: <span id="score-display" class="stat-value">0</span></span>
+        </div>
+    </header>
+
+    <!-- GAME AREA -->
+    <div id="game-container" onclick="handleBackgroundClick(event)">
+        <img id="bg-image" src="" alt="Fons històric">
+        <div id="items-container"></div>
+        <div id="feedback-msg">X ERROR</div>
+    </div>
+
+    <!-- TOOLTIP -->
+    <div id="tooltip">Hola</div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="modal">
+        <div class="paper-modal">
+            <h2 style="color: green">¡PÀGINA COMPLETADA!</h2>
+            <p style="font-size: 1.3rem">Has trobat tots els anacronismes.</p>
+            <div id="anomalies-summary" style="text-align: left; margin: 20px 0; font-size:1.2rem;"></div>
+            <button class="btn" onclick="nextLevel()">GIRAR FULL</button>
+        </div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="game-over-modal" class="modal">
+        <div class="paper-modal">
+            <h2>RECERCA FINALITZADA</h2>
+            <p style="font-size: 1.5rem">Bona feina detectiu temporal!</p>
+            <p>Puntuació: <span id="final-score" style="color:var(--red-ink); font-weight:bold"></span></p>
+            <button class="btn" onclick="location.reload()">NOVA RECERCA</button>
+        </div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- ASSET MAPPING ---
+        // Mapping conceptual names to actual filenames in img folder
+
+        const DATABASE = [
+            {
+                era: "PREHISTÒRIA",
+                bgUrl: "img/fons prehistoria.jpg",
+                intruders: [
+                    { img: "img/violi.jpg", name: "Violí", desc: "Massa complex per l'època." },
+                    { img: "img/bici.jpg", name: "Bicicleta", desc: "La roda no es feia servir així!" },
+                    { img: "img/bombeta.jpg", name: "Bombeta", desc: "No hi ha electricitat!" }
+                ],
+                distractors: [
+                    { img: "img/os.jpg", name: "Os" },
+                    { img: "img/foc.jpg", name: "Foc" },
+                    { img: "img/roca.jpg", name: "Roca" }, // Mapped from pedra
+                    { img: "img/senglar.jpg", name: "Senglar" }
+                ]
+            },
+            {
+                era: "EDAT MITJANA",
+                bgUrl: "img/fons edatmitjana.jpg",
+                intruders: [
+                    { img: "img/guitarraeleectrica.jpg", name: "Guitarra Elèctrica", desc: "Falta l'amplificador... i l'electricitat." },
+                    { img: "img/cotxe.jpg", name: "Cotxe", desc: "Els cavalls eren el motor." },
+                    { img: "img/radio.jpg", name: "Ràdio Digital", desc: "Aleshores escoltaven joglars." } // Swapped watch for radio if fits better or use generic
+                ],
+                distractors: [
+                    { img: "img/corona.jpg", name: "Corona" },
+                    { img: "img/espelma.jpg", name: "Espelma" },
+                    { img: "img/pergamí.jpg", name: "Pergamí" },
+                    { img: "img/escut.jpg", name: "Escut" }
+                ]
+            },
+            {
+                era: "RENAIXEMENT",
+                bgUrl: "img/fons renaixement.jpg",
+                intruders: [
+                    { img: "img/auriculars.jpg", name: "Auriculars", desc: "Musica en viu, si us plau." },
+                    { img: "img/portatil.jpg", name: "Portàtil", desc: "Da Vinci no tenia Wi-Fi." },
+                    { img: "img/beguda.jpg", name: "Refresc", desc: "Millor un vi o aigua fresca." }
+                ],
+                distractors: [
+                    { img: "img/paletapintor.jpg", name: "Paleta" },
+                    { img: "img/llibres.jpg", name: "Llibres" },
+                    { img: "img/partitura.jpg", name: "Partitura" },
+                    { img: "img/bortxa.jpg", name: "Pinzell" } // Mapped from pinzell
+                ]
+            },
+            {
+                era: "BARROC",
+                bgUrl: "img/bgbarroc.jpg",
+                intruders: [
+                    { img: "img/smartphone.jpg", name: "Mòbil", desc: "Només cartes escrites a mà." },
+                    { img: "img/vambes.jpg", name: "Vambes", desc: "On són les sivelles?" },
+                    { img: "img/televisio.jpg", name: "Televisió", desc: "L'única pantalla era l'escenari." }
+                ],
+                distractors: [
+                    { img: "img/violi.jpg", name: "Violí" },
+                    { img: "img/mascara.jpg", name: "Màscara" },
+                    { img: "img/vestit.jpg", name: "Vestit" },
+                    { img: "img/clave.jpg", name: "Clave" }
+                ]
+            },
+            {
+                era: "CLASSICISME",
+                bgUrl: "img/fons clasic.jpg",
+                intruders: [
+                    { img: "img/marock.jpg", name: "Mà Cornuda", desc: "Molt heavy per a Mozart." },
+                    { img: "img/radio.jpg", name: "Ràdio", desc: "Anacronisme sonor." }, // Changed from skateboard due to missing file? Or use placeholder
+                    { img: "img/hamburguesa.jpg", name: "Hamburguesa", desc: "Menjar ràpid no existia." }
+                ],
+                distractors: [
+                    { img: "img/piano.jpg", name: "Piano" },
+                    { img: "img/violi.jpg", name: "Violí" },
+                    { img: "img/claudesol.jpg", name: "Clau de Sol" },
+                    { img: "img/barret.jpg", name: "Barret" }
+                ]
+            },
+            {
+                era: "ROMANTICISME",
+                bgUrl: "img/fonsromantic.jpg",
+                intruders: [
+                    { img: "img/robot.jpg", name: "Robot", desc: "Massa ciència ficció." },
+                    { img: "img/coet.jpg", name: "Coet", desc: "Viatges a la lluna, només en llibres." },
+                    { img: "img/radioactiu.jpg", name: "Radioactiu", desc: "La física moderna queda lluny." }
+                ],
+                distractors: [
+                    { img: "img/corr¡trencat.jpg", name: "Cor trencat" }, // Check filename typo fix logic if needed
+                    { img: "img/rosa.jpg", name: "Rosa" },
+                    { img: "img/barret.jpg", name: "Barret" },
+                    { img: "img/llibres.jpg", name: "Poesia" } // Cloud missing, subbed books/poetry
+                ]
+            },
+            {
+                era: "SEGLE XX",
+                bgUrl: "img/fons ¡segleXX.jpg",
+                intruders: [
+                    { img: "img/escut.jpg", name: "Escut Medieval", desc: "Fora de lloc a la ciutat." },
+                    { img: "img/dinosaure.jpg", name: "Dinosaure", desc: "Enlloc de Jurassic Park..." },
+                    { img: "img/amfora.jpg", name: "Àmfora", desc: "Peça de museu." }
+                ],
+                distractors: [
+                    { img: "img/saxofon.jpg", name: "Saxòfon" },
+                    { img: "img/radio.jpg", name: "Ràdio Antiga" },
+                    { img: "img/cotxe.jpg", name: "Cotxe" },
+                    { img: "img/avio.jpg", name: "Avió" }
+                ]
+            }
+        ];
+
+        let currentLevel = 0;
+        let score = 0;
+        let foundAnomalies = 0;
+        const itemsContainer = document.getElementById('items-container');
+        const bgImage = document.getElementById('bg-image');
+        const levelDisplay = document.getElementById('level-display');
+        const anomaliesDisplay = document.getElementById('anomalies-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const tooltip = document.getElementById('tooltip');
+        const feedbackMsg = document.getElementById('feedback-msg');
+
+        // Audio
+        const bgMusic = new Audio('audio/Cozy Sketchbook Jam.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.4;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            bgMusic.play().catch(e => console.log("Audio autoplay prevented:", e));
+            loadLevel();
+        }
+
+        function loadLevel() {
+            if (currentLevel >= DATABASE.length) {
+                endGame();
+                return;
+            }
+
+            const data = DATABASE[currentLevel];
+            levelDisplay.textContent = data.era;
+            foundAnomalies = 0;
+            updateUI();
+
+            // Load Background
+            bgImage.src = data.bgUrl;
+
+            // Clear previous items
+            itemsContainer.innerHTML = '';
+
+            // Combine and Shuffle
+            let items = [];
+            data.intruders.forEach(i => items.push({ ...i, type: 'intruder', found: false }));
+
+            // Limit distractors
+            let dists = [...data.distractors];
+            // Ensure enough distractors -> at least 6 total items if possible
+            if (dists.length < 5) dists = dists.concat(dists);
+            dists.forEach(d => items.push({ ...d, type: 'distractor' }));
+
+            items.sort(() => Math.random() - 0.5);
+
+            // Placement Logic (Collision Avoidance)
+            const placedRects = [];
+
+            // Item size approx in percentages (assuming 180px width on 1200px container ~ 15%)
+            const itemW = 14;
+            const itemH = 20;
+
+            items.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.classList.add('game-item');
+
+                // Keep minimal rotation
+                const rot = (Math.random() * 20) - 10;
+                el.style.transform = `rotate(${rot}deg)`;
+
+                const img = document.createElement('img');
+                img.src = item.img;
+                img.alt = item.name;
+                el.appendChild(img);
+
+                // Add Label
+                const label = document.createElement('div');
+                label.className = 'item-label';
+                label.textContent = item.name;
+                el.appendChild(label);
+
+                // Smart Position
+                let top, left, overlaps;
+                let attempts = 0;
+
+                do {
+                    overlaps = false;
+                    left = 2 + Math.random() * (96 - itemW);
+                    top = 5 + Math.random() * (90 - itemH);
+
+                    for (const rect of placedRects) {
+                        if (
+                            left < rect.left + rect.width &&
+                            left + itemW > rect.left &&
+                            top < rect.top + rect.height &&
+                            top + itemH > rect.top
+                        ) {
+                            overlaps = true;
+                            break;
+                        }
+                    }
+                    attempts++;
+                } while (overlaps && attempts < 100);
+
+                // Check collision fallback
+                if (overlaps) console.warn("Could not find free space for item:", item.name);
+
+                placedRects.push({ left: left, top: top, width: itemW, height: itemH });
+
+                el.style.top = top + '%';
+                el.style.left = left + '%';
+
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    // console.log("Clicked", item.name);
+                    handleItemClick(item, el);
+                };
+
+                itemsContainer.appendChild(el);
+            });
+        }
+
+        function handleItemClick(item, element) {
+            if (item.type === 'intruder') {
+                if (item.found) return;
+
+                // Success
+                item.found = true;
+                element.classList.add('found');
+
+                // Feedback
+                showTooltip(element, "¡INTRÚS DETECTAT!");
+                score += 150;
+                foundAnomalies++;
+                updateUI();
+
+                if (foundAnomalies >= 3) {
+                    setTimeout(levelComplete, 1000);
+                }
+
+            } else {
+                // Fail
+                element.style.transform += " scale(0.9)";
+                setTimeout(() => element.style.transform = element.style.transform.replace(" scale(0.9)", ""), 200);
+
+                showTooltip(element, "Això és correcte...");
+                score = Math.max(0, score - 50);
+                updateUI();
+            }
+        }
+
+        function handleBackgroundClick(e) {
+            if (e.target !== bgImage && e.target !== document.getElementById('game-container')) return;
+
+            // Missed click
+            feedbackMsg.style.left = e.clientX + 'px';
+            feedbackMsg.style.top = e.clientY + 'px';
+            feedbackMsg.style.opacity = 1;
+            setTimeout(() => feedbackMsg.style.opacity = 0, 500);
+
+            score = Math.max(0, score - 20);
+            updateUI();
+        }
+
+        function showTooltip(el, text) {
+            const rect = el.getBoundingClientRect();
+            tooltip.textContent = text;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (rect.left + 20) + 'px';
+            tooltip.style.top = (rect.top - 40) + 'px';
+
+            setTimeout(() => tooltip.style.display = 'none', 1500);
+        }
+
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            anomaliesDisplay.textContent = `${foundAnomalies}/3`;
+        }
+
+        function levelComplete() {
+            const data = DATABASE[currentLevel];
+            const summary = document.getElementById('anomalies-summary');
+            summary.innerHTML = '';
+
+            data.intruders.forEach(i => {
+                summary.innerHTML += `<div><strong style="color:var(--red-ink)">- ${i.name}:</strong> ${i.desc}</div>`;
+            });
+
+            document.getElementById('success-modal').classList.add('active');
+        }
+
+        function nextLevel() {
+            document.getElementById('success-modal').classList.remove('active');
+            currentLevel++;
+            loadLevel();
+        }
+
+        function endGame() {
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('game-over-modal').classList.add('active');
+
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'quadern_temps',
+                    'Mestre del Quadern',
+                    'Has netejat el quadern de viatge de totes les errades!',
+                    '../../img/card_diferencies.png'
+                );
+            }
+        }
+    </script>
+</body>
+
+</html>

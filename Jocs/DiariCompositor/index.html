@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diari d'un Compositor 🎻</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-parchment: #f3e5ab;
+            --ink: #2c1b18;
+            --gold: #d4af37;
+            --red: #c0392b;
+            --green: #27ae60;
+            --blue: #2980b9;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Lato', sans-serif;
+            background-color: #222;
+            color: var(--ink);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Book Container */
+        #book {
+            width: 500px;
+            height: 750px;
+            background: var(--bg-parchment);
+            border-radius: 10px 20px 20px 10px;
+            box-shadow:
+                inset 20px 0 50px rgba(0, 0, 0, 0.2),
+                10px 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            border-left: 15px solid #5d4037;
+            /* Spine */
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--ink);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--ink);
+        }
+
+        /* Stats Bar */
+        #stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .stat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+            position: relative;
+            cursor: help;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-bar {
+            width: 100%;
+            height: 8px;
+            background: #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            width: 50%;
+            transition: width 0.3s;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .stat-container:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* Card Area */
+        #card-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .card-img {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .card-text {
+            font-size: 1.3rem;
+            line-height: 1.5;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-year {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* Buttons */
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+            width: 45%;
+        }
+
+        .btn-reject {
+            background: #ffcccc;
+            color: var(--red);
+        }
+
+        .btn-accept {
+            background: #ccffcc;
+            color: var(--green);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Start/Select Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .char-btn {
+            background: var(--gold);
+            color: var(--ink);
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 200px;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+        }
+
+        .char-btn:hover {
+            background: white;
+        }
+
+        .legend-name {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* DIARY ENTRY BOX */
+        #diary-entry {
+            background: #fffdf0;
+            border: 1px solid #d3d3d3;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Indie Flower', cursive
+                /* Fallback */
+                , sans-serif;
+            font-size: 1.2rem;
+            color: var(--ink);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
+    </style>
+</head>
+
+<body>
+
+    <div id="book">
+        <header>
+            <h1 id="title">Diari d'un Compositor</h1>
+        </header>
+
+        <div id="stats-bar">
+            <div class="stat-container">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="fill-health" style="background:var(--red);"></div>
+                </div>
+                <div class="tooltip">Salut: Si arriba a 0, mors.</div>
+                <div class="legend-name">Salut</div>
+            </div>
+            <div class="stat-container">
+                <div class="stat-icon">💰</div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="fill-money" style="background:var(--gold);"></div>
+                </div>
+                <div class="tooltip">Diners: Necessaris per viure.</div>
+                <div class="legend-name">Diners</div>
+            </div>
+            <div class="stat-container">
+                <div class="stat-icon">💡</div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="fill-insp" style="background:var(--blue);"></div>
+                </div>
+                <div class="tooltip">Inspiració: Si arriba a 0, t'obliden.</div>
+                <div class="legend-name">Inspiració</div>
+            </div>
+        </div>
+
+        <div id="card-area">
+            <!-- Card injected here -->
+            <div class="card" id="active-card">
+                <div class="card-img" id="card-icon">🎭</div>
+                <div class="card-text" id="card-desc">...</div>
+                <div class="card-year" id="card-year">Any: 1781</div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:10px; font-weight:bold; color:#555;">Obres Mestres: <span
+                id="score">0</span></div>
+
+        <div id="diary-entry">...</div>
+
+        <div id="controls">
+            <button class="btn btn-reject" onclick="choice(false)">Rebutjar</button>
+            <button class="btn btn-accept" onclick="choice(true)">Acceptar</button>
+        </div>
+    </div>
+
+    <div id="start-screen">
+        <h1 style="font-family:'Cinzel'; margin-bottom:20px;">Escull el teu Destí</h1>
+        <button class="char-btn" onclick="startGame('Mozart')">Mozart</button>
+        <button class="char-btn" onclick="startGame('Beethoven')">Beethoven</button>
+        <button class="char-btn" onclick="startGame('Bach')">Bach</button>
+        <button class="char-btn" onclick="startGame('Clara Schumann')">Clara Schumann</button>
+        <button class="char-btn" onclick="startGame('Stravinsky')">Stravinsky</button>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const SCENARIOS = {
+            'Mozart': {
+                startYear: 1781,
+                events: [
+                    {
+                        text: "Tens una idea per una Òpera en alemany (El Rapte en el Serrall).", icon: "🎭",
+                        yes: { h: -10, m: 20, i: 30, text: "Un èxit rotund! L'Emperador està encantat, tot i que diu que és 'massa alemanya'.", audio: "../../BotigaDiscos/audio/Profesor - Pequeña Serenata Nocturna  Mozart.m4a" },
+                        no: { h: 10, m: -10, i: -20, text: "Has decidit no arriscar. Viena continua avorrida amb les mateixes òperes italianes de sempre." }
+                    },
+                    {
+                        text: "El teu pare et demana que tornis a Salzburg.", icon: "👴",
+                        yes: { h: 0, m: 10, i: -30, text: "Tornes a la gàbia daurada. Tens seguretat, però la teva creativitat s'ofega sota l'arquebisbe Colloredo." },
+                        no: { h: 0, m: -10, i: 20, text: "Et rebel·les! Et quedes a Viena com a artista independent. Una vida dura però lliure." }
+                    },
+                    {
+                        text: "Un misteriós desconegut et demana un Rèquiem.", icon: "💀",
+                        yes: { h: -40, m: 50, i: 10, text: "Treballes dia i nit. Sents que l'estàs escrivint per al teu propi funeral...", audio: "../../ClubTemps/audio/romanticisme.m4a" },
+                        no: { h: 20, m: -50, i: 0, text: "Rebutges l'encàrrec. La teva salut millora, però perds una gran suma de diners i una obra mestra pòstuma." }
+                    },
+                    {
+                        text: "Constanze vol comprar un barret nou molt car.", icon: "👒",
+                        yes: { h: 5, m: -30, i: 5, text: "La Constanze està feliç. Els creditors piquen a la porta, però almenys aneu elegants a l'òpera." },
+                        no: { h: -10, m: 10, i: -10, text: "Una discussió domèstica. L'ambient a casa es tensa i no pots compondre tranquil." }
+                    },
+                    {
+                        text: "L'Emperador Josep II diu que la teva música té 'massa notes'.", icon: "👑",
+                        yes: { h: 0, m: 0, i: -20, text: "Elimines algunes notes. L'obra perd la seva essència genial, però complaus a la cort." },
+                        no: { h: 0, m: -10, i: 30, text: "'Majestat, en té justes les que calen'. La teva arrogància et tanca portes, però la història et donarà la raó." }
+                    },
+                    {
+                        text: "Escrius una simfonia en 4 dies (Simfonia Linz).", icon: "🎻",
+                        yes: { h: -30, m: 20, i: 40, text: "La velocitat és increïble. El públic queda bocabadat. Ets una màquina de música!", audio: "../../BotigaDiscos/audio/Profesor - Pequeña Serenata Nocturna  Mozart.m4a" },
+                        no: { h: 10, m: -20, i: -10, text: "Prefereixes descansar. L'oportunitat passa i l'estrena es cancel·la." }
+                    },
+                    {
+                        text: "Et poses malalt mentre escrius La Flauta Màgica.", icon: "🤒",
+                        yes: { h: -30, m: 10, i: 30, text: "Escrius febrós. La Reina de la Nit canta amb una fúria que surt del teu propi deliri.", audio: "../../BotigaDiscos/audio/Profesor - Pequeña Serenata Nocturna  Mozart.m4a" },
+                        no: { h: 20, m: -10, i: -30, text: "Deixes la ploma. Et recuperes, però l'estrena s'endarrereix i perds l'interès del públic." }
+                    },
+                    {
+                        text: "Un maçó et demana música per la lògia.", icon: "👁️",
+                        yes: { h: 0, m: 10, i: 10, text: "La germandat t'ajuda econòmicament. La música maçònica plena les teves partitures d'un simbolisme profund." },
+                        no: { h: 0, m: 0, i: 0, text: "Prefereixes no barrejar música i secrets. Et perds el suport d'una xarxa influent." }
+                    }
+                ]
+            },
+            'Beethoven': {
+                startYear: 1800,
+                events: [
+                    {
+                        text: "Comences a notar que perds oïda.", icon: "👂",
+                        yes: { h: -20, m: 0, i: 10, text: "T'aïlles a Heiligenstadt. Escrius el teu testament, però decideixes viure per a l'art.", audio: "../../BotigaDiscos/audio/Profesor - Beethoven： Symphony no. 1 (with score).m4a" },
+                        no: { h: 0, m: 0, i: -10, text: "Intentes ignorar-ho i fer vida social. Els errors en els concerts es tornen vergonyosos." }
+                    },
+                    {
+                        text: "Napoleó es proclama emperador. Dediques l'Heroica?", icon: "👑",
+                        yes: { h: 0, m: 20, i: -20, text: "Mantens la dedicatòria. La gent et veu com un partidari del tirà, però l'obra és monumental." },
+                        no: { h: 0, m: -10, i: 30, text: "Esquinces la partitura! 'Ara només serà un tirà més!'. L'Heroica neix de la teva ràbia republicana." }
+                    },
+                    {
+                        text: "El teu nebot Karl et porta problemes.", icon: "👦",
+                        yes: { h: -20, m: -20, i: 0, text: "Lluites per la custòdia. T'esgota física i mentalment, distraient-te de la música." },
+                        no: { h: 10, m: 0, i: 0, text: "El deixes anar amb la seva mare. Tens pau, però sents que has fallat a la família." }
+                    },
+                    {
+                        text: "Escrius una carta a l'estimada immortal.", icon: "💌",
+                        yes: { h: 10, m: 0, i: 30, text: "Aboques el teu cor en paper. Mai l'enviaràs, però la passió inunda la teva música." },
+                        no: { h: -10, m: 0, i: -20, text: "Reprimeixes els sentiments. La teva música es torna més aspra i distant." }
+                    },
+                    {
+                        text: "Passeges pel bosc per inspirar-te (Pastoral).", icon: "🌳",
+                        yes: { h: 20, m: 0, i: 30, text: "La natura és el teu refugi. Sents el cant dels ocells que ja no pots escoltar i els escrius.", audio: "../../BotigaDiscos/audio/Profesor - Beethoven： Symphony no. 1 (with score).m4a" },
+                        no: { h: -10, m: 0, i: -20, text: "Et quedes tancat a Viena. El soroll i la pols de la ciutat t'agrien el caràcter." }
+                    },
+                    {
+                        text: "Escrius la 9a Simfonia. Necessites un cor.", icon: "🗣️",
+                        yes: { h: -20, m: -20, i: 50, text: "Trenques les regles! Una simfonia amb veus? La 'Oda a l'Alegria' canvia la història de la música.", audio: "../../BotigaDiscos/audio/Profesor - Beethoven： Symphony no. 1 (with score).m4a" },
+                        no: { h: 10, m: 0, i: -30, text: "Fas una simfonia instrumental clàssica. És bona, però no és la revolució que el món necessitava." }
+                    },
+                    {
+                        text: "Haydn t'ofereix consell.", icon: "👴",
+                        yes: { h: 0, m: 0, i: 20, text: "Aprens del vell mestre. La teva tècnica millora, encara que el trobes antiquat." },
+                        no: { h: 0, m: 0, i: 10, text: "Vas a la teva. 'Papa Haydn' no entén la fúria de la nova generació." }
+                    }
+                ]
+            },
+            'Bach': {
+                startYear: 1723,
+                events: [
+                    {
+                        text: "T'ofereixen feina a Leipzig. Molta feina, pocs diners.", icon: "⛪",
+                        yes: { h: -20, m: 10, i: 30, text: "Acceptes el càrrec de Kantor. Hauràs d'escriure una cantata cada setmana, una tasca titànica!", audio: "../../ClubTemps/audio/barroc.m4a" },
+                        no: { h: 10, m: -10, i: -10, text: "Et quedes a la cort. Vius més tranquil, però sense l'empenta per crear la gran música sacra." }
+                    },
+                    {
+                        text: "El rei Frederic et desafia a improvisar una fuga.", icon: "👑",
+                        yes: { h: -10, m: 20, i: 40, text: "Improvises una fuga a 3 veus! El Rei queda impressionat i neix 'l'Ofrena Musical'.", audio: "../../BotigaDiscos/audio/Profesor - Toccata & Fugue D Minor, BWV 565.m4a" },
+                        no: { h: 0, m: -10, i: -20, text: "Et discules humilment. El 'Vell Bach' perd l'oportunitat de demostrar qui és el mestre del contrapunt." }
+                    },
+                    {
+                        text: "Vols anar a sentir Buxtehude a peu (400km).", icon: "🚶",
+                        yes: { h: -40, m: -20, i: 50, text: "Camines dies sota la pluja. L'aprenentatge val la pena, tornes amb l'orgue al cap.", audio: "../../BotigaDiscos/audio/Profesor - Toccata & Fugue D Minor, BWV 565.m4a" },
+                        no: { h: 20, m: 0, i: -20, text: "És massa lluny. Et quedes a casa, però sents que et falta alguna cosa per madurar musicalment." }
+                    },
+                    {
+                        text: "Escrius els Concerts de Brandenburg per feina.", icon: "🎻",
+                        yes: { h: -20, m: 0, i: 30, text: "Els envies al Margrave. No t'ho agraeix mai, però has creat el cim del Barroc instrumental.", audio: "../../ClubTemps/audio/barroc.m4a" },
+                        no: { h: 10, m: 0, i: -10, text: "No tens temps. Et centres en la música d'església i el món perd una joia orquestral." }
+                    },
+                    {
+                        text: "Escrius El Clavecí Ben Temperat.", icon: "🎹",
+                        yes: { h: -20, m: 10, i: 40, text: "Demostres que es pot tocar en totes les tonalitats! És l'Antic Testament dels pianistes.", audio: "../../BotigaDiscos/audio/Profesor - Toccata & Fugue D Minor, BWV 565.m4a" },
+                        no: { h: 10, m: -10, i: -20, text: "Et sembla un exercici teòric avorrit. Els futurs alumnes t'ho agrairan, però la música perd." }
+                    },
+                    {
+                        text: "Et baralles amb el fagotista de l'orquestra.", icon: "🥊",
+                        yes: { h: -10, m: 0, i: 0, text: "L'insultes anomenant-lo 'fagotista verd'. La baralla al carrer acaba amb dagues!", audio: "../../ClubTemps/audio/barroc.m4a" },
+                        no: { h: 10, m: 0, i: 0, text: "Et mossegues la llengua. La interpretació és mediocre, però mantens la pau." }
+                    }
+                ]
+            },
+            'Stravinsky': {
+                startYear: 1913,
+                events: [
+                    {
+                        text: "Estrena de 'La Consagració de la Primavera'.", icon: "🌸",
+                        yes: { h: -10, m: 30, i: 50, text: "Escàndol total! La gent es baralla al teatre. Has trencat la música per sempre.", audio: "../../ClubTemps/audio/segleXX.m4a" },
+                        no: { h: 10, m: -20, i: -30, text: "Suavitzeu la partitura. El públic aplaudeix educadament, però ningú recordarà aquesta nit." }
+                    },
+                    {
+                        text: "Diaghilev et demana un altre ballet.", icon: "🩰",
+                        yes: { h: -20, m: 30, i: 30, text: "Els Ballets Russos són la teva llar. Creus màgia visual i sonora, definint el ritme modern.", audio: "../../ClubTemps/audio/segleXX.m4a" },
+                        no: { h: 10, m: -20, i: -10, text: "Vols fer música 'pura'. Et distancïes de l'escena, perdent el teu millor aparador." }
+                    },
+                    {
+                        text: "Schoenberg viu a prop. El visites?", icon: "1️⃣2️⃣",
+                        yes: { h: -10, m: 0, i: 30, text: "Parleu del futur. Encara que sou rivals, l'intercanvi d'idees obre la porta al serialisme.", audio: "../../BotigaDiscos/audio/Profesor - A. Schoenberg. Tres piezas para piano op.11 nº 3. Partitura. Audición. Música Atonal..m4a" },
+                        no: { h: 0, m: 0, i: 0, text: "L'ignores. Viu a dues illes de distància però sou en planetes musicals diferents." }
+                    }
+                ]
+            }
+        };
+
+        // --- STATE ---
+        let stats = { h: 50, m: 50, i: 50 };
+        let currentScenario = null;
+        let score = 0;
+        let year = 0;
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let currentTrackSource = null;
+
+        function playSound(type, fileUrl = null) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            if (fileUrl) {
+                // Music playback
+                if (currentTrackSource) {
+                    try { currentTrackSource.stop(); } catch (e) { }
+                }
+                const audio = new Audio(fileUrl);
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log("Audio play error", e));
+                // We don't control Audio elements via AudioContext easily without hooking, but for simple playback:
+                // Let's fade it out after 10 seconds?
+                setTimeout(() => {
+                    let vol = 0.5;
+                    const fade = setInterval(() => {
+                        vol -= 0.05;
+                        if (vol <= 0) {
+                            clearInterval(fade);
+                            audio.pause();
+                        } else {
+                            audio.volume = vol;
+                        }
+                    }, 200);
+                }, 10000); // 10s clip
+                return;
+            }
+
+            // FX
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'flip') {
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // --- LOGIC ---
+
+        function startGame(charName) {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('title').textContent = `Diari de ${charName}`;
+
+            currentScenario = SCENARIOS[charName];
+
+            stats = { h: 50, m: 50, i: 50 };
+            score = 0;
+            year = currentScenario.startYear;
+
+            updateStats();
+            loadEvent();
+        }
+
+        function loadEvent() {
+            // Pick RANDOM event
+            const events = currentScenario.events;
+            const event = events[Math.floor(Math.random() * events.length)];
+
+            const card = document.getElementById('active-card');
+            card.style.transform = 'scale(1)';
+            card.style.opacity = '1';
+
+            document.getElementById('card-icon').textContent = event.icon;
+            document.getElementById('card-desc').textContent = event.text;
+            document.getElementById('card-year').textContent = `Any: ${year}`;
+
+            // Store current event effects on the DOM element for easy access
+            card.dataset.yes = JSON.stringify(event.yes);
+            card.dataset.no = JSON.stringify(event.no);
+        }
+
+        function choice(accepted) {
+            playSound('flip');
+            const card = document.getElementById('active-card');
+
+            // Animation
+            card.style.transform = accepted ? 'translateX(200px) rotate(20deg)' : 'translateX(-200px) rotate(-20deg)';
+            card.style.opacity = '0';
+
+            // Apply effects
+            const effects = JSON.parse(accepted ? card.dataset.yes : card.dataset.no);
+            stats.h += effects.h || 0;
+            stats.m += effects.m || 0;
+            stats.i += effects.i || 0;
+
+            // Clamp
+            stats.h = Math.min(100, Math.max(0, stats.h));
+            stats.m = Math.min(100, Math.max(0, stats.m));
+            stats.i = Math.min(100, Math.max(0, stats.i));
+
+            if (accepted && effects.i > 10) score++; // Arbitrary score rule
+
+            // --- NARRATIVE FEEDBACK ---
+            const entryBox = document.getElementById('diary-entry');
+            entryBox.textContent = effects.text || "Sense comentaris al diari...";
+            entryBox.style.opacity = 1;
+
+            if (effects.audio) {
+                playSound('music', effects.audio);
+            }
+            // --------------------------
+
+            year++;
+
+            updateStats();
+
+            if (score >= 10 && typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'diari_mix',
+                    'Cronista Musical',
+                    'Has viscut la vida dels grans compositors!',
+                    '../../img/card_diari.png'
+                );
+            }
+
+            // Check Death
+            if (stats.h <= 0 || stats.m <= 0 || stats.i <= 0) {
+                setTimeout(() => {
+                    alert(`Final de la partida! Any: ${year}. Obres Mestres: ${score}`);
+                    location.reload();
+                }, 2000); // Give time to read text
+            } else {
+                setTimeout(() => {
+                    card.style.transition = 'none';
+                    card.style.transform = 'scale(0.8)';
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        card.style.transition = 'transform 0.3s, opacity 0.3s';
+                        loadEvent();
+                        // Hide diary after reading when next card appears? Or keep it?
+                        // Let's fade it out when NEXT choice is made, so keep it for now.
+                    }, 50);
+                }, 2500); // Slow down next card so user can read outcome
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('fill-health').style.width = stats.h + '%';
+            document.getElementById('fill-money').style.width = stats.m + '%';
+            document.getElementById('fill-insp').style.width = stats.i + '%';
+            document.getElementById('score').textContent = score;
+        }
+
+    </script>
+
+</body>
+
+</html>

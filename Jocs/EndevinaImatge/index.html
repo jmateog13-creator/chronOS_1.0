@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endevina la Imatge: El Repte Pixelat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --surface: #1e1e1e;
+            --primary: #bb86fc;
+            --primary: #bb86fc;
+            --success: #03dac6;
+            --error: #cf6679;
+            --text: #ffffff;
+            --warning: #ffb74d;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            background: var(--surface);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .stats {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* GAME AREA */
+        #game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        /* IMAGE CONTAINER */
+        #img-frame {
+            width: 500px;
+            height: 400px;
+            border: 4px solid var(--surface);
+            margin-bottom: 30px;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(187, 134, 252, 0.1);
+        }
+
+        #mystery-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 1s ease-in-out;
+        }
+
+        /* OPTIONS GRID */
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: var(--surface);
+            color: var(--text);
+            border: 2px solid #333;
+            padding: 20px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #2a2a2a;
+        }
+
+        .option-btn.correct {
+            background: var(--success);
+            color: #000;
+            border-color: var(--success);
+        }
+
+        .option-btn.wrong {
+            background: var(--error);
+            color: #000;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* FEEDBACK */
+        #feedback {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            height: 30px;
+            text-align: center;
+        }
+
+        /* VOLUME HEADER */
+        .controls-header {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        /* INFO BAR */
+        .info-bar {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .info-left {
+            color: #aaa;
+        }
+
+        .info-right {
+            color: var(--warning);
+        }
+
+        /* INPUT AREA */
+        #input-area {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #guess-input {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            border: 2px solid #555;
+            background: #222;
+            color: white;
+            font-family: inherit;
+        }
+
+        #btn-check {
+            padding: 15px 30px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        /* RIDDLE BOX */
+        #riddle-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 183, 77, 0.2);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            border-radius: 5px;
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 18, 18, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .instructions-box {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            border: 2px solid var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .btn-start {
+            padding: 20px 50px;
+            font-size: 2rem;
+            background: var(--success);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        .volume-control {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #btn-next {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: var(--success);
+            color: #000;
+            border: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1>ENDEVINA LA IMATGE</h1>
+        <div class="instructions-box">
+            <p><strong>INSTRUCCIONS:</strong></p>
+            <p>1. La imatge comença <strong>FOSCA</strong> i borrosa.</p>
+            <p>2. Tens una <strong>PISTA</strong> (endevinalla) des del principi.</p>
+            <p>3. Cada error t'aclareix la imatge però et resta punts.</p>
+            <p>⚠️ <strong>OBJECTIU: 50 PUNTS</strong></p>
+        </div>
+        <button class="btn-start" onclick="startGame()">COMENÇAR JOC</button>
+    </div>
+
+    <header>
+        <div>
+            <h1>EL REPTE PIXELAT</h1>
+            <div class="stats">TOTAL: <span id="tot-score">0</span> / 50</div>
+        </div>
+        <div class="controls-header">
+            <label>🎵</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+    </header>
+
+    <div id="game-area">
+
+        <div class="info-bar">
+            <div class="info-left">📝 <span id="word-count">...</span></div>
+            <div class="info-right">💎 <span id="current-points">5</span> Punts</div>
+        </div>
+
+        <div id="feedback"></div>
+
+        <div id="img-frame">
+            <img id="mystery-img" src="" alt="Mystery Image">
+        </div>
+
+        <div id="riddle-box">PISTA: ...</div>
+
+        <div id="input-area">
+            <input type="text" id="guess-input" placeholder="Escriu la resposta..." onkeypress="handleEnter(event)">
+            <button id="btn-check" onclick="checkAnswer()">COMPROVAR</button>
+        </div>
+
+        <button id="btn-next" onclick="nextRound()">SEGÜENT IMATGE</button>
+    </div>
+
+    <audio id="bg-music" src="audio/bg_music.m4a" loop></audio>
+
+    <script>
+        // --- DATA ---
+        // Images should be local in 'img/' folder
+        const GAME_DATA = [
+            {
+                id: 1,
+                correct: "Guido d'Arezzo",
+                valid: ["Guido d'Arezzo", "Guido", "Arezzo"],
+                img: "img/guido.jpg",
+                riddle: "La meva mà és un mapa, i cada dit una nota. Vaig donar nom al so."
+            },
+            {
+                id: 2,
+                correct: "Viola de Roda",
+                valid: ["Viola de Roda", "Organistrum"],
+                img: "img/viola.jpg",
+                riddle: "Soc corda perpètua, giro sense fi. Dos músics em calien per fer-me gemegar."
+            },
+            {
+                id: 3,
+                correct: "Josquin des Prez",
+                valid: ["Josquin des Prez", "Josquin", "Des Prez", "Prez"],
+                img: "img/jsoquin.jpg",
+                riddle: "Mestre de mestres al Renaixement. Les meves notes teixeixen catedrals invisibles."
+            },
+            {
+                id: 4,
+                correct: "Llaüt",
+                valid: ["Llaüt", "Llaut"],
+                img: "img/llaud.jpg",
+                riddle: "Tinc panxa de pera i coll trencat. Els trobadors m'abraçaven mentre cantaven."
+            },
+            {
+                id: 5,
+                correct: "Johann Sebastian Bach",
+                valid: ["Johann Sebastian Bach", "Bach", "JS Bach"],
+                img: "img/bach.jpg",
+                riddle: "Matemàtiques fetes Déu. Soc el rierol que va esdevenir oceà."
+            },
+            {
+                id: 6,
+                correct: "Clavicèmbal",
+                valid: ["Clavicèmbal", "Clavicembal", "Clave", "Harpsichord"],
+                img: "img/clave.jpg",
+                riddle: "Sembla un piano, però les meves ungles pincen les cordes com guitarres."
+            },
+            {
+                id: 7,
+                correct: "Wolfgang Amadeus Mozart",
+                valid: ["Wolfgang Amadeus Mozart", "Mozart", "Amadeus"],
+                img: "img/mozart.jpg",
+                riddle: "Etern nen de Salzburg. Vaig escriure la meva pròpia mort entre rialles."
+            },
+            {
+                id: 8,
+                correct: "Clarinet",
+                valid: ["Clarinet"],
+                img: "img/clarinet.jpg",
+                riddle: "Tub negre de fusta, clau de plata. La meva veu dolça va enamorar a Mozart."
+            },
+            {
+                id: 9,
+                correct: "Ludwig van Beethoven",
+                valid: ["Ludwig van Beethoven", "Beethoven"],
+                img: "img/beethoven.jpg",
+                riddle: "El destí va trucar a la meva porta, i cridant en silenci vaig canviar la història."
+            },
+            {
+                id: 10,
+                correct: "Piano de Cua",
+                valid: ["Piano de Cua", "Piano"],
+                img: "img/piano.jpg",
+                riddle: "Tinc cua però no soc animal. Blanc i negre són els meus colors, ferro el meu cor."
+            },
+            {
+                id: 11,
+                correct: "Ígor Stravinski",
+                valid: ["Ígor Stravinski", "Stravinski", "Stravinsky", "Igor Stravinsky"],
+                img: "img/stravinsky.jpg",
+                riddle: "Vaig despertar la primavera amb un ritme tan salvatge que París va cridar."
+            },
+            {
+                id: 12,
+                correct: "Guitarra Elèctrica",
+                valid: ["Guitarra Elèctrica", "Guitarra"],
+                img: "img/guitarraelectrica.jpg",
+                riddle: "Fillola del Llaüt, però crido amb electricitat. Soc la reina del Rock."
+            }
+        ];
+
+        // --- STATE ---
+        let currentIndex = 0;
+        let totalScore = 0;
+        let currentRoundPoints = 5;
+        let isRoundOver = false;
+
+        // --- AUDIOS ---
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+
+        // --- DOM ---
+        const img = document.getElementById('mystery-img');
+        const feedback = document.getElementById('feedback');
+        const nextBtn = document.getElementById('btn-next');
+        const input = document.getElementById('guess-input');
+        const btnCheck = document.getElementById('btn-check');
+        const riddleBox = document.getElementById('riddle-box');
+        const scoreDisplay = document.getElementById('tot-score');
+        const roundPointsDisplay = document.getElementById('current-points');
+        const wordCountDisplay = document.getElementById('word-count');
+
+        // Init
+        volSlider.addEventListener('input', (e) => bgMusic.volume = e.target.value);
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            bgMusic.volume = volSlider.value;
+            bgMusic.play().catch(e => console.log("Autoplay blocked"));
+
+            // Randomize Data order? Optional. Let's keep it sequential or random.
+            // Randomizing for variety
+            GAME_DATA.sort(() => Math.random() - 0.5);
+
+            loadRound();
+        }
+
+        function loadRound() {
+            if (currentIndex >= GAME_DATA.length) {
+                // Out of questions but maybe didn't reach 50? Loop or End?
+                // If we ran out of data, just end logic check
+                if (totalScore < 50) {
+                    alert("Has acabat les imatges però no has arribat als 50 punts :(");
+                    location.reload();
+                    return;
+                }
+            }
+
+            const data = GAME_DATA[currentIndex];
+            isRoundOver = false;
+            currentRoundPoints = 5;
+
+            // UI Reset
+            // 1. Stop transition to prevent "seeing it clear then blurring"
+            img.style.transition = 'none';
+            // START: Very dark and blurry
+            img.style.filter = "blur(30px) brightness(0.05)";
+            img.offsetHeight; // Trigger Reflow
+            img.style.transition = "filter 0.5s ease-in-out";
+
+            img.src = data.img;
+
+            // Count Words
+            const wordCount = data.correct.split(' ').length;
+            wordCountDisplay.textContent = `${wordCount} paraules`;
+
+            // Reset UI
+            feedback.textContent = "Què és això?";
+            feedback.style.color = "#bbb";
+
+            // Always show riddle now
+            riddleBox.style.display = 'block';
+            riddleBox.innerText = `ENDEVINALLA: ${data.riddle}`;
+
+            nextBtn.style.display = "none";
+            input.value = "";
+            input.disabled = false;
+            btnCheck.disabled = false;
+            input.focus();
+
+            updateStats();
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') checkAnswer();
+        }
+
+        function checkAnswer() {
+            if (isRoundOver) return;
+
+            const userText = input.value.trim();
+            if (!userText) return;
+
+            const correctText = GAME_DATA[currentIndex].correct;
+            const validAnswers = GAME_DATA[currentIndex].valid || [correctText];
+
+            // 1. Check Exact Match (Case Insensitive)
+            const match = validAnswers.some(ans => ans.toLowerCase() === userText.toLowerCase());
+
+            if (match) {
+                handleWin();
+                return;
+            }
+
+            // 2. Check Fuzzy Match (Levensthein Distance)
+            // If any valid answer is within distance 2 (allows for 1-2 typos/accents)
+            const isClose = validAnswers.some(ans => levenshtein(ans.toLowerCase(), userText.toLowerCase()) <= 2);
+
+            if (isClose) {
+                feedback.textContent = "Gairebé! Revisa l'ortografia o els accents.";
+                feedback.style.color = "var(--warning)";
+                // Do NOT penalize, just warn
+                return;
+            }
+
+            // 3. Fail
+            handleFail();
+        }
+
+        // Levenshtein Helper
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function handleWin() {
+            isRoundOver = true;
+            img.style.filter = "blur(0px) brightness(1)"; // Clear image
+
+            feedback.textContent = `CORRECTE! +${currentRoundPoints} punts.`;
+            feedback.style.color = "var(--success)";
+
+            totalScore += currentRoundPoints;
+            updateStats();
+
+            input.disabled = true;
+            btnCheck.disabled = true;
+            nextBtn.style.display = "block";
+
+            checkGameWin();
+        }
+
+        function handleFail() {
+            if (currentRoundPoints > 0) {
+                currentRoundPoints--;
+            }
+            updateStats();
+
+            // Feedback
+            feedback.textContent = "Incorrecte! La imatge s'aclareix...";
+            feedback.style.color = "var(--error)";
+            input.value = "";
+            input.focus();
+
+            // Adjust Visuals based on attempts
+            // 5 pts (Start): Blur 30px, Brightness 5% (Almost black)
+            // 4 pts: Blur 20px, Brightness 20% (Very dark shapes)
+            // 3 pts: Blur 15px, Brightness 40% (Dark but visible)
+            // 2 pts: Blur 8px, Brightness 70% (Readable but blurry)
+            // 1 pt:  Blur 3px, Brightness 90% (Almost clear)
+            // 0 pts: Clear
+
+            let bVal = 30;
+            let brightVal = 0.05;
+
+            if (currentRoundPoints === 4) { bVal = 20; brightVal = 0.2; }
+            if (currentRoundPoints === 3) { bVal = 15; brightVal = 0.4; }
+            if (currentRoundPoints === 2) { bVal = 8; brightVal = 0.7; }
+            if (currentRoundPoints === 1) { bVal = 3; brightVal = 0.9; }
+            if (currentRoundPoints === 0) { bVal = 0; brightVal = 1; }
+
+            img.style.filter = `blur(${bVal}px) brightness(${brightVal})`;
+
+            // FAIL STATE (0 Points)
+            if (currentRoundPoints === 0) {
+                isRoundOver = true;
+                feedback.textContent = `Oh no! Era: ${GAME_DATA[currentIndex].correct}`;
+                input.disabled = true;
+                btnCheck.disabled = true;
+                nextBtn.style.display = "block";
+            }
+        }
+
+        function updateStats() {
+            scoreDisplay.textContent = totalScore;
+            roundPointsDisplay.textContent = currentRoundPoints;
+        }
+
+        function checkGameWin() {
+            if (totalScore >= 50) {
+                setTimeout(() => {
+                    document.body.innerHTML = `
+                        <div id="start-screen" style="display:flex;">
+                            <h1 style="color:var(--success)">🏆 VICTORIA! 🏆</h1>
+                            <div class="instructions-box">
+                                <p>Has aconseguit ${totalScore} punts!</p>
+                                <p>Ets un expert de la iconografia musical.</p>
+                            </div>
+                            <button class="btn-start" onclick="location.reload()">TORNAR A JUGAR</button>
+                        </div>
+                    `;
+                }, 1000);
+            }
+        }
+
+        function nextRound() {
+            currentIndex++;
+            loadRound();
+        }
+    </script>
+</body>
+
+</html>

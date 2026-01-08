@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Diari Secret: Enigma de la Tinta</title>
+    <style>
+        /* FONTS FOR ERAS */
+        @import url('https://fonts.googleapis.com/css2?family=Indie+Flower&family=Cinzel:wght@700&family=UnifrakturMaguntia&family=Pinyon+Script&family=Playfair+Display:ital@1&family=Great+Vibes&family=Special+Elite&display=swap');
+
+        :root {
+            --ink: #2c2c2c;
+            --paper: #f4e4bc;
+            --paper-shadow: #d7c698;
+            --gold: #c5a059;
+            --red: #8b0000;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #2e2e2e;
+            /* Dark desk background */
+            background-image: radial-gradient(#3a3a3a 15%, transparent 16%), radial-gradient(#3a3a3a 15%, transparent 16%);
+            background-size: 60px 60px;
+            font-family: 'Indie Flower', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: var(--ink);
+        }
+
+        /* VOLUME CONTROL - Modern but unobtrusive */
+        #volume-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 15px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            z-index: 200;
+        }
+
+        #volume-slider {
+            cursor: pointer;
+            accent-color: var(--gold);
+        }
+
+        /* DIARY CONTAINER */
+        #diary-container {
+            width: 600px;
+            height: 750px;
+            background: var(--paper);
+            box-shadow:
+                inset 0 0 80px rgba(0, 0, 0, 0.1),
+                10px 10px 50px rgba(0, 0, 0, 0.7);
+            border-radius: 5px 15px 15px 5px;
+            position: relative;
+            padding: 60px 50px;
+            box-sizing: border-box;
+            transform: rotate(-1deg);
+            transition: transform 0.5s;
+        }
+
+        #diary-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20px;
+            width: 2px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            /* Binding line */
+        }
+
+        /* HEADER */
+        h1 {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            border-bottom: 2px solid var(--ink);
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: #3e2723;
+        }
+
+        /* ENTRY AREA - Now gets ERA STYLES */
+        #entry-area {
+            margin-top: 40px;
+            line-height: 2.2rem;
+            min-height: 200px;
+            /* Default fallback font */
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.8rem;
+        }
+
+        .date {
+            font-family: 'Indie Flower', cursive;
+            /* Always legible for metadata */
+            font-size: 1.2rem;
+            text-align: right;
+            color: #666;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #aaa;
+        }
+
+        .ink-stain {
+            display: inline-block;
+            background: #1a1a1a;
+            color: transparent;
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            padding: 0 15px;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: all 1s ease;
+            filter: blur(2px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            vertical-align: middle;
+            min-width: 80px;
+            text-align: center;
+            /* Reset font on stain so it covers properly regardless of fancy font */
+            font-family: 'Indie Flower', cursive;
+        }
+
+        .ink-stain:hover {
+            transform: scale(1.05);
+        }
+
+        .revealed {
+            background: transparent !important;
+            color: var(--red) !important;
+            filter: blur(0) !important;
+            box-shadow: none !important;
+            text-decoration: underline;
+            font-weight: bold;
+            font-family: inherit;
+            /* Should inherit era style when revealed */
+        }
+
+        /* OPTIONS */
+        #options-area {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: absolute;
+            bottom: 60px;
+            width: calc(100% - 100px);
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid #8d6e63;
+            padding: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.3s;
+            text-align: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option-btn:hover {
+            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ERA SPECIFIC STYLES - APPLIED TO BOTH ENTRY AND BUTTONS */
+
+        /* Medieval: Blackletter/Gothic - UnifrakturMaguntia */
+        .style-medieval {
+            font-family: 'UnifrakturMaguntia', cursive;
+            color: #4a1c1c;
+            letter-spacing: 1px;
+            font-size: 2rem;
+            /* Harder to read, so bigger */
+        }
+
+        button.style-medieval {
+            border-color: #4a1c1c;
+        }
+
+        /* Renaixement: Classic Roman - Cinzel */
+        .style-renaixement {
+            font-family: 'Cinzel', serif;
+            color: #5d4037;
+            font-weight: bold;
+            font-size: 1.6rem;
+        }
+
+        button.style-renaixement {
+            border-color: #5d4037;
+        }
+
+        /* Barroc: Ornate Script - Pinyon Script */
+        .style-barroc {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 2.2rem;
+            /* Script needs size */
+            color: #004d40;
+        }
+
+        button.style-barroc {
+            border-color: #004d40;
+        }
+
+        /* Classicisme: Elegant Serif - Playfair Display */
+        .style-classicisme {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #1a237e;
+            font-size: 1.8rem;
+        }
+
+        button.style-classicisme {
+            border-color: #1a237e;
+        }
+
+        /* Romanticisme: Emotional Script - Great Vibes */
+        .style-romanticisme {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.2rem;
+            color: #b71c1c;
+        }
+
+        button.style-romanticisme {
+            border-color: #b71c1c;
+        }
+
+        /* Segle XX: Typewriter/Modern - Special Elite */
+        .style-segle_xx {
+            font-family: 'Special Elite', cursive;
+            color: #212121;
+            font-size: 1.6rem;
+        }
+
+        button.style-segle_xx {
+            border-color: #212121;
+            border-style: dashed;
+        }
+
+
+        /* SCREENS */
+        #start-screen,
+        #end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        #start-screen.hidden,
+        #end-screen.hidden {
+            display: none;
+        }
+
+        .modal {
+            background: var(--paper);
+            color: #333;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            border: 5px solid var(--gold);
+        }
+
+        .btn-ui {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: var(--ink);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUDIO UI -->
+    <div id="volume-control">
+        <span>🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <!-- AUDIO PLAYER -->
+    <audio id="bg-music" loop>
+        <source src="audio/Hearth of the Old Kingdom.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="diary-container">
+        <h1>Diari Secret</h1>
+        <div id="game-content">
+            <div class="date" id="level-indicator">Entrada 1/10</div>
+            <div id="entry-area">
+                <!-- Text Injected Here with Font Style -->
+            </div>
+            <div id="options-area">
+                <!-- Buttons Injected Here with Font Style -->
+            </div>
+        </div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div class="modal">
+            <h1 style="color:var(--red); border:none;">L'Enigma de la Tinta</h1>
+            <p style="font-size: 1.1rem; line-height: 1.6;">
+                Has trobat el diari perdut d'un gran historiador, però el temps i la humitat l'han malmès.<br><br>
+                Algunes paraules clau estan cobertes de <strong>taques de tinta</strong>.<br>
+                Com a expert, has de desxifrar què hi ha sota la taca segons el context de l'època.
+            </p>
+            <button class="btn-ui" onclick="startGame()">Obrir el Diari</button>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="hidden">
+        <div class="modal">
+            <h1 style="color:var(--gold); border:none;">Diari Restaurat!</h1>
+            <p id="final-msg" style="font-size: 1.1rem;">
+                Increïble! Has recuperat tota la informació.
+            </p>
+            <button class="btn-ui" onclick="location.reload()">Tancar el Llibre</button>
+        </div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA: 10 DIARY ENTRIES ---
+        const ENTRIES = [
+            {
+                era: "Edat Mitjana",
+                style: "style-medieval",
+                author: "Guido d'Arezzo",
+                text: "Els meus monjos no recorden les melodies. He mirat la meva mà i he decidit posar nom a les notes: Ut, Re, Mi... Això serà el principi del solfeig i del sistema de",
+                hidden: "notació",
+                options: ["notació", "percussió", "cuina"]
+            },
+            {
+                era: "Edat Mitjana",
+                style: "style-medieval",
+                author: "Hildegard von Bingen",
+                text: "Tinc visions que venen de Déu. No soc només una monja, també escric sobre medicina i componc. La meva música és com una llum que",
+                hidden: "il·lumina",
+                options: ["crema", "il·lumina", "apaga"]
+            },
+            {
+                era: "Renaixement",
+                style: "style-renaixement",
+                author: "Josquin des Prez",
+                text: "La veu humana és l'instrument perfecte. M'encanta entrellaçar diferents veus que canten textos diferents però que sonen bé juntes. Això es diu",
+                hidden: "polifonia",
+                options: ["monodia", "polifonia", "cacofonia"]
+            },
+            {
+                era: "Barroc",
+                style: "style-barroc",
+                author: "Claudio Monteverdi",
+                text: "La música ha d'expressar emocions, no només matemàtiques. Estic creant un nou gènere on els actors canten els seus sentiments. Li diré",
+                hidden: "òpera",
+                options: ["musical", "òpera", "tiktok"]
+            },
+            {
+                era: "Barroc",
+                style: "style-barroc",
+                author: "Antonio Vivaldi",
+                text: "Soc el 'Capellà Roig'. M'inspira la natura. He escrit uns concerts per a violí on els instruments imiten els ocells de la",
+                hidden: "primavera",
+                options: ["primavera", "discoteca", "ciutat"]
+            },
+            {
+                era: "Classicisme",
+                style: "style-classicisme",
+                author: "W.A. Mozart",
+                text: "Tinc massa melodies al cap. Estic escrivint una missa de difunts, un Rèquiem, però sento que l'estic escrivint per a la meva pròpia",
+                hidden: "mort",
+                options: ["boda", "mort", "festa"]
+            },
+            {
+                era: "Romanticisme",
+                style: "style-romanticisme",
+                author: "L.V. Beethoven",
+                text: "Ja no hi sento res. Absolutament res. Però la música segueix sonant dins meu. La meva Novena Simfonia serà un cant a la",
+                hidden: "alegria",
+                options: ["tristesa", "alegria", "solitud"]
+            },
+            {
+                era: "Romanticisme",
+                style: "style-romanticisme",
+                author: "Richard Wagner",
+                text: "Vull crear l'obra d'art total. He construït un teatre només per a les meves òperes. La tetralogia de l'Anell dura 15 hores i va sobre un anell de",
+                hidden: "poder",
+                options: ["matrimoni", "poder", "ceba"]
+            },
+            {
+                era: "Segle XX",
+                style: "style-segle_xx",
+                author: "Igor Stravinsky",
+                text: "París, 1913. He estrenat 'La Consagració de la Primavera'. El ritme és tan salvatge que el públic s'ha barallat a cops de puny. Ha estat un gran",
+                hidden: "escàndol",
+                options: ["èxit", "escàndol", "silenci"]
+            },
+            {
+                era: "Segle XX",
+                style: "style-segle_xx",
+                author: "John Cage",
+                text: "Quin és el so més pur? Potser l'absència de so. La meva obra '4:33' consisteix en quatre minuts i trenta-tres segons de absolut",
+                hidden: "silenci",
+                options: ["soroll", "silenci", "piano"]
+            }
+        ];
+
+        let currentIdx = 0;
+        let errors = 0;
+
+        // AUDIO LOGIC
+        const bgMusic = document.getElementById('bg-music');
+        const volSlider = document.getElementById('volume-slider');
+        bgMusic.volume = 0.5;
+
+        volSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            bgMusic.play().catch(e => console.log("Audio autoplay blocked", e));
+            loadEntry();
+        }
+
+        function loadEntry() {
+            if (currentIdx >= ENTRIES.length) {
+                endGame();
+                return;
+            }
+
+            const data = ENTRIES[currentIdx];
+            const entryArea = document.getElementById('entry-area');
+            const optionsArea = document.getElementById('options-area');
+            const indicator = document.getElementById('level-indicator');
+
+            // Set Header Info
+            indicator.innerText = `Entrada ${currentIdx + 1}/10 — ${data.era} (${data.author})`;
+
+            // APPLY STYLE TO ENTRY AREA
+            entryArea.className = data.style; // Reset classes and stick this one
+
+            // Construct Text with Stain
+            // NOTE: We use data.text but wrap the stain.
+            const fullText = `"${data.text} <span class="ink-stain" id="target-word">${data.hidden}</span>."`;
+            entryArea.innerHTML = fullText;
+
+            // Generate Options (Shuffle)
+            optionsArea.innerHTML = '';
+            let opts = [...data.options];
+            opts.sort(() => Math.random() - 0.5);
+
+            opts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn ${data.style}`;
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, data.hidden);
+                optionsArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            const stain = document.getElementById('target-word');
+
+            if (selected === correct) {
+                // CORRECT
+                stain.classList.add('revealed');
+
+                // Disable buttons
+                const btns = document.querySelectorAll('.option-btn');
+                btns.forEach(b => b.style.pointerEvents = 'none');
+
+                // Highlight correct button
+                Array.from(btns).find(b => b.innerText === selected).style.background = "#d4edda";
+
+                setTimeout(() => {
+                    currentIdx++;
+                    loadEntry();
+                }, 1500);
+
+            } else {
+                // WRONG
+                errors++;
+                // Shake effect on diary
+                const diary = document.getElementById('diary-container');
+                diary.style.transform = 'rotate(2deg) translateX(10px)';
+                setTimeout(() => diary.style.transform = 'rotate(-1deg)', 200);
+
+                // Disable wrong button
+                const btn = Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText === selected);
+                btn.style.background = "#f8d7da";
+                btn.style.textDecoration = "line-through";
+            }
+        }
+
+        function endGame() {
+            const screen = document.getElementById('end-screen');
+            screen.classList.remove('hidden');
+
+            const msg = document.getElementById('final-msg');
+            if (errors === 0) {
+                msg.innerHTML = "Perfecte! Ets un mestre de la història.<br>El diari està impol·lut.";
+            } else {
+                msg.innerHTML = `Molt bé! Has restaurat el diari amb només ${errors} errors.<br>La història està a canvi.`;
+            }
+
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'diari_secret',
+                    'Restaurador de Manuscrits',
+                    'Has desxifrat els enigmes de la tinta històrica!',
+                    '../../img/card_diari.png'
+                );
+            }
+        }
+    </script>
+</body>
+
+</html>

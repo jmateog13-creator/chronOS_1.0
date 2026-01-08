@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Time Traveler: El DJ del Temps</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Carter+One&family=Nunito:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8E44AD;
+            --secondary: #F39C12;
+            --dark: #1A1A1D;
+            --light: #ECF0F1;
+            --neon-blue: #00F3FF;
+            --neon-pink: #FF00FF;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: var(--dark);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        #start-screen h1 {
+            font-size: 3rem;
+            color: var(--neon-pink);
+            margin-bottom: 1rem;
+        }
+
+        #start-screen p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .start-btn {
+            background: var(--neon-blue);
+            color: var(--dark);
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 2rem;
+            font-family: 'Carter One', cursive;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-blue);
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Header */
+        header {
+            padding: 1rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid var(--neon-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Carter One', cursive;
+            margin: 0;
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* DJ Booth */
+        .dj-booth {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .turntable-base {
+            background: #222;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            border: 2px solid #444;
+        }
+
+        .turntable {
+            width: 300px;
+            height: 300px;
+            background: #333;
+            border-radius: 50%;
+            border: 10px solid #555;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .tonearm {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 10px;
+            background: silver;
+            transform-origin: top right;
+            transform: rotate(0deg);
+            transition: transform 0.5s;
+            z-index: 10;
+            border-radius: 5px;
+        }
+
+        .tonearm::after {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: -5px;
+            width: 20px;
+            height: 20px;
+            background: #333;
+            border-radius: 50%;
+        }
+
+        .vinyl {
+            width: 260px;
+            height: 260px;
+            background: black;
+            border-radius: 50%;
+            background-image: repeating-radial-gradient(#111 0, #111 2px, #222 3px, #222 4px);
+            position: relative;
+            cursor: grab;
+            transition: transform 0.5s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .vinyl.playing {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .vinyl-label {
+            width: 100px;
+            height: 100px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Carter One', cursive;
+            color: var(--dark);
+            font-size: 1.2rem;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        /* Info Card */
+        .track-info-card {
+            background: #fff;
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            width: 250px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            transform: rotate(-5deg);
+            z-index: 100;
+            /* On top */
+            pointer-events: none;
+            /* Let clicks pass through to vinyl */
+        }
+
+        .track-info-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: bold;
+        }
+
+        .track-info-title {
+            font-family: 'Carter One', cursive;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin: 5px 0;
+            line-height: 1.2;
+        }
+
+        .track-info-composer {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* Timer */
+        .timer-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Carter One', cursive;
+            font-size: 3rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: 2px solid var(--neon-blue);
+        }
+
+        .timer-warning {
+            color: #e74c3c;
+            border-color: #e74c3c;
+            text-shadow: 0 0 10px #e74c3c;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            to {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 16px;
+        }
+
+        .control-btn {
+            background: var(--light);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input[type=range] {
+            width: 150px;
+        }
+
+        /* Dance Floor (Buckets) */
+        .dance-floor {
+            height: 250px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .era-bucket {
+            border: 4px dashed var(--light);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .era-bucket.drag-over {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--neon-blue);
+            transform: scale(1.05);
+        }
+
+        .era-name {
+            font-family: 'Carter One', cursive;
+            font-size: 1.5rem;
+            color: var(--light);
+            pointer-events: none;
+        }
+
+        /* Feedback Overlay */
+        .feedback-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+            font-family: 'Carter One', cursive;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 1000;
+        }
+
+        .feedback-success {
+            color: #2ECC71;
+            text-shadow: 0 0 20px #2ECC71;
+        }
+
+        .feedback-fail {
+            color: #E74C3C;
+            text-shadow: 0 0 20px #E74C3C;
+        }
+
+        /* Hidden YouTube Player */
+        #player {
+            position: absolute;
+            top: -9999px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-screen">
+        <h1>DJ Time Traveler</h1>
+        <p>Benvingut a la cabina del temps! Prem PLAY, escolta el fragment musical i arrossega el disc de vinil cap a
+            l'època correcta.</p>
+        <button class="start-btn" onclick="startGame()">COMENÇAR</button>
+    </div>
+
+    <header>
+        <h1>DJ Time Traveler</h1>
+        <div id="score-display">Obres: 0/10</div>
+    </header>
+
+    <div class="dj-booth">
+        <div class="timer-display" id="timer">30</div>
+
+        <div class="turntable-base">
+            <!-- Info Card -->
+            <div class="track-info-card" id="info-card" style="opacity:0; transition:opacity 0.5s;">
+                <div class="track-info-label">ARA SONA:</div>
+                <div class="track-info-title" id="track-title">???</div>
+                <div class="track-info-composer" id="track-composer">???</div>
+            </div>
+
+            <div class="tonearm" id="tonearm"></div>
+            <div class="turntable">
+                <div class="vinyl" id="vinyl" draggable="false">
+                    <div class="vinyl-label">?</div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" id="play-pause-btn" onclick="togglePlay()">▶</button>
+                <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="setVolume(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <div class="dance-floor">
+        <div class="era-bucket" data-era="medieval">
+            <div class="era-name">Edat Mitjana</div>
+        </div>
+        <div class="era-bucket" data-era="renacimiento">
+            <div class="era-name">Renaixement</div>
+        </div>
+        <div class="era-bucket" data-era="barroco">
+            <div class="era-name">Barroc</div>
+        </div>
+        <div class="era-bucket" data-era="clasicismo">
+            <div class="era-name">Classicisme</div>
+        </div>
+        <div class="era-bucket" data-era="romanticismo">
+            <div class="era-name">Romanticisme</div>
+        </div>
+        <div class="era-bucket" data-era="siglo20">
+            <div class="era-name">Segle XX</div>
+        </div>
+    </div>
+
+    <div class="feedback-overlay" id="feedback"></div>
+    <!-- Hidden Player, but with size 1x1 to avoid some browser restrictions -->
+    <div id="player" style="width: 1px; height: 1px; opacity: 0; position: absolute; pointer-events: none;"></div>
+
+    <div id="player" style="width: 1px; height: 1px; opacity: 0; position: absolute; pointer-events: none;"></div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // Local Audio Tracks with Metadata
+        const TRACKS = [
+            // Medieval
+            { era: "medieval", file: "../../assets/audio_shared/Hildegard of Bingen： De Spiritu Sancto (Holy Spirit, The Quickener Of Life).m4a", title: "De Spiritu Sancto", composer: "Hildegard von Bingen" },
+            { era: "medieval", file: "../../assets/audio_shared/Ànonim- Organum.Tu patris sempiternu.m4a", title: "Organum: Tu Patris", composer: "Anònim" },
+            { era: "medieval", file: "../../assets/audio_shared/Trobador anònim-Fi d'amor.m4a", title: "Fi d'amor", composer: "Trobador Anònim" },
+
+            // Renaissance
+            { era: "renacimiento", file: "../../assets/audio_shared/Ànonim-Greensleeves.m4a", title: "Greensleeves", composer: "Anònim" },
+            { era: "renacimiento", file: "../../assets/audio_shared/Palestrina-O bone Jesu.m4a", title: "O Bone Jesu", composer: "G.P. da Palestrina" },
+            { era: "renacimiento", file: "../../assets/audio_shared/Verdelot-Con soave parlar.m4a", title: "Con soave parlar", composer: "Philippe Verdelot" },
+
+            // Baroque
+            { era: "barroco", file: "../../assets/audio_shared/Bach-Toccata & Fugue D Minor, BWV 565.m4a", title: "Toccata i Fuga", composer: "J.S. Bach" },
+            { era: "barroco", file: "../../assets/audio_shared/Haendel- Lascia ch'io pianga.m4a", title: "Lascia ch'io pianga", composer: "G.F. Händel" },
+            { era: "barroco", file: "../../assets/audio_shared/Vivaldi- Four Seasons： Winter (L'Inverno).m4a", title: "L'Hivern (4 Estacions)", composer: "Antonio Vivaldi" },
+
+            // Classicism
+            { era: "clasicismo", file: "../../assets/audio_shared/Franz Joseph Haydn - \"Simfonia Sorpresa\" (Symphony no. 94).m4a", title: "Simfonia Sorpresa", composer: "Joseph Haydn" },
+            { era: "clasicismo", file: "../../assets/audio_shared/Mozart-Pequeña Serenata Nocturna.m4a", title: "Petita Serenata Nocturna", composer: "W.A. Mozart" },
+
+            // Romanticism
+            { era: "romanticismo", file: "../../assets/audio_shared/Beethoven- 5a Simfonia.m4a", title: "5a Simfonia", composer: "L.V. Beethoven" },
+            { era: "romanticismo", file: "../../assets/audio_shared/Chopin - Nocturne op.9 No.2.m4a", title: "Nocturn Op.9 No.2", composer: "Frédéric Chopin" },
+            { era: "romanticismo", file: "../../assets/audio_shared/P. Tchaikovsky - Pas de Deux ('The Nutcracker').m4a", title: "El Trencanous", composer: "P.I. Tchaikovsky" },
+            { era: "romanticismo", file: "../../assets/audio_shared/Richard Wagner- Cavalcada de les Valkiries.m4a", title: "Cavalcada de les Valquíries", composer: "Richard Wagner" },
+
+            // 20th Century
+            { era: "siglo20", file: "../../assets/audio_shared/Schoemberg-Tres piezas para piano.m4a", title: "Tres peces per a piano", composer: "Arnold Schoenberg" },
+            { era: "siglo20", file: "../../assets/audio_shared/Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a", title: "Jazz Standards", composer: "Varis Artistes" },
+            { era: "siglo20", file: "../../assets/audio_shared/Jellybean Fenderson-Oscilloscope Music.m4a", title: "Oscilloscope Music", composer: "Jellybean Fenderson" }
+        ];
+
+        let currentAudio = null;
+        let currentTrack = null;
+        let isPlaying = false;
+
+        // New Tracking Variables
+        let correctCount = 0;
+        const TARGET_WINS = 10;
+
+        let timerInterval = null;
+        let timeLeft = 30;
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            correctCount = 0;
+            updateScoreDisplay();
+            loadRandomTrack();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-display').innerText = `Obres: ${correctCount}/${TARGET_WINS}`;
+        }
+
+        function loadRandomTrack() {
+            // Stop old audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            clearInterval(timerInterval);
+
+            // Assuming simplified logic: just Pick Random.
+            // If we wanted "unique" 10, we'd need a visited set.
+            // For now, random is fine, but let's try to avoid immediate repetition if possible.
+            const track = TRACKS[Math.floor(Math.random() * TRACKS.length)];
+            currentTrack = track;
+
+            // Setup Audio
+            currentAudio = new Audio(track.file);
+            currentAudio.loop = true;
+
+            // Update Info Card (Hidden until play)
+            document.getElementById('track-title').textContent = track.title;
+            document.getElementById('track-composer').textContent = track.composer;
+            document.getElementById('info-card').style.opacity = '0';
+
+            // Reset Timer UI
+            timeLeft = 30;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('timer').classList.remove('timer-warning');
+
+            isPlaying = false;
+            updateUI(false);
+        }
+
+        function togglePlay() {
+            if (!currentAudio) return;
+
+            if (isPlaying) {
+                currentAudio.pause();
+                clearInterval(timerInterval);
+                isPlaying = false;
+                updateUI(false);
+            } else {
+                currentAudio.play().catch(e => console.error("Audio error:", e));
+                isPlaying = true;
+
+                // Show Info
+                document.getElementById('info-card').style.opacity = '1';
+
+                // Start Timer
+                startTimer();
+                updateUI(true);
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+
+                if (timeLeft <= 10) {
+                    document.getElementById('timer').classList.add('timer-warning');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleFail(true); // Time out
+                }
+            }, 1000);
+        }
+
+        function setVolume(val) {
+            if (currentAudio) currentAudio.volume = val / 100;
+        }
+
+        function updateUI(playing) {
+            const btn = document.getElementById('play-pause-btn');
+            const vinyl = document.getElementById('vinyl');
+            const tonearm = document.getElementById('tonearm');
+
+            if (playing) {
+                btn.innerText = "⏸";
+                vinyl.classList.add('playing');
+                vinyl.draggable = true;
+                vinyl.style.cursor = 'grab';
+                tonearm.style.transform = 'rotate(25deg)';
+            } else {
+                btn.innerText = "▶";
+                vinyl.classList.remove('playing');
+                vinyl.draggable = false;
+                vinyl.style.cursor = 'default';
+                tonearm.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Drag & Drop Logic
+        const vinyl = document.getElementById('vinyl');
+        const buckets = document.querySelectorAll('.era-bucket');
+
+        vinyl.addEventListener('dragstart', e => {
+            if (!isPlaying) {
+                e.preventDefault();
+                return;
+            }
+            e.dataTransfer.setData('text/plain', currentTrack.era);
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => vinyl.style.opacity = '0.5', 0);
+        });
+
+        vinyl.addEventListener('dragend', () => {
+            vinyl.style.opacity = '1';
+            buckets.forEach(b => b.classList.remove('drag-over'));
+        });
+
+        buckets.forEach(bucket => {
+            bucket.addEventListener('dragover', e => {
+                e.preventDefault();
+                bucket.classList.add('drag-over');
+            });
+
+            bucket.addEventListener('dragleave', () => {
+                bucket.classList.remove('drag-over');
+            });
+
+            bucket.addEventListener('drop', e => {
+                e.preventDefault();
+                bucket.classList.remove('drag-over');
+
+                if (!isPlaying) return;
+
+                const droppedEra = e.dataTransfer.getData('text/plain');
+                const targetEra = bucket.dataset.era;
+
+                if (droppedEra === targetEra) {
+                    handleSuccess();
+                } else {
+                    handleFail(false);
+                }
+            });
+        });
+
+        function handleSuccess() {
+            stopGameRound();
+            correctCount++;
+            updateScoreDisplay();
+            showFeedback("¡CORRECTE!", "success");
+
+            if (correctCount >= TARGET_WINS) {
+                // GAME OVER - WIN
+                if (typeof Rewards !== 'undefined') {
+                    Rewards.unlockCard(
+                        'dj_mix',
+                        'DJ del Temps',
+                        'Has dominat els èxits de totes les èpoques!',
+                        '../../img/card_dj.png'
+                    );
+                }
+                setTimeout(() => {
+                    alert("¡FELICITATS! Has completat la sessió de DJ Històric.");
+                    location.reload(); // Simple restart for now
+                }, 1000);
+            } else {
+                setTimeout(loadRandomTrack, 2000);
+            }
+        }
+
+        function handleFail(isTimeout) {
+            stopGameRound();
+            // No penalty on count, just feedback
+            const msg = isTimeout ? "¡TEMPS ESGOTAT!" : "¡INCORRECTE!";
+            showFeedback(msg, "fail");
+            setTimeout(loadRandomTrack, 2000);
+        }
+
+        function stopGameRound() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            clearInterval(timerInterval);
+            isPlaying = false;
+            updateUI(false);
+        }
+
+        function showFeedback(text, type) {
+            const fb = document.getElementById('feedback');
+            fb.innerText = text;
+            fb.className = `feedback-overlay feedback-${type}`;
+            fb.style.opacity = 1;
+            setTimeout(() => fb.style.opacity = 0, 1500);
+        }
+
+    </script>
+
+</body>
+
+</html>

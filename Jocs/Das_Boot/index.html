@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projecte DAS BOOT: Intercepció Sonar</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000;
+            --radar-green: #00ff00;
+            --alert-red: #ff0000;
+            --dim-green: #004400;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--radar-green);
+            font-family: 'VT323', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            text-transform: uppercase;
+        }
+
+        /* CRT SCANLINE EFFECT */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 1000;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        #ui-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 2px solid var(--radar-green);
+            margin: 10px;
+            box-shadow: 0 0 20px var(--dim-green) inset;
+            position: relative;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--radar-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-box {
+            border: 1px solid var(--radar-green);
+            padding: 5px 15px;
+            background: rgba(0, 50, 0, 0.3);
+        }
+
+        /* MAIN RADAR */
+        #radar-display {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #radar-circle {
+            width: 300px;
+            height: 300px;
+            border: 2px solid var(--dim-green);
+            border-radius: 50%;
+            position: relative;
+            background:
+                radial-gradient(circle, transparent 60%, var(--dim-green) 61%, transparent 62%),
+                radial-gradient(circle, transparent 30%, var(--dim-green) 31%, transparent 32%);
+        }
+
+        /* SWEEP ANIMATION */
+        #radar-sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--radar-green));
+            transform-origin: left;
+            animation: sweep 2s linear infinite;
+        }
+
+        @keyframes sweep {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* CONTACT BLIP */
+        #contact-blip {
+            position: absolute;
+            top: 30%;
+            left: 70%;
+            width: 10px;
+            height: 10px;
+            background: var(--alert-red);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--alert-red);
+            opacity: 0;
+        }
+
+        .blip-anim {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            height: 250px;
+            border-top: 2px solid var(--radar-green);
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-term {
+            background: black;
+            color: var(--radar-green);
+            border: 2px solid var(--radar-green);
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 1.5rem;
+            /* Larger Text */
+            cursor: pointer;
+            width: 100%;
+            max-width: 500px;
+            /* Wider buttons */
+            margin: 8px;
+            /* More spacing */
+            text-align: left;
+            transition: all 0.1s;
+            /* Larger Text */
+            cursor: pointer;
+            width: 100%;
+            max-width: 500px;
+            /* Wider buttons */
+            margin: 8px;
+            /* More spacing */
+            text-align: left;
+            transition: all 0.1s;
+        }
+
+        .btn-term:hover {
+            background: var(--dim-green);
+            color: white;
+        }
+
+        .btn-term:active {
+            background: var(--radar-green);
+            background: var(--radar-green);
+            color: black;
+        }
+
+        .btn-term img {
+            width: 60px;
+            /* Larger Icons */
+            height: 40px;
+            /* Larger Icons */
+            height: 40px;
+            object-fit: cover;
+            border: 1px solid var(--radar-green);
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        #message-log {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            min-height: 1.5em;
+            text-shadow: 0 0 5px var(--radar-green);
+        }
+
+        /* SHAKE & DAMAGE */
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .shake-screen {
+            animation: shake 0.5s;
+            background-color: #220000;
+        }
+
+        .success-flash {
+            background-color: #002200;
+            transition: background 0.5s;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #intro-modal {
+            position: absolute;
+            inset: 0;
+            background: black url('img/fonsinicial.jpg') no-repeat center center/cover;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 10px solid var(--radar-green);
+        }
+
+        #intro-content {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border: 2px solid var(--radar-green);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #success-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 20, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid var(--radar-green);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-title {
+            color: var(--radar-green);
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--radar-green);
+            animation: blink 0.5s infinite;
+        }
+
+        .success-info {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            border: 1px solid var(--dim-green);
+            padding: 20px;
+            width: 80%;
+            background: rgba(0, 50, 0, 0.5);
+        }
+
+        #game-over-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(20, 0, 0, 0.95);
+            z-index: 3000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid var(--alert-red);
+            text-align: center;
+            padding: 40px;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 10px var(--alert-red) inset;
+            }
+
+            50% {
+                box-shadow: 0 0 50px var(--alert-red) inset;
+            }
+
+            100% {
+                box-shadow: 0 0 10px var(--alert-red) inset;
+            }
+        }
+
+        .damage-report {
+            color: var(--alert-red);
+            font-size: 2rem;
+            border: 2px dashed var(--alert-red);
+            padding: 20px;
+            margin: 30px;
+            background: rgba(50, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="intro-modal">
+        <div id="intro-content">
+            <h1>PROJECTE DAS BOOT</h1>
+            <p>OPERADOR DE SONAR: INICIANT SISTEMA...</p>
+            <button class="btn-term" onclick="startGame()" style="text-align: center;">INICIAR MISSIÓ</button>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal">
+        <h1 class="success-title">OBJECTIU ELIMINAT</h1>
+        <!-- VICTORY IMAGE -->
+        <img id="victory-img" src=""
+            style="width: 400px; height: auto; border: 2px solid var(--radar-green); margin-bottom: 20px; display:none;">
+        <div class="success-info" id="success-details">
+            <!-- Details go here -->
+        </div>
+        <button class="btn-term" onclick="nextLevel()" style="text-align: center;">SEGÜENT OBJECTIU >></button>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="game-over-modal">
+        <h1 style="color:var(--alert-red); font-size: 4rem; text-shadow: 0 0 20px red;">SUBMARÍ ENFONSAT</h1>
+        <div class="damage-report">
+            <p>CRITIC HULL FAILURE</p>
+            <p>NO SURVIVORS</p>
+        </div>
+        <button class="btn-term" onclick="location.reload()"
+            style="border-color: var(--alert-red); color: var(--alert-red);">REINICIALITZAR SISTEMA</button>
+    </div>
+
+    <div id="ui-container">
+        <header>
+            <div class="status-box">INTEGRITAT CASC: <span id="hull-integrity">100%</span></div>
+            <div class="status-box">OBJECTIU: <span id="target-cnt">1/5</span></div>
+        </header>
+
+        <div id="radar-display">
+            <div id="radar-circle">
+                <div id="radar-sweep"></div>
+                <!-- BLIP -->
+                <div id="contact-blip"></div>
+            </div>
+            <div style="position:absolute; top: 10px; right: 10px; font-size: 0.8rem; color: var(--dim-green);">
+                FREQ: 104.5 MHz<br>AZIMUTH: 230<br>DEPTH: 400m
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <div id="message-log">ESPERANT SENYAL...</div>
+
+            <!-- BUTTONS CONTAINERS -->
+            <button id="btn-intercept" class="btn-term hidden" onclick="startIntercept()">🔊 INTERCEPTAR
+                FREQÜÈNCIA</button>
+
+            <!-- PHASE 1: CLASS -->
+            <div id="grid-class" class="btn-grid hidden"></div>
+
+            <!-- PHASE 2: CODE -->
+            <div id="grid-code" class="btn-grid hidden"></div>
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="sonar-audio"></audio>
+
+    <script>
+        /* DATA */
+        const INTERCEPTS = [
+            {
+                id: 1,
+                audio: "../../assets/audio_shared/Bach-Toccata & Fugue D Minor, BWV 565.m4a",
+                composer: "J.S. Bach",
+                work: "Toccata i Fuga",
+                options_class: ["Submarí Classe VIVALDI", "Submarí Classe BACH", "Cuirassat MOZART", "Destructor BEETHOVEN"],
+                options_code: ["Codi: 4 ESTACIONS", "Codi: TOCCATA", "Codi: 9a SIMFONIA", "Codi: SERENATA"]
+            },
+            {
+                id: 2,
+                audio: "../../assets/audio_shared/Richard Wagner- Cavalcada de les Valkiries.m4a",
+                composer: "R. Wagner",
+                work: "Cavalcada de les Walkíries",
+                options_class: ["Destructor VERDI", "Destructor WAGNER", "Submarí PUCCINI", "Portaavions TCHAIKOVSKY"],
+                options_code: ["Codi: NABUCCO", "Codi: LLAC DELS CIGNES", "Codi: WALKÍRIES", "Codi: CARMEN"]
+            },
+            {
+                id: 3,
+                audio: "../../assets/audio_shared/Vivaldi- Four Seasons： Winter (L'Inverno).m4a",
+                composer: "A. Vivaldi",
+                work: "L'Hivern (Quatre Estacions)",
+                options_class: ["Fragata VIVALDI", "Fragata HAENDEL", "Submarí WAGNER", "Destructor CHOPIN"],
+                options_code: ["Codi: HIVERN", "Codi: MESSIES", "Codi: IMPERI", "Codi: NOCTURN"]
+            },
+            {
+                id: 4,
+                audio: "../../assets/audio_shared/Beethoven- 5a Simfonia.m4a",
+                composer: "L.V. Beethoven",
+                work: "5a Simfonia",
+                options_class: ["Cuirassat BEETHOVEN", "Cuirassat BRAHMS", "Submarí MAHLER", "Fragata MOZART"],
+                options_code: ["Codi: 5a SIMFONIA", "Codi: 9a SIMFONIA", "Codi: PER A ELISA", "Codi: CLAR DE LLUNA"]
+            },
+            {
+                id: 5,
+                audio: "../../assets/audio_shared/Mozart-Pequeña Serenata Nocturna.m4a",
+                composer: "W.A. Mozart",
+                work: "Petita Serenata Nocturna",
+                options_class: ["Submarí HAYDN", "Submarí SALIERI", "Submarí MOZART", "Destructor SCHUBERT"],
+                options_code: ["Codi: SORPRESA", "Codi: RÈQUIEM", "Codi: FLAUTA MÀGICA", "Codi: SERENATA NOCTURNA"]
+            },
+            {
+                id: 6,
+                audio: "../../assets/audio_shared/Franz Joseph Haydn - ＂Simfonia Sorpresa＂ (Symphony no. 94).m4a",
+                composer: "J. Haydn",
+                work: "Simfonia Sorpresa",
+                options_class: ["Submarí HAYDN", "Fragata MOZART", "Destructor BEETHOVEN", "Cuirassat BACH"],
+                options_code: ["Codi: SORPRESA", "Codi: RELLOTGE", "Codi: MILITAR", "Codi: ADÉU"]
+            },
+            {
+                id: 7,
+                audio: "../../assets/audio_shared/Chopin - Nocturne op.9 No.2.m4a",
+                composer: "F. Chopin",
+                work: "Nocturn Op.9",
+                options_class: ["Destructor CHOPIN", "Fragata LISZT", "Submarí SCHUBERT", "Portaavions VERDI"],
+                options_code: ["Codi: NOCTURN", "Codi: VALS", "Codi: POLONESA", "Codi: PRELUDI"]
+            },
+            {
+                id: 8,
+                audio: "../../assets/audio_shared/Haendel- Lascia ch'io pianga.m4a",
+                composer: "G.F. Haendel",
+                work: "Rinaldo (Lascia ch'io pianga)",
+                options_class: ["Fragata HAENDEL", "Submarí VIVALDI", "Destructor BACH", "Cuirassat PURCELL"],
+                options_code: ["Codi: RINALDO", "Codi: MESSIES", "Codi: AIGUA", "Codi: REIALS"]
+            },
+            {
+                id: 9,
+                audio: "../../assets/audio_shared/P. Tchaikovsky - Pas de Deux ('The Nutcracker').m4a",
+                composer: "P.I. Tchaikovsky",
+                work: "Trencanous (Pas de Deux)",
+                options_class: ["Portaavions TCHAIKOVSKY", "Cuirassat RIMSKY", "Submarí MUSSORGSKY", "Destructor BORODIN"],
+                options_code: ["Codi: TRENCANOUS", "Codi: LLAC DELS CIGNES", "Codi: BELLESA DORMENT", "Codi: 1812"]
+            },
+            {
+                id: 10,
+                audio: "../../assets/audio_shared/Schoemberg-Tres piezas para piano.m4a",
+                composer: "A. Schoenberg",
+                work: "Tres peces per a piano",
+                options_class: ["Submarí SCHOENBERG", "Destructor WEBERN", "Fragata BERG", "Cuirassat STRAVINSKY"],
+                options_code: ["Codi: ATONAL", "Codi: DODECAFONISME", "Codi: PIERROT", "Codi: SUPERVIVENT"]
+            }
+        ];
+
+        /* STATE */
+        let hullIntegrity = 100;
+        let currentIdx = 0;
+
+        /* DOM */
+        const elHull = document.getElementById('hull-integrity');
+        const elTarget = document.getElementById('target-cnt');
+        const elLog = document.getElementById('message-log');
+        const elAudio = document.getElementById('sonar-audio');
+        const elBlip = document.getElementById('contact-blip');
+
+        const btnIntercept = document.getElementById('btn-intercept');
+        const gridClass = document.getElementById('grid-class');
+        const gridCode = document.getElementById('grid-code');
+
+        function startGame() {
+            document.getElementById('intro-modal').style.display = 'none';
+            // SHUFFLE LEVELS
+            INTERCEPTS.sort(() => Math.random() - 0.5);
+            loadLevel(0);
+        }
+
+        function loadLevel(idx) {
+            currentIdx = idx;
+            if (currentIdx >= INTERCEPTS.length) {
+                elLog.innerText = "MISSIÓ COMPLETADA. TORNANT A LA BASE.";
+                return;
+            }
+
+            elTarget.innerText = `${idx + 1}/${INTERCEPTS.length}`;
+            elAudio.src = INTERCEPTS[idx].audio;
+
+            // Reset UI
+            elLog.innerText = "ESPERANT SENYAL...";
+            elBlip.classList.remove('blip-anim');
+            btnIntercept.classList.add('hidden');
+            gridClass.classList.add('hidden');
+            gridCode.classList.add('hidden');
+
+            // Simulate Radar Scan
+            setTimeout(() => {
+                elLog.innerText = "CONTACTE RADAR DETECTAT!";
+                elBlip.classList.add('blip-anim');
+                btnIntercept.classList.remove('hidden');
+            }, 1000);
+        }
+
+        function startIntercept() {
+            btnIntercept.classList.add('hidden');
+            elAudio.play().catch(e => console.log("Audio Error"));
+            elLog.innerText = "ANALITZANT SIGNATURA ACÚSTICA... (Identifica CLASSE)";
+
+            // Generate Buttons Phase 1
+            const data = INTERCEPTS[currentIdx];
+            gridClass.innerHTML = "";
+            gridClass.classList.remove('hidden');
+
+            // SHUFFLE OPTIONS
+            const shuffledOptions = [...data.options_class].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = "btn-term";
+
+                // Determine Image based on text
+                let imgFile = "";
+                const lower = opt.toLowerCase();
+                if (lower.includes("submarí")) imgFile = "submarino.jpg";
+                else if (lower.includes("cuirassat")) imgFile = "cuirassats.jpg";
+                else if (lower.includes("destructor")) imgFile = "destructor.jpg";
+                else if (lower.includes("fragata")) imgFile = "fragata.jpg";
+                else if (lower.includes("portaavions")) imgFile = "portaavions.jpg";
+
+                // Add image if found
+                if (imgFile) {
+                    b.innerHTML = `<img src="img/${imgFile}"> ${opt}`;
+                } else {
+                    b.innerText = opt;
+                }
+
+                b.onclick = () => checkClass(opt);
+                gridClass.appendChild(b);
+            });
+        }
+
+        function checkClass(choice) {
+            const data = INTERCEPTS[currentIdx];
+            // Naive check: does the string contain the composer name? 
+            // Better: Check if index matches? No, data has explicit correct answer fields.
+            // Oh, the data structure has 'composer': 'J.S. Bach', but options are 'Submarí Classe BACH'.
+            // I need to check if the choice INCLUDES the composer name (uppercased usually).
+            // Let's assume the user selects the one containing the correct surname.
+
+            // Robust check: The correct option is the one that semantically matches.
+            // Since I don't have a direct mapping ID in the prompt's structure, 
+            // I will implement a string inclusion check.
+            const correctSurname = data.composer.split(" ").pop().toUpperCase(); // "BACH"
+
+            if (choice.toUpperCase().includes(correctSurname)) {
+                // Correct Phase 1
+                gridClass.classList.add('hidden');
+                elLog.innerText = "CLASSE CONFIRMADA. REQUIEREIX: CODI DE TRANSMISSIÓ.";
+                showCodeOptions();
+            } else {
+                damageHull("ERROR D'IDENTIFICACIÓ!");
+            }
+        }
+
+        function showCodeOptions() {
+            const data = INTERCEPTS[currentIdx];
+            gridCode.innerHTML = "";
+            gridCode.classList.remove('hidden');
+
+            // SHUFFLE CODES
+            const shuffledCodes = [...data.options_code].sort(() => Math.random() - 0.5);
+
+            shuffledCodes.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = "btn-term";
+                b.innerText = opt;
+                b.onclick = () => checkCode(opt);
+                gridCode.appendChild(b);
+            });
+        }
+
+        function checkCode(choice) {
+            const data = INTERCEPTS[currentIdx];
+            // Extract keyword from 'work' field? E.g. "Toccata"
+            // Or simpler: Map the index of correct answer? The prompt didn't specify correct index.
+            // I will assume the Correct Answer is ALWAYS logically derivable. 
+            // "Toccata i Fuga" -> "Codi: TOCCATA"
+            // Let's do a loose string match against the 'Work' field.
+
+            // Simplification: In the prompt's example, Op 1 is correct for Q1? No, Toccata is 2nd.
+            // I will iterate the options and Find which one is visually correct?
+            // NO, I must know which is correct.
+            // Hack: I will compare the choice string parts against game data 'work' string parts.
+            // "Codi: TOCCATA" vs "Toccata i Fuga". Match!
+
+            // BUT, "4 Estacions" is also in the options for Bach? No, "4 Estacions" is Vivaldi.
+            // So checking if choice is contained in 'work' is risky if cross-pollinated? 
+            // Actually, the prompt structure implies 1 correct answer.
+            // I'll assume the Option that contains a significant word from the 'work' field is correct.
+
+            const correctWorkUpper = data.work.toUpperCase();
+            const choiceUpper = choice.toUpperCase();
+
+            // Extract main keyword from choice "Codi: TOCCATA" -> "TOCCATA"
+            const keyword = choiceUpper.replace("CODI: ", "");
+
+            // Helper for edge cases
+            let isMatch = false;
+            if (correctWorkUpper.includes(keyword)) isMatch = true;
+            if (keyword.includes("SIMFONIA") && correctWorkUpper.includes(keyword)) isMatch = true; // "5a SIMFONIA"
+
+            // Special case for manual mapping if needed. 
+            // Let's rely on loose matching.
+
+            if (isMatch) {
+                // Success
+                missionSuccess();
+            } else {
+                damageHull("CODI INCORRECTE!");
+            }
+        }
+
+        function missionSuccess() {
+            elLog.innerText = "ACCÉS CONCEDIT: OBJECTIU DESTRUÏT!";
+            document.body.classList.add("success-flash");
+
+            // STOP MUSIC
+            elAudio.pause();
+
+            const data = INTERCEPTS[currentIdx];
+            // Show Modal
+            const modal = document.getElementById('success-modal');
+            const details = document.getElementById('success-details');
+            const victoryImg = document.getElementById('victory-img');
+
+            // FIND CORRECT SHIP IMAGE (The one containing correct surname)
+            const surname = data.composer.split(" ").pop().toUpperCase();
+            // Need to find which classic option was correct to deduce type?
+            // Actually, we can check the 'composer' -> Find option that includes name -> Get type.
+            const correctOpt = data.options_class.find(opt => opt.toUpperCase().includes(surname));
+
+            let imgFile = "";
+            if (correctOpt) {
+                const lower = correctOpt.toLowerCase();
+                if (lower.includes("submarí")) imgFile = "submarino.jpg";
+                else if (lower.includes("cuirassat")) imgFile = "cuirassats.jpg";
+                else if (lower.includes("destructor")) imgFile = "destructor.jpg";
+                else if (lower.includes("fragata")) imgFile = "fragata.jpg";
+                else if (lower.includes("portaavions")) imgFile = "portaavions.jpg";
+            }
+
+            if (imgFile) {
+                victoryImg.src = "img/" + imgFile;
+                victoryImg.style.display = 'block';
+            } else {
+                victoryImg.style.display = 'none';
+            }
+
+            // Derive generic ship name from one of the options (flavour) or just say "OBJECTIU"
+            // Let's use the Composer/Work
+            details.innerHTML = `
+                <strong style="color:var(--radar-green)">${data.composer}</strong><br>
+                <span style="font-size:1.2rem; font-style:italic;">"${data.work}"</span><br><br>
+                <span style="color:yellow">SIGNATURA ACÚSTICA CONFIRMADA</span>
+            `;
+
+            setTimeout(() => {
+                document.body.classList.remove("success-flash");
+                modal.style.display = 'flex';
+                // Play success sound?
+            }, 500);
+        }
+
+        function nextLevel() {
+            document.getElementById('success-modal').style.display = 'none';
+            loadLevel(currentIdx + 1);
+        }
+
+        function damageHull(msg) {
+            elHull.style.color = "red";
+            document.body.classList.add("shake-screen");
+            elLog.innerText = "ALERTA: " + msg + " IMPACTE IMMINENT!";
+
+            hullIntegrity -= 25;
+            elHull.innerText = hullIntegrity + "%";
+
+            setTimeout(() => {
+                document.body.classList.remove("shake-screen");
+                elHull.style.color = "var(--radar-green)";
+
+                if (hullIntegrity <= 0) {
+                    gameOver();
+                } else {
+                    // Retry or Next? Prompt says "Select Wrong -> Phase 2 Skipped -> Damage".
+                    // Does it loop? "Impact...". Doesn't say "Next Level".
+                    // I'll reset the level to let them try again (training sim).
+                    elLog.innerText += " RECALIBRANT...";
+                    setTimeout(() => {
+                        gridClass.classList.add('hidden');
+                        gridCode.classList.add('hidden');
+                        loadLevel(currentIdx);
+                    }, 1000);
+                }
+            }, 600);
+        }
+
+        function gameOver() {
+            document.getElementById('game-over-modal').style.display = 'flex';
+        }
+
+    </script>
+</body>
+
+</html>

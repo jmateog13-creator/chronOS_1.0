@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: La Trucada Perduda</title>
+    <!-- FONTS -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Courier+Prime:wght@400;700&family=VT323&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #050505;
+            --highlight: #f1c40f;
+            --paper-dark: #d4c49c;
+            --text-white: #e0e0e0;
+            --red-alert: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-black);
+            background-image: url('img/fons.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: var(--text-white);
+            font-family: 'Courier Prime', monospace;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: brightness(0.4);
+            /* Darken background for readability */
+        }
+
+        /* FONT CLASSES */
+        .font-prison {
+            font-family: 'Black Ops One', cursive;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .font-digital {
+            font-family: 'VT323', monospace;
+        }
+
+        /* SPOTLIGHT EFFECT */
+        .spotlight {
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80vw;
+            height: 120vh;
+            background: radial-gradient(ellipse at center, rgba(241, 196, 15, 0.05) 0%, rgba(0, 0, 0, 0.6) 80%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* LAYOUT */
+        #game-container {
+            position: relative;
+            z-index: 10;
+            width: 95%;
+            max-width: 1200px;
+            height: 85vh;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        /* HUD - NOTEPAD */
+        #notepad-panel {
+            flex: 0 0 320px;
+            background-image: url('img/llibreta.jpg');
+            background-size: 100% 100%;
+            color: #2c2c2c;
+            padding: 40px 30px;
+            font-family: 'Courier Prime', monospace;
+            box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.9);
+            transform: rotate(-1deg);
+            position: relative;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            text-decoration: underline;
+            color: #1a1a1a;
+        }
+
+        .code-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .code-digit {
+            width: 100%;
+            height: 50px;
+            border-bottom: 3px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .filled {
+            color: #c0392b;
+            font-family: 'VT323', monospace;
+            transform: rotate(-5deg);
+        }
+
+        .status-msg {
+            margin-top: auto;
+            font-size: 0.85rem;
+            font-style: italic;
+            text-align: center;
+            color: #555;
+        }
+
+        /* MAIN INTERACTION AREA */
+        #interaction-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #444;
+            padding: 30px;
+            position: relative;
+            border-radius: 5px;
+            backdrop-filter: blur(5px);
+            min-height: 400px;
+        }
+
+        /* QUESTION UI */
+        #question-box {
+            text-align: center;
+            width: 100%;
+        }
+
+        .concept-tag {
+            background: linear-gradient(90deg, transparent, var(--highlight), transparent);
+            color: black;
+            padding: 5px 30px;
+            font-size: 2rem;
+            display: inline-block;
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            font-family: 'Black Ops One', cursive;
+            /* Prison font */
+            letter-spacing: 3px;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            text-shadow: 2px 2px 4px black;
+            font-weight: bold;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #666;
+            color: #ddd;
+            padding: 20px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(241, 196, 15, 0.1);
+            border-color: var(--highlight);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .option-btn.correct {
+            background: rgba(46, 204, 113, 0.3) !important;
+            border-color: #2ecc71 !important;
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background: rgba(231, 76, 60, 0.3) !important;
+            border-color: #e74c3c !important;
+            color: white;
+            animation: shake 0.4s;
+        }
+
+        /* KEYPAD */
+        #keypad {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            background: #222;
+            padding: 30px;
+            border-radius: 10px;
+            border: 4px solid #444;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+        }
+
+        .key-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 5px;
+            background: linear-gradient(#333, #111);
+            color: #ddd;
+            border: 1px solid #555;
+            font-size: 2rem;
+            font-family: 'Black Ops One', cursive;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        .key-btn:active {
+            box-shadow: 0 0 0 #000;
+            transform: translateY(4px);
+        }
+
+        #display-code {
+            grid-column: 1 / -1;
+            background: #000;
+            color: red;
+            font-family: 'VT323', monospace;
+            font-size: 3rem;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px inset #555;
+            height: 60px;
+            letter-spacing: 10px;
+            text-shadow: 0 0 10px red;
+        }
+
+        /* DIALOGUE & AVATAR SYSTEM */
+        #dialogue-overlay {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1000px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid #555;
+            z-index: 200;
+            display: none;
+            flex-direction: row;
+            /* Horizontal layout for visual novel style */
+            align-items: center;
+            padding: 0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 1);
+            border-radius: 60px 10px 10px 60px;
+            /* Unique shape */
+        }
+
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--red-alert);
+            overflow: hidden;
+            flex-shrink: 0;
+            margin-left: 10px;
+            background: black;
+            position: relative;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.2);
+        }
+
+        .dialogue-content {
+            flex: 1;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .speaker-name {
+            color: var(--red-alert);
+            font-family: 'Black Ops One', cursive;
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .dialogue-text {
+            color: #ddd;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            min-height: 45px;
+        }
+
+        .continue-indicator {
+            align-self: flex-end;
+            color: #777;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            animation: blink 1s infinite;
+        }
+
+        /* AUDIO CONTROLS */
+        #audio-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 500;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #audio-volume {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        .audio-icon {
+            font-size: 1.5rem;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-image: url('img/fons.jpg');
+            background-size: cover;
+        }
+
+        #start-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        #start-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        h1.main-title {
+            color: var(--red-alert);
+            font-family: 'Black Ops One', cursive;
+            font-size: 5rem;
+            text-shadow: 0 0 20px red;
+            margin: 0 0 20px 0;
+            letter-spacing: 5px;
+        }
+
+        .start-btn {
+            background: transparent;
+            color: white;
+            border: 3px solid var(--red-alert);
+            font-family: 'Black Ops One', cursive;
+            font-size: 2rem;
+            padding: 15px 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+            background: var(--red-alert);
+            color: black;
+            box-shadow: 0 0 30px var(--red-alert);
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- AUDIO -->
+    <audio id="bg-music" loop>
+        <source src="audio/Rust on the Chains.m4a" type="audio/mpeg">
+    </audio>
+    <div id="audio-controls">
+        <span class="audio-icon">🔊</span>
+        <input type="range" id="audio-volume" min="0" max="1" step="0.1" value="0.5"
+            oninput="GAME.setVolume(this.value)">
+    </div>
+
+    <div class="spotlight"></div>
+    <div id="flash-overlay"></div>
+
+    <!-- DIALOGUE OVERLAY (Visual Novel Style) -->
+    <div id="dialogue-overlay" onclick="GAME.advanceDialogue()">
+        <div class="avatar-container">
+            <img src="img/silueta.jpg" class="avatar-img" alt="Unknown">
+        </div>
+        <div class="dialogue-content">
+            <div class="speaker-name">DESCONEGUT</div>
+            <div class="dialogue-text" id="dialogue-text">...</div>
+            <div class="continue-indicator">CLIC PER CONTINUAR &#9654;</div>
+        </div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div id="start-content">
+            <h1 class="main-title">PROTOCOL OMEGA</h1>
+            <p
+                style="color:#ccc; font-size:1.2rem; margin-bottom:40px; font-family: 'Courier Prime'; max-width:600px; margin-left:auto; margin-right:auto;">
+                Subjecte #734. Estat: CONNECTAT.<br>
+                Objectiu: Trencar el xifratge de 9 dígits.<br>
+                Advertència: El Supervisor t'està vigilant.
+            </p>
+            <button class="start-btn" onclick="GAME.enterGame()">INICIAR</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <!-- LEFT: NOTEPAD HUD -->
+        <div id="notepad-panel">
+            <div class="note-title">XPDT-CODE.log</div>
+            <div class="code-grid" id="notepad-grid">
+                <!-- JS Generated -->
+            </div>
+            <div class="status-msg" id="notepad-status">Esperant dades...</div>
+        </div>
+
+        <!-- RIGHT: INTERACTION -->
+        <div id="interaction-panel">
+            <!-- QUESTION PHASE -->
+            <div id="question-box">
+                <div class="concept-tag" id="q-concept">CONCEPT</div>
+                <div class="question-text" id="q-text">Loading...</div>
+                <div class="options-grid" id="q-options">
+                    <!-- Buttons -->
+                </div>
+            </div>
+
+            <!-- ESCAPE PHASE (KEYPAD) -->
+            <div id="keypad">
+                <div id="display-code"></div>
+                <!-- Numbers 1-9 -->
+                <button class="key-btn" onclick="GAME.dial(1)">1</button>
+                <button class="key-btn" onclick="GAME.dial(2)">2</button>
+                <button class="key-btn" onclick="GAME.dial(3)">3</button>
+                <button class="key-btn" onclick="GAME.dial(4)">4</button>
+                <button class="key-btn" onclick="GAME.dial(5)">5</button>
+                <button class="key-btn" onclick="GAME.dial(6)">6</button>
+                <button class="key-btn" onclick="GAME.dial(7)">7</button>
+                <button class="key-btn" onclick="GAME.dial(8)">8</button>
+                <button class="key-btn" onclick="GAME.dial(9)">9</button>
+                <button class="key-btn" onclick="GAME.dial('C')" style="color:#e74c3c; border-color:#e74c3c;">C</button>
+                <button class="key-btn" onclick="GAME.dial(0)">0</button>
+                <button class="key-btn" onclick="GAME.checkCode()"
+                    style="color:#2ecc71; border-color:#2ecc71;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="end-overlay"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; flex-direction:column; align-items:center; justify-content:center; z-index:400;">
+        <h1 class="main-title" style="color:#2ecc71; text-shadow:0 0 20px #2ecc71;">ACCÉS CONCEDIT</h1>
+        <p style="color:#aaa; font-size:1.5rem; text-align:center;">La porta s'obre lentament...<br>Ja ets lliure.</p>
+        <button onclick="location.reload()" class="start-btn"
+            style="border-color:#2ecc71; margin-top:30px;">REINICIAR</button>
+    </div>
+
+    <script>
+        const QUESTIONS = [
+            { concept: "Neumes", text: "A l'Edat Mitjana, abans de les notes rodones, com es deien els primers signes quadrats per escriure música?", options: ["Jeroglífics", "Neumes", "Tabs", "Emojis"], correct: 1 },
+            { concept: "Monodia", text: "El Cant Gregorià té una sola línia melòdica. Tothom canta el mateix. Com es diu aquesta textura?", options: ["Polifonia", "Cacofonia", "Monodia", "Homofonia"], correct: 2 },
+            { concept: "Polifonia", text: "Al Renaixement les veus s'entrellacen i sonen diverses melodies a la vegada. Això és...", options: ["Monodia", "Polifonia", "Silenci", "Soroll"], correct: 1 },
+            { concept: "Baix Continu", text: "Al Barroc hi ha una base rítmica i harmònica que mai para de sonar (tocada pel clavecí). Es diu...", options: ["Baix Continu", "Solo de Guitarra", "Ostinato", "Pizzicato"], correct: 0 },
+            { concept: "Melodia Acompanyada", text: "Al Classicisme neix una textura clara: una melodia principal amb un matalàs d'acords a sota. És la...", options: ["Polifonia complexa", "Melodia Acompanyada", "Monodia", "Fuga"], correct: 1 },
+            { concept: "El Piano", text: "Quin instrument de teclat es va popularitzar al final del Classicisme substituint al Clavicèmbal?", options: ["L'Orgue", "El Sintetitzador", "El Piano", "L'Acordió"], correct: 2 },
+            { concept: "Emocions", text: "Al Romanticisme, què és molt més important que la raó o l'ordre?", options: ["Els Diners", "La Tècnica", "Les Emocions i Sentiments", "La Matemàtica"], correct: 2 },
+            { concept: "Trencament XX", text: "Què passa amb la Tonalitat i les normes clàssiques quan arriba el Segle XX?", options: ["Es respecten més", "Es trenquen totalment", "No canvien", "Es prohibeix la música"], correct: 1 },
+            { concept: "Silenci", text: "Quina és l'obra més famosa de John Cage, on l'intèrpret no toca res?", options: ["La 5a Simfonia", "4'33''", "El llac dels cignes", "Para Elisa"], correct: 1 }
+        ];
+
+        const NARRATIVE = {
+            intro: [
+                "Vaja... Tenim visita al sector 7G.",
+                "Una altra rata de laboratori.",
+                "Sóc el Supervisor. I tu... ets prescindible.",
+                "Si vols sortir, necessites el Codi Omega.",
+                "Només els qui entenen la Història de la Música sobreviuen.",
+                "Demostra'm que val la pena mantenir-te viu."
+            ],
+            comments: {
+                1: ["Una de bona. No t'il·lusionis."],
+                2: ["La sort s'acaba ràpid aquí."],
+                3: ["M'avorreixo. Falla alguna cosa ja.", "Tic-tac..."],
+                4: ["Encara resisteixes? Que molest.", "Esperava que et rendissis abans."],
+                5: ["Patètic. Creus que guanyaràs?", "Mai ningú ha sortit."],
+                6: ["Estàs arribant massa lluny...", "Això no estava previst."],
+                7: ["Comences a ser un problema.", "Pensa bé la següent."],
+                8: ["Última oportunitat. Si falles, gas nerviós."]
+            },
+            preKeypad: [
+                "Maleït siguis... tens els números.",
+                "Però el codi no et salvarà si et tremolen les mans.",
+                "Introdueix-lo. Vull veure com falles."
+            ],
+            win: [
+                "ERROR DE SISTEMA. ERROR DE SISTEMA.",
+                "PROTOCOL DE CONTENCIÓ: FALLIT.",
+                "NO! No pots marxar!",
+                "Tanco connexió..."
+            ]
+        };
+
+        const GAME = {
+            secretCode: [],
+            currentQuestionIndex: 0,
+            canAnswer: false,
+            enteredCode: "",
+            dialogueQueue: [],
+            isDialogueActive: false,
+            dialogueCallback: null,
+
+            init: function () {
+                this.secretCode = [];
+                for (let i = 0; i < 9; i++) {
+                    this.secretCode.push(Math.floor(Math.random() * 10));
+                }
+                console.log("Secret Code:", this.secretCode);
+                this.resetNotepad();
+            },
+
+            enterGame: function () {
+                // Audio Init
+                const audio = document.getElementById('bg-music');
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log("Audio play failed (user interaction needed)", e));
+
+                document.getElementById('start-screen').style.display = 'none';
+
+                this.queueDialogue(NARRATIVE.intro, () => {
+                    this.loadQuestion(0);
+                });
+            },
+
+            setVolume: function (val) {
+                document.getElementById('bg-music').volume = val;
+            },
+
+            // --- NARRATIVE SYSTEM ---
+            queueDialogue: function (lines, onComplete) {
+                if (!lines || lines.length === 0) {
+                    if (onComplete) onComplete();
+                    return;
+                }
+                this.dialogueQueue = [...lines];
+                this.dialogueCallback = onComplete;
+                this.isDialogueActive = true;
+
+                const overlay = document.getElementById('dialogue-overlay');
+                overlay.style.display = 'flex';
+                // Reset Avatar Animation if wanted
+
+                this.showNextLine();
+            },
+
+            showNextLine: function () {
+                if (this.dialogueQueue.length === 0) {
+                    this.endDialogue();
+                    return;
+                }
+                const text = this.dialogueQueue.shift();
+                this.typeWriter(text, document.getElementById('dialogue-text'));
+            },
+
+            advanceDialogue: function () {
+                const textEl = document.getElementById('dialogue-text');
+                if (textEl.dataset.typing === "true") {
+                    return;
+                }
+                this.showNextLine();
+            },
+
+            endDialogue: function () {
+                this.isDialogueActive = false;
+                document.getElementById('dialogue-overlay').style.display = 'none';
+                if (this.dialogueCallback) this.dialogueCallback();
+            },
+
+            typeWriter: function (text, element) {
+                element.textContent = "";
+                element.dataset.typing = "true";
+                let i = 0;
+                const speed = 25;
+
+                function type() {
+                    if (element.dataset.typing !== "true") return;
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        element.dataset.typing = "false";
+                    }
+                }
+                type();
+            },
+
+            // --- GAMEPLAY ---
+            resetNotepad: function () {
+                const grid = document.getElementById('notepad-grid');
+                grid.innerHTML = '';
+                for (let i = 0; i < 9; i++) {
+                    const d = document.createElement('div');
+                    d.className = 'code-digit';
+                    d.textContent = "_";
+                    d.id = `digit-${i}`;
+                    grid.appendChild(d);
+                }
+            },
+
+            loadQuestion: function (index) {
+                if (index >= QUESTIONS.length) {
+                    this.startEscapePhase();
+                    return;
+                }
+                this.currentQuestionIndex = index;
+                this.canAnswer = true;
+
+                // Narrative Check
+                if (index > 0 && NARRATIVE.comments[index]) {
+                    this.queueDialogue(NARRATIVE.comments[index], () => {
+                        this.renderQuestion(index);
+                    });
+                } else {
+                    this.renderQuestion(index);
+                }
+            },
+
+            renderQuestion: function (index) {
+                const qData = QUESTIONS[index];
+                // CHANGED: Display "ENIGMA X" instead of concept to avoid spoilers
+                document.getElementById('q-concept').textContent = `ENIGMA ${index + 1}`;
+                document.getElementById('q-text').textContent = qData.text;
+
+                const optsContainer = document.getElementById('q-options');
+                optsContainer.innerHTML = '';
+                qData.options.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt;
+                    btn.onclick = () => this.handleAnswer(i, btn);
+                    optsContainer.appendChild(btn);
+                });
+                document.getElementById('notepad-status').textContent = "Cercant dades...";
+            },
+
+            handleAnswer: function (selectedIndex, btnElement) {
+                if (!this.canAnswer || this.isDialogueActive) return;
+                this.canAnswer = false;
+
+                const qData = QUESTIONS[this.currentQuestionIndex];
+                const isCorrect = (selectedIndex === qData.correct);
+
+                if (isCorrect) {
+                    btnElement.classList.add('correct');
+                    this.playSound('click');
+
+                    const digit = this.secretCode[this.currentQuestionIndex];
+                    const digitEl = document.getElementById(`digit-${this.currentQuestionIndex}`);
+                    digitEl.textContent = digit;
+                    digitEl.classList.add('filled');
+                    document.getElementById('notepad-status').textContent = `Dada desxifrada: ${digit}`;
+
+                    setTimeout(() => {
+                        this.loadQuestion(this.currentQuestionIndex + 1);
+                    }, 1500);
+                } else {
+                    btnElement.classList.add('wrong');
+                    this.flashRed();
+                    this.playSound('fail');
+                    document.getElementById('notepad-status').textContent = "ERROR CRÍTIC!";
+                    setTimeout(() => {
+                        btnElement.classList.remove('wrong');
+                        this.canAnswer = true;
+                    }, 2000);
+                }
+            },
+
+            flashRed: function () {
+                const flash = document.getElementById('flash-overlay');
+                flash.style.opacity = 0.5;
+                setTimeout(() => flash.style.opacity = 0, 300);
+            },
+
+            startEscapePhase: function () {
+                this.queueDialogue(NARRATIVE.preKeypad, () => {
+                    document.getElementById('question-box').style.display = 'none';
+                    document.getElementById('keypad').style.display = 'grid';
+                    document.getElementById('notepad-status').textContent = "PANELL OMEGA ACTIU";
+
+                    const concept = document.getElementById('q-concept');
+                    concept.textContent = "ACCÉS FINAL";
+                    concept.style.color = "red";
+
+                    this.enteredCode = "";
+                    this.updateDisplay();
+                });
+            },
+
+            dial: function (val) {
+                if (val === 'C') {
+                    this.enteredCode = "";
+                    this.playSound('click');
+                } else if (this.enteredCode.length < 9) {
+                    this.enteredCode += val;
+                    this.playSound('beep');
+                }
+                this.updateDisplay();
+            },
+
+            updateDisplay: function () {
+                document.getElementById('display-code').textContent = this.enteredCode;
+            },
+
+            checkCode: function () {
+                const secretString = this.secretCode.join('');
+                if (this.enteredCode === secretString) {
+                    this.playSound('unlock');
+                    this.queueDialogue(NARRATIVE.win, () => {
+                        document.getElementById('end-overlay').style.display = 'flex';
+                    });
+                } else {
+                    this.playSound('fail');
+                    this.flashRed();
+                    this.enteredCode = "";
+                    this.updateDisplay();
+                }
+            },
+
+            playSound: function (type) {
+                // Simple synthesized beeps for feedback, music is separate
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(1000, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    osc.start(); osc.stop(ctx.currentTime + 0.05);
+                } else if (type === 'fail') {
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    osc.start(); osc.stop(ctx.currentTime + 0.4);
+                } else if (type === 'beep') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    osc.start(); osc.stop(ctx.currentTime + 0.1);
+                } else if (type === 'unlock') {
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.5);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    osc.start(); osc.stop(ctx.currentTime + 1.0);
+                }
+            }
+        };
+
+        window.onload = function () {
+            GAME.init();
+        };
+    </script>
+</body>
+
+</html>

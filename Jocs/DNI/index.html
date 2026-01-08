@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El DNI Musical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-wood: #5d4037;
+            --card-bg: #fdfbf7;
+            --text-color: #2c3e50;
+            --accent-color: #c0392b;
+            --success-color: #27ae60;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier Prime', monospace;
+            background-color: var(--bg-wood);
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* DNI CARD - ENLARGED */
+        .dni-card {
+            width: 850px;
+            height: 500px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            box-sizing: border-box;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+        }
+
+        .dni-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--text-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .dni-title {
+            font-family: 'Special Elite', cursive;
+            font-size: 2rem;
+        }
+
+        .dni-body {
+            display: flex;
+            gap: 40px;
+            flex: 1;
+        }
+
+        .dni-photo-frame {
+            width: 220px;
+            height: 280px;
+            border: 3px solid var(--text-color);
+            background: #fff;
+            padding: 5px;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+            transform: rotate(-2deg);
+        }
+
+        .dni-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            filter: sepia(0.2) contrast(1.1);
+            display: block;
+        }
+
+        .dni-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .quote-box {
+            margin-top: auto;
+            border-top: 1px dashed #999;
+            padding-top: 10px;
+            font-style: italic;
+            font-size: 0.95rem;
+            color: #555;
+            text-align: center;
+            font-family: 'Courier Prime', monospace;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .value:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            outline: 2px solid rgba(192, 57, 43, 0.3);
+        }
+
+        /* INTERACTION */
+        .cursor-magnifier {
+            cursor: zoom-in;
+        }
+
+        .stamp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg) scale(0);
+            font-family: 'Special Elite', cursive;
+            font-size: 4rem;
+            border: 5px solid;
+            padding: 10px 30px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .stamp.visible {
+            transform: translate(-50%, -50%) rotate(-15deg) scale(1);
+            opacity: 0.8;
+        }
+
+        .stamp-valid {
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .stamp-fake {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-family: 'Special Elite', cursive;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--card-bg);
+        }
+
+        .start-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Special Elite', cursive;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* ... existing styles ... */
+        /* UI CONTROLS */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 50px;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-valid {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: 2px solid #2ecc71;
+        }
+
+        .btn-valid:hover {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .hud {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: #ecf0f1;
+            padding: 15px;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .volume-control-container {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-family: 'Special Elite', cursive;
+        }
+
+        input[type=range] {
+            accent-color: var(--success-color);
+        }
+
+        /* GAME OVER MODAL */
+        #game-over-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .termination-letter {
+            background: #fdfbf7;
+            padding: 40px;
+            width: 500px;
+            transform: rotate(-2deg);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            font-family: 'Special Elite', cursive;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        .termination-title {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .restart-btn {
+            background: var(--text-color);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            margin-top: 30px;
+            font-family: 'Special Elite', cursive;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-screen">
+        <h1>CONTROL DE FRONTERES MUSICALS</h1>
+        <p style="max-width:600px; font-size:1.2rem; margin-bottom:20px;">
+            Detecta els apòcrifs! Revisa les dades biogràfiques i musicals.<br>
+            Si trobes un error, fes clic sobre ell.<br>
+            Si tot és correcte, segella el document.
+        </p>
+        <button class="start-btn" onclick="startGame()">INICIAR TORN</button>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="game-over-modal">
+        <div class="termination-letter">
+            <div class="termination-title">CARTA D'ACOMIADAMENT</div>
+            <p style="font-size: 1.2rem; line-height: 1.5;">
+                Lamentem informar-li que els seus serveis al Ministeri de Cultura Musical ja no són necessaris.
+            </p>
+            <p>Ha deixat passar massa impostors històrics.</p>
+            <div style="font-size: 1.5rem; margin-top:20px; color: var(--accent-color)">PUNTUACIÓ FINAL: <span
+                    id="final-score">0</span></div>
+            <button class="restart-btn" onclick="location.reload()">SOL·LICITAR READMISSIÓ</button>
+        </div>
+    </div>
+
+    <!-- HUD Top Left -->
+    <div class="hud">
+        <div style="font-size: 1.8rem; color: #f1c40f;">DOCUMENTS CORRECTES: <span id="score">0</span>/10</div>
+        <div style="font-size: 1.4rem;">MARGE D'ERROR: <span id="lives" class="lives">⚠️⚠️⚠️</span></div>
+    </div>
+
+    <!-- Volume Top Right -->
+    <div class="volume-control-container">
+        <span>🎵</span>
+        <input type="range" min="0" max="100" value="50" oninput="setVolume(this.value)">
+    </div>
+
+    <div id="game-container">
+        <div class="dni-card" id="dni-card">
+            <div class="dni-header">
+                <div class="dni-title">DOCUMENT NACIONAL D'IDENTITAT</div>
+                <div style="font-size: 0.8rem">MINISTERI DE CULTURA MUSICAL</div>
+            </div>
+
+            <div class="dni-body">
+                <div class="dni-body">
+                    <div class="dni-photo-frame">
+                        <img src="" class="dni-photo" id="dni-photo"
+                            onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48dGV4dCB5PSc1MCUnIHg9JzUwJScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgdGV4dC1hbmNob3I9J21pZGRsZScgZm9udC1zaXplPSc1MCc+👤PC90ZXh0Pjwvc3ZnPg=='">
+                    </div>
+
+                    <div class="dni-info">
+                        <div class="field-group">
+                            <span class="label">NOM I COGNOMS</span>
+                            <span class="value" id="field-name" onclick="checkError('name')">Wolfgang Amadeus
+                                Mozart</span>
+                        </div>
+
+                        <div class="field-group">
+                            <span class="label">LLOC DE NAIXEMENT</span>
+                            <span class="value" id="field-place" onclick="checkError('place')">Salzburg, Àustria</span>
+                        </div>
+
+                        <div class="field-group">
+                            <span class="label">ANY NAIXEMENT - MORT</span>
+                            <span class="value" id="field-dates" onclick="checkError('dates')">1756 - 1791</span>
+                        </div>
+
+                        <div class="field-group">
+                            <span class="label">ÈPOCA MUSICAL</span>
+                            <span class="value" id="field-era" onclick="checkError('era')">Classicisme</span>
+                        </div>
+
+                        <div class="field-group">
+                            <span class="label">OBRA MESTRA</span>
+                            <span class="value" id="field-work" onclick="checkError('work')">La Flauta Màgica</span>
+                        </div>
+
+                        <div class="quote-box" id="quote-text">
+                            "La música és una revelació més alta que tota saviesa."
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stamp-valid" class="stamp stamp-valid">VERIFICAT</div>
+                <div id="stamp-fake" class="stamp stamp-fake">FALS</div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-valid" onclick="validateDNI()">✅ DNI VÀLID</button>
+            </div>
+        </div>
+
+        <div class="feedback-overlay" id="feedback-overlay"></div>
+
+        <script src="../../../js/rewards.js"></script>
+        <script>
+            // --- AUDIO CONTEXT ---
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioCtx = new AudioContext();
+
+            function playSound(type) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1); // C6
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            }
+
+            // --- DATABASE ---
+            let bgMusic = new Audio('Cozy Evening Save Point.m4a');
+            bgMusic.loop = true;
+
+            function startGame() {
+                document.getElementById('start-screen').style.display = 'none';
+                bgMusic.play().catch(e => console.log("Audio play failed", e));
+                generateRound();
+            }
+
+            function setVolume(val) {
+                bgMusic.volume = val / 100;
+            }
+
+            // --- DATABASE ---
+            // Mapped to actual files in 'img/' folder
+            const COMPOSERS = {
+                "Edat Mitjana": [
+                    { name: "Hildegard von Bingen", place: "Bermersheim, Alemanya", dates: "1098 - 1179", era: "Edat Mitjana", work: "Ordo Virtutum", img: "img/hildegard.jpg", quote: "\"La música és l'ànima de la creació.\"" },
+                    { name: "Guillaume de Machaut", place: "Reims, França", dates: "1300 - 1377", era: "Edat Mitjana", work: "Missa de Notre Dame", img: "img/machaut.jpg", quote: "\"La música és una ciència que ens fa riure i cantar.\"" },
+                    { name: "Alfons X el Savi", place: "Toledo, Espanya", dates: "1221 - 1284", era: "Edat Mitjana", work: "Cantigas de Santa María", img: "img/alfonsX.jpg", quote: "\"Qui no alaba la música, no mereix ser anomenat home.\"" },
+                    { name: "Pérotin", place: "París, França", dates: "1160 - 1230", era: "Edat Mitjana", work: "Viderunt Omnes", img: "img/perotin.jpg", quote: "\"L'harmonia ressona a la pedra de Notre Dame.\"" }
+                ],
+                "Renaixement": [
+                    { name: "Josquin des Prez", place: "Hainaut, Bèlgica", dates: "1450 - 1521", era: "Renaixement", work: "Ave Maria", img: "img/josquin.jpg", quote: "\"La música és l'art de l'expressió pura.\"" },
+                    { name: "Giovanni P. da Palestrina", place: "Palestrina, Itàlia", dates: "1525 - 1594", era: "Renaixement", work: "Missa Papae Marcelli", img: "img/palestrina.jpg", quote: "\"L'harmonia perfecta neteja l'ànima.\"" },
+                    { name: "Tomás Luis de Victoria", place: "Àvila, Espanya", dates: "1548 - 1611", era: "Renaixement", work: "O Magnum Mysterium", img: "img/tomasluisdevictoria.jpg", quote: "\"O gran misteri, que els animals vegin el Senyor.\"" },
+                    { name: "Claudio Monteverdi", place: "Cremona, Itàlia", dates: "1567 - 1643", era: "Renaixement", work: "L'Orfeo", img: "img/monteverdi.jpg", quote: "\"El final de tota bona música és afectar l'ànima.\"" }
+                ],
+                "Barroc": [
+                    { name: "Johann Sebastian Bach", place: "Eisenach, Alemanya", dates: "1685 - 1750", era: "Barroc", work: "Concerts de Brandenburg", img: "img/bach.jpg", quote: "\"L'objectiu final de la música no ha de ser altre que la glòria de Déu.\"" },
+                    { name: "Antonio Vivaldi", place: "Venècia, Itàlia", dates: "1678 - 1741", era: "Barroc", work: "Les Quatre Estacions", img: "img/vibaldi.jpg", quote: "\"Si no t'agrada això, deixaré d'escriure música!\"" },
+                    { name: "Georg Friedrich Händel", place: "Halle, Alemanya", dates: "1685 - 1759", era: "Barroc", work: "El Messies", img: "img/handel.jpg", quote: "\"Heuria de doldre'm si només els he entretingut; desitjava fer-los millors.\"" },
+                    { name: "Henry Purcell", place: "Londres, Anglaterra", dates: "1659 - 1695", era: "Barroc", work: "Dido i Eneas", img: "img/purcell.jpg", quote: "\"La música és l'exaltació de la poesia.\"" }
+                ],
+                "Classicisme": [
+                    { name: "Wolfgang Amadeus Mozart", place: "Salzburg, Àustria", dates: "1756 - 1791", era: "Classicisme", work: "La Flauta Màgica", img: "img/mozart.jpg", quote: "\"La música, fins i tot en les situacions més terribles, mai ha d'ofendre a l'oïda.\"" },
+                    { name: "Joseph Haydn", place: "Rohrau, Àustria", dates: "1732 - 1809", era: "Classicisme", work: "Simfonia Sorpresa", img: "img/hadyn.jpg", quote: "\"El meu llenguatge s'entén a tot el món.\"" },
+                    { name: "Vicent Martín i Soler", place: "València, Espanya", dates: "1754 - 1806", era: "Classicisme", work: "Una cosa rara", img: "img/vicentmartiisoler.jpg", quote: "\"L'alegria de l'òpera és universal.\"" },
+                    { name: "Christoph W. Gluck", place: "Erasbach, Alemanya", dates: "1714 - 1787", era: "Classicisme", work: "Orfeu i Eurídice", img: "img/gluck.jpg", quote: "\"La simplicitat, la veritat i la naturalitat són els grans principis d'allò bell.\"" }
+                ],
+                "Romanticisme": [
+                    { name: "Ludwig van Beethoven", place: "Bonn, Alemanya", dates: "1770 - 1827", era: "Romanticisme", work: "Simfonia núm. 9", img: "img/beethoven.jpg", quote: "\"La música és una revelació més alta que tota saviesa i filosofia.\"" },
+                    { name: "Frédéric Chopin", place: "Żelazowa Wola, Polònia", dates: "1810 - 1849", era: "Romanticisme", work: "Nocturns", img: "img/chopin.jpg", quote: "\"La simplitat és la fita final.\"" },
+                    { name: "Richard Wagner", place: "Leipzig, Alemanya", dates: "1813 - 1883", era: "Romanticisme", work: "L'Anell del Nibelung", img: "img/wagner.jpg", quote: "\"L'alegria no és en les coses, és en nosaltres.\"" },
+                    { name: "Franz Schubert", place: "Viena, Àustria", dates: "1797 - 1828", era: "Romanticisme", work: "Ave Maria", img: "img/shcubert.jpg", quote: "\"Qui estima la música, mai pot ser completament infeliç.\"" }
+                ],
+                "Segle XX": [
+                    { name: "Claude Debussy", place: "Saint-Germain, França", dates: "1862 - 1918", era: "Segle XX", work: "Clair de Lune", img: "img/debussy.jpg", quote: "\"La música comença on les paraules acaben.\"" },
+                    { name: "Igor Stravinsky", place: "Lomonosov, Rússia", dates: "1882 - 1971", era: "Segle XX", work: "La Consagració de la Primavera", img: "img/stravinsky.jpg", quote: "\"La meva música és millor entesa pels nens i els animals.\"" },
+                    { name: "Arnold Schönberg", place: "Viena, Àustria", dates: "1874 - 1951", era: "Segle XX", work: "Pierrot Lunaire", img: "img/schoemberg.jpg", quote: "\"Si és art, no és per a tots; si és per a tots, no és art.\"" },
+                    { name: "John Cage", place: "Los Angeles, EUA", dates: "1912 - 1992", era: "Segle XX", work: "4'33\"", img: "img/cage.jpg", quote: "\"No entenc per què la gent té por de les idees noves.\"" }
+                ]
+            };
+
+            const FAKE_DATA = {
+                places: ["Tòquio, Japó", "Nova York, EUA", "El Caire, Egipte", "Sydney, Austràlia", "Rio de Janeiro, Brasil"],
+                dates: ["1990 - 2050", "100 - 150", "2000 - 2024", "1800 - 1801", "1500 - 2000"],
+                eras: ["Futurisme", "Prehistòria", "Disco", "Techno", "Reggaeton"],
+                works: ["La Macarena", "Despacito", "Baby Shark", "Gangnam Style", "Waka Waka"]
+            };
+
+            // --- GAME STATE ---
+            let currentComposer = null;
+            let currentError = null; // { field: 'place', correct: '...', fake: '...' } OR null if valid
+            let score = 0;
+            let lives = 3;
+            let isProcessing = false;
+
+            // --- LOGIC ---
+            function getRandomComposer() {
+                const eras = Object.keys(COMPOSERS);
+                const randomEra = eras[Math.floor(Math.random() * eras.length)];
+                const composersInEra = COMPOSERS[randomEra];
+                return { ...composersInEra[Math.floor(Math.random() * composersInEra.length)] }; // Clone
+            }
+
+            function generateRound() {
+                isProcessing = false;
+                resetVisuals();
+
+                // 1. Select Composer
+                currentComposer = getRandomComposer();
+
+                // 2. Decide if Fake (50% chance)
+                const isFake = Math.random() > 0.5;
+                currentError = null;
+
+                if (isFake) {
+                    const errorType = Math.floor(Math.random() * 4); // 0: place, 1: dates, 2: era, 3: work
+
+                    switch (errorType) {
+                        case 0: // Place
+                            currentError = { field: 'place', correct: currentComposer.place, fake: getFakeData('place', currentComposer.place) };
+                            currentComposer.place = currentError.fake;
+                            break;
+                        case 1: // Dates
+                            currentError = { field: 'dates', correct: currentComposer.dates, fake: getFakeData('dates', currentComposer.dates) };
+                            currentComposer.dates = currentError.fake;
+                            break;
+                        case 2: // Era
+                            currentError = { field: 'era', correct: currentComposer.era, fake: getFakeData('era', currentComposer.era) };
+                            currentComposer.era = currentError.fake;
+                            break;
+                        case 3: // Work
+                            currentError = { field: 'work', correct: currentComposer.work, fake: getFakeData('work', currentComposer.work) };
+                            currentComposer.work = currentError.fake;
+                            break;
+                    }
+                }
+
+                // 3. Render
+                renderDNI();
+            }
+
+            function getFakeData(type, correctValue) {
+                // 50% chance of "Easy" (Absurd) error, 50% chance of "Hard" (Subtle - from another composer)
+                const isHard = Math.random() > 0.5;
+
+                if (isHard) {
+                    // Pick a value from another composer (different era preferred)
+                    let randomComp = getRandomComposer();
+                    while (randomComp[type] === correctValue) {
+                        randomComp = getRandomComposer();
+                    }
+                    return randomComp[type];
+                } else {
+                    // Pick absurd value
+                    const list = FAKE_DATA[type + 's']; // places, dates, eras, works
+                    return list[Math.floor(Math.random() * list.length)];
+                }
+            }
+
+            function renderDNI() {
+                document.getElementById('dni-photo').src = currentComposer.img || "";
+                document.getElementById('field-name').innerText = currentComposer.name;
+                document.getElementById('field-place').innerText = currentComposer.place;
+                document.getElementById('field-dates').innerText = currentComposer.dates;
+                document.getElementById('field-era').innerText = currentComposer.era;
+                document.getElementById('field-work').innerText = currentComposer.work;
+                document.getElementById('quote-text').innerText = currentComposer.quote || "";
+            }
+
+            function checkError(fieldClicked) {
+                if (isProcessing) return;
+
+                if (currentError && currentError.field === fieldClicked) {
+                    // Player found the error!
+                    handleSuccess();
+                } else {
+                    // Player clicked a field, but it wasn't the error (or there was no error)
+                    handleFail();
+                }
+            }
+
+            function validateDNI() {
+                if (isProcessing) return;
+
+                if (currentError === null) {
+                    // Player correctly identified it as valid
+                    handleSuccess();
+                } else {
+                    // Player said valid, but there was an error
+                    handleFail();
+                }
+            }
+
+            function handleSuccess() {
+                isProcessing = true;
+                playSound('success');
+                score++;
+                document.getElementById('score').innerText = score;
+
+                // Show Valid Stamp if it was valid, or "Fake Detected" visual
+                if (currentError === null) {
+                    document.getElementById('stamp-valid').classList.add('visible');
+                } else {
+                    // Highlight the error field green to show they got it right
+                    document.getElementById(`field-${currentError.field}`).style.backgroundColor = '#d4edda';
+                    document.getElementById('stamp-fake').classList.add('visible');
+                }
+
+                checkWinCondition();
+            }
+
+            function handleFail() {
+                isProcessing = true;
+                playSound('error');
+                lives--;
+                updateLives();
+
+                // Visual Feedback
+                document.getElementById('feedback-overlay').classList.add('feedback-error');
+                setTimeout(() => document.getElementById('feedback-overlay').classList.remove('feedback-error'), 500);
+
+                // Reveal the error if there was one
+                if (currentError) {
+                    document.getElementById(`field-${currentError.field}`).style.backgroundColor = '#f8d7da'; // Red highlight
+                } else {
+                    // It was valid, but player clicked something
+                    document.getElementById('stamp-valid').classList.add('visible');
+                }
+
+                if (lives <= 0) {
+                    setTimeout(gameOver, 1000);
+                } else {
+                    setTimeout(generateRound, 1500);
+                }
+            }
+
+            function checkWinCondition() {
+                if (score >= 10) {
+                    setTimeout(() => {
+                        alert("🎉 ENHORABONA! Has completat el torn de vigilància. Ets un expert identificador!");
+                        location.reload();
+                    }, 1000);
+                    // Unlock reward
+                    if (window.Rewards) Rewards.unlockCard('dni_expert');
+                } else {
+                    setTimeout(generateRound, 1500);
+                }
+            }
+
+            function updateLives() {
+                let icons = "";
+                for (let i = 0; i < lives; i++) icons += "⚠️";
+                document.getElementById('lives').innerText = icons;
+            }
+
+            function gameOver() {
+                document.getElementById('final-score').innerText = score;
+                document.getElementById('game-over-modal').style.display = 'flex';
+            }
+
+            function resetVisuals() {
+                document.getElementById('stamp-valid').classList.remove('visible');
+                document.getElementById('stamp-fake').classList.remove('visible');
+
+                const fields = ['name', 'place', 'dates', 'era', 'work'];
+                fields.forEach(f => {
+                    document.getElementById(`field-${f}`).style.backgroundColor = 'transparent';
+                });
+            }
+
+            // Init
+            // Init (Wait for button)
+            // generateRound();
+
+        </script>
+</body>
+
+</html>

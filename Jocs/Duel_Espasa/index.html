@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duel a Espasa: La Maledicció Musical</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Special+Elite&display=swap');
+
+        :root {
+            --mahogany: #4e2e1e;
+            --pirate-gold: #ffd700;
+            --blood-red: #8b0000;
+            --sea-blue: #0077be;
+            --parchment: #f4e4bc;
+            --wood-dark: #2c1b0e;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050a10;
+            color: #333;
+            font-family: 'Special Elite', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 1200px;
+            height: 750px;
+            background: #000;
+            position: relative;
+            border: 12px solid var(--mahogany);
+            border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%234e2e1e'/%3E%3Cpath d='M0 0l100 100M100 0L0 100' stroke='%23ffd700' stroke-width='1' opacity='0.2'/%3E%3C/svg%3E") 30;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #bg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 1s;
+        }
+
+        #sailing-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: #fff;
+            text-shadow: 0 0 20px var(--sea-blue);
+        }
+
+        .waves-anim {
+            width: 100%;
+            height: 100%;
+            background: url('img/bg_sea.jpg') center/cover;
+            animation: sea-sway 10s infinite ease-in-out;
+        }
+
+        @keyframes sea-sway {
+
+            0%,
+            100% {
+                transform: scale(1.05) translate(0, 0);
+            }
+
+            50% {
+                transform: scale(1.05) translate(-10px, 5px);
+            }
+        }
+
+        /* --- DECK ELEMENTS --- */
+        #deck {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            background: #3d2b1f;
+            border-top: 4px solid var(--mahogany);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Hidden by default */
+        }
+
+        .lantern {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background: radial-gradient(circle, #ffcc00, transparent 70%);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: flicker 1.5s infinite alternate;
+        }
+
+        @keyframes flicker {
+            from {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        /* --- STAGE --- */
+        #stage {
+            height: 600px;
+            position: absolute;
+            bottom: 180px;
+            /* Lowered to deck level */
+            width: 100%;
+            display: none;
+            /* Hidden by default */
+            justify-content: space-around;
+            align-items: flex-end;
+            z-index: 10;
+        }
+
+        .fighter {
+            width: 350px;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        #enemy-sprite {
+            color: var(--ink);
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+            opacity: 0;
+            transform: translateX(100px);
+        }
+
+        #enemy-sprite img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transform: scaleX(1);
+            /* Removed flip as requested */
+        }
+
+        #player-sprite img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transform: scaleX(1);
+            /* Ensure facing right */
+        }
+
+        #player-sprite {
+            color: var(--ink);
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+        }
+
+        /* --- HUD --- */
+        #hud {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: none;
+            /* Hidden by default */
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 50;
+        }
+
+        .hp-bar {
+            display: flex;
+            gap: 10px;
+            font-size: 30px;
+        }
+
+        .skull {
+            color: var(--pirate-gold);
+            font-size: 35px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .skull.lost {
+            opacity: 0.2;
+            filter: grayscale(1);
+        }
+
+        #level-info {
+            font-family: 'Pirata One', cursive;
+            color: var(--pirate-gold);
+            font-size: 42px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 30px;
+            border: 3px solid var(--mahogany);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- VOLUME --- */
+        #volume-control {
+            position: absolute;
+            top: 130px;
+            right: 40px;
+            z-index: 110;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--pirate-gold);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--mahogany);
+        }
+
+        #volume-slider {
+            width: 120px;
+            cursor: pointer;
+            accent-color: var(--pirate-gold);
+        }
+
+        /* --- диалог --- */
+        #ui-overlay {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            gap: 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #dialog-bubble {
+            background: var(--parchment);
+            border: 5px solid #8b5a2b;
+            padding: 20px;
+            border-radius: 20px;
+            font-size: 22px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            min-height: 100px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #dialog-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            border-width: 20px 20px 0;
+            border-style: solid;
+            border-color: var(--parchment) transparent;
+        }
+
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            pointer-events: auto;
+            display: none;
+        }
+
+        .pirate-btn {
+            background: #2c1b0e;
+            color: var(--parchment);
+            border: 3px solid var(--pirate-gold);
+            padding: 15px;
+            font-family: inherit;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pirate-btn:hover {
+            background: var(--pirate-gold);
+            color: #000;
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: var(--pirate-gold);
+            text-align: center;
+            padding: 50px;
+        }
+
+        #start-screen h1 {
+            font-family: 'Pirata One', cursive;
+            font-size: 80px;
+            margin: 0;
+        }
+
+        .rules {
+            font-size: 22px;
+            color: var(--parchment);
+            max-width: 800px;
+            margin: 30px 0;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border: 2px solid var(--pirate-gold);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- INTRO SCREEN --- */
+        #intro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 210;
+            padding: 50px;
+            gap: 50px;
+        }
+
+        #viceroy-img {
+            width: 400px;
+            height: auto;
+            border: 5px solid var(--mahogany);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+
+        #intro-text-box {
+            flex: 1;
+            background: var(--parchment);
+            color: #2c1b0e;
+            padding: 40px;
+            border: 10px double var(--mahogany);
+            font-size: 24px;
+            line-height: 1.6;
+            text-align: justify;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* --- ANIMATIONS --- */
+        .lunge-player {
+            animation: lunge-p 0.4s;
+        }
+
+        .lunge-enemy {
+            animation: lunge-e 0.4s;
+        }
+
+        @keyframes lunge-p {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(50px) scale(1.1);
+            }
+        }
+
+        @keyframes lunge-e {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(-50px) scale(1.1);
+            }
+        }
+
+        .shake {
+            animation: shake-anim 0.3s;
+        }
+
+        @keyframes shake-anim {
+            0% {
+                transform: translate(5px, 5px);
+            }
+
+            20% {
+                transform: translate(-5px, -5px);
+            }
+
+            40% {
+                transform: translate(5px, -5px);
+            }
+
+            60% {
+                transform: translate(-5px, 5px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        .fade-out {
+            opacity: 0 !important;
+            transition: opacity 1s;
+        }
+
+        .slide-in {
+            opacity: 1 !important;
+            transform: translateX(0) !important;
+            transition: all 1s;
+        }
+
+        #vfx {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            color: #fff;
+            font-family: 'Pirata One', cursive;
+            display: none;
+            z-index: 150;
+            text-shadow: 0 0 30px #fff;
+        }
+
+        .pum-effect {
+            animation: screen-impact 0.5s;
+        }
+
+        @keyframes screen-impact {
+            0% {
+                transform: scale(1);
+                filter: brightness(3);
+            }
+
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        #retry-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="bg-layer"></div>
+        <div id="sailing-overlay">
+            <h2 style="font-family: 'Pirata One'; font-size: 40px;">NAVEGANT...</h2>
+            <div id="sea-status">Buscant el següent pirata...</div>
+        </div>
+        <!-- START SCREEN -->
+        <div id="start-screen">
+            <h1>DUEL A ESPASA</h1>
+            <h3>L'ABORDATGE MUSICAL</h3>
+            <div class="rules">
+                Ets un pirata en busca de fortuna. Has de derrotar els 6 Capitans més temuts del Carib per reclamar el
+                seu Tresor.
+                <br><br>
+                1. El Capità et llançarà un desafiament (la pista).
+                <br>
+                2. Respon amb rapidesa i intel·ligència per aturar la seva espasa.
+                <br>
+                3. Guanya el rumb de la història o acaba al fons del mar!
+            </div>
+            <button class="pirate-btn" style="font-size: 30px;" onclick="game.start()">¡A L'ABORDATGE!</button>
+        </div>
+
+        <div id="hud">
+            <div class="hp-bar" id="player-hp">
+                <span class="skull">💀</span><span class="skull">💀</span><span class="skull">💀</span><span
+                    class="skull">💀</span><span class="skull">💀</span>
+            </div>
+            <div id="level-info">CARREGANT...</div>
+            <div class="hp-bar" id="enemy-hp">
+                <span class="skull">💀</span><span class="skull">💀</span><span class="skull">💀</span><span
+                    class="skull">💀</span><span class="skull">💀</span>
+            </div>
+        </div>
+
+        <div id="stage">
+            <div id="player-sprite" class="fighter">
+                <img src="img/player.png" alt="Duelista">
+            </div>
+            <div id="enemy-sprite" class="fighter">
+                <!-- Boss image goes here -->
+                <img>
+            </div>
+        </div>
+
+        <div id="deck">
+            <div class="lantern" style="left: 100px; bottom: 80px;"></div>
+            <div class="lantern" style="right: 100px; bottom: 80px;"></div>
+        </div>
+
+        <div id="ui-overlay">
+            <div id="dialog-bubble"></div>
+            <div id="options-container">
+                <!-- Buttons here -->
+            </div>
+        </div>
+
+        <div id="volume-control">
+            <span>🔊</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                oninput="game.updateVolume(this.value)">
+        </div>
+
+        <div id="intro-screen">
+            <img id="viceroy-img" src="img/virrei.png" alt="Inquisidor">
+            <div id="intro-text-box">
+                <h2 style="font-family: 'Pirata One'; font-size: 40px; margin-top: 0;">L'ÚLTIMA OPORTUNITAT</h2>
+                "Escolteu-me bé, lladregot. El mar està infestat d'escòria que s'atreveix a desafiar l'imperi. Teniu una
+                única missió: trobar i derrotar els 6 Capitans més perillosos:
+                <br><br>
+                1. Fray 'El Torturador', el monjo heretge que castiga amb sang.<br>
+                2. Almirall 'L'Humanista', un traïdor francès d'esgrima elegant.<br>
+                3. La Corsària 'De Versalles', la reina de les marees i el luxe.<br>
+                4. Comodor 'Viena', la disciplina feta ferro i canonada.<br>
+                5. Capità 'Tempesta', la fúria de la natura en un home solitari.<br>
+                6. Baró 'El Magnat', el cor de gel del nou món industrial.
+                <br><br>
+                Si completeu la tasca, el vostre passat serà esborrat. Si falleu... acabareu ballant al final de la
+                corda de la forca abans de la posta de sol. El temps corre. Aneu-vos-en!"
+                <br><br>
+                <button class="pirate-btn" onclick="game.sail()">¡SÍ, EL MEU VIRREI!</button>
+            </div>
+        </div>
+
+        <div id="vfx">CLANG!</div>
+
+        <div id="retry-screen">
+            <h2 style="font-family: 'Pirata One'; font-size: 60px; color: var(--blood-red); margin: 0;">¡DERROTA!</h2>
+            <p style="font-size: 24px; margin: 20px 0;">Les rates es menjaran el teu barret...</p>
+            <button class="pirate-btn" style="font-size: 30px;" onclick="game.restartLevel()">TORNA A
+                INTENTAR-HO</button>
+        </div>
+    </div>
+
+    <script>
+        const ERAS = [
+            {
+                id: "medieval",
+                name: "Fray 'El Torturador'",
+                boss_port: "bossmitjana.png",
+                intro: ["¡Atura't, heretge!", "Cap vaixell creua aquestes aigües sense la meva benedicció de sang."],
+                death: "¡No pot ser! El cel m'abandona... el meu tresor serà la teva maledicció.",
+                questions: [
+                    { taunt: "¡El teu vaixell és tan vell com un castell!", q: "Qui vivia als Castells a l'Edat Mitjana?", options: ["Reis, nobles i cavallers", "Els monjos", "Els pagesos"], correct: 0 },
+                    { taunt: "¡Cantes pitjor que un monjo refredat!", q: "Per què cantaven els monjos?", options: ["Per parlar amb Déu (pregar)", "Per guanyar diners", "Per divertir-se"], correct: 0 },
+                    { taunt: "¡Aquesta espasa té forma de pera!", q: "A quin instrument s'assembla el Llaüt?", options: ["A la Guitarra", "Al Piano", "Al Violí"], correct: 0 },
+                    { taunt: "¡A l'església no et deixarien entrar!", q: "Per què els monjos no volien instruments?", options: ["Creien que la veu era l'únic digne", "Eren massa cars", "No en sabien tocar"], correct: 0 },
+                    { taunt: "¡Sense instruments estàs perdut!", q: "Què significa cantar 'A Cappella'?", options: ["Només amb la veu", "Molt fort", "Amb barret"], correct: 0 },
+                    { taunt: "¡Això sona a oracions avorrides!", q: "Què és el Cant Gregorià?", options: ["Música d'una sola veu", "Rock medieval", "Òpera"], correct: 0 },
+                    { taunt: "¡Ets un rodamón sense rumb!", q: "Com es deien els músics que anaven pels pobles?", options: ["Trobadors i joglars", "Monjos", "Reis"], correct: 0 },
+                    { taunt: "¡Ets tan llastimós com una dansa final!", q: "Què era la 'Dansa de la Mort'?", options: ["Música per perdre la por a morir", "Un ball de noces", "Una festa"], correct: 0 },
+                    { taunt: "¡Aquí només mana el meu llatí!", q: "En quin idioma es cantava a l'església?", options: ["Llatí", "Català", "Anglès"], correct: 0 },
+                    { taunt: "¡T'escapçaria com un instrument vell!", q: "On es copiaven els llibres de música?", options: ["Als monestirs", "A la taverna", "Al port"], correct: 0 }
+                ]
+            },
+            {
+                id: "renaixement",
+                name: "Almirall 'L'Humanista'",
+                boss_port: "bossrenaixement.png",
+                intro: ["¡Bonjour, mon ami!", "És una llàstima haver de tacar d'elegant carmesí aquesta coberta."],
+                death: "Adéu al món de les arts... que l'oceà conservi la meva bellesa.",
+                questions: [
+                    { taunt: "¡La teva veu espanta les gavines!", q: "Quina veu de dona és la més aguda?", options: ["Soprano", "Contralt", "Tenor"], correct: 0 },
+                    { taunt: "¡Treballo pel Papa, i tu per les rates!", q: "On treballava Palestrina?", options: ["Al Vaticà (Roma)", "A París", "A Versalles"], correct: 0 },
+                    { taunt: "¡Resaràs per la teva vida!", q: "Forma musical religiosa més important d'aquesta època?", options: ["La Missa", "L'Òpera", "La Simfonia"], correct: 0 },
+                    { taunt: "¡La teva veu és tan greu com l'infern!", q: "Quina és la veu d'home més greu?", options: ["Baix", "Tenor", "Soprano"], correct: 0 },
+                    { taunt: "¡Balem sobre la teva tomba!", q: "Quins instruments acompanyaven la música profana?", options: ["Llaüt, flauta i tambor", "Guitarra elèctrica", "Només orgue"], correct: 0 },
+                    { taunt: "¡Tinc més cultura que tota la teva tripulació!", q: "Què defensa l'Humanisme?", options: ["L'home és el centre del món", "Només Déu importa", "Els diners"], correct: 0 },
+                    { taunt: "¡Llegeixo música abans que mapes!", q: "Quin invent va ajudar a difondre la música?", options: ["L'impremta", "El vaixell", "El canó"], correct: 0 },
+                    { taunt: "¡Només saps bramar com un ogre!", q: "Què és un Madrigal?", options: ["Música profana vocal", "Un tipus de peix", "Un vaixell"], correct: 0 },
+                    { taunt: "¡Sóc el mestre de les cases nobles!", q: "Quin era l'instrument rei de les llars?", options: ["El llaüt", "El piano", "La trompeta"], correct: 0 },
+                    { taunt: "¡La teva veu és massa mitjana per mi!", q: "Veu de dona que no és ni aguda ni greu?", options: ["Mezzosoprano", "Soprano", "Baix"], correct: 0 }
+                ]
+            },
+            {
+                id: "barroc",
+                name: "La Corsària 'De Versalles'",
+                boss_port: "bossbarroc.png",
+                intro: ["¡Quin ràfec de vent t'ha portat fins aquí?", "Prefereixes morir sota la lluna o sota la meva espasa?"],
+                death: "El teatre s'acaba per a mi. Baixeu el teló...",
+                questions: [
+                    { taunt: "¡El meu mestre és un geni!", q: "Quin compositor tenia una gran família de músics?", options: ["J.S. Bach", "Vivaldi", "Mozart"], correct: 0 },
+                    { taunt: "¡Visc com un Rei, tu com un gos!", q: "Com vivien els Reis al Barroc?", options: ["Amb tot el poder i luxe", "Com gent normal", "Pobres"], correct: 0 },
+                    { taunt: "¡La meva casa és més gran que la teva illa!", q: "Com es deia el palau del Rei de França?", options: ["Versalles", "Buckingham", "El Escorial"], correct: 0 },
+                    { taunt: "¡Aquest ritme et marejarà!", q: "Quina sensació té el ritme Barroc?", options: ["Que corre i no para (Motor)", "Molt lent", "Es para tota l'estona"], correct: 0 },
+                    { taunt: "¡Això és pur teatre!", q: "Què imitava l'Òpera quan es va inventar?", options: ["Teatre de l'antiga Grècia", "La missa", "Els trobadors"], correct: 0 },
+                    { taunt: "¡Tinc les estacions del meu costat!", q: "Qui va compondre les 'Quatre Estacions'?", options: ["Vivaldi", "Bach", "Händel"], correct: 0 },
+                    { taunt: "¡Sona tan gran com l'església!", q: "Quin instrument té tubs gegants?", options: ["L'orgue", "La flauta", "El llaüt"], correct: 0 },
+                    { taunt: "¡Contrastos, com la meva fúria!", q: "Com es diu el contrast de volums al Barroc?", options: ["Dinàmica de terrasses", "Remolí", "Silenci"], correct: 0 },
+                    { taunt: "¡Massa adornat per a tu!", q: "Com és l'arquitectura i la música del Barroc?", options: ["Molt carregada i adornada", "Molt simple", "Inexistent"], correct: 0 },
+                    { taunt: "¡Sense drama no hi ha vida!", q: "Quin gènere narra una història cantada?", options: ["L'òpera", "El diari", "La dansa"], correct: 0 }
+                ]
+            },
+            {
+                id: "classicisme",
+                name: "Comodor 'Viena'",
+                boss_port: "bossclassicisme.png",
+                intro: ["¡Ordre i disciplina!", "Aquest mar és el meu mapa, i tu ets una taca que he d'esborrar."],
+                death: "He perdut el compàs... l'estructura... s'ha acabat.",
+                questions: [
+                    { taunt: "¡Tinc un instrument nou i poderós!", q: "Per què el piano es deia 'Piano-Forte'?", options: ["Podia fer fort i fluix", "Pesava molt", "Era italià"], correct: 0 },
+                    { taunt: "¡Vinc de la ciutat de la música!", q: "Quina era la capital musical del Classicisme?", options: ["Viena", "París", "Roma"], correct: 0 },
+                    { taunt: "¡Respecta al teu pare!", q: "Qui és el 'Pare de la Simfonia'?", options: ["Haydn", "Mozart", "Bach"], correct: 0 },
+                    { taunt: "¡Tinc més classe que tu!", q: "Paraula que defineix l'estil de Mozart?", options: ["Elegant", "Fosc", "Trist"], correct: 0 },
+                    { taunt: "¡Posa't al teu lloc!", q: "Quina secció de l'orquestra està davant de tot?", options: ["La Corda (Violins)", "El Vent", "La Percussió"], correct: 0 },
+                    { taunt: "¡Un grup perfecte, no com el teu!", q: "Què és un Quartet de Corda?", options: ["2 violins, viola i violoncel", "4 trompetes", "Piano i flauta"], correct: 0 },
+                    { taunt: "¡Ets un desordre sense sentit!", q: "Què busca l'estil clàssic?", options: ["Equilibri i claredat", "Caos i soroll", "Foscor"], correct: 0 },
+                    { taunt: "¡Escolta el silenci de la meva victòria!", q: "Quin compositor es va quedar sord?", options: ["Beethoven", "Mozart", "Haydn"], correct: 0 },
+                    { taunt: "¡Quatre cops i estàs fora!", q: "Quants moviments té una simfonia clàssica?", options: ["4 moviments", "1 moviment", "10 moviments"], correct: 0 },
+                    { taunt: "¡Pura matemàtica musical!", q: "Què és la Forma Sonata?", options: ["Una estructura musical fixa", "Una cançó curta", "Un ball"], correct: 0 }
+                ]
+            },
+            {
+                id: "romanticisme",
+                name: "Capità 'Tempesta'",
+                boss_port: "bossromanticisme.png",
+                intro: ["¡Sents el tro? Sóc jo!", "Avui l'oceà plorarà la teva mort amb melancolia."],
+                death: "Per fi sóc lliure... el vent m'espera... a l'altre costat.",
+                questions: [
+                    { taunt: "¡El meu vaixell és gegant!", q: "Com és l'orquestra del Romanticisme?", options: ["Gegant, per impressionar", "Molt petita", "No n'hi ha"], correct: 0 },
+                    { taunt: "¡Sóc una estrella del rock!", q: "Què és un 'Virtuós'?", options: ["Un músic 'Superstar' tècnic", "Un instrument nou", "Un cantant"], correct: 0 },
+                    { taunt: "¡Estic viu o mort?", q: "Què signifiquen les 'constants vitals' romàntiques?", options: ["Contrast extrem (Silenci/Soroll)", "Sempre igual", "Avorriment"], correct: 0 },
+                    { taunt: "¡No necessito amics!", q: "L'artista romàntic és sociable?", options: ["No, és solitari i individualista", "Sí, molt fester", "Treballa en equip"], correct: 0 },
+                    { taunt: "¡Aquest instrument parla!", q: "Per què el piano es perfecte pels romàntics?", options: ["Expressa molts sentiments", "És barat", "Ocupa poc lloc"], correct: 0 },
+                    { taunt: "¡Ploraràs com una melodia polonesa!", q: "Qui era el mestre del piano polonès?", options: ["Chopin", "Liszt", "Wagner"], correct: 0 },
+                    { taunt: "¡El meu cor explota de passió!", q: "Què expressa la música romàntica?", options: ["Sentiments personals", "Lleis matemàtiques", "Res"], correct: 0 },
+                    { taunt: "¡Explica la teva por!", q: "Què és un poema simfònic?", options: ["Música que explica una història", "Un llibre de poemes", "Un ball"], correct: 0 },
+                    { taunt: "¡Ets una minúcia davant meu!", q: "Què és un 'Lied'?", options: ["Cançó per veu i piano", "Un vaixell alemany", "Un peix"], correct: 0 },
+                    { taunt: "¡Hores de música per la teva fi!", q: "Quina òpera de Wagner dura moltes hores?", options: ["L'Anell del Nibelung", "La Flauta Màgica", "Carmen"], correct: 0 }
+                ]
+            },
+            {
+                id: "segle_xx",
+                name: "Baró 'El Magnat'",
+                boss_port: "bosssegleXX.png",
+                intro: ["¡El futur és meu!", "Ets una relíquia del passat que s'està enfonsant."],
+                death: "El silenci... l'única nota que no vaig saber dominar.",
+                questions: [
+                    { taunt: "¡Pinto millor que tu!", q: "Qui és el compositor de l'Impressionisme?", options: ["Debussy", "Schönberg", "Beethoven"], correct: 0 },
+                    { taunt: "¡Mira la llum!", q: "En quina pintura s'inspira l'Impressionisme?", options: ["En quadres de Monet (llum)", "Geometria", "Retrats reials"], correct: 0 },
+                    { taunt: "¡Aaaahhh!", q: "Quina emoció expressa el quadre 'El Crit'?", options: ["Angoixa i desesperació", "Felicitat", "Avorriment"], correct: 0 },
+                    { taunt: "¡No cal anar a l'òpera!", q: "On podem escuchtar música gràcies a la tecnologia?", options: ["A casa (Ràdio/Discos)", "Només a l'església", "Només al concert"], correct: 0 },
+                    { taunt: "¡Sé comptar fins a dotze!", q: "Quantes notes fa servir el Dodecafonisme?", options: ["12 notes", "7 notes", "5 notes"], correct: 0 },
+                    { taunt: "¡Ets un soroll sense sentit!", q: "Què és l'atonalisme?", options: ["Música sense tonalitat clara", "Molt bonica", "Simple"], correct: 0 },
+                    { taunt: "¡Ritmes que t'esclafaran!", q: "Què va inventar Stravinsky?", options: ["El ritme irregular/primitiu", "L'òpera", "El clavicordi"], correct: 0 },
+                    { taunt: "¡Massa modern pel teu gust!", q: "Música feta amb oscil·ladors i màquines?", options: ["Música electrònica", "Cànons", "Corals"], correct: 0 },
+                    { taunt: "¡Poc material per guanyar!", q: "Què és el minimalisme?", options: ["Repetir poques notes", "Música molt forta", "Òpera gegant"], correct: 0 },
+                    { taunt: "¡Jazz i canons!", q: "Amb què barreja Gershwin el Jazz?", options: ["Amb l'orquestra simfònica", "Amb l'església", "Amb el silenci"], correct: 0 }
+                ]
+            }
+        ];
+
+        class PirateDuel {
+            constructor() {
+                this.eraIndex = 0;
+                this.questionIndex = 0;
+                this.playerHP = 5;
+                this.enemyHP = 5;
+                this.isProcessing = false;
+                this.volume = 0.5;
+
+                // Audio
+                this.bgMusic = new Audio();
+                this.bgMusic.loop = true;
+                this.navTheme = 'audio/Sea Glass Horizon.m4a';
+                this.battleTheme = 'audio/Cannon Smoke & Salty Steel.m4a';
+                this.clashSFX = new Audio('audio/clang.m4a');
+                this.thudSFX = new Audio('audio/thud.m4a');
+            }
+
+            updateVolume(val) {
+                this.volume = val;
+                this.bgMusic.volume = val;
+                this.clashSFX.volume = val;
+                this.thudSFX.volume = val;
+            }
+
+            playMusic(src) {
+                if (this.bgMusic.src.includes(src)) return;
+                this.bgMusic.src = src;
+                this.bgMusic.volume = this.volume;
+                this.bgMusic.play().catch(e => console.log("Audio blocked"));
+            }
+
+            start() {
+                document.getElementById('start-screen').classList.add('fade-out');
+                setTimeout(() => {
+                    document.getElementById('start-screen').style.display = 'none';
+                    this.showIntro();
+                }, 1000);
+            }
+
+            showIntro() {
+                // Ensure everything gameplay-related is hidden
+                document.getElementById('bg-layer').style.backgroundImage = 'none';
+                document.getElementById('bg-layer').classList.remove('waves-anim');
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('stage').style.display = 'none';
+                document.getElementById('deck').style.display = 'none';
+
+                document.getElementById('intro-screen').style.display = 'flex';
+                this.playMusic(this.navTheme);
+            }
+
+            sail() {
+                document.getElementById('intro-screen').style.display = 'none';
+                const overlay = document.getElementById('sailing-overlay');
+                const bg = document.getElementById('bg-layer');
+                const player = document.getElementById('player-sprite');
+                const enemy = document.getElementById('enemy-sprite');
+                const deck = document.getElementById('deck');
+                const hud = document.getElementById('hud');
+                const stage = document.getElementById('stage');
+
+                // Show game base elements but keep fighters hidden
+                deck.style.display = 'block';
+                hud.style.display = 'flex';
+                stage.style.display = 'flex';
+                player.style.display = 'none';
+                enemy.style.display = 'none';
+
+                bg.style.backgroundImage = "url('img/fonsnavegant.jpg')";
+                bg.classList.add('waves-anim');
+                overlay.style.display = 'flex';
+                this.playMusic(this.navTheme);
+
+                // Sailing duration: 5 to 7 seconds
+                const duration = 5000 + Math.random() * 2000;
+                setTimeout(() => {
+                    this.transitionToBattle();
+                }, duration);
+            }
+
+            transitionToBattle() {
+                const overlay = document.getElementById('sailing-overlay');
+                const bg = document.getElementById('bg-layer');
+                const container = document.getElementById('game-container');
+                const player = document.getElementById('player-sprite');
+
+                this.thudSFX.play();
+                container.classList.add('pum-effect', 'shake');
+
+                setTimeout(() => {
+                    container.classList.remove('pum-effect', 'shake');
+                    overlay.style.display = 'none';
+                    bg.classList.remove('waves-anim');
+                    bg.style.backgroundImage = "url('img/fonsbatalles.jpg')";
+
+                    // Show player
+                    player.style.display = 'flex';
+
+                    this.playMusic(this.battleTheme);
+                    this.initLevel();
+                }, 500);
+            }
+
+            initLevel() {
+                this.enemyHP = 5;
+                this.questionIndex = 0;
+                this.updateHUD();
+
+                const enemyData = ERAS[this.eraIndex];
+
+                // RANDOMIZE QUESTIONS
+                this.currentQuestions = [...enemyData.questions].sort(() => Math.random() - 0.5);
+
+                document.getElementById('level-info').innerText = enemyData.name;
+
+                const sprite = document.getElementById('enemy-sprite');
+                const img = sprite.querySelector('img');
+                img.src = `img/${enemyData.boss_port}`;
+
+                sprite.style.display = 'flex';
+                sprite.classList.remove('fade-out');
+                sprite.classList.add('slide-in');
+
+                // INTRO DIALOGUE
+                document.getElementById('ui-overlay').style.display = 'flex';
+                const introLines = enemyData.intro || ["Prepara't per al duel!"];
+                document.getElementById('options-container').style.display = 'none';
+
+                let lineIdx = 0;
+                const showIntroLine = () => {
+                    if (lineIdx < introLines.length) {
+                        document.getElementById('dialog-bubble').innerText = introLines[lineIdx];
+                        lineIdx++;
+                        setTimeout(showIntroLine, 2500);
+                    } else {
+                        this.nextRound();
+                    }
+                };
+
+                showIntroLine();
+            }
+
+            updateHUD() {
+                const pBar = document.getElementById('player-hp');
+                const eBar = document.getElementById('enemy-hp');
+
+                pBar.innerHTML = "";
+                eBar.innerHTML = "";
+
+                for (let i = 0; i < 5; i++) {
+                    pBar.innerHTML += `<span class="skull ${i >= this.playerHP ? 'lost' : ''}">💀</span>`;
+                    eBar.innerHTML += `<span class="skull ${i >= this.enemyHP ? 'lost' : ''}">💀</span>`;
+                }
+            }
+
+            nextRound() {
+                if (this.enemyHP <= 0) {
+                    this.winLevel();
+                    return;
+                }
+                if (this.playerHP <= 0) {
+                    this.gameOver();
+                    return;
+                }
+
+                // Recycle questions if pool is exhausted
+                if (this.questionIndex >= this.currentQuestions.length) {
+                    this.questionIndex = 0;
+                    this.currentQuestions = this.currentQuestions.sort(() => Math.random() - 0.5);
+                }
+
+                const question = this.currentQuestions[this.questionIndex];
+                document.getElementById('options-container').style.display = 'none';
+
+                // Show taunt
+                document.getElementById('dialog-bubble').innerText = question.taunt;
+
+                setTimeout(() => {
+                    // Show question
+                    document.getElementById('dialog-bubble').innerText = question.q;
+                    this.showOptions(question);
+                }, 2000);
+            }
+
+            showOptions(qData) {
+                const container = document.getElementById('options-container');
+                container.innerHTML = "";
+
+                // RANDOMIZE OPTIONS
+                const options = qData.options.map((text, index) => ({ text, isCorrect: index === qData.correct }));
+                options.sort(() => Math.random() - 0.5);
+
+                options.forEach((opt) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'pirate-btn';
+                    btn.innerText = opt.text;
+                    btn.onclick = () => this.handleAnswer(opt.isCorrect);
+                    container.appendChild(btn);
+                });
+                container.style.display = 'grid';
+                this.isProcessing = false;
+            }
+
+            handleAnswer(isCorrect) {
+                if (this.isProcessing) return;
+                this.isProcessing = true;
+
+                const vfx = document.getElementById('vfx');
+                const container = document.getElementById('game-container');
+
+                if (isCorrect) {
+                    // Player hits enemy
+                    document.getElementById('player-sprite').classList.add('lunge-player');
+                    vfx.innerText = "CLANG!";
+                    vfx.style.display = "block";
+                    this.clashSFX.play();
+
+                    setTimeout(() => {
+                        this.enemyHP--;
+                        this.updateHUD();
+                        document.getElementById('player-sprite').classList.remove('lunge-player');
+                        vfx.style.display = "none";
+                        this.questionIndex++;
+                        this.nextRound();
+                    }, 500);
+                } else {
+                    // Enemy hits player
+                    document.getElementById('enemy-sprite').classList.add('lunge-enemy');
+                    container.classList.add('shake');
+                    vfx.innerText = "OUCH!";
+                    vfx.style.display = "block";
+
+                    setTimeout(() => {
+                        this.playerHP--;
+                        this.updateHUD();
+                        document.getElementById('enemy-sprite').classList.remove('lunge-enemy');
+                        container.classList.remove('shake');
+                        vfx.style.display = "none";
+                        this.questionIndex++; // Next question even on fail
+                        this.nextRound();
+                    }, 500);
+                }
+            }
+
+            winLevel() {
+                const enemyData = ERAS[this.eraIndex];
+                document.getElementById('options-container').style.display = 'none';
+                document.getElementById('dialog-bubble').innerText = enemyData.death || "¡Maldició! El meu vaixell s'enfonsa...";
+
+                // Stop music and hide silhouette
+                this.bgMusic.pause();
+                document.getElementById('enemy-sprite').classList.add('fade-out');
+
+                setTimeout(() => {
+                    document.getElementById('enemy-sprite').style.display = 'none';
+                    this.eraIndex++;
+                    if (this.eraIndex >= ERAS.length) {
+                        this.victory();
+                    } else {
+                        this.sail();
+                    }
+                }, 3500);
+            }
+
+            gameOver() {
+                document.getElementById('retry-screen').style.display = 'flex';
+                this.bgMusic.pause();
+            }
+
+            restartLevel() {
+                document.getElementById('retry-screen').style.display = 'none';
+                this.playerHP = 5;
+                this.enemyHP = 5;
+                this.questionIndex = 0;
+                this.updateHUD();
+
+                // Show fighters again
+                document.getElementById('player-sprite').style.display = 'flex';
+                document.getElementById('enemy-sprite').style.display = 'flex';
+                document.getElementById('enemy-sprite').classList.remove('fade-out');
+
+                this.playMusic(this.battleTheme);
+                this.nextRound();
+            }
+
+            victory() {
+                document.getElementById('dialog-bubble').innerText = "¡MISSIÓ COMPLETA! Has lliurat el Carib dels pirates rebels. El Virrei et perdona la vida... de moment.";
+                document.getElementById('enemy-sprite').style.display = 'none';
+            }
+        }
+
+        const game = new PirateDuel();
+    </script>
+</body>
+
+</html>

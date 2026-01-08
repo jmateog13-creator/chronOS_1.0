@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Dial de la Història</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Special+Elite&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --brass: #d4af37;
+            --dark-wood: #3e2723;
+            --radio-bg: #5d4037;
+            --amber: #ffb300;
+            --needle-color: #c0392b;
+            --text-color: #f5e6d3;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #1a0f0a;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* HUD - Radio Dashboard Style */
+        #hud {
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.4rem;
+            background: linear-gradient(to bottom, #2c1a14, #1a0f0a);
+            border-bottom: 4px solid var(--brass);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+
+        .stat-value {
+            color: var(--amber);
+            text-shadow: 0 0 5px var(--amber);
+        }
+
+        /* MAIN CASE */
+        #radio-case {
+            flex: 1;
+            width: 100%;
+            max-width: 900px;
+            background: var(--radio-bg);
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            border: 20px solid var(--dark-wood);
+            border-radius: 50px 50px 0 0;
+            margin-top: 20px;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8), 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* VALVE / TUBES EFFECT */
+        #valves {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .valve {
+            width: 40px;
+            height: 80px;
+            background: rgba(255, 179, 0, 0.1);
+            border: 2px solid rgba(255, 179, 0, 0.3);
+            border-radius: 20px 20px 5px 5px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 179, 0, 0.1);
+        }
+
+        .valve::after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 40px;
+            background: var(--amber);
+            border-radius: 5px;
+            box-shadow: 0 0 15px var(--amber);
+            opacity: 0.6;
+            animation: flicker 3s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 0.8;
+            }
+        }
+
+        /* CLUE AREA - Paging Paper */
+        #clue-window {
+            background: #fdf5e6;
+            color: #2c1a14;
+            width: 100%;
+            padding: 20px;
+            border-radius: 10px;
+            border: 5px solid var(--brass);
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+            font-family: 'Special Elite', cursive;
+        }
+
+        #era-label {
+            font-size: 1rem;
+            color: #7d4427;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        #clue-text {
+            font-size: 2.5rem;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        /* DIAL - The Frequency Tuner */
+        #dial-interface {
+            width: 100%;
+            background: #222;
+            padding: 40px 20px;
+            border-radius: 20px;
+            border: 8px solid var(--dark-wood);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px black;
+        }
+
+        #scale-bg {
+            height: 15px;
+            background: repeating-linear-gradient(90deg,
+                    var(--brass),
+                    var(--brass) 2px,
+                    transparent 2px,
+                    transparent 18px);
+            opacity: 0.5;
+            margin-bottom: 150px;
+        }
+
+        #needle-track {
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            right: 50px;
+            bottom: 20px;
+            cursor: pointer;
+        }
+
+        #needle {
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            width: 4px;
+            background: var(--needle-color);
+            box-shadow: 0 0 10px var(--needle-color), 0 0 20px var(--needle-color);
+            left: 50%;
+            transform: translateX(-50%);
+            transition: left 0.1s ease-out;
+            pointer-events: none;
+        }
+
+        #needle::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -8px;
+            width: 20px;
+            height: 20px;
+            background: var(--needle-color);
+            clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+        }
+
+        /* LABELS */
+        #frequency-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.2rem;
+            color: var(--amber);
+        }
+
+        .freq-box {
+            width: 45%;
+            text-align: center;
+            border-bottom: 2px solid var(--brass);
+            padding-bottom: 5px;
+        }
+
+        /* BUTTONS */
+        #controls {
+            margin-top: 40px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .radio-btn {
+            background: var(--brass);
+            color: var(--dark-wood);
+            font-family: 'Special Elite', cursive;
+            font-size: 1.5rem;
+            padding: 15px 40px;
+            border: 4px solid var(--dark-wood);
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--dark-wood);
+            transition: all 0.1s;
+            position: relative;
+            z-index: 50;
+        }
+
+        .radio-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 var(--dark-wood);
+        }
+
+        .radio-btn:hover {
+            background: #e5c353;
+        }
+
+        /* FEEDBACK POPUP */
+        #signal-feedback {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .feedback-card {
+            background: #fff8e1;
+            padding: 40px;
+            border-radius: 5px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            border: 4px solid var(--brass);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            transform: rotate(-1deg);
+            color: #3e2723;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .feedback-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .feedback-text {
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .visible {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        /* TARGET VISUALS (Revealed on confirm) */
+        #target-range {
+            position: absolute;
+            top: 20px;
+            bottom: 20px;
+            background: rgba(39, 174, 96, 0.4);
+            border-left: 2px solid #2ecc71;
+            border-right: 2px solid #2ecc71;
+            display: none;
+            z-index: 1;
+        }
+
+        #bullseye {
+            position: absolute;
+            top: 20px;
+            bottom: 20px;
+            background: rgba(39, 174, 96, 0.8);
+            width: 4%;
+            /* +/- 2% */
+            display: none;
+            z-index: 2;
+        }
+
+        /* SCORE ANIMATION */
+        #score-anim {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6rem;
+            color: var(--amber);
+            font-weight: 900;
+            text-shadow: 0 0 30px black;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+        }
+
+        @keyframes popOut {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -150%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .animate {
+            animation: popOut 1s forwards;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START MODAL -->
+    <div id="start-modal"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; display:flex; justify-content:center; align-items:center; flex-direction:column; color:var(--text-color); font-family:'Special Elite'; text-align:center;">
+        <h1 style="color:var(--brass); font-size:3rem;">SINTONIA HISTÒRICA</h1>
+        <p style="font-size:1.5rem; max-width:600px;">Troba la freqüència correcta per a cada esdeveniment, estil o
+            època musical.</p>
+        <p style="color:var(--needle-color)">Tens 5 vides.</p>
+        <button id="btn-start" class="radio-btn" style="margin-top:20px;">ENCENDRE RÀDIO</button>
+    </div>
+
+    <div id="hud">
+        <div class="stat-box">FREQÜÈNCIA: <span id="round-num" class="stat-value">1</span>/<span
+                id="total-rounds">12</span></div>
+        <div class="stat-box">SINTONIA: <span id="score" class="stat-value">0</span></div>
+        <div class="stat-box" style="color:var(--needle-color)">ERRADES: <span id="lives">0</span>/5</div>
+    </div>
+
+    <!-- Volume Slider (Top Right) -->
+    <div
+        style="position:absolute; top:80px; right:20px; z-index:50; background:rgba(0,0,0,0.6); padding:10px; border-radius:10px; border:2px solid var(--brass);">
+        <label style="color:var(--amber); font-family:'Special Elite'; margin-right:10px;">VOLUM</label>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <div id="radio-case">
+        <div id="valves">
+            <div class="valve"></div>
+            <div class="valve"></div>
+            <div class="valve"></div>
+        </div>
+
+        <div id="clue-window">
+            <div id="era-label">Cregant dades...</div>
+            <div id="clue-text">---</div>
+        </div>
+
+        <div id="dial-interface">
+            <div id="scale-bg"></div>
+            <div id="target-range"></div>
+            <div id="bullseye"></div>
+            <div id="needle-track">
+                <div id="needle"></div>
+            </div>
+        </div>
+
+        <div id="frequency-labels">
+            <div class="freq-box" id="label-l">Mínim</div>
+            <div class="freq-box" id="label-r">Màxim</div>
+        </div>
+
+        <div id="signal-feedback"></div>
+
+        <div id="score-anim">0</div>
+
+        <!-- MOVED BUTTON TO BOTTOM -->
+        <div id="controls" style="margin-top: auto; padding-top: 20px;">
+            <button id="btn-confirm" class="radio-btn">SINTONITZAR</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        // --- DATA ---
+        let GAME_DATA = [
+            { "id": "mitjana_1", "era": "Edat Mitjana", "left_label": "Món Sacre (Església)", "right_label": "Món Profà (Taverna)", "clue": "Cant Gregorià", "target": 5, "explanation": "El Gregorià és oració pura. Està fet per a Déu, ensenya el camí al cel i es canta en llatí." },
+            { "id": "mitjana_2", "era": "Edat Mitjana", "left_label": "Transmissió Oral (Memòria)", "right_label": "Transmissió Escrita (Partitura)", "clue": "Juglars i Trobadors", "target": 30, "explanation": "Tot i que alguns nobles escrivien, la majoria de la música popular s'aprenia d'oïda i viatjant." },
+            { "id": "renaix_1", "era": "Renaixement", "left_label": "Teocentrisme (Déu al centre)", "right_label": "Humanisme (L'Home al centre)", "clue": "El Madrigal", "target": 90, "explanation": "El Madrigal parla d'amor humà, de patiment i de sentiments terrenals. És pur Humanisme." },
+            { "id": "renaix_2", "era": "Renaixement", "left_label": "Caos inintel·ligible", "right_label": "Claredat i Equilibri", "clue": "Missa de Palestrina", "target": 95, "explanation": "Palestrina va netejar la polifonia perquè s'entengués el text perfectament, buscant l'equilibri clàssic." },
+            { "id": "barroc_1", "era": "Barroc", "left_label": "Minimalisme (Sobri)", "right_label": "Horror Vacui (Recarregat)", "clue": "L'Ornamenteu", "target": 90, "explanation": "El Barroc odia el buit. S'omple cada espai amb trinos, mordents i ornaments luxosos." },
+            { "id": "barroc_2", "era": "Barroc", "left_label": "Música Abstracta", "right_label": "Música Descriptiva", "clue": "Vivaldi: La Primavera", "target": 95, "explanation": "Vivaldi imita ocells, tempestes i gossos. La música s'utilitza per 'pintar' imatges." },
+            { "id": "classic_1", "era": "Classicisme", "left_label": "Caos i Emoció", "right_label": "Ordre i Raó", "clue": "L'Estructura Sonata", "target": 95, "explanation": "La Sonata és claredat pura: Exposició, Desenvolupament i Reexposició. Simetria lògica." },
+            { "id": "classic_2", "era": "Classicisme", "left_label": "Música d'Elit (Palau)", "right_label": "Música Pública (Concert)", "clue": "Primeres Sales de Concert", "target": 85, "explanation": "La música surt dels palaus. Ara qualsevol que pagui una entrada pot anar a escoltar Haydn." },
+            { "id": "roman_1", "era": "Romanticisme", "left_label": "Música de Saló (Íntim)", "right_label": "Música de Titul (Monumental)", "clue": "Òperes de Wagner", "target": 100, "explanation": "Orquestres gegants, escenografies colossals i obres d'hores de durada. Tot és èpic." },
+            { "id": "roman_2", "era": "Romanticisme", "left_label": "Música d'Estudi", "right_label": "El Virtuosisme Extrem", "clue": "Lisztomania", "target": 95, "explanation": "Liszt era una Rock Star. Virtuosisme pur per embogir al públic. Show total." },
+            { "id": "sxx_1", "era": "Segle XX", "left_label": "Consonància (Bonic)", "right_label": "Dissonància (Tensió)", "clue": "L'Atonalisme radical", "target": 95, "explanation": "Es trenca l'harmonia tradicional. Totes les notes valen el mateix i sona radicalment modern." },
+            { "id": "sxx_2", "era": "Segle XX", "left_label": "Intents d'Ordre", "right_label": "L'Aleatorietat (Atzar)", "clue": "John Cage: 4'33\"", "target": 100, "explanation": "La música és atzar o fins i tot silenci ambient. El compositor deixa de controlar el resultat." }
+        ];
+
+        // Shuffle Data
+        GAME_DATA.sort(() => Math.random() - 0.5);
+
+        // --- STATE ---
+        let currentIndex = 0;
+        let score = 0;
+        let lives = 0; // Current mistakes
+        const MAX_LIVES = 5;
+        let currentPercent = 50;
+        let isMoving = false;
+        let isLocked = false;
+
+        // --- AUDIO ---
+        const bgMusic = new Audio('audio/Crackle In The Cabinet.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new AudioContext();
+            bgMusic.play().catch(e => console.log("Music play prevented", e));
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+
+            if (type === 'win') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else {
+                // Fail - Buzz
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                g.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        // --- DOM ELEMENTS ---
+        const needle = document.getElementById('needle');
+        const track = document.getElementById('needle-track');
+        const btn = document.getElementById('btn-confirm');
+        const eraLabel = document.getElementById('era-label');
+        const clueText = document.getElementById('clue-text');
+        const feedback = document.getElementById('signal-feedback');
+        const tRange = document.getElementById('target-range');
+        const bullseye = document.getElementById('bullseye');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // Volume Control
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        document.getElementById('btn-start').onclick = () => {
+            document.getElementById('start-modal').style.display = 'none';
+            initAudio();
+            loadRound();
+        };
+
+        // --- CORE LOGIC ---
+        function loadRound() {
+            if (currentIndex >= GAME_DATA.length) {
+                endGame(true);
+                return;
+            }
+
+            const data = GAME_DATA[currentIndex];
+            eraLabel.textContent = data.era;
+            clueText.textContent = data.clue;
+            document.getElementById('label-l').textContent = data.left_label;
+            document.getElementById('label-r').textContent = data.right_label;
+            document.getElementById('round-num').textContent = currentIndex + 1;
+            document.getElementById('total-rounds').textContent = GAME_DATA.length;
+            document.getElementById('lives').textContent = lives;
+
+            // Reset UI
+            feedback.classList.remove('visible');
+            tRange.style.display = 'none';
+            bullseye.style.display = 'none';
+            isLocked = false;
+            // btn.textContent = "SINTONITZAR"; // Kept always as Tuning since popup handles next
+
+            currentPercent = 50;
+            updateNeedle();
+        }
+
+        function updateNeedle() {
+            needle.style.left = `${currentPercent}%`;
+        }
+
+        function handleInput(e) {
+            if (isLocked) return;
+            // initAudio(); // already initialized on start
+
+            const rect = track.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            currentPercent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+            updateNeedle();
+        }
+
+        track.addEventListener('mousedown', () => isMoving = true);
+        window.addEventListener('mousemove', (e) => { if (isMoving) handleInput(e); });
+        window.addEventListener('mouseup', () => isMoving = false);
+
+        track.addEventListener('touchstart', (e) => { isMoving = true; handleInput(e); });
+        window.addEventListener('touchmove', (e) => { if (isMoving) handleInput(e); });
+        window.addEventListener('touchend', () => isMoving = false);
+
+        btn.onclick = () => {
+            // Only confirm if not locked
+            if (!isLocked) {
+                confirmTuning();
+            }
+        };
+
+        function confirmTuning() {
+            isLocked = true;
+            const data = GAME_DATA[currentIndex];
+            const diff = Math.abs(currentPercent - data.target);
+
+            // Show target
+            tRange.style.left = `${data.target - 10}%`;
+            tRange.style.width = `20%`;
+            tRange.style.display = 'block';
+
+            bullseye.style.left = `${data.target - 2}%`;
+            bullseye.style.width = `4%`;
+            bullseye.style.display = 'block';
+
+            let points = 0;
+            let msg = "";
+            let color = "#e74c3c";
+
+            if (diff <= 3) {
+                points = 100;
+                msg = "¡SINTONIA PERFECTA!";
+                color = "#2ecc71";
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.7 } });
+                playSound('win');
+            } else if (diff <= 12) {
+                points = 50;
+                msg = "Bona recepció.";
+                color = "#f1c40f";
+                playSound('win');
+            } else {
+                points = 0;
+                msg = "¡INTERFERÈNCIES!";
+                lives++;
+                document.getElementById('lives').textContent = lives;
+                playSound('fail');
+
+                if (lives >= MAX_LIVES) {
+                    setTimeout(() => endGame(false), 1500);
+                    return;
+                }
+            }
+
+            score += points;
+            document.getElementById('score').textContent = score;
+
+            // POPUP HTML
+            feedback.innerHTML = `
+                <div class="feedback-card">
+                    <div class="feedback-title" style="color:${color}">${msg}</div>
+                    <div class="feedback-text">${data.explanation}</div>
+                    <button class="radio-btn" onclick="nextRound()">SEGÜENT RONDA</button>
+                </div>
+            `;
+            feedback.classList.add('visible');
+
+            // Float points
+            const anim = document.getElementById('score-anim');
+            anim.textContent = `+${points}`;
+            anim.classList.remove('animate');
+            void anim.offsetWidth;
+            anim.classList.add('animate');
+        }
+
+        function nextRound() {
+            currentIndex++;
+            loadRound();
+        }
+
+        function endGame(win) {
+            let message = "";
+            let finalScore = score;
+
+            if (win) {
+                message = finalScore > 1000 ? "¡ETS UN MESTRE DE LES FREQÜÈNCIES!" : "Bona oïda històrica.";
+            } else {
+                message = "SISTEMA SOBREESCALFAT. Mases errades.";
+            }
+
+            document.body.innerHTML = `
+                <div style="text-align:center; padding-top:15vh; font-family:'Special Elite', cursive; color:var(--text-color);">
+                    <h1 style="font-size:4rem; color:var(--brass)">${win ? "TRANSMISSIÓ FINALITZADA" : "SENYAL PERDUT"}</h1>
+                    <h2 style="font-size:2rem">${message}</h2>
+                    <h1 style="font-size:5rem; color:var(--amber)">${finalScore} PUNTS</h1>
+                    <br>
+                    <button class="radio-btn" onclick="location.reload()">REINTENTAR</button>
+                    <br><br>
+                    <button class="radio-btn" onclick="window.history.back()">TORNAR AL MENÚ</button>
+                </div>
+            `;
+        }
+
+    </script>
+</body>
+
+</html>

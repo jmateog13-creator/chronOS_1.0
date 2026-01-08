@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco-Història: La Planta de Reciclatge</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Roboto+Mono:wght@400;700&display=swap');
+
+        :root {
+            --toxic-green: #39ff14;
+            --hazard-yellow: #ffd700;
+            --industrial-grey: #2c3e50;
+            --rust: #8d6e63;
+            --fire: #e74c3c;
+            --neon-blue: #00f3ff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto Mono', monospace;
+            background-color: #1a1a1a;
+            background-image: url('img/fons.jpg');
+            /* Industrial bg */
+            background-size: cover;
+            background-position: center;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            border: 5px solid var(--industrial-grey);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Hazard Stripes */
+        .hazard-stripes {
+            width: 100%;
+            height: 20px;
+            background: repeating-linear-gradient(45deg,
+                    var(--hazard-yellow),
+                    var(--hazard-yellow) 20px,
+                    black 20px,
+                    black 40px);
+        }
+
+        /* Start Screen */
+        #start-screen {
+            background: var(--industrial-grey);
+            padding: 2rem;
+            border: 4px solid var(--hazard-yellow);
+            text-align: center;
+            z-index: 10;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-family: 'Black Ops One', cursive;
+            font-size: 3rem;
+            margin: 0 0 1rem 0;
+            color: var(--toxic-green);
+            text-shadow: 2px 2px 0 black;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-era {
+            background: #333;
+            color: var(--hazard-yellow);
+            border: 2px solid var(--hazard-yellow);
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-family: 'Black Ops One', cursive;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-era:hover {
+            background: var(--hazard-yellow);
+            color: black;
+            transform: scale(1.05);
+        }
+
+        /* Game Interface */
+        #game-interface {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: #000;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--hazard-yellow);
+            z-index: 100;
+        }
+
+        /* Recovery Zone (Drop Target) */
+        #recovery-zone {
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            width: 180px;
+            height: 180px;
+            border: 4px dashed var(--toxic-green);
+            background: rgba(57, 255, 20, 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--toxic-green);
+            font-family: 'Black Ops One', cursive;
+            font-size: 1.2rem;
+            z-index: 5;
+            transition: all 0.3s;
+        }
+
+        #recovery-zone.hover {
+            background: rgba(57, 255, 20, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Conveyor Belt Area */
+        #factory-floor {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #conveyor-belt {
+            width: 100%;
+            height: 150px;
+            background: repeating-linear-gradient(90deg,
+                    #333,
+                    #333 50px,
+                    #222 50px,
+                    #222 100px);
+            position: relative;
+            display: flex;
+            align-items: center;
+            border-top: 5px solid #555;
+            border-bottom: 5px solid #555;
+            animation: scroll-belt 2s linear infinite;
+        }
+
+        @keyframes scroll-belt {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 100px 0;
+            }
+        }
+
+        /* Incinerator */
+        #incinerator {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 150px;
+            height: 200px;
+            background: #222;
+            border-left: 5px solid var(--fire);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        #fire-effect {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, var(--fire), orange, transparent);
+            opacity: 0.8;
+            animation: flicker 0.2s infinite alternate;
+        }
+
+        @keyframes flicker {
+            from {
+                opacity: 0.6;
+                transform: scaleY(0.9);
+            }
+
+            to {
+                opacity: 0.9;
+                transform: scaleY(1.1);
+            }
+        }
+
+        /* Items */
+        .trash-item {
+            position: absolute;
+            width: 140px;
+            height: 120px;
+            /* Taller to fit label below */
+            background-size: 100px 100px;
+            /* Box size */
+            background-repeat: no-repeat;
+            background-position: top center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s, top 0.1s;
+            /* Removed left transition for smooth drag */
+            z-index: 10;
+            touch-action: none;
+            /* Prevent scroll on touch */
+        }
+
+        .trash-item:active {
+            transform: scale(1.1);
+            z-index: 20;
+            cursor: grabbing;
+        }
+
+        .trash-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--hazard-yellow);
+            border-radius: 4px;
+            text-shadow: 1px 1px 0 #000;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 5px;
+        }
+
+        /* Screen Flash FX */
+        @keyframes flash-red {
+            0% {
+                box-shadow: inset 0 0 0 rgba(255, 0, 0, 0);
+            }
+
+            50% {
+                box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.8);
+            }
+
+            100% {
+                box-shadow: inset 0 0 0 rgba(255, 0, 0, 0);
+            }
+        }
+
+        @keyframes flash-green {
+            0% {
+                box-shadow: inset 0 0 0 rgba(0, 255, 0, 0);
+            }
+
+            50% {
+                box-shadow: inset 0 0 100px rgba(0, 255, 0, 0.8);
+            }
+
+            100% {
+                box-shadow: inset 0 0 0 rgba(0, 255, 0, 0);
+            }
+        }
+
+        .fx-red {
+            animation: flash-red 0.5s;
+        }
+
+        .fx-green {
+            animation: flash-green 0.5s;
+        }
+
+        /* Robotic Arm (Cursor replacement visual) */
+        #robotic-arm {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--toxic-green);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            display: none;
+            /* Only visible during gameplay if desired, but default cursor is easier */
+        }
+
+        /* Feedback Overlay */
+        #feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            display: none;
+        }
+
+        /* Completed Badge */
+        .era-completed::after {
+            content: '✅';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 1.5rem;
+            background: white;
+            border-radius: 50%;
+            padding: 2px;
+            border: 2px solid green;
+        }
+
+        #feedback-msg {
+            font-family: 'Black Ops One', cursive;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div class="hazard-stripes"></div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>ECO-HISTÒRIA</h1>
+            <p>Planta de Reciclatge del Temps.</p>
+            <p style="font-size: 0.9rem; max-width: 600px; margin: 0 auto 20px auto; color: #bbb;">
+                <span style="color:var(--toxic-green)">INSTRUCCIONS:</span> Arrossega els objectes de l'època correcta
+                cap a la <span style="color:var(--toxic-green)">ZONA DE RECUPERACIÓ</span> (esquerra). <br>
+                Els que no siguin de la teva època, deixa'ls passar cap a l'incinerador.
+                <br>Si salves alguna cosa incorrecta o cremes la correcta, contaminaràs la línia temporal!
+            </p>
+            <div class="era-grid" id="era-buttons">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+
+        <!-- Game Interface -->
+        <div id="game-interface" class="hidden">
+            <div id="hud">
+                <span>SALVATS: <span id="score">0</span>/15</span>
+                <span style="color:var(--fire)">CONTAMINACIÓ: <span id="lives">0</span>/3</span>
+            </div>
+
+            <div id="factory-floor">
+                <div id="conveyor-belt">
+                    <!-- Items spawn here -->
+                </div>
+                <div id="incinerator">
+                    <div id="fire-effect"></div>
+                    <div style="position:absolute; color:white; font-weight:bold; z-index:2;">INCINERADOR</div>
+                </div>
+            </div>
+            <!-- Recovery Zone -->
+            <div id="recovery-zone">
+                ZONA DE<br>RECUPERACIÓ
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <div id="feedback-msg"></div>
+            <button class="btn-era" onclick="location.reload()">NOU TORN</button>
+        </div>
+
+        <div class="hazard-stripes" style="position:absolute; bottom:0;"></div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // --- DATA ---
+        // Note: Images are placeholders until uploaded.
+        // Filenames expected: box_edat_mitjana.png, box_renaixement.png, etc.
+        const DB = {
+            edat_mitjana: {
+                img: "img/box_edat_mitjana.png",
+                items: ["Monodia", "Cant Gregorià", "Trobador", "Neumes", "Guido d'Arezzo", "Viola de Roda", "Ars Nova", "Leonin", "Perotin", "Llatí", "Missa", "Organum", "Motet", "Alfons X", "Cantigas", "Joglars", "Saltiri", "Flauta de Bec", "Sacra", "Profana"]
+            },
+            renaixement: {
+                img: "img/box_renaixement.png",
+                items: ["Polifonia", "Humanisme", "Impremta", "Madrigal", "Palestrina", "Josquin", "Viola da Gamba", "Llaüt", "Coral", "Ensalada", "Reforma", "Contrareforma", "Trento", "Victoria", "Lassus", "Villancico", "Chanson", "Consort", "Pavana", "Gallarda"]
+            },
+            barroc: {
+                img: "img/box_barroc.png",
+                items: ["Baix Continu", "Clavecí", "Bach", "Vivaldi", "Händel", "Òpera", "Fuga", "Contrast", "Ornamentació", "Castrato", "Suite", "Concert", "Stradivarius", "Lully", "Purcell", "Teoria Afectes", "Terrasses", "Oratori", "Cantata", "Passió"]
+            },
+            classicisme: {
+                img: "img/box_classicisme.png",
+                items: ["Mozart", "Haydn", "Beethoven", "Sonata", "Equilibri", "Clarinet", "Piano", "Simfonia", "Quartet", "Senzillesa", "Proporció", "Viena", "Òpera Bufa", "Gluck", "Reforma", "Il·lustració", "Crescendo", "Diminuendo", "Orquestra", "Concert Públic"]
+            },
+            romanticisme: {
+                img: "img/box_romanticisme.png",
+                items: ["Wagner", "Chopin", "Verdi", "Lied", "Rubato", "Passió", "Poema Simfònic", "Virtuosisme", "Tuba", "Nacionalisme", "Schubert", "Liszt", "Brahms", "Txaikovski", "Dvorak", "Leitmotiv", "Obra Total", "Sentiment", "Subjectivisme", "Piano Virtuós"]
+            },
+            segle_xx: {
+                img: "img/box_segle_xx.png",
+                items: ["Atonalitat", "Dodecafonisme", "Stravinsky", "John Cage", "Sintetitzador", "Jazz", "Minimalisme", "Soroll", "Aleatòria", "Electrònica", "Schoenberg", "Debussy", "Impressionisme", "Futurisme", "Theremin", "Reich", "Glass", "Avantguarda", "Dissonància", "Trencament"]
+            }
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let score = 0;
+        let lives = 0;
+        let gameActive = false;
+        let spawnRate = 2000;
+        let itemSpeed = 2; // px per frame
+        let activeItems = [];
+        let spawnInterval = null;
+        let gameLoopInterval = null;
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        // Background Music
+        const bgMusic = new Audio('audio/Chrono Furnace.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'pickup') {
+                // Hydraulic sound
+                const bufferSize = audioCtx.sampleRate * 0.2;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 500;
+                noise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                noise.start(now);
+            } else if (type === 'burn') {
+                // Fire crackle
+                const bufferSize = audioCtx.sampleRate * 0.5;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 1000;
+                noise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                noise.start(now);
+            } else if (type === 'alarm') {
+                // Buzzer
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.5);
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // --- LOGIC ---
+        // --- PROGRESSION ---
+        function getProgress() {
+            return JSON.parse(localStorage.getItem('ecoHistoriaProgress')) || [];
+        }
+
+        function saveProgress(era) {
+            const progress = getProgress();
+            if (!progress.includes(era)) {
+                progress.push(era);
+                localStorage.setItem('ecoHistoriaProgress', JSON.stringify(progress));
+            }
+        }
+
+        // Initialize Menu
+        function initMenu() {
+            const container = document.getElementById('era-buttons');
+            container.innerHTML = '';
+            const eras = [
+                { id: 'edat_mitjana', label: 'Edat Mitjana' },
+                { id: 'renaixement', label: 'Renaixement' },
+                { id: 'barroc', label: 'Barroc' },
+                { id: 'classicisme', label: 'Classicisme' },
+                { id: 'romanticisme', label: 'Romanticisme' },
+                { id: 'segle_xx', label: 'Segle XX' }
+            ];
+            const completed = getProgress();
+
+            eras.forEach(e => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-era';
+                if (completed.includes(e.id)) btn.classList.add('era-completed');
+                btn.innerText = e.label;
+                btn.onclick = () => {
+                    currentEra = e.id;
+                    startGame();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // Call init immediately
+        initMenu();
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-interface').classList.remove('hidden');
+
+            // Start Music
+            bgMusic.play().catch(e => console.log("Audio play failed", e));
+
+            score = 0;
+            lives = 0;
+            spawnRate = 2000;
+            itemSpeed = 2;
+            gameActive = true;
+            activeItems = [];
+
+            updateHUD();
+
+            spawnInterval = setTimeout(spawnItem, 1000);
+            gameLoopInterval = requestAnimationFrame(gameLoop);
+        }
+
+        // --- DRAG AND DROP LOGIC ---
+        let draggedItem = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        function spawnItem() {
+            if (!gameActive) return;
+
+            // Decide if correct or incorrect (50/50)
+            const isCorrect = Math.random() > 0.5;
+            let concept, era;
+
+            if (isCorrect) {
+                // Correct Concept (from current Era)
+                concept = DB[currentEra].items[Math.floor(Math.random() * DB[currentEra].items.length)];
+                era = currentEra;
+            } else {
+                // Pick random other era
+                const eras = Object.keys(DB).filter(e => e !== currentEra);
+                const randomEra = eras[Math.floor(Math.random() * eras.length)];
+                concept = DB[randomEra].items[Math.floor(Math.random() * DB[randomEra].items.length)];
+                era = randomEra;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'trash-item';
+            // Try to set image
+            item.style.backgroundImage = `url('${DB[era].img}')`;
+
+            item.innerHTML = `<div class="trash-label">${concept}</div>`;
+
+            // Start position (left of belt)
+            item.style.left = '-120px';
+            // Vertical centering relative to belt (belt is 150px high)
+            // Item is 120px high. Top = (150 - 120) / 2 = 15
+            // But item is appended to #conveyor-belt which uses flex center.
+            // We need absolute positioning within factory-floor or relative to belt?
+            // The belt moves background, but items are DOM elements on top.
+            // Let's rework positioning logic: append to #factory-floor to allow dragging anywhere easily.
+            // Belt Y position needs to be calculated.
+
+            const beltRect = document.getElementById('conveyor-belt').getBoundingClientRect();
+            const floorRect = document.getElementById('factory-floor').getBoundingClientRect();
+
+            // Initial Y (centered on belt) relative to factory-floor
+            const beltRelativeTop = beltRect.top - floorRect.top;
+            const itemY = beltRelativeTop + (150 - 120) / 2; // +20 fudge factor? (removed, 150-120)/2 is 15px)
+
+            item.style.top = itemY + 'px'; // Fixed Y initially
+            document.getElementById('factory-floor').appendChild(item);
+
+            // Store data
+            const itemObj = {
+                element: item,
+                era: era,
+                x: -140, // Start slightly off screen
+                isCorrect: (era === currentEra),
+                isDragging: false
+            };
+            activeItems.push(itemObj);
+
+            // Drag Events
+            const startDrag = (e) => {
+                if (!gameActive) return;
+                e.preventDefault();
+                draggedItem = itemObj;
+                itemObj.isDragging = true;
+                item.style.zIndex = 100;
+
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const rect = item.getBoundingClientRect();
+
+                dragOffsetX = clientX - rect.left;
+                dragOffsetY = clientY - rect.top;
+            };
+
+            item.addEventListener('mousedown', startDrag);
+            item.addEventListener('touchstart', startDrag);
+
+            // Global Move/Up events are handled in window/document level to prevent losing drag
+
+            // Next spawn
+            if (gameActive) {
+                spawnInterval = setTimeout(spawnItem, spawnRate);
+            }
+        }
+
+        // Global Drag Listeners
+        window.addEventListener('mousemove', e => handleDragMove(e.clientX, e.clientY));
+        window.addEventListener('touchmove', e => handleDragMove(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
+
+        window.addEventListener('mouseup', handleDragEnd);
+        window.addEventListener('touchend', handleDragEnd);
+
+        function handleDragMove(clientX, clientY) {
+            if (!draggedItem) return;
+
+            const floorRect = document.getElementById('factory-floor').getBoundingClientRect();
+            let newX = clientX - floorRect.left - dragOffsetX;
+            let newY = clientY - floorRect.top - dragOffsetY;
+
+            draggedItem.element.style.left = newX + 'px';
+            draggedItem.element.style.top = newY + 'px';
+
+            // Update internal X to track belt progress if we drop it back? 
+            // Actually if we drop it back it stays there or snaps?
+            // For now, let's say if you let go and valid zone, it saves.
+            // If let go outside, it falls or snaps back (simplification: snaps back to belt X).
+            draggedItem.x = newX;
+
+            // Check Drop Zone Hover
+            const zone = document.getElementById('recovery-zone');
+            const zoneRect = zone.getBoundingClientRect();
+            const itemRect = draggedItem.element.getBoundingClientRect();
+
+            if (isOverlapping(itemRect, zoneRect)) {
+                zone.classList.add('hover');
+            } else {
+                zone.classList.remove('hover');
+            }
+        }
+
+        function handleDragEnd() {
+            if (!draggedItem) return;
+
+            const zone = document.getElementById('recovery-zone');
+            const zoneRect = zone.getBoundingClientRect();
+            const itemRect = draggedItem.element.getBoundingClientRect();
+
+            zone.classList.remove('hover');
+
+            if (isOverlapping(itemRect, zoneRect)) {
+                // DROP!
+                handleRecovery(draggedItem);
+            } else {
+                // Released in open space. If over incinerator, burn?
+                // Or just snap back to belt logic?
+                // Let's verify if user intended to let go.
+                // For simplified gameplay: if released, it continues moving on belt from new X?
+                // Or snaps back to Y=Belt?
+
+                draggedItem.isDragging = false;
+                draggedItem.element.style.zIndex = 10;
+
+                // Snap Y back to belt
+                const beltRect = document.getElementById('conveyor-belt').getBoundingClientRect();
+                const floorRect = document.getElementById('factory-floor').getBoundingClientRect();
+                const beltRelativeTop = beltRect.top - floorRect.top;
+                draggedItem.element.style.top = (beltRelativeTop + (150 - 120) / 2) + 'px';
+            }
+
+            draggedItem = null;
+        }
+
+        function isOverlapping(rect1, rect2) {
+            return !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom);
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            const beltWidth = document.getElementById('conveyor-belt').clientWidth;
+
+            activeItems.forEach((item, index) => {
+                if (item.isDragging) return; // Don't move automatically if dragging
+
+                item.x += itemSpeed;
+                item.element.style.left = item.x + 'px';
+
+                // Check if hit incinerator
+                if (item.x > beltWidth - 50) { // 50 margin
+                    handleIncineration(index);
+                }
+            });
+
+            if (gameActive) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // --- GAMEPLAY ACTIONS ---
+
+        function handleRecovery(itemObj) {
+            // Logic for dropping into Recovery Zone
+
+            // Remove from array and DOM
+            const index = activeItems.indexOf(itemObj);
+            if (index > -1) {
+                activeItems.splice(index, 1);
+                itemObj.element.remove();
+            }
+
+            if (itemObj.isCorrect) {
+                // Correctly Saved!
+                score++;
+                playSound('pickup');
+                triggerFX('good');
+                // Speed up slightly
+                if (score % 5 === 0) {
+                    itemSpeed += 0.5;
+                    spawnRate = Math.max(800, spawnRate - 200);
+                }
+            } else {
+                // Saved TRASH!
+                lives++;
+                playSound('alarm');
+                triggerFX('bad');
+            }
+
+            updateHUD();
+            checkGameOver();
+        }
+
+        function handleIncineration(index) {
+            const itemObj = activeItems[index];
+
+            // Visual burn
+            itemObj.element.style.opacity = 0;
+            playSound('burn');
+
+            // Remove
+            activeItems.splice(index, 1);
+            setTimeout(() => itemObj.element.remove(), 200);
+
+            if (itemObj.isCorrect) {
+                // INCINERATED GOOD ITEM! (Bad)
+                lives++;
+                playSound('alarm');
+                triggerFX('bad');
+            } else {
+                // Correctly burned trash (Good)
+                // playSound('pickup'); // Optional feedback
+            }
+
+            updateHUD();
+            checkGameOver();
+        }
+
+
+        // Helper to give fallback colors
+        function getEraColor(era) {
+            switch (era) {
+                case 'edat_mitjana': return '#8d6e63'; // Brown
+                case 'renaixement': return '#f1c40f'; // Gold
+                case 'barroc': return '#9b59b6'; // Purple
+                case 'classicisme': return '#ecf0f1'; // White
+                case 'romanticisme': return '#e74c3c'; // Red
+                case 'segle_xx': return '#34495e'; // Dark Grey
+                default: return '#95a5a6';
+            }
+        }
+
+        // --- FX HELPERS ---
+        function triggerFX(type) {
+            const overlay = document.getElementById('game-interface');
+            if (type === 'good') {
+                overlay.classList.add('fx-green');
+                setTimeout(() => overlay.classList.remove('fx-green'), 500);
+            } else {
+                overlay.classList.add('fx-red');
+                setTimeout(() => overlay.classList.remove('fx-red'), 500);
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function checkGameOver() {
+            if (lives >= 3) {
+                endGame(false);
+            } else if (score >= 15) {
+                endGame(true);
+            }
+        }
+
+        function endGame(win) {
+            gameActive = false;
+            clearTimeout(spawnInterval);
+            cancelAnimationFrame(gameLoopInterval);
+
+            const overlay = document.getElementById('feedback-overlay');
+            const msg = document.getElementById('feedback-msg');
+
+            overlay.style.display = 'flex';
+
+            if (win) {
+                saveProgress(currentEra); // Save progression
+                msg.textContent = "ÈPOCA ASSEGURADA!";
+                msg.style.color = "var(--toxic-green)";
+            } else {
+                msg.textContent = "LÍNIA TEMPORAL CONTAMINADA";
+                msg.style.color = "var(--fire)";
+            }
+        }
+    </script>
+</body>
+
+</html>
+```

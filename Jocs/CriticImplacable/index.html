@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Crític Implacable - Premium Edition</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Merriweather:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-paper: #fcf5e5;
+            --ink: #111;
+            --gold: #d4af37;
+            --red-pen: #b71c1c;
+            --green-ok: #2e7d32;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Merriweather', serif;
+            background-color: var(--bg-dark);
+            color: var(--ink);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* LAYOUT */
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #111 100%);
+        }
+
+        /* HEADER / HUD */
+        #hud-bar {
+            width: 100%;
+            height: 60px;
+            background: #000;
+            border-bottom: 2px solid var(--gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            color: var(--gold);
+            font-family: 'Playfair Display', serif;
+            z-index: 100;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .hud-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .hud-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 1.1rem;
+            align-items: center;
+        }
+
+        /* WORKSPACE */
+        #desk {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #newspaper {
+            width: 700px;
+            height: 85vh;
+            background: var(--bg-paper);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            padding: 50px;
+            position: relative;
+            transform: rotateX(5deg);
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s;
+            overflow-y: auto;
+            border-left: 2px solid #ddd;
+        }
+
+        #newspaper.published {
+            transform: translateY(-120vh) rotate(-10deg);
+            opacity: 0;
+        }
+
+        /* TYPOGRAPHY */
+        h1.masthead {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            text-align: center;
+            border-bottom: 3px double var(--ink);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .article-headline {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            line-height: 1.1;
+        }
+
+        .article-subhead {
+            font-family: 'Merriweather', serif;
+            font-size: 0.9rem;
+            color: #555;
+            font-style: italic;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 15px;
+        }
+
+        .article-body {
+            font-family: 'Merriweather', serif;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            text-align: justify;
+            columns: 1;
+        }
+
+        /* INTERACTION */
+        .word {
+            cursor: pointer;
+            padding: 0 4px;
+            margin: 0 1px;
+            border-radius: 3px;
+            transition: color 0.2s, background 0.2s;
+            display: inline;
+        }
+
+        .word:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .word.struck {
+            text-decoration: line-through;
+            text-decoration-color: var(--red-pen);
+            text-decoration-thickness: 3px;
+            color: var(--red-pen);
+            background: rgba(183, 28, 28, 0.1);
+        }
+
+        /* BUTTONS */
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+        }
+
+        .btn-publish {
+            background: var(--red-pen);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        .btn-publish:hover {
+            transform: scale(1.05);
+            background: #c62828;
+        }
+
+        .btn-publish:active {
+            transform: scale(0.95);
+        }
+
+        /* START SCREEN / SELECTOR */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.98);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--bg-paper);
+        }
+
+        .title-main {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .subtitle {
+            font-family: 'Merriweather', serif;
+            font-size: 1.2rem;
+            color: #888;
+            margin-bottom: 50px;
+            font-style: italic;
+        }
+
+        #era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 900px;
+        }
+
+        .era-card {
+            background: #222;
+            border: 1px solid #444;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .era-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .era-card.locked {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
+        .era-card.completed {
+            border-color: var(--green-ok);
+            background: rgba(46, 125, 50, 0.1);
+        }
+
+        .era-card.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: var(--green-ok);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .era-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+
+        .era-status {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* STAMP */
+        #stamp-result {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg) scale(3);
+            font-size: 6rem;
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            border: 8px solid;
+            padding: 20px 40px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 500;
+            text-transform: uppercase;
+        }
+
+        @keyframes stampAnim {
+            0% {
+                transform: translate(-50%, -50%) rotate(-15deg) scale(3);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) rotate(-15deg) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) rotate(-15deg) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* VOLUME SLIDER */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 20px;
+        }
+
+        #bgm-slider {
+            width: 100px;
+            accent-color: var(--gold);
+            cursor: pointer;
+        }
+
+        /* MODAL */
+        #modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-card {
+            background: var(--bg-paper);
+            border: 2px solid var(--gold);
+            padding: 40px 60px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);
+            max-width: 500px;
+            transform: rotate(-2deg);
+            position: relative;
+        }
+
+        .modal-card::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid var(--ink);
+            pointer-events: none;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--ink);
+            margin-bottom: 20px;
+            border-bottom: 2px double var(--ink);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .modal-text {
+            font-family: 'Merriweather', serif;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .modal-btn {
+            background: var(--ink);
+            color: var(--bg-paper);
+            border: none;
+            padding: 10px 30px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.05);
+            background: var(--red-pen);
+        }
+
+        /* INTRO SCREEN */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 1);
+            z-index: 4000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--bg-paper);
+            text-align: center;
+        }
+
+        .intro-box {
+            border: 2px solid var(--gold);
+            padding: 40px;
+            max-width: 600px;
+            background: #111;
+        }
+
+        .intro-text {
+            font-family: 'Merriweather', serif;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 30px 0;
+            color: #ccc;
+            text-align: left;
+        }
+
+        .intro-text li {
+            margin-bottom: 10px;
+        }
+
+        .btn-start {
+            background: var(--gold);
+            color: var(--ink);
+            border: none;
+            padding: 15px 50px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.1);
+            background: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUDIO -->
+    <audio id="bgm" loop>
+        <source src="audio/Morning Edition Run.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- INTRO LANDING SCREEN -->
+    <div id="intro-screen">
+        <div class="intro-box">
+            <div class="title-main" style="font-size: 3rem;">EL CRÍTIC IMPLACABLE</div>
+            <div class="subtitle" style="margin-bottom: 20px;">Edició Premium</div>
+
+            <ul class="intro-text">
+                <li>📜 <strong>Misió:</strong> Revisa els articles històrics abans que es publiquin.</li>
+                <li>🔍 <strong>Cerca:</strong> Cada article conté exactament <strong>4 anacronismes</strong> (objectes
+                    fora de temps).</li>
+                <li>❌ <strong>Marca'ls:</strong> Fes clic sobre les paraules errònies per marcar-les.</li>
+                <li>⚠️ <strong>Precisió:</strong> Has de trobar-los TOTS i no marcar cap de fals.</li>
+            </ul>
+
+            <button class="btn-start" onclick="enterGame()">COMENÇAR TORN</button>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL -->
+    <div id="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title" id="modal-title">EDICIÓ COMPLETADA</div>
+            <div class="modal-text" id="modal-desc">Has revisat tots els articles amb èxit.</div>
+            <button class="modal-btn" onclick="closeModal()">CONTINUAR</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <!-- HEADER -->
+        <div id="hud-bar">
+            <div class="hud-title">THE OBSIDIAN EDITOR</div>
+            <div class="hud-stats">
+                <div class="volume-control">
+                    <span>🎵</span>
+                    <input type="range" id="bgm-slider" min="0" max="1" step="0.1" value="0.5"
+                        oninput="setVolume(this.value)">
+                </div>
+                <div>ARTICLES: <span id="article-num">1</span>/2</div>
+                <div>SCORE: <span id="score">0</span></div>
+            </div>
+        </div>
+
+        <!-- WORKSPACE -->
+        <div id="desk">
+            <div id="newspaper">
+                <h1 class="masthead">La Veu Musical</h1>
+                <div id="article-content">
+                    <!-- CONTENT INJECTED -->
+                </div>
+            </div>
+
+            <div id="controls">
+                <button class="btn-publish" onclick="publish()">PUBLICAR</button>
+            </div>
+
+            <div id="stamp-result">FAKE NEWS!</div>
+        </div>
+    </div>
+
+    <!-- START SCREEN / ERA SELECTOR -->
+    <div id="start-screen">
+        <div class="title-main">EL CRÍTIC IMPLACABLE</div>
+        <div class="subtitle">Assignació Editorial: Detecta els 4 anacronismes de cada article.</div>
+
+        <div id="era-grid">
+            <!-- Era Cards injected here -->
+        </div>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const DB = {
+            'Edat Mitjana': [
+                {
+                    title: "El Cant Gregorià es Modernitza",
+                    date: "950 d.C.",
+                    text: "|Els monjos de Montserrat | |han decidit afegir |[ritmes de bateria]| |als seus cants gregorians | |per fer-los més ballables. | |L'abat Oliba ha contractat |[un DJ]| |per animar les misses. | |Tot i això, el Papa ha enviat |[un correu electrònic]| |demanant contenció. | |S'espera que els peregrins portin |[ulleres de sol]| |per l'esdeveniment.|",
+                    errors: ['ritmes de bateria', 'un DJ', 'un correu electrònic', 'ulleres de sol']
+                },
+                {
+                    title: "Trobadors a la Xarxa",
+                    date: "1150 d.C.",
+                    text: "|El famós trobador Bernat de Ventadorn | |ha llançat el seu nou àlbum |[a Spotify].| |Les seves cançons d'amor cortès | |són tendència |[a TikTok].| |La reina Elionor d'Aquitània | |segueix el seu canal |[de YouTube]| |amb devoció. | |Per a la gravació ha utilitzat |[un micròfon]| |per amplificar el seu llaüt.|",
+                    errors: ['a Spotify', 'a TikTok', 'de YouTube', 'un micròfon']
+                }
+            ],
+            'Renaixement': [
+                {
+                    title: "La Impremta Musical",
+                    date: "1501",
+                    text: "|Petrucci ha imprès la primera partitura, | |però s'ha queixat del preu de |[els tòners de tinta].| |Josquin des Prez ha compost una missa | |utilitzant |[un ordinador]| |d'última generació. | |Els coristes llegeixen les notes en |[tauletes digitals].| |El concert es retransmetrà |[per televisió].|",
+                    errors: ['els tòners de tinta', 'un ordinador', 'tauletes digitals', 'per televisió']
+                },
+                {
+                    title: "Palestrina Salva la Polifonia",
+                    date: "1562",
+                    text: "|El Concili de Trento volia prohibir la polifonia, | |però Palestrina els ha convençut amb |[un PowerPoint]| |molt emotiu. | |Ha utilitzat |[altaveus]| |per mostrar la claredat del text. | |Els cardenals han votat a favor mitjançant |[una app mòbil].| |Després han celebrat un brindis amb |[Coca-Cola].|",
+                    errors: ['un PowerPoint', 'altaveus', 'una app mòbil', 'Coca-Cola']
+                }
+            ],
+            'Barroc': [
+                {
+                    title: "L'Orfeo de Monteverdi",
+                    date: "1607",
+                    text: "|L'estrena de la primera gran òpera ha estat un èxit, | |tot i que el públic s'ha queixat que | |no hi havia |[aire condicionat].| |Orfeu ha baixat als inferns en |[un ascensor]| |hidràulic. | |Caront, el barquer, portava |[un Apple Watch].| |Al final, Apol·lo ha baixat en |[un helicòpter].|",
+                    errors: ['aire condicionat', 'ascensor', 'Apple Watch', 'helicòpter']
+                },
+                {
+                    title: "Bach i el Cafè",
+                    date: "1732",
+                    text: "|A Leipzig, Bach ha estrenat la seva Cantata del Cafè al Zimmermann's Coffee House. | |Els musics portaven |[samarretes de Starbucks].| |El clavecí estava amplificat amb |[un amplificador Marshall].| |Bach ha signat autògrafs amb |[un retolador permanent].| |La gent feia fotos amb |[càmeres reflex digitals].|",
+                    errors: ['samarretes de Starbucks', 'un amplificador Marshall', 'un retolador permanent', 'càmeres reflex digitals']
+                }
+            ],
+            'Classicisme': [
+                {
+                    title: "Mozart a Viena",
+                    date: "1785",
+                    text: "|El geni de Salzburg ha tocat el seu nou concert per a piano. | |Ha arribat al teatre en |[una moto de gran cilindrada].| |Mentre tocava, revisava missatges al seu |[telèfon intel·ligent].| |L'emperador Josep II portava |[unes vambes de marca]| |molt modernes. | |Al descans han servit |[hamburgueses del McDonald's].|",
+                    errors: ['una moto de gran cilindrada', 'telèfon intel·ligent', 'unes vambes de marca', 'hamburgueses del McDonald\'s']
+                },
+                {
+                    title: "La Simfonia de Haydn",
+                    date: "1794",
+                    text: "|Haydn ha dirigit la seva Simfonia del Rellotge a Londres. | |Per mantenir el tempo, ha utilitzat |[un metrònom digital].| |L'audiència ha seguit el concert amb |[auriculars Bluetooth].| |Al final, han llançat |[discos compactes]| |a l'escenari. | |Haydn ha marxat en |[un tren d'alta velocitat].|",
+                    errors: ['un metrònom digital', 'auriculars Bluetooth', 'discos compactes', 'un tren d\'alta velocitat']
+                }
+            ],
+            'Romanticisme': [
+                {
+                    title: "El Recital de Liszt",
+                    date: "1845",
+                    text: "|Liszt ha trencat tres pianos durant el seu recital. | |Els fans cridaven com en |[un concert de rock].| |Ha tocat un sol de |[sintetitzador]| |a meitat de la peça. | |Les dames li llançaven |[bateries de liti]| |de recanvi. | |Ha acabat l'actuació amb un solo de |[guitarra elèctrica].|",
+                    errors: ['un concert de rock', 'sintetitzador', 'bateries de liti', 'guitarra elèctrica']
+                },
+                {
+                    title: "Wagner i l'Anell",
+                    date: "1876",
+                    text: "|A Bayreuth, les valquíries han entrat a escena | |muntant |[motos aquàtiques].| |El drac Fafner era en realitat |[un robot animatrònic].| |Siegfried ha forjat l'espasa amb |[un soldador làser].| |El teatre tenia |[pantalles LED]| |gegants per als subtítols.|",
+                    errors: ['motos aquàtiques', 'un robot animatrònic', 'un soldador làser', 'pantalles LED']
+                }
+            ],
+            'Segle XX': [
+                {
+                    title: "La Consagració de la Primavera",
+                    date: "1913",
+                    text: "|Stravinsky ha causat un escàndol a París. | |La policia ha hagut d'intervenir utilitzant |[pistoles tàser].| |Nijinsky ha coreografiat el ball utilitzant |[IA generativa].| |El públic ha tuitejat les queixes via |[Twitter].| |Diàguilev gravarà l'espectacle amb |[un dron].|",
+                    errors: ['pistoles tàser', 'IA generativa', 'Twitter', 'un dron']
+                },
+                {
+                    title: "Música Minimalista",
+                    date: "1970",
+                    text: "|Steve Reich ha presentat la seva obra de fases. | |Ha utilitzat dos magnetòfons i |[un iPod].| |Philip Glass ha arribat tocant |[un keytar dels anys 80].| |L'obra ha estat patrocinada |[per Google].| |El públic portava |[ulleres de realitat virtual].|",
+                    errors: ['un iPod', 'un keytar dels anys 80', 'per Google', 'ulleres de realitat virtual']
+                }
+            ]
+        };
+
+        // --- STATE ---
+        let currentEra = '';
+        let currentArticles = [];
+        let currentArticleIndex = 0;
+        let score = 0;
+        const COMPLETED_ERAS_KEY = 'critic_completed_eras';
+        let completedEras = [];
+
+        try {
+            completedEras = JSON.parse(localStorage.getItem(COMPLETED_ERAS_KEY)) || [];
+        } catch (e) {
+            completedEras = [];
+        }
+
+        // --- PRE-LOAD ---
+        function enterGame() {
+            // Unlock Audio Context
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Start Music
+            const bgm = document.getElementById('bgm');
+            if (bgm) {
+                bgm.volume = 0.5;
+                bgm.play().catch(e => console.log("Audio autoplay blocked", e));
+            }
+
+            // UI Transition
+            document.getElementById('intro-screen').style.display = 'none';
+        }
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function setVolume(val) {
+            const bgm = document.getElementById('bgm');
+            if (bgm) bgm.volume = val;
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'scratch') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.linearRampToValueAtTime(400, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'stamp') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'publish_ok') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(880, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            }
+        }
+
+        // --- LOGIC ---
+
+        function init() {
+            const grid = document.getElementById('era-grid');
+            grid.innerHTML = '';
+
+            Object.keys(DB).forEach(era => {
+                const card = document.createElement('div');
+                card.className = 'era-card';
+
+                const isCompleted = completedEras.includes(era);
+                if (isCompleted) card.classList.add('completed');
+
+                card.innerHTML = `
+                    <div class="era-name">${era}</div>
+                    <div class="era-status">${isCompleted ? 'COMPLETAT' : 'PENDENT'}</div>
+                `;
+
+                card.onclick = () => startEra(era);
+                grid.appendChild(card);
+            });
+        }
+
+        function startEra(era) {
+            currentEra = era;
+            currentArticles = DB[era];
+            currentArticleIndex = 0;
+            score = 0;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex'; // Ensure visible on replay
+            document.getElementById('score').textContent = 0;
+            loadArticle();
+        }
+
+        function loadArticle() {
+            const data = currentArticles[currentArticleIndex];
+
+            // Update HUD
+            document.getElementById('article-num').textContent = currentArticleIndex + 1;
+
+            // Reset Stamp
+            const stamp = document.getElementById('stamp-result');
+            stamp.style.opacity = 0;
+            stamp.style.animation = 'none';
+
+            // Render Content
+            const container = document.getElementById('article-content');
+            container.innerHTML = `
+                <div class="article-headline">${data.title}</div>
+                <div class="article-subhead">Publicat el ${data.date}</div>
+                <div class="article-body" id="text-body"></div>
+            `;
+
+            // Process text
+            const body = document.getElementById('text-body');
+
+            // Split by | OR [error]
+            const rex = /(\[.*?\]|\|)/g;
+            const parts = data.text.split(rex);
+
+            parts.forEach(part => {
+                if (!part || part === '|') return;
+
+                const span = document.createElement('span');
+                span.className = 'word';
+
+                if (part.startsWith('[') && part.endsWith(']')) {
+                    span.textContent = part.slice(1, -1).replace(/_/g, ' '); // Clean word
+                    span.dataset.error = "true";
+                } else {
+                    span.textContent = part.replace(/_/g, ' ');
+                    span.dataset.error = "false";
+                }
+
+                span.onclick = () => toggleMark(span);
+                body.appendChild(span);
+            });
+
+            // Reset Newspaper Animation
+            const news = document.getElementById('newspaper');
+            news.classList.remove('published');
+            news.style.transform = 'rotateX(5deg)';
+            news.style.opacity = '1';
+        }
+
+        function toggleMark(span) {
+            if (span.classList.contains('struck')) {
+                span.classList.remove('struck');
+            } else {
+                span.classList.add('struck');
+                playSound('scratch');
+            }
+        }
+
+        function publish() {
+            const allWords = Array.from(document.querySelectorAll('.word'));
+            const errors = allWords.filter(w => w.dataset.error === 'true');
+            const marked = allWords.filter(w => w.classList.contains('struck'));
+
+            // Validation
+            const correctMarks = marked.filter(w => w.dataset.error === 'true').length;
+            const wrongMarks = marked.filter(w => w.dataset.error === 'false').length;
+            const missedErrors = errors.length - correctMarks;
+
+            // Strict Rule: Must find ALL 4 errors and NO wrong marks
+            if (correctMarks === 4 && wrongMarks === 0) {
+                // Success
+                score += 100;
+                document.getElementById('score').textContent = score;
+                showStamp("APROVAT", "#2e7d32");
+                playSound('publish_ok');
+
+                setTimeout(nextArticle, 1500);
+            } else {
+                // Fail
+                let msg = "REBUTJAT";
+                if (wrongMarks > 0) msg = "FALSOS POSITIUS!";
+                if (missedErrors > 0) msg = "FALTEN ERRORS!";
+                showStamp(msg, "#b71c1c", true);
+                playSound('stamp');
+            }
+        }
+
+        function showStamp(text, color, autoHide = false) {
+            const s = document.getElementById('stamp-result');
+            s.textContent = text;
+            s.style.color = color;
+            s.style.borderColor = color;
+            s.style.animation = 'none';
+            s.style.transition = 'none';
+            s.offsetHeight; /* trigger reflow */
+            s.style.animation = 'stampAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+            s.style.opacity = 1;
+
+            if (autoHide) {
+                setTimeout(() => {
+                    s.style.animation = 'none'; // Remove forwards animation state
+                    s.style.transition = 'opacity 0.8s ease-out';
+                    s.style.opacity = 0;
+                }, 1500); // Slightly faster for better UX
+            }
+        }
+
+        function nextArticle() {
+            const news = document.getElementById('newspaper');
+            news.classList.add('published'); // Animation out
+
+            setTimeout(() => {
+                currentArticleIndex++;
+                if (currentArticleIndex < currentArticles.length) {
+                    loadArticle();
+                } else {
+                    // Era Completed!
+                    if (!completedEras.includes(currentEra)) {
+                        completedEras.push(currentEra);
+                        localStorage.setItem(COMPLETED_ERAS_KEY, JSON.stringify(completedEras));
+                    }
+
+                    if (typeof Rewards !== 'undefined') {
+                        Rewards.unlockCard(
+                            'critic_mix',
+                            'Editor en Cap',
+                            'Has detectat tots els anacronismes!',
+                            '../../img/card_critic.png'
+                        );
+                    }
+
+                    showModal("ÈPOCA COMPLETADA", `Excel·lent treball! Has netejat tots els anacronismes del ${currentEra}.`);
+                }
+            }, 600);
+        }
+
+        function showModal(title, text) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-desc').textContent = text;
+            document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            // Return to Era Selector
+            document.getElementById('game-container').style.display = 'none'; // Hide Desk
+            document.getElementById('start-screen').style.display = 'flex'; // Show Selector
+
+            // Re-render grid to update 'Completed' status
+            init();
+        }
+
+        init();
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: Protocol Galàctic</title>
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-space: #050510;
+            --text-neon: #00f3ff;
+            --text-alert: #ff0055;
+            --glass-panel: rgba(0, 243, 255, 0.05);
+            --border-neon: 1px solid #00f3ff;
+            --font-main: 'Orbitron', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-space);
+            color: var(--text-neon);
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+
+        /* SCANLINES OVERLAY */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.3;
+        }
+
+        /* CAPTAIN COMM BOX (Centered Pop-up) */
+        #comm-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            max-width: 90%;
+            background: rgba(0, 20, 20, 0.95);
+            border: 2px solid var(--text-neon);
+            border-radius: 10px;
+            padding: 25px;
+            z-index: 200;
+            /* Higher than game interface */
+            box-shadow: 0 0 30px var(--text-neon), 0 0 100px black;
+            display: none;
+            /* JS toggles */
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .comm-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .captain-avatar {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--text-neon);
+            border-radius: 50%;
+            background-image: url('img/capitá.jpg');
+            background-size: cover;
+            flex-shrink: 0;
+        }
+
+        .comm-label {
+            font-family: var(--font-mono);
+            color: var(--text-alert);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: blink 2s infinite;
+        }
+
+        .comm-text {
+            color: white;
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            line-height: 1.5;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* MAIN INTERFACE */
+        #game-interface {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            max-width: 900px;
+            width: 95%;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        #game-interface.visible {
+            opacity: 1;
+        }
+
+        /* AI AVATAR - TOP CENTER PROJECTION */
+        .ai-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+        }
+
+        .ai-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid var(--text-neon);
+            box-shadow: 0 0 50px var(--text-neon);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Holographic Base Effect */
+        .holo-base {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%) perspective(500px) rotateX(60deg);
+            width: 300px;
+            height: 300px;
+            border: 2px solid var(--text-neon);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.2) 0%, transparent 70%);
+            animation: spin 10s linear infinite;
+            pointer-events: none;
+        }
+
+        .system-panel {
+            background: rgba(0, 10, 20, 0.9);
+            border: 1px solid var(--text-neon);
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            box-shadow: inset 0 0 50px rgba(0, 243, 255, 0.1);
+            position: relative;
+        }
+
+        /* Decor lines */
+        .system-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border-top: 2px solid var(--text-neon);
+            border-left: 2px solid var(--text-neon);
+        }
+
+        .system-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            border-bottom: 2px solid var(--text-neon);
+            border-right: 2px solid var(--text-neon);
+        }
+
+        .system-header {
+            font-size: 1.5rem;
+            color: var(--text-neon);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .ai-status {
+            font-family: var(--font-mono);
+            color: var(--text-alert);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .question-display {
+            font-size: 1.2rem;
+            color: white;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .holo-btn {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--text-neon);
+            color: var(--text-neon);
+            padding: 15px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .holo-btn:hover {
+            background: rgba(0, 243, 255, 0.2);
+            padding-left: 20px;
+            /* Slight movement */
+        }
+
+        .holo-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .holo-btn.correct {
+            background: #00ff66;
+            color: black;
+            border-color: #00ff66;
+        }
+
+        .holo-btn.wrong {
+            background: #ff0055;
+            color: white;
+            border-color: #ff0055;
+            animation: glitch 0.3s;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: url('img/fonsinical.jpg');
+            background-size: cover;
+        }
+
+        #start-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .start-btn {
+            position: relative;
+            z-index: 210;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: var(--font-main);
+            color: black;
+            background: var(--text-neon);
+            border: none;
+            cursor: pointer;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        /* ANIMATIONS */
+        @keyframes scan {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 100%;
+            }
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: translateX(-50%) perspective(500px) rotateX(60deg) rotate(0deg);
+            }
+
+            100% {
+                transform: translateX(-50%) perspective(500px) rotateX(60deg) rotate(360deg);
+            }
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(0);
+            }
+
+            20% {
+                transform: translate(-2px, 2px);
+            }
+
+            40% {
+                transform: translate(2px, -2px);
+            }
+
+            60% {
+                transform: translate(-2px, -2px);
+            }
+
+            80% {
+                transform: translate(2px, 2px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .choices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #comm-box {
+                width: 90%;
+                left: 5%;
+                bottom: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scanlines"></div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div style="position:relative; z-index:210; text-align:center; padding:20px;">
+            <h1 style="font-size:3rem; margin-bottom:10px; text-shadow:0 0 20px var(--text-neon);">PROTOCOL GALÀCTIC
+            </h1>
+            <p style="font-family:var(--font-mono); color:white; max-width:600px; margin: 0 auto 30px;">
+                ALERTA NIVELL 5.<br>
+                El Tinent Riker està atrapat a LV-426.<br>
+                Reactivar sistemes prioritaris per a rescat immediat.
+            </p>
+            <button class="start-btn" onclick="GAME.init()">INICIAR SISTEMES</button>
+        </div>
+    </div>
+
+    <!-- MAIN GAME AREA -->
+    <div id="game-ui-container"
+        style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+
+        <div id="game-interface">
+            <!-- AI AVATAR CENTER -->
+            <div class="ai-container">
+                <div class="ai-avatar" id="ai-img"></div>
+                <div class="holo-base"></div>
+            </div>
+
+            <!-- DASHBOARD PANEL -->
+            <div class="system-panel">
+                <div class="system-header" id="system-title">SISTEMA 1</div>
+                <div class="ai-status" id="ai-status">CONNECTION ESTABLISHED</div>
+
+                <div class="question-display" id="q-text">Waiting for input...</div>
+
+                <div class="choices-grid" id="q-options"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMM BOX (Centered Modal) -->
+    <div id="comm-box">
+        <div class="comm-header">
+            <div class="captain-avatar"></div>
+            <div class="comm-label">🔴 TRANSMISSIÓ ENTRANT</div>
+        </div>
+        <div class="comm-text" id="comm-text">...</div>
+    </div>
+
+    <!-- WIN SCREEN (Hidden by default) -->
+    <div id="win-screen"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:500; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+        <h1 style="color:#00ff66; font-size:4rem; text-shadow:0 0 40px #00ff66; margin:0;">DESPAGAMENT INICIAT</h1>
+        <p style="color:white; font-family:var(--font-mono); font-size:1.5rem;">Tots els sistemes al 100%. Rescat en
+            progrés.</p>
+        <button class="start-btn" onclick="location.reload()" style="margin-top:30px; background:#00ff66;">REINICIAR
+            SIMULACIÓ</button>
+    </div>
+
+    <!-- AUDIO CONTROLS (Top Right) -->
+    <div id="audio-controls"
+        style="position:fixed; top:20px; right:20px; z-index:300; display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.5); padding:5px 15px; border-radius:20px; border:1px solid var(--text-neon);">
+        <span style="font-size:1.2rem;">🔊</span>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5"
+            style="accent-color: var(--text-neon);">
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Vacuum Transit.m4a" type="audio/mp3">
+    </audio>
+
+    <script>
+        // DATA: REAL ASSETS MAPPED
+        // Note: Typo in filename 'fonsrenaixmenet.jpg' maintained as found in directory listing
+        const DATA = [
+            {
+                system: "SISTEMA 1: NUCLI PRIMORDIAL (Edat Mitjana)",
+                bg: "img/fonsmitjana.jpg",
+                aiAvatar: "img/iamitjana.jpg",
+                captain: "Cadet! El nucli de la nau utilitza codi antic. Molt bàsic, com l'origen de tot. La IA 'Monjo Digital' protegeix l'accés.",
+                intro: "ACCÉS RESTRINGIT. Sóc el Protocol Origen. Els monjos dedicàven la seva vida a pregar i treballar. On vivien?",
+                success: "CODI ACCEPTAT. La vida monàstica és la base. Nucli online.",
+                q: { t: "El meu sistema opera des d'un lloc sagrat i aïllat. On vivien els monjos a l'Edat Mitjana?", opts: ["Al Castell", "Al Monestir", "A la Ciutat", "A la Granja"], c: 1 }
+            },
+            {
+                system: "SISTEMA 2: XARXA DE COMUNICACIONS (Renaixement)",
+                bg: "img/fonsrenaixmenet.jpg", /* Typo 'renaixmenet' matches file */
+                aiAvatar: "img/iarenaixement.jpg",
+                captain: "Bé! Ara necessitem connectar-nos. La Xarxa és complexa, però necessita un líder clar. Algú que posi ordre a les veus.",
+                intro: "Salutacions, humà. Sóc el Protocol Humanista. Busco la perfecció. Qui és el meu 'Superstar', el mestre absolut de la música religiosa que treballava al Vaticà?",
+                success: "HARMONIA ESTABLERTA. Palestrina reconegut. L'equilibri és perfecte. Xarxa operativa.",
+                q: { t: "Qui era el compositor més important ('Superstar') de la música religiosa al Renaixement?", opts: ["Mozart", "Bach", "G.P. da Palestrina", "Vivaldi"], c: 2 }
+            },
+            {
+                system: "SISTEMA 3: MOTOR DE PROPULSIÓ (Barroc)",
+                bg: "img/fonsbarroc.jpg",
+                aiAvatar: "img/iabarroc.jpg",
+                captain: "Necessitem potència! El Motor Principal és complex, una màquina perfecta amb milers de peces en moviment perpetu.",
+                intro: "JO SÓC EL MOTOR REIAL! Sóc una fuga infinita! Qui és el gran mestre, pare de molts músics, que va construir la catedral sonora més gran?",
+                success: "POTÈNCIA MÀXIMA! Bach és l'arquitecte suprem! El motor rugeix amb contrapunt perfecte!",
+                q: { t: "Quin compositor, considerat el gran mestre del Barroc, tenia una gran família de músics i tocava l'orgue?", opts: ["J.S. Bach", "Vivaldi", "Händel", "Mozart"], c: 0 }
+            },
+            {
+                system: "SISTEMA 4: ORDINADOR DE NAVEGACIÓ (Classicisme)",
+                bg: "img/fonsclassic.jpg",
+                aiAvatar: "img/iaclassic.jpg",
+                captain: "Tenim potència però no direcció. L'Ordinador de Navegació requereix càlculs perfectes i equilibrats.",
+                intro: "Protocol Lògic activat. Busco l'instrument perfecte que substitueix al Clavicèmbal. Pot fer sons forts i fluixos.",
+                success: "RUTA CALCULADA. Piano-Forte activat. Rumb fixat.",
+                q: { t: "Quin instrument nou s'inventa en aquesta època i substitueix al Clavicèmbal per la seva capacitat dinàmica?", opts: ["El Piano", "L'Arpa", "La Guitarra", "L'Orgue"], c: 0 }
+            },
+            {
+                system: "SISTEMA 5: SUPORT VITAL (Romanticisme)",
+                bg: "img/fonsromantic.jpg",
+                aiAvatar: "img/iaromantic.jpg",
+                captain: "Alerta! El Suport Vital està inestable! Sembla una tempesta allà dins. La IA està... emocionada?",
+                intro: "ERROR! ERROR! Sentiments desbordats! Qui és el gran geni que es va quedar SORD però va escriure la Novena Simfonia?",
+                success: "CONSTANTS VITALS ESTABILITZADES... Beethoven estaria orgullós. Aire reciclat.",
+                q: { t: "Quin compositor famós es va quedar sord però va seguir escrivint obres mestres com l'Himne de l'Alegria?", opts: ["Mozart", "Vivaldi", "Beethoven", "Bach"], c: 2 }
+            },
+            {
+                system: "SISTEMA 6: MOTOR DE SALT (Segle XX)",
+                bg: "img/fonssegleXX.jpg",
+                aiAvatar: "img/iasegleXX.jpg",
+                captain: "Ja gairebé hi som! Només queda el Motor de Salt Quàntic. Però... el codi està trencat! Està ple de glitchs!",
+                intro: "G-G-GLITCH DETECTAT. El sistema crida de d-dolor! No hi ha harmonia, només tensió! D-Dissonància total!",
+                success: "SALT INICIAT!!! La dissonància ha trencat la barrera! Agafa't fort!",
+                q: { t: "El meu sistema està utilitzant notes que xoquen entre elles per crear tensió (Dissonància). Quin estil del Segle XX estic executant?", opts: ["Impressionisme", "Expressionisme", "Romanticisme", "Pop"], c: 1 }
+            }
+        ];
+
+        const GAME = {
+            level: 0,
+
+            init: function () {
+                document.getElementById('start-screen').style.display = 'none';
+                // Initially hide Captain until level load
+                document.getElementById('comm-box').style.display = 'none';
+                this.initAudio();
+                this.loadLevel(0);
+            },
+
+            initAudio: function () {
+                const audio = document.getElementById('bg-music');
+                const slider = document.getElementById('vol-slider');
+                audio.volume = slider.value;
+                audio.play().catch(e => console.log("User must interact first"));
+                slider.oninput = function () { audio.volume = this.value; }
+            },
+
+            loadLevel: function (idx) {
+                if (idx >= DATA.length) {
+                    this.victory();
+                    return;
+                }
+                this.level = idx;
+                const d = DATA[idx];
+
+                // Change Env
+                document.body.style.backgroundImage = `url('${d.bg}')`;
+
+                // Hide Main UI
+                const ui = document.getElementById('game-interface');
+                ui.classList.remove('visible');
+                ui.style.opacity = '0';
+                ui.style.display = 'none';
+
+                // SHOW Captain
+                const commBox = document.getElementById('comm-box');
+                commBox.style.display = 'flex';
+
+                // Captain Logic
+                const commText = document.getElementById('comm-text');
+                this.typeWriter(d.captain, commText, () => {
+                    setTimeout(() => {
+                        // HIDE Captain after speaking
+                        commBox.style.display = 'none';
+                        // SHOW AI
+                        this.showAIIntro(d);
+                    }, 2500); // 2.5s read time
+                });
+            },
+
+            typeWriter: function (text, element, callback) {
+                let i = 0;
+                element.textContent = "";
+                const speed = 25;
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        if (callback) callback();
+                    }
+                }
+                type();
+            },
+
+            showAIIntro: function (data) {
+                const ui = document.getElementById('game-interface');
+
+                // Update AI Content
+                document.getElementById('system-title').textContent = data.system;
+                document.getElementById('ai-img').style.backgroundImage = `url('${data.aiAvatar}')`;
+                document.getElementById('ai-status').textContent = "INCOMING DATA STREAM...";
+
+                const qText = document.getElementById('q-text');
+                qText.textContent = data.intro;
+                qText.style.color = "var(--text-neon)";
+
+                // Setup Continue Button (Phase 1)
+                const grid = document.getElementById('q-options');
+                grid.innerHTML = '';
+                grid.style.display = 'flex'; // Single button mode
+
+                const btn = document.createElement('button');
+                btn.className = 'holo-btn';
+                btn.textContent = "[ INICIAR DESENCRIPTACIÓ ]";
+                btn.style.width = "100%";
+                btn.style.textAlign = "center";
+                btn.onclick = () => this.showQuestion(data);
+                grid.appendChild(btn);
+
+                // Show UI
+                ui.style.display = 'flex';
+                // Force Reflow
+                void ui.offsetWidth;
+                ui.classList.add('visible');
+                ui.style.opacity = '1';
+            },
+
+            showQuestion: function (data) {
+                document.getElementById('ai-status').textContent = "ERROR: SYSTEM LOCK";
+
+                const qText = document.getElementById('q-text');
+                qText.style.opacity = 0;
+
+                setTimeout(() => {
+                    qText.textContent = data.q.t;
+                    qText.style.color = "white";
+                    qText.style.opacity = 1;
+
+                    // Show Options
+                    const grid = document.getElementById('q-options');
+                    grid.innerHTML = '';
+                    grid.style.display = 'grid'; // Grid mode
+
+                    data.q.opts.forEach((opt, i) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'holo-btn';
+                        btn.textContent = `> ${opt}`;
+                        btn.onclick = () => this.check(i, btn, data.q.c, data);
+                        grid.appendChild(btn);
+                    });
+                }, 300);
+            },
+
+            check: function (idx, btn, correct, data) {
+                if (idx === correct) {
+                    btn.classList.add('correct');
+                    document.querySelectorAll('.holo-btn').forEach(b => b.disabled = true);
+
+                    setTimeout(() => {
+                        document.getElementById('ai-status').textContent = "SYSTEM RESTORED";
+                        document.getElementById('ai-status').style.color = "#00ff66";
+                        const qText = document.getElementById('q-text');
+                        qText.textContent = data.success;
+                        qText.style.color = "#00ff66";
+
+                        // Next Button
+                        const grid = document.getElementById('q-options');
+                        grid.innerHTML = '';
+                        grid.style.display = 'flex';
+
+                        const nextBtn = document.createElement('button');
+                        nextBtn.className = 'holo-btn';
+                        nextBtn.textContent = "SEGUENT SISTEMA >>";
+                        nextBtn.style.textAlign = "center";
+                        nextBtn.style.width = "100%";
+                        nextBtn.style.background = "#00f3ff";
+                        nextBtn.style.color = "black";
+                        nextBtn.onclick = () => this.loadLevel(this.level + 1);
+                        grid.appendChild(nextBtn);
+                    }, 1000);
+
+                } else {
+                    btn.classList.add('wrong');
+                    document.body.animate([
+                        { transform: 'translate(0,0)' },
+                        { transform: 'translate(-5px,5px)' },
+                        { transform: 'translate(5px,-5px)' },
+                        { transform: 'translate(0,0)' }
+                    ], { duration: 200, iterations: 2 });
+                }
+            },
+
+            victory: function () {
+                document.getElementById('bg-music').pause(); // Stop music or change?
+                document.body.style.backgroundImage = "url('img/fonsfinal.jpg')";
+                document.getElementById('game-interface').style.display = 'none';
+                document.getElementById('comm-box').style.display = 'none';
+                document.getElementById('win-screen').style.display = 'flex';
+            }
+        };
+    </script>
+</body>
+
+</html>

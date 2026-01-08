@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>En Busca i Captura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Courier+Prime:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-wall: #3e2723;
+            --poster-bg: #fff8e1;
+            --ink-color: #212121;
+            --stamp-color: #b71c1c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier Prime', monospace;
+            background-color: var(--bg-wall);
+            background-image: url('https://www.transparenttextures.com/patterns/brick-wall.png');
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-container {
+            perspective: 1000px;
+        }
+
+        /* WANTED POSTER */
+        .wanted-poster {
+            width: 500px;
+            height: 700px;
+            background-color: var(--poster-bg);
+            background-image: url('https://www.transparenttextures.com/patterns/paper.png');
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+            position: relative;
+            transform-origin: top center;
+            animation: swing 2s ease-out forwards;
+        }
+
+        @keyframes swing {
+            0% {
+                transform: rotateX(-90deg);
+                opacity: 0;
+            }
+
+            40% {
+                transform: rotateX(20deg);
+                opacity: 1;
+            }
+
+            60% {
+                transform: rotateX(-10deg);
+            }
+
+            80% {
+                transform: rotateX(5deg);
+            }
+
+            100% {
+                transform: rotateX(0deg);
+            }
+        }
+
+        .nail {
+            width: 15px;
+            height: 15px;
+            background: #555;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Rye', serif;
+            font-size: 4rem;
+            margin: 20px 0 10px 0;
+            letter-spacing: 5px;
+            border-bottom: 4px solid var(--ink-color);
+            border-top: 4px solid var(--ink-color);
+            padding: 10px 0;
+        }
+
+        .photo-frame {
+            width: 200px;
+            height: 250px;
+            border: 3px solid var(--ink-color);
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #d7ccc8;
+            overflow: hidden;
+        }
+
+        .photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: sepia(0.8) contrast(1.2) grayscale(0.5);
+        }
+
+        .details {
+            text-align: left;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .field {
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .value {
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .value:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .reward-text {
+            font-family: 'Rye', serif;
+            font-size: 1.5rem;
+            margin-top: 30px;
+        }
+
+        /* STAMP */
+        .stamp {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg) scale(0);
+            font-family: 'Rye', serif;
+            font-size: 5rem;
+            color: var(--stamp-color);
+            border: 8px solid var(--stamp-color);
+            padding: 10px 40px;
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .stamp.visible {
+            transform: translate(-50%, -50%) rotate(-15deg) scale(1);
+            opacity: 0.9;
+        }
+
+        /* CONTROLS */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-family: 'Rye', serif;
+            font-size: 1.2rem;
+            background: #5d4037;
+            color: #fff8e1;
+            border: 2px solid #3e2723;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #3e2723;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 1.5rem;
+            font-family: 'Rye', serif;
+            z-index: 100;
+        }
+
+        /* START SCREEN & EXTRAS */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(62, 39, 35, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: #fff8e1;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            border: none;
+            font-size: 5rem;
+            color: #b71c1c;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .instructions {
+            max-width: 600px;
+            font-size: 1.3rem;
+            margin: 20px;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .btn-start {
+            font-size: 2.5rem;
+            padding: 20px 60px;
+            background: #b71c1c;
+            color: #fff8e1;
+            font-family: 'Rye', serif;
+            border: 4px solid #fff8e1;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Volume Control Overlay */
+        .volume-control {
+            margin-bottom: 20px;
+            background: rgba(62, 39, 35, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px solid #5d4037;
+            color: #fff8e1;
+            font-family: 'Rye', serif;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* CUSTOM MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .modal-content {
+            background-color: var(--poster-bg);
+            background-image: url('https://www.transparenttextures.com/patterns/paper.png');
+            padding: 30px;
+            border: 4px solid var(--ink-color);
+            max-width: 400px;
+            text-align: center;
+            font-family: 'Rye', serif;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+            transform: rotate(-2deg);
+        }
+
+        .modal-msg {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--ink-color);
+        }
+
+        .btn-modal {
+            background: var(--stamp-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Rye', serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn-modal:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HUD -->
+    <div class="hud">
+        RECOMPENSA: $<span id="score">0</span> |
+        CASOS RESOLTS: <span id="progress">0</span>/20
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1>EN BUSCA I CAPTURA</h1>
+        <div class="instructions">
+            <p><strong>BENVINGUT,
+                    CAÇARRECOMPENSES !</strong></p>
+            <p>S'estan distribuint cartells de "WANTED" falsos.</p>
+            <p>La teva missió: Detectar si el <strong>Modus Operandi</strong>o el <strong>Crim</strong>no
+                coincideixen amb el compositor.</p>
+            <p>Si hi ha un error,
+                toca'l per capturar el falsificadors!</p>
+            <p>Si tot és correcte,
+                prem "TOT CORRECTE" .</p>
+        </div><button class="btn-start" onclick="startGame()">JUGAR</button>
+    </div>
+    <!-- GAME CONTAINER -->
+    <div id="game-container"
+        style="display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; justify-content: center;">
+
+        <!-- Volume Control -->
+        <div class="volume-control" style="display: none;"> <!-- Hidden per user request -->
+            <label for="volume-slider">🎵 Música Western:</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+        <div class="wanted-poster" id="poster">
+            <div class="nail"></div>
+            <h1>WANTED</h1>
+            <div class="photo-frame">
+                <!-- Image inserted via JS -->
+            </div>
+            <div class="details">
+                <div class="field"><span class="label">SOSPITÓS:</span><span class="value" id="field-name">Bach</span>
+                </div>
+                <div class="field"><span class="label">ÀLIES:</span><span class="value" id="field-alias">"El Mestre"
+                    </span></div>
+                <div class="field"><span class="label">MODUS OPERANDI:</span><span class="value" id="field-mo"
+                        onclick="checkError('mo')"><span id="mo-text">...</span></span>
+                </div>
+                <div class="field"><span class="label">CRIMS CONEGUTS:</span><span class="value" id="field-crime"
+                        onclick="checkError('crime')"><span id="crime-text">...</span></span></div>
+            </div>
+            <div class="reward-text">RECOMPENSA: $10,
+                000</div>
+            <!-- STAMP -->
+            <div class="stamp" id="stamp-captured">CAPTURED</div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button class="btn" onclick="confirmReward()">TOT CORRECTE</button>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL HTML -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modal-text" class="modal-msg">Missatge</div>
+            <button class="btn-modal" onclick="closeModal()">D'ACORD</button>
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" src="Dust on the Horizon.m4a" loop></audio>
+
+    <!-- LOGIC -->
+    <script src="../../../js/rewards.js"></script>
+    <script> // --- DATA ---
+        // 24 Composers (4 per Era) adapted for "Wanted" style
+        const WANTED_DB = [ // EDAT MITJANA
+
+            {
+                name: "Hildegard von Bingen",
+                alias: "La Sibilla del Rin",
+                mo: "Canalitzar visions divines en partitures impossibles.",
+                crime: "Ordo Virtutum",
+                img: "img/hildegard.jpg",
+                fake_mo: "Organitzar raves il·legals al convent.",
+                fake_crime: "Simfonia Fantàstica"
+            }
+
+            ,
+            {
+                name: "Guillaume de Machaut",
+                alias: "El Poeta Polifònic",
+                mo: "Escriure missa i poesia amorosa alhora.",
+                crime: "Missa de Notre Dame",
+                img: "img/machaut.jpg",
+                fake_mo: "Inventar el Reggaeton litúrgic.",
+                fake_crime: "La Traviata"
+            }
+
+            ,
+            {
+                name: "Alfons X el Savi",
+                alias: "El Rei Músic",
+                mo: "Governar un país i compondre cantigues als vespres.",
+                crime: "Cantigas de Santa María",
+                img: "img/alfonsX.jpg",
+                fake_mo: "Cremar llibres per escalfar el castell.",
+                fake_crime: "Concert de Cap d'Any"
+            }
+
+            ,
+            {
+                name: "Léonin",
+                alias: "L'Arquitecte Sonor",
+                mo: "Apilar veus com si fossin maons de catedral.",
+                crime: "Viderunt Omnes",
+                img: "img/leonin.jpg",
+                fake_mo: "Tocar la bateria en una banda de punk.",
+                fake_crime: "Para Elisa"
+            }
+
+            ,
+
+            // RENAIXEMENT
+            {
+                name: "Josquin des Prez",
+                alias: "El Miquel Àngel de les Notes",
+                mo: "Signar les seves obres al mig de la partitura.",
+                crime: "Ave Maria",
+                img: "img/josquin.jpg",
+                fake_mo: "Fer servir l'Auto-Tune a la capella.",
+                fake_crime: "El Trencanous"
+            }
+
+            ,
+            {
+                name: "Palestrina",
+                alias: "El Salvador de la Polifonia",
+                mo: "Convèncer al Papa amb acords perfectes.",
+                crime: "Missa Papae Marcelli",
+                img: "img/palestrina.jpg",
+                fake_mo: "Introduir guitarres elèctriques al Vaticà.",
+                fake_crime: "Bohemian Rhapsody"
+            }
+
+            ,
+            {
+                name: "Tomás Luis de Victoria",
+                alias: "El Místic d'Àvila",
+                mo: "Fer plorar als àngels amb la seva música.",
+                crime: "O Magnum Mysterium",
+                img: "img/tomasluis.jpg",
+                fake_mo: "Compondre jingles per anuncis de TV.",
+                fake_crime: "Despacito"
+            }
+
+            ,
+            {
+                name: "Claudio Monteverdi",
+                alias: "El Pare de l'Òpera",
+                mo: "Barrejar teatre i música sense permís.",
+                crime: "L'Orfeo",
+                img: "img/monteverdi.jpg",
+                fake_mo: "Prohibir cantar a l'escenari.",
+                fake_crime: "Simfonia núm. 5"
+            }
+
+            ,
+
+            // BARROC
+            {
+                name: "J.S. Bach",
+                alias: "El Mestre del Contrapunt",
+                mo: "Escriure fugues tan complexes que maregen.",
+                crime: "Concerts de Brandenburg",
+                img: "img/bach.jpg",
+                fake_mo: "Improvisar jazz al clavecí.",
+                fake_crime: "La consagració de la primavera"
+            }
+
+            ,
+            {
+                name: "Antonio Vivaldi",
+                alias: "El Capellà Roig",
+                mo: "Escriure el mateix concert 500 vegades (segons diuen).",
+                crime: "Les Quatre Estacions",
+                img: "img/vivaldi.jpg",
+                fake_mo: "Odiar els violins i preferir la tuba.",
+                fake_crime: "Carmen"
+            }
+
+            ,
+            {
+                name: "Händel",
+                alias: "L'Empresarios",
+                mo: "Robar idees i fer-les sonar millor.",
+                crime: "El Messies",
+                img: "img/handel.jpg",
+                fake_mo: "Escriure música només per a mòbils.",
+                fake_crime: "Bolero de Ravel"
+            }
+
+            ,
+            {
+                name: "Henry Purcell",
+                alias: "L'Orfeu Britànic",
+                mo: "Morir de fred per culpa de la seva dona (llegenda).",
+                crime: "Dido i Eneas",
+                img: "img/purcell.jpg",
+                fake_mo: "Ser un espia francès infiltrat.",
+                fake_crime: "Macarena"
+            }
+
+            ,
+
+            // CLASSICISME
+            {
+                name: "W.A. Mozart",
+                alias: "El Nen Prodigi",
+                mo: "Escriure música perfecta sense esborralls.",
+                crime: "La Flauta Màgica",
+                img: "img/mozart.jpg",
+                fake_mo: "Copiar partitures d'altres per falta d'idees.",
+                fake_crime: "L'Anell del Nibelung"
+            }
+
+            ,
+            {
+                name: "Joseph Haydn",
+                alias: "El Pare de la Simfonia",
+                mo: "Fer bromes musicals per despertar al públic.",
+                crime: "Simfonia Sorpresa",
+                img: "img/haydn.jpg",
+                fake_mo: "Compondre cançons tristes depriments.",
+                fake_crime: "Rèquiem de Verdi"
+            }
+
+            ,
+            {
+                name: "Vicent Martín i Soler",
+                alias: "El Mozart Valencià",
+                mo: "Triomfar a Viena i caure bé a tothom.",
+                crime: "Una cosa rara",
+                img: "img/vicenmarti.jpg",
+                fake_mo: "No saber on està València.",
+                fake_crime: "God Save the Queen"
+            }
+
+            ,
+            {
+                name: "Gluck",
+                alias: "El Reformador",
+                mo: "Eliminar els adorns innecessaris de l'òpera.",
+                crime: "Orfeu i Eurídice",
+                img: "img/gluck.jpg",
+                fake_mo: "Afegir explosions a cada ària.",
+                fake_crime: "West Side Story"
+            }
+
+            ,
+
+            // ROMANTICISME
+            {
+                name: "Ludwig van Beethoven",
+                alias: "El Sord Genial",
+                mo: "Trencar pianos per tocar massa fort.",
+                crime: "Simfonia núm. 9",
+                img: "img/beethoven.jpg",
+                fake_mo: "Tocar el llaüt suaument a la cort.",
+                fake_crime: "Música Aquàtica"
+            }
+
+            ,
+            {
+                name: "Frédéric Chopin",
+                alias: "El Poeta del Piano",
+                mo: "Plorar mentre compon nocturns.",
+                crime: "Nocturns",
+                img: "img/chopin.jpg",
+                fake_mo: "Odiar el piano i tocar la trompeta.",
+                fake_crime: "Marxa Radetzky"
+            }
+
+            ,
+            {
+                name: "Richard Wagner",
+                alias: "El Megalòman",
+                mo: "Construir el seu propi teatre per a les seves òperes.",
+                crime: "L'Anell del Nibelung",
+                img: "img/wagner.jpg",
+                fake_mo: "Escriure òperes de 3 minuts.",
+                fake_crime: "4'33\""
+            }
+
+            ,
+            {
+                name: "Franz Schubert",
+                alias: "El Rei del Lied",
+                mo: "Fer festes (Schubertiades) i no acabar les simfonies.",
+                crime: "Ave Maria",
+                img: "img/schubert.jpg",
+                fake_mo: "Ser un ermità que odiava la gent.",
+                fake_crime: "Thriller"
+            }
+
+            ,
+
+            // SEGLE XX
+            {
+                name: "Claude Debussy",
+                alias: "L'Impressionista",
+                mo: "Pintar amb sons en lloc de pinzells.",
+                crime: "Clair de Lune",
+                img: "img/debussy.jpg",
+                fake_mo: "Seguir les regles estrictes del conservatori.",
+                fake_crime: "Tocata i Fuga"
+            }
+
+            ,
+            {
+                name: "Igor Stravinsky",
+                alias: "El Camaleó",
+                mo: "Provocar disturbis a les estrenes.",
+                crime: "La Consagració de la Primavera",
+                img: "img/stravinsky.jpg",
+                fake_mo: "Escriure música relaxant per a ioga.",
+                fake_crime: "Cantates de Bach"
+            }
+
+            ,
+            {
+                name: "Arnold Schönberg",
+                alias: "L'Atonal",
+                mo: "Inventar matemàtiques per fer música.",
+                crime: "Pierrot Lunaire",
+                img: "img/schoemberg.jpg",
+                fake_mo: "Compondre valsos vienesos dolços.",
+                fake_crime: "El Danubi Blau"
+            }
+
+            ,
+            {
+                name: "John Cage",
+                alias: "El Silenciós",
+                mo: "Fer pagar al públic per escoltar silenci.",
+                crime: "4'33\"",
+                img: "img/cage.jpg",
+                fake_mo: "Dirigir orquestres amb una batuta d'or.",
+                fake_crime: "Simfonia 40"
+            }
+
+        ];
+
+        let currentSuspect = null;
+        let currentError = null; // null if correct, or field name if fake
+        let score = 0;
+        let correctCount = 0;
+        const WIN_GOAL = 20;
+        let isProcessing = false;
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // Volume Control (hidden but logic kept for init)
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                bgMusic.volume = e.target.value;
+            });
+        }
+
+        function showModal(msg) {
+            document.getElementById('modal-text').innerText = msg;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            // Reset Stats
+            score = 0;
+            correctCount = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('progress').innerText = correctCount;
+
+            bgMusic.volume = volumeSlider.value;
+            // Attempt autoplay
+            const playPromise = bgMusic.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Audio autoplay prevented by browser');
+                });
+            }
+
+            generateRound();
+        }
+
+        function generateRound() {
+            isProcessing = false;
+            document.getElementById('stamp-captured').classList.remove('visible');
+            document.getElementById('field-mo').style.backgroundColor = 'transparent';
+            document.getElementById('field-crime').style.backgroundColor = 'transparent';
+
+            // Poster Animation Reset
+            const poster = document.getElementById('poster');
+            poster.style.animation = 'none';
+            poster.offsetHeight;
+            /* trigger reflow */
+            poster.style.animation = 'swing 2s ease-out forwards';
+
+            // Pick Suspect
+            const suspectTemplate = WANTED_DB[Math.floor(Math.random() * WANTED_DB.length)];
+
+            currentSuspect = {
+                ...suspectTemplate
+            }
+
+                ;
+
+            // Decide if Fake (50%)
+            const isFake = Math.random() > 0.5;
+            currentError = null;
+
+            if (isFake) {
+                const errorType = Math.random() > 0.5 ? 'mo' : 'crime';
+
+                if (errorType === 'mo') {
+                    currentSuspect.mo = currentSuspect.fake_mo;
+
+                    currentError = {
+                        field: 'mo'
+                    }
+
+                        ;
+                }
+
+                else {
+                    currentSuspect.crime = currentSuspect.fake_crime;
+
+                    currentError = {
+                        field: 'crime'
+                    }
+
+                        ;
+                }
+            }
+
+            // Render
+            const frame = document.querySelector('.photo-frame');
+            // If image fails, show simple text or fallback, but we should have images now
+            frame.innerHTML = `<img src="${currentSuspect.img}" class="photo" alt="${currentSuspect.name}" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2NjYyIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4p2TPC90ZXh0Pjwvc3ZnPg=='">`;
+
+            document.getElementById('field-name').innerText = currentSuspect.name;
+            document.getElementById('field-alias').innerText = `"${currentSuspect.alias}" `;
+            document.getElementById('mo-text').innerText = currentSuspect.mo;
+            document.getElementById('crime-text').innerText = currentSuspect.crime;
+        }
+
+        function checkError(field) {
+            if (isProcessing) return;
+
+            if (currentError && currentError.field === field) {
+                // Correct identification of fake data
+                captureSuspect();
+            }
+
+            else {
+
+                // Wrong guess
+                if (currentError === null) {
+                    showModal("Aquestes dades són correctes! Has acusat un innocent.");
+                } else {
+                    showModal("T'has equivocat, l'error no era aquí.");
+                }
+                playSound('fail');
+                score -= 100;
+                correctCount = Math.max(0, correctCount - 1);
+                document.getElementById('score').innerText = score;
+                document.getElementById('progress').innerText = correctCount;
+
+                isProcessing = true;
+                setTimeout(generateRound, 1000);
+            }
+        }
+
+
+        function confirmReward() {
+            if (isProcessing) return;
+
+            if (currentError === null) {
+                // Correctly identified as valid
+                playSound('coin');
+                score += 500;
+                correctCount++;
+                document.getElementById('score').innerText = score;
+                document.getElementById('progress').innerText = correctCount;
+
+                if (checkWin()) return;
+
+                showModal(`Correcte! ${currentSuspect.name} és legítim.`);
+                generateRound();
+            } else {
+                // Missed a fake
+                playSound('fail');
+                showModal(`Has deixat escapar un falsificador! L'error era: ${currentError.field === 'mo' ? 'Modus Operandi' : 'Crim'}`);
+                score -= 200;
+                correctCount = Math.max(0, correctCount - 1);
+                document.getElementById('score').innerText = score;
+                document.getElementById('progress').innerText = correctCount;
+
+                generateRound();
+            }
+        }
+
+
+        function captureSuspect() {
+            isProcessing = true;
+            playSound('shot');
+            document.getElementById('stamp-captured').classList.add('visible');
+            score += 1000;
+            correctCount++;
+            document.getElementById('score').innerText = score;
+            document.getElementById('progress').innerText = correctCount;
+
+            setTimeout(() => {
+                if (checkWin()) return;
+                generateRound();
+            }
+
+                , 2000);
+        }
+
+        function checkWin() {
+            if (correctCount >= WIN_GOAL) {
+                showModal(`ENHORABONA! Has netejat la ciutat.\nHas resolt ${WIN_GOAL} casos.`);
+                // Optional: Return to start screen after a delay or button click inside modal
+                // For now, allow them to close modal and perhaps reset or see screen
+                setTimeout(() => {
+                    location.reload(); // Simple reset for now or we could create a proper end state
+                }, 4000);
+                return true;
+            }
+            return false;
+        }
+
+        function playSound(type) {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'shot') {
+                oscillator.type = 'square';
+                oscillator.frequency.value = 150;
+                oscillator.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            }
+
+            else if (type === 'coin') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'fail') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+    </script>
+</body>
+
+</html>
