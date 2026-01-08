@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wordle Musical</title>
+    <style>
+        :root {
+            --bg: #121213;
+            --correct: #538d4e;
+            --present: #b59f3b;
+            --absent: #3a3a3c;
+            --key-bg: #818384;
+            --border: #3a3a3c;
+            --text: #ffffff;
+            --accent: #3366cc;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* SCREENS */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #game-screen {
+            z-index: 1;
+            display: flex;
+            /* Hidden by JS when needed */
+            flex-direction: column;
+        }
+
+        /* START SCREEN */
+        .card {
+            background: #1a1a1b;
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 2.5rem;
+            color: var(--correct);
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        p {
+            line-height: 1.5;
+            color: #d7dadc;
+            margin-bottom: 25px;
+        }
+
+        .btn-main {
+            padding: 14px 30px;
+            background: var(--correct);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn-main:active {
+            transform: scale(0.95);
+        }
+
+        /* MENU SCREEN */
+        #menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .era-card {
+            background: #1a1a1b;
+            border: 2px solid var(--border);
+            padding: 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .era-card:hover {
+            border-color: #565758;
+            transform: translateY(-3px);
+        }
+
+        .era-card.completed {
+            border-color: var(--correct);
+            background: rgba(83, 141, 78, 0.1);
+        }
+
+        .era-card.completed h3 {
+            color: var(--correct);
+        }
+
+        .era-card.completed::after {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--correct);
+            font-weight: bold;
+        }
+
+        .era-card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* GAME ELEMENTS */
+        header {
+            width: 100%;
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .header-title {
+            font-weight: bold;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+
+        #hint-box {
+            background: #1a1a1b;
+            border: 1px solid var(--present);
+            color: var(--present);
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            min-height: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        /* VOLUME SLIDER */
+        #volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1b;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        #volume-slider {
+            width: 80px;
+            cursor: pointer;
+            accent-color: var(--correct);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* GRID */
+        #grid {
+            display: grid;
+            gap: 5px;
+            margin: 5px auto;
+            width: fit-content;
+            max-width: 95%;
+            grid-template-rows: repeat(6, 1fr);
+        }
+
+        .row {
+            display: grid;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .tile {
+            --tile-size: min(6.5vh, calc(90vw / var(--cols, 5)));
+            width: var(--tile-size);
+            height: var(--tile-size);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(var(--tile-size) * 0.55);
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: transform 0.1s;
+            box-sizing: border-box;
+        }
+
+        .tile[data-state='active'] {
+            border-color: #565758;
+            animation: pop 0.1s;
+        }
+
+        @keyframes pop {
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .tile[data-state='correct'] {
+            background-color: var(--correct);
+            border-color: var(--correct);
+        }
+
+        .tile[data-state='present'] {
+            background-color: var(--present);
+            border-color: var(--present);
+        }
+
+        .tile[data-state='absent'] {
+            background-color: var(--absent);
+            border-color: var(--absent);
+        }
+
+        /* KEYBOARD */
+        #keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: auto;
+            padding-bottom: 20px;
+        }
+
+        .key-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .key {
+            padding: 18px 12px;
+            background: var(--key-bg);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            min-width: 32px;
+            text-align: center;
+            transition: background 0.1s;
+        }
+
+        .key.big {
+            min-width: 60px;
+            font-size: 0.8rem;
+        }
+
+        .key[data-state='correct'] {
+            background-color: var(--correct);
+        }
+
+        .key[data-state='present'] {
+            background-color: var(--present);
+        }
+
+        .key[data-state='absent'] {
+            background-color: var(--absent);
+            opacity: 0.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen">
+        <div class="card">
+            <h1>WORDLE MUSICAL</h1>
+            <p>Benvingut! Posa a prova els teus coneixements de la història de la música endevinant paraules de 5
+                lletres.<br><br>Escriu la paraula i prem <b>ENTER</b> per validar-la. Tens 6 intents i pistes si les
+                necessites.</p>
+            <button class="btn-main" onclick="showMenu()">COMENÇAR</button>
+        </div>
+    </div>
+
+    <!-- MENU SCREEN -->
+    <div id="menu-screen" class="screen hidden">
+        <div class="card" style="max-width: 700px;">
+            <h1>Selecciona Època</h1>
+            <p>Completa totes les paraules d'una època per marcar-la com a finalitzada.</p>
+            <div id="menu-grid">
+                <!-- Generated by JS -->
+            </div>
+            <button class="btn-main" style="margin-top: 30px; background: #3a3a3c;"
+                onclick="showStart()">TORNAR</button>
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen hidden">
+        <header>
+            <button class="btn-main" style="padding: 8px 15px; font-size: 0.9rem; background: #3a3a3c;"
+                onclick="showMenu()">← MENÚ</button>
+            <div class="header-title">WORDLE</div>
+            <div id="volume-container">
+                <span id="mute-btn" style="cursor:pointer; font-size: 1.2rem;" onclick="toggleMute()">🔊</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                    oninput="setVolume(this.value)">
+            </div>
+        </header>
+
+        <audio id="bg-music" loop>
+            <source src="audio/Word Grid Groove.m4a" type="audio/mpeg">
+        </audio>
+
+        <div id="era-display"
+            style="margin-top: 15px; color: #818384; font-weight: bold; font-size: 0.8rem; letter-spacing: 1px;">ERA
+        </div>
+
+        <div id="hint-box" class="hidden"></div>
+
+        <div id="grid">
+            <!-- Generated JS -->
+        </div>
+
+        <div id="controls-hint" style="margin-top: -10px; margin-bottom: 20px; color: #565758; font-size: 0.8rem;">
+            Prem <b>ENTER</b> per comprovar
+        </div>
+
+        <div id="keyboard">
+            <div class="key-row" id="row1"></div>
+            <div class="key-row" id="row2"></div>
+            <div class="key-row" id="row3"></div>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="win-screen" class="screen hidden" style="background: rgba(0,0,0,0.8);">
+        <div class="card">
+            <h1 id="win-title">CORRECTE!</h1>
+            <p id="win-msg">Has trobat la paraula!</p>
+            <div id="progress-text" style="margin-bottom: 20px; font-weight: bold; color: var(--correct);">1 / 10</div>
+            <button id="next-btn" class="btn-main" onclick="handleWinAction()">SEGÜENT</button>
+        </div>
+    </div>
+
+    <script>
+        const DB = {
+            "Edat Mitjana": [
+                { word: "ORGANUM", h0: "Una veu ja no està sola", h1: "Polifonia primitiva paral·lela", h2: "L'estil de Léonin i Pérotin" },
+                { word: "MODES", h0: "Atmosferes sonores antigues", h1: "Dori, Frigi, Lidi...", h2: "Escales anteriors a la tonalitat" },
+                { word: "MONJO", h0: "Dedicat a l'ora et labora", h1: "Copista i cantor als claustres", h2: "L'habitant d'una abadia" },
+                { word: "LLATI", h0: "Llengua d'un Imperi caigut", h1: "Idioma oficial del catolicisme", h2: "Llengua del cant gregorià" },
+                { word: "GUIDO", h0: "Un nom d'Arezzo", h1: "Va posar nom a les notes", h2: "Ut, Re, Mi, Fa, Sol, La..." },
+                { word: "MOTET", h0: "Paraula francesa \"mot\"", h1: "Polifonia sacra complexa", h2: "Cant a diverses veus amb text" },
+                { word: "TROBADOR", h0: "Poeta de l'amor cortès", h1: "Músic profà de la noblesa", h2: "Cantautor medieval en llengua vulgar" },
+                { word: "ORGUE", h0: "Una màquina de vent gegant", h1: "Tecles, pedals i tubs", h2: "Instrument rei de la catedral" },
+                { word: "CANT", h0: "El primer instrument humà", h1: "Música feta amb la gola", h2: "Acció de cantar" },
+                { word: "ARPA", h0: "Símbol d'Irlanda i del cel", h1: "Cordes polsades en un marc triangular", h2: "Instrument dels bards celtes" }
+            ],
+            "Renaixement": [
+                { word: "RITME", h0: "Motor del temps", h1: "Successió de durades", h2: "El \"batec\" de la música" },
+                { word: "LLAUT", h0: "Panxa rodona i mànec", h1: "Instrument de corda polsada", h2: "El rei dels instruments renaixentistes" },
+                { word: "MISSA", h0: "Celebració litúrgica", h1: "Cicle de Kyrie, Gloria, Credo...", h2: "Forma musical sacra principal" },
+                { word: "DANSA", h0: "El cos segueix la música", h1: "Pavana, Gallarda, Branle...", h2: "Música feta per ballar" },
+                { word: "VOCAL", h0: "Sense màquines ni fusta", h1: "Música només per a la veu", h2: "Contrari d'instrumental" },
+                { word: "VIOLA", h0: "Instrument de la família dels arcs", h1: "De \"braç\" o de \"gamba\"", h2: "Semblant al violí però més gran" },
+                { word: "CORAL", h0: "La veu del poble alemany", h1: "Himne senzill de la Reforma", h2: "Cant litúrgic luterà" },
+                { word: "TIENTO", h0: "Prova o assaig", h1: "Forma instrumental ibèrica", h2: "\"Tiento\" (gènere per a orgue o vihuela)" },
+                { word: "CANÇO", h0: "Unió de lletra i melodia", h1: "Peça vocal profana", h2: "Gènere típic del Renaixement" },
+                { word: "MADRIGAL", h0: "Poesia feta música", h1: "Forma vocal profana italiana", h2: "Monteverdi en va fer molts" }
+            ],
+            "Barroc": [
+                { word: "OPERA", h0: "Va néixer a Florència el 1600", h1: "Teatre tot cantat", h2: "Orfeo, Dido i Eneas..." },
+                { word: "FUGA", h0: "Veus que es persegueixen", h1: "Contrapunt imitatiu complex", h2: "Forma mestra de J.S. Bach" },
+                { word: "BACH", h0: "El cognom més gran de la música", h1: "El mestre de Leipzig", h2: "Johann Sebastian..." },
+                { word: "VIOLI", h0: "Quatre cordes i una ànima", h1: "Lidera l'orquestra barroca", h2: "Instrument de Stradivarius" },
+                { word: "BAIXCONTINU", h0: "La base de tot l'edifici sonor", h1: "Acompanyament ininterromput", h2: "Clave i violoncel tocant els greus" },
+                { word: "CLAVE", h0: "Cordes pinçades per un plectre", h1: "Teclat típic del Barroc", h2: "També anomenat clavicèmbal" },
+                { word: "VIVALDI", h0: "El capellà pèl-roig", h1: "Mestre del concert a Venècia", h2: "Compositor de \"Les Quatre Estacions\"" },
+                { word: "LULLY", h0: "Es va clavar el bastó al peu", h1: "Músic de la court francesa", h2: "Compositor de Lluís XIV" },
+                { word: "ESTACIONS", h0: "La primavera n'és una", h1: "Quatre concerts per a violí", h2: "Obra més famosa de Vivaldi" },
+                { word: "PASSIO", h0: "Dolor i sacrifici", h1: "Oratori sobre la mort de Crist", h2: "La ... segons Sant Mateu" }
+            ],
+            "Classicisme": [
+                { word: "HAYDN", h0: "Humor i sorpresa musical", h1: "Pare de la simfonia i el quartet", h2: "Mestre de Mozart i Beethoven" },
+                { word: "GLUCK", h0: "La \"sort\" en alemany", h1: "Va simplificar l'òpera barroca", h2: "Christoph Willibald..." },
+                { word: "PIANO", h0: "Fort i fluix", h1: "Martells colpejant cordes", h2: "Instrument que va substituir el clave" },
+                { word: "MOZART", h0: "El nen prodigi etern", h1: "Geni de Salzburg", h2: "Wolfgang Amadeus..." },
+                { word: "CLARINET", h0: "Tub negre de fusta", h1: "Vent fusta de canya simple", h2: "Instrument favorit de Mozart" },
+                { word: "VIENA", h0: "La capital del Danubi", h1: "Centre neuràlgic del Classicisme", h2: "Ciutat de Haydn, Mozart i Beethoven" },
+                { word: "RONDO", h0: "Sempre torna al principi", h1: "Estructura A-B-A-C-A", h2: "Forma musical circular" },
+                { word: "ORDRE", h0: "El contrari del caos", h1: "Equilibri, simetria i proporció", h2: "Característica principal de l'art clàssic" },
+                { word: "ORQUESTRA", h0: "Una gran família instrumental", h1: "Corda, vent i percussió", h2: "Grup que toca simfonies" },
+                { word: "MINUET", h0: "Elegància francesa a la cort", h1: "Dansa en compàs de 3/4", h2: "Tercer moviment de la simfonia clàssica" }
+            ],
+            "Romanticisme": [
+                { word: "VERDI", h0: "Visca Itàlia!", h1: "El gran dramaturg de l'òpera", h2: "Autor de La Traviata i Nabucco" },
+                { word: "LISZT", h0: "La primera \"Rockstar\"", h1: "Virtuós del piano hongarès", h2: "Creador del poema simfònic" },
+                { word: "BEETHOVEN", h0: "El geni sord", h1: "Pont entre Classicisme i Romanticisme", h2: "Autor de la 9a Simfonia" },
+                { word: "LIEDS", h0: "Poesia i piano íntim", h1: "Cançons en alemany (plural)", h2: "Especialitat de Schubert" },
+                { word: "DRAMA", h0: "Tensió escènica", h1: "Wagner en deia \"Drama Musical\"", h2: "Teatre seriós amb música" },
+                { word: "WAGNER", h0: "L'anell del Nibelung", h1: "Creador de l'obra d'art total", h2: "Richard..." },
+                { word: "FORTE", h0: "Amb tota l'energia", h1: "Volum alt i potent", h2: "Dinàmica intensa (f)" },
+                { word: "SENTIMENTS", h0: "El motor del cor", h1: "L'objectiu de l'art romàntic", h2: "Amor, odi, tristor, alegria..." },
+                { word: "EMOCIO", h0: "El que sents escoltant", h1: "Subjectivitat i passió", h2: "Expressió personal del compositor" },
+                { word: "CHOPIN", h0: "El poeta del piano", h1: "Compositor polonès a París", h2: "Autor de nocturns i valsos" }
+            ],
+            "Segle XX": [
+                { word: "IMPRESSIONISME", h0: "Pintura amb sons", h1: "Atmosfera, color i llum", h2: "Estil de Debussy i Ravel" },
+                { word: "RAVEL", h0: "Precisió suïssa, ànima francesa", h1: "Orquestrador genial", h2: "Autor del Bolero" },
+                { word: "EXPRESSIONISME", h0: "El crit de l'ànima", h1: "Deformació de la realitat", h2: "Estil de la Segona Escola de Viena" },
+                { word: "JAZZ", h0: "Ritme trencat i \"swing\"", h1: "Música afroamericana", h2: "Improvisació amb trompetes i saxos" },
+                { word: "CAGE", h0: "Tot és música, fins i tot el soroll", h1: "Filosofia zen i atzar", h2: "John... (autor de 4'33\")" },
+                { word: "ATONAL", h0: "Sense casa ni centre", h1: "Totes les notes són iguals", h2: "Música sense tonalitat" },
+                { word: "RADIO", h0: "Ones invisibles", h1: "Mitjà de difusió massiva", h2: "Aparell per escoltar música a distància" },
+                { word: "SILENCI", h0: "L'absència de vibració", h1: "Part essencial de la música", h2: "El que s'escolta a l'obra 4'33\"" },
+                { word: "DEBUSSY", h0: "Músic de la lluna i el mar", h1: "Pare de la música moderna francesa", h2: "Claude... (Impressionisme)" },
+                { word: "SCHOENBERG", h0: "Va trencar les regles de l'harmonia", h1: "Inventor del dodecafonisme", h2: "Arnold..." }
+            ]
+        };
+
+        const ERAS = Object.keys(DB);
+        let completedEras = JSON.parse(localStorage.getItem('wordle_completed')) || [];
+        let currentEra = null;
+        let currentWordIndex = 0;
+        let targetWord = "";
+        let shuffledWords = []; // Random order for the current era
+        let guesses = [];
+        let currentGuess = "";
+        let gameOver = false;
+
+        // AUDIO LOGIC
+        const audio = document.getElementById('bg-music');
+        let isMuted = false;
+
+        function setVolume(v) {
+            audio.volume = v;
+            if (v == 0) {
+                isMuted = true;
+                document.getElementById('mute-btn').textContent = "🔇";
+            } else {
+                isMuted = false;
+                document.getElementById('mute-btn').textContent = "🔊";
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            audio.muted = isMuted;
+            document.getElementById('mute-btn').textContent = isMuted ? "🔇" : "🔊";
+        }
+
+        function startMusic() {
+            audio.play().catch(e => console.log("Audio play blocked: " + e));
+        }
+
+        function showStart() { switchScreen('start-screen'); }
+
+        function showMenu() {
+            switchScreen('menu-screen');
+            renderMenu();
+            startMusic();
+        }
+
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function renderMenu() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+            ERAS.forEach(era => {
+                const card = document.createElement('div');
+                card.className = `era-card ${completedEras.includes(era) ? 'completed' : ''}`;
+                card.innerHTML = `<h3>${era}</h3><p style="font-size: 0.8rem; margin: 10px 0 0 0;">10 Paraules</p>`;
+                card.onclick = () => startEra(era);
+                grid.appendChild(card);
+            });
+        }
+
+        function startEra(era) {
+            currentEra = era;
+            currentWordIndex = 0;
+            // Shuffle words for this session
+            shuffledWords = [...DB[era]].sort(() => Math.random() - 0.5);
+            switchScreen('game-screen');
+            loadWord();
+        }
+
+        function loadWord() {
+            const wordData = shuffledWords[currentWordIndex];
+            targetWord = wordData.word.toUpperCase();
+            guesses = [];
+            currentGuess = "";
+            gameOver = false;
+
+            document.getElementById('era-display').textContent = `${currentEra.toUpperCase()} - PARAULA ${currentWordIndex + 1}/10`;
+
+            const hintBox = document.getElementById('hint-box');
+            hintBox.textContent = "PISTA INICIAL: " + wordData.h0;
+            hintBox.classList.remove('hidden');
+
+            document.getElementById('win-screen').classList.add('hidden');
+
+            initGrid();
+            initKeyboard();
+        }
+
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            const len = targetWord.length;
+            grid.style.setProperty('--cols', len);
+            for (let i = 0; i < 6; i++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+                row.style.gridTemplateColumns = `repeat(${len}, 1fr)`;
+                for (let j = 0; j < len; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.id = `tile-${i}-${j}`;
+                    row.appendChild(tile);
+                }
+                grid.appendChild(row);
+            }
+        }
+
+        function initKeyboard() {
+            const rows = ["QWERTYUIOP", "ASDFGHJKLÇ", "ZXCVBNM"];
+            ['row1', 'row2', 'row3'].forEach((rid, i) => {
+                const el = document.getElementById(rid);
+                el.innerHTML = '';
+                if (i === 2) el.appendChild(createKey('ENTER', 'big', submitGuess));
+                for (let char of rows[i]) el.appendChild(createKey(char, '', () => handleKey(char)));
+                if (i === 2) el.appendChild(createKey('⌫', 'big', backspace));
+            });
+        }
+
+        function createKey(char, cls, fn) {
+            const k = document.createElement('div');
+            k.className = `key ${cls}`;
+            k.textContent = char;
+            k.dataset.key = char;
+            k.onclick = fn;
+            return k;
+        }
+
+        function handleKey(k) {
+            if (gameOver || currentGuess.length >= targetWord.length) return;
+            currentGuess += k;
+            updateGrid();
+        }
+
+        function backspace() {
+            if (gameOver || currentGuess.length === 0) return;
+            currentGuess = currentGuess.slice(0, -1);
+            updateGrid();
+        }
+
+        function updateGrid() {
+            const rowIdx = guesses.length;
+            const len = targetWord.length;
+            for (let i = 0; i < len; i++) {
+                const tile = document.getElementById(`tile-${rowIdx}-${i}`);
+                tile.textContent = currentGuess[i] || '';
+                tile.dataset.state = currentGuess[i] ? 'active' : '';
+            }
+        }
+
+        function submitGuess() {
+            if (gameOver || currentGuess.length !== targetWord.length) return;
+            const guess = currentGuess;
+            const row = guesses.length;
+            guesses.push(guess);
+            currentGuess = "";
+
+            processGuess(guess, row);
+        }
+
+        function processGuess(guess, row) {
+            const len = targetWord.length;
+            let matches = Array(len).fill('absent');
+            let targetCopy = targetWord.split('');
+
+            // Correct positions
+            for (let i = 0; i < len; i++) {
+                if (guess[i] === targetWord[i]) {
+                    matches[i] = 'correct';
+                    targetCopy[i] = null;
+                }
+            }
+            // Present positions
+            for (let i = 0; i < len; i++) {
+                if (matches[i] === 'absent' && targetCopy.includes(guess[i])) {
+                    matches[i] = 'present';
+                    targetCopy[targetCopy.indexOf(guess[i])] = null;
+                }
+            }
+
+            // Animate and update keyboard
+            matches.forEach((state, i) => {
+                const tile = document.getElementById(`tile-${row}-${i}`);
+                const key = document.querySelector(`.key[data-key="${guess[i]}"]`);
+                setTimeout(() => {
+                    tile.dataset.state = state;
+                    if (key) {
+                        if (state === 'correct') key.dataset.state = 'correct';
+                        else if (state === 'present' && key.dataset.state !== 'correct') key.dataset.state = 'present';
+                        else if (!key.dataset.state) key.dataset.state = 'absent';
+                    }
+                }, i * (800 / len));
+            });
+
+            setTimeout(() => {
+                if (guess === targetWord) {
+                    showWin();
+                } else if (guesses.length === 6) {
+                    gameOver = true;
+                    showLoss();
+                } else {
+                    checkHints();
+                }
+            }, 1000);
+        }
+
+        function checkHints() {
+            const wordData = shuffledWords[currentWordIndex];
+            const hintBox = document.getElementById('hint-box');
+
+            if (guesses.length === 3) {
+                hintBox.textContent = "PISTA: " + wordData.h1;
+                hintBox.classList.remove('hidden');
+            } else if (guesses.length === 5) {
+                hintBox.textContent = "PISTA CLARA: " + wordData.h2;
+                hintBox.classList.remove('hidden');
+            }
+        }
+
+        function showWin() {
+            gameOver = true;
+            document.getElementById('win-screen').classList.remove('hidden');
+            document.getElementById('win-title').textContent = "CORRECTE!";
+            document.getElementById('win-title').style.color = "var(--correct)";
+            document.getElementById('win-msg').textContent = `Has trobat: ${targetWord}`;
+            document.getElementById('progress-text').textContent = `${currentWordIndex + 1} / 10`;
+            document.getElementById('next-btn').textContent = (currentWordIndex === 9) ? "ÈPOCA COMPLETADA" : "SEGÜENT";
+        }
+
+        function showLoss() {
+            document.getElementById('win-screen').classList.remove('hidden');
+            document.getElementById('win-title').textContent = "OH NO!";
+            document.getElementById('win-title').style.color = "#c62828";
+            document.getElementById('win-msg').textContent = `La paraula era: ${targetWord}. Torna-ho a provar!`;
+            document.getElementById('progress-text').textContent = "";
+            document.getElementById('next-btn').textContent = "REINTENTAR";
+        }
+
+        function handleWinAction() {
+            if (document.getElementById('next-btn').textContent === "REINTENTAR") {
+                loadWord();
+                return;
+            }
+
+            if (currentWordIndex === 9) {
+                if (!completedEras.includes(currentEra)) {
+                    completedEras.push(currentEra);
+                    localStorage.setItem('wordle_completed', JSON.stringify(completedEras));
+                }
+                showMenu();
+            } else {
+                currentWordIndex++;
+                loadWord();
+            }
+        }
+
+        // Physical Keyboard Support
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('game-screen').classList.contains('hidden')) return;
+            const key = e.key.toUpperCase();
+            if (/^[A-ZÇ]$/.test(key)) handleKey(key);
+            else if (key === 'ENTER') submitGuess();
+            else if (key === 'BACKSPACE') backspace();
+        });
+
+        // Initialize implicitly on first run
+        if (localStorage.getItem('wordle_visited')) {
+            // Optional: Start at menu if already visited
+        }
+        localStorage.setItem('wordle_visited', 'true');
+    </script>
+</body>
+
+</html>

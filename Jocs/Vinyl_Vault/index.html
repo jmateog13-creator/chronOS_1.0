@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Vault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --vinyl-black: #050505;
+            --label-paper: #f4e4bc;
+            --accent: #d94949;
+            --highlight: #e0d0a0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Syne Mono', monospace;
+            background: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--bg-dark);
+        }
+
+        /* DYNAMIC BG */
+        #bg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('img/vinyl_bg.png') no-repeat center center;
+            background-size: cover;
+            filter: blur(8px) brightness(0.7);
+            z-index: 1;
+        }
+
+        #game-interface {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 800px;
+            height: 85vh;
+            background: rgba(244, 228, 188, 0.95);
+            /* Paper texture color */
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #c0b090;
+        }
+
+        /* HEADER & TIMER */
+        header {
+            background: #2a2a2a;
+            color: #f4e4bc;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        h1 {
+            margin: 0;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+
+        #timer {
+            font-size: 2.5rem;
+            color: var(--accent);
+            font-weight: bold;
+            font-family: 'Special Elite', cursive;
+        }
+
+        /* VINYL AREA */
+        #turntable-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(45deg,
+                    #f4e4bc,
+                    #f4e4bc 10px,
+                    #ebd8a8 10px,
+                    #ebd8a8 20px);
+            position: relative;
+        }
+
+        .vinyl-record {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #333 30%, #050505 70%);
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            animation: spin 4s linear infinite;
+            animation-play-state: paused;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vinyl-record.spinning {
+            animation-play-state: running;
+        }
+
+        .vinyl-label {
+            width: 100px;
+            height: 100px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 4px solid #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 2rem;
+        }
+
+        .tonearm {
+            position: absolute;
+            top: -20px;
+            right: 50px;
+            width: 20px;
+            height: 250px;
+            background: #666;
+            transform-origin: top center;
+            transform: rotate(-30deg);
+            transition: transform 1s ease;
+            z-index: 20;
+            border-radius: 5px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .tonearm.playing {
+            transform: rotate(15deg);
+        }
+
+        /* INTERACTIONS */
+        #interaction-panel {
+            padding: 20px;
+            background: #fff;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-top: 2px solid #ccc;
+        }
+
+        #question-text {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-option {
+            background: #f0f0f0;
+            border: 2px solid #333;
+            padding: 15px;
+            font-family: 'Syne Mono', monospace;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-option:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        /* PENALTY OVERLAY */
+        #penalty-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: none;
+            /* Flex */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+        }
+
+        #penalty-overlay h2 {
+            font-size: 3rem;
+            color: var(--accent);
+            margin: 0 0 20px 0;
+            transform: rotate(-5deg);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #fff;
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* SCREENS */
+        #start-screen,
+        #end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+        }
+
+        .btn-start {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 2rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            font-family: 'Special Elite', cursive;
+            cursor: pointer;
+            transform: rotate(-2deg);
+            transition: 0.2s;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        #labels-count {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* STATUS INDICATORS */
+        #status-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="bg-layer"></div>
+
+    <div id="game-interface" style="display:none;">
+        <header>
+            <div id="labels-count">Etiquetats: <span id="score">0</span></div>
+            <h1>VINYL VAULT</h1>
+            <div id="timer">05:00</div>
+        </header>
+
+        <div id="turntable-zone">
+            <div class="tonearm" id="tonearm"></div>
+            <div class="vinyl-record" id="record">
+                <div class="vinyl-label">?</div>
+            </div>
+            <div id="status-bar"></div>
+        </div>
+
+        <div id="interaction-panel">
+            <div id="question-text">Escolant...</div>
+            <div id="options-container" class="options-grid">
+                <!-- Play button initially -->
+            </div>
+        </div>
+
+        <div id="penalty-overlay">
+            <h2>AGULLA ENCALLADA!</h2>
+            <p style="font-size: 1.5rem;">Netejant el vinil...</p>
+            <div class="spinner"></div>
+            <p id="penalty-timer" style="margin-top: 15px; font-size: 2rem;">10.0</p>
+        </div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1 style="font-size: 4rem; color: var(--accent);">VINYL VAULT</h1>
+        <p style="font-size: 1.5rem; max-width: 600px; margin: 20px;">
+            Ets l'encarregat de la botiga. Tens una caixa de vinils sense etiquetar.<br>
+            Escolta, identifica el compositor i l'obra.<br>
+            La botiga obre en <strong>5 minuts</strong>.
+        </p>
+        <button class="btn-start" onclick="startGame()">OBRIR CAIXA</button>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" style="display:none;">
+        <h1 id="end-title" style="color: var(--accent);">NO T'HA DONAT TEMPS</h1>
+        <p id="end-msg" style="font-size: 1.5rem; margin: 20px;">No has pogut vendre cap vinil dels nous.</p>
+        <p>Has etiquetat: <span id="final-score">0</span> vinils.</p>
+        <button class="btn-start" onclick="location.reload()">TORNAR A COMENÇAR</button>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+        const RAW_FILES = [
+            "Ànonim- Organum.Tu patris sempiternu.m4a", "Ànonim-Greensleeves.m4a",
+            "Bach-Toccata & Fugue D Minor, BWV 565.m4a", "Beethoven- 5a Simfonia.m4a",
+            "Chopin - Nocturne op.9 No.2.m4a", "Franz Joseph Haydn - ＂Simfonia Sorpresa＂ (Symphony no. 94).m4a",
+            "Haendel- Lascia ch'io pianga.m4a", "Hildegard of Bingen： De Spiritu Sancto (Holy Spirit, The Quickener Of Life).m4a",
+            "Jellybean Fenderson-Oscilloscope Music.m4a", "Mozart-Pequeña Serenata Nocturna.m4a",
+            "P. Tchaikovsky - Pas de Deux ('The Nutcracker').m4a", "Palestrina-O bone Jesu.m4a",
+            "Richard Wagner- Cavalcada de les Valkiries.m4a", "Schoemberg-Tres piezas para piano.m4a",
+            "Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a",
+            "Trobador anònim-Fi d'amor.m4a", "Verdelot-Con soave parlar.m4a",
+            "Vivaldi- Four Seasons： Winter (L'Inverno).m4a"
+        ];
+
+        let tracks = [];
+        let currentTrack = null;
+        let visitedTracks = [];
+        let globalTimer = 300; // 5 minutes
+        let timerInterval;
+        let score = 0;
+        let isPhaseTwo = false; // false = Composer, true = Work
+
+        function parseTracks() {
+            return RAW_FILES.map(file => {
+                let clean = file.replace('.m4a', '');
+                let parts = clean.split(/[-–—:]/);
+                let composer = parts.length >= 2 ? parts[0].trim() : "Desconegut";
+                let work = parts.length >= 2 ? parts.slice(1).join(' ').trim().replace(/[＂"']/g, '') : clean;
+                return {
+                    src: '../../assets/audio_shared/' + file,
+                    composer: composer,
+                    work: work
+                };
+            });
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-interface').style.display = 'flex';
+
+            tracks = parseTracks();
+            visitedTracks = [];
+            score = 0;
+            globalTimer = 300;
+            updateScore();
+
+            // Start Global Timer
+            timerInterval = setInterval(() => {
+                globalTimer--;
+                updateTimerDisplay();
+                if (globalTimer <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+
+            nextRecord();
+        }
+
+        function updateTimerDisplay() {
+            let m = Math.floor(globalTimer / 60);
+            let s = globalTimer % 60;
+            document.getElementById('timer').innerText =
+                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function nextRecord() {
+            // Pick rand track not in visited (or reset if all visited)
+            let available = tracks.filter(t => !visitedTracks.includes(t));
+            if (available.length === 0) {
+                // Win state / All labeled
+                // Or endless mode:
+                visitedTracks = [];
+                available = tracks;
+            }
+
+            currentTrack = available[Math.floor(Math.random() * available.length)];
+            visitedTracks.push(currentTrack);
+
+            // Reset UI
+            isPhaseTwo = false;
+            document.getElementById('record').classList.remove('spinning');
+            document.getElementById('tonearm').classList.remove('playing');
+            document.getElementById('status-bar').innerText = "";
+
+            // Initial Start Button provided by UI to play
+            showPlayButton();
+        }
+
+        function showPlayButton() {
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            container.style.display = 'flex';
+            container.style.justifyContent = 'center';
+
+            let btn = document.createElement('button');
+            btn.className = 'btn-start'; // Reuse style
+            btn.style.marginTop = '0';
+            btn.innerText = "PUNXAR DISC 🎵";
+            btn.onclick = startRound;
+            container.appendChild(btn);
+
+            document.getElementById('question-text').innerText = "Nou disc a la safata...";
+        }
+
+        function startRound() {
+            const container = document.getElementById('options-container');
+            container.style.display = 'grid'; // Restore grid
+
+            // Play Audio
+            const audio = document.getElementById('audio-player');
+            audio.src = currentTrack.src;
+            audio.play().catch(e => console.log("Audio autoplay blocked"));
+
+            // Anim
+            document.getElementById('record').classList.add('spinning');
+            document.getElementById('tonearm').classList.add('playing');
+
+            askComposer();
+        }
+
+        function askComposer() {
+            isPhaseTwo = false;
+            document.getElementById('question-text').innerText = "QUI ÉS EL COMPOSITOR?";
+            generateOptions('composer');
+        }
+
+        function askWork() {
+            isPhaseTwo = true;
+            document.getElementById('question-text').innerText = "QUINA OBRA ÉS?";
+            generateOptions('work');
+        }
+
+        function generateOptions(type) {
+            const correct = type === 'composer' ? currentTrack.composer : currentTrack.work;
+            // Get distractor options
+            let pool = tracks.map(t => type === 'composer' ? t.composer : t.work)
+                .filter(x => x !== correct);
+            pool = [...new Set(pool)].sort(() => Math.random() - 0.5); // Unique shuffle
+
+            let options = [correct, ...pool.slice(0, 3)].sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(opt === correct);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect) {
+            if (!isCorrect) {
+                triggerPenalty();
+            } else {
+                if (!isPhaseTwo) {
+                    askWork();
+                } else {
+                    // Correct Work -> Success
+                    score++;
+                    updateScore();
+                    document.getElementById('question-text').innerText = "ETIQUETAT CORRECTAMENT! ✅";
+                    setTimeout(nextRecord, 1000);
+                }
+            }
+        }
+
+        function triggerPenalty() {
+            // Overlay
+            const overlay = document.getElementById('penalty-overlay');
+            overlay.style.display = 'flex';
+
+            // Pause Audio
+            document.getElementById('audio-player').pause();
+            document.getElementById('record').classList.remove('spinning');
+
+            let penaltyTime = 10.0;
+            const pTimer = document.getElementById('penalty-timer');
+            pTimer.innerText = penaltyTime.toFixed(1);
+
+            let pInterval = setInterval(() => {
+                penaltyTime -= 0.1;
+                pTimer.innerText = penaltyTime.toFixed(1);
+                if (penaltyTime <= 0) {
+                    clearInterval(pInterval);
+                    overlay.style.display = 'none';
+                    // Resume
+                    document.getElementById('audio-player').play();
+                    document.getElementById('record').classList.add('spinning');
+                }
+            }, 100);
+        }
+
+        function updateScore() {
+            document.getElementById('score').innerText = score;
+        }
+
+        function gameOver() {
+            clearInterval(timerInterval);
+            document.getElementById('audio-player').pause();
+            document.getElementById('game-interface').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'flex';
+            document.getElementById('final-score').innerText = score;
+        }
+
+    </script>
+</body>
+
+</html>

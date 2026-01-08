@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WhatsApp Històric</title>
+    <style>
+        :root {
+            --bg-color: #e5ddd5;
+            --header-bg: #075e54;
+            --header-text: #ffffff;
+            --chat-bg-in: #ffffff;
+            --chat-bg-out: #dcf8c6;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #d1d7db;
+            font-family: var(--font-family);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- CONTACT LIST --- */
+        #contact-list-screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            z-index: 10;
+        }
+
+        .app-header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .contact-list {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .contact-item:hover {
+            background: #f5f5f5;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+            background: #ddd;
+        }
+
+        .contact-info {
+            flex-grow: 1;
+        }
+
+        .contact-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .contact-status {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* --- CHAT SCREEN --- */
+        #chat-screen {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            transition: left 0.3s ease;
+            z-index: 20;
+        }
+
+        #chat-screen.active {
+            left: 0;
+        }
+
+        .chat-header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 10px 0 0;
+        }
+
+        .chat-header-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header-name {
+            font-weight: bold;
+        }
+
+        .chat-header-status {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .chat-area {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-repeat: repeat;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            position: relative;
+            font-size: 1rem;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.incoming {
+            align-self: flex-start;
+            background: var(--chat-bg-in);
+            border-top-left-radius: 0;
+        }
+
+        .message.outgoing {
+            align-self: flex-end;
+            background: var(--chat-bg-out);
+            border-top-right-radius: 0;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #999;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .tts-btn {
+            display: inline-block;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.5;
+        }
+
+        .tts-btn:hover {
+            opacity: 1;
+        }
+
+        /* --- CONTROLS --- */
+        .input-area {
+            background: #f0f0f0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .choice-btn {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .choice-btn:hover {
+            background: #e9e9e9;
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #dcf8c6;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+        }
+
+        #start-screen h1 {
+            color: var(--header-bg);
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        #start-screen p {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 40px;
+            max-width: 400px;
+        }
+
+        .start-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app-container">
+        <!-- CONTACT LIST -->
+        <div id="contact-list-screen">
+            <div class="app-header">
+                <span>WhatsApp Històric</span>
+            </div>
+            <div class="contact-list" id="contact-list">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- START SCREEN -->
+        <div id="start-screen">
+            <h1>WhatsApp Històric</h1>
+            <p>Xateja amb els grans compositors. Ajuda'ls a prendre les decisions que han marcat la història de la
+                música!</p>
+            <button class="start-btn" onclick="startGame()">COMENÇAR</button>
+        </div>
+
+        <!-- CHAT SCREEN -->
+        <div id="chat-screen">
+            <div class="chat-header">
+                <button class="back-btn" onclick="closeChat()">←</button>
+                <img src="" class="avatar" id="chat-avatar">
+                <div class="chat-header-info">
+                    <span class="chat-header-name" id="chat-name">Nom</span>
+                    <span class="chat-header-status">en línia</span>
+                </div>
+            </div>
+            <div class="chat-area" id="chat-area">
+                <!-- Messages -->
+            </div>
+            <div class="input-area" id="input-area">
+                <!-- Choices -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="modal">
+        <h2>🎉 Conversa Completada!</h2>
+        <p>Has ajudat al compositor a fer història.</p>
+        <button class="modal-btn" onclick="completeChat()">Tornar al Menú</button>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const CONTACTS = [
+            { id: 'hildegard', name: 'Hildegard von Bingen', img: 'img/hildegard.jpg' },
+            { id: 'machaut', name: 'Guillaume de Machaut', img: 'img/machaut.jpg' },
+            { id: 'palestrina', name: 'G.P. Palestrina', img: 'img/palestrina.jpg' },
+            { id: 'josquin', name: 'Josquin des Prez', img: 'img/josquin.jpg' },
+            { id: 'bach', name: 'J.S. Bach', img: 'img/bach.jpg' },
+            { id: 'vivaldi', name: 'Antonio Vivaldi', img: 'img/vivaldi.jpg' },
+            { id: 'mozart', name: 'W.A. Mozart', img: 'img/mozart.jpg' },
+            { id: 'haydn', name: 'F.J. Haydn', img: 'img/haydn.jpg' },
+            { id: 'beethoven', name: 'L.V. Beethoven', img: 'img/beethoven.jpg' },
+            { id: 'chopin', name: 'Frédéric Chopin', img: 'img/chopin.jpg' },
+            { id: 'debussy', name: 'Claude Debussy', img: 'img/debussy.jpg' }
+        ];
+
+        // Structure: Array of steps.
+        // type: 'msg' (bot speaks) or 'choice' (user chooses).
+        const CONVERSATIONS = {
+            'hildegard': [
+                { type: 'msg', text: "Hola! Sóc l'abadessa Hildegard. Tinc un problema...", delay: 1000 },
+                { type: 'msg', text: "Tinc unes visions divines molt fortes, però l'Església és molt estricta amb les dones.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu-les i posa'ls música! (Ordo Virtutum)", correct: true, response: "Bona idea! La música farà que les meves visions arribin a tothom." },
+                        { text: "Fes una simfonia per a orquestra.", correct: false, response: "Una orquestra? Què és això? Encara no existeixen!" }
+                    ]
+                },
+                { type: 'msg', text: "Però tinc por que em diguin que sóc vanitosa per signar les obres.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Digue'ls que Déu t'inspira directament.", correct: true, response: "Sí! Si dic que sóc un instrument de Déu, no em podran atacar." },
+                        { text: "Fes servir un nom fals d'home.", correct: false, response: "No! Vull que les dones siguem reconegudes per la nostra fe." }
+                    ]
+                },
+                { type: 'msg', text: "Sí, així no em podran atacar. Però quin estil faig servir?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Un rang vocal molt ampli per tocar el cel.", correct: true, response: "M'agrada! Les veus han de pujar cap al cel com les ànimes." },
+                        { text: "Notes molt greus i fosques.", correct: false, response: "No, les meves visions són de llum, no de foscor!" }
+                    ]
+                },
+                { type: 'msg', text: "I sobre què hauria de tractar la meva obra?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Sobre la lluita entre les Virtuts i el Diable.", correct: true, response: "Perfecte. Les Virtuts cantaran i el Diable només podrà parlar." },
+                        { text: "Sobre receptes de cuina medieval.", correct: false, response: "Això ho deixo per als llibres de medicina, no per a la música!" }
+                    ]
+                },
+                { type: 'msg', text: "Gràcies! Seré recordada com la Sibil·la del Rin.", delay: 1500 }
+            ],
+            'machaut': [
+                { type: 'msg', text: "Salutacions. Sóc Guillaume de Machaut.", delay: 1000 },
+                { type: 'msg', text: "Vull escriure una missa completa, però fins ara ningú ho ha fet com una obra unificada.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes-ho! Crea la Missa de Notre Dame.", correct: true, response: "Sí! Unificaré el Kyrie, Gloria, Credo... Serà una obra mestra!" },
+                        { text: "Millor escriu només cançons d'amor.", correct: false, response: "Però jo vull innovar amb la polifonia sacra també!" }
+                    ]
+                },
+                { type: 'msg', text: "També vull experimentar amb ritmes nous i complexos.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Utilitza l'Ars Nova per fer ritmes trencats.", correct: true, response: "L'Ars Nova! Exacte, la nova tècnica per a una nova era." },
+                        { text: "Torna al ritme lliure del Gregorià.", correct: false, response: "Això és el passat. Jo miro cap al futur." }
+                    ]
+                },
+                { type: 'msg', text: "Alguns diuen que la meva música és massa complicada.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Ignora'ls, la complexitat és bellesa matemàtica.", correct: true, response: "Tens raó. La música ha de ser un repte intel·lectual." },
+                        { text: "Fes-ho més simple per als monjos.", correct: false, response: "Mai! L'art ha d'elevar l'esperit a través de la raó." }
+                    ]
+                },
+                { type: 'msg', text: "A qui hauria de dedicar aquesta gran Missa?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "A la Verge Maria.", correct: true, response: "A la Verge, és clar. La meva música ressonarà a la Catedral de Reims!" },
+                        { text: "Al Rei d'Anglaterra.", correct: false, response: "No, sóc francès! Això seria traïció!" }
+                    ]
+                },
+                { type: 'msg', text: "La polifonia mai tornarà a ser la mateixa.", delay: 1500 }
+            ],
+            'palestrina': [
+                { type: 'msg', text: "Benvolgut amic, el Concili de Trento em té preocupat.", delay: 1000 },
+                { type: 'msg', text: "El Papa vol prohibir la polifonia perquè diu que no s'entén la lletra.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Compon una missa clara (Missa Papa Marcel).", correct: true, response: "Exacte! Si faig que les veus respectin el text, salvaré la polifonia!" },
+                        { text: "Doncs fes música només amb instruments.", correct: false, response: "Impossible! La música a l'església ha de portar la paraula de Déu." }
+                    ]
+                },
+                { type: 'msg', text: "Però quantes veus hauria d'utilitzar per demostrar la meva mestria?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Sis veus, però ben equilibrades.", correct: true, response: "Sis veus està bé. L'equilibri és la clau de la perfecció." },
+                        { text: "Cent veus, que sigui un caos!", correct: false, response: "Això és just el que volen prohibir! Ha de ser clar." }
+                    ]
+                },
+                { type: 'msg', text: "Quin estil hauria de tenir la melodia?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Suau, sense dissonàncies brusques.", correct: true, response: "Sí, la puresa és el que vol Déu. Un flux continu." },
+                        { text: "Ple de xocs i sorolls.", correct: false, response: "No! Això distreu de l'oració." }
+                    ]
+                },
+                { type: 'msg', text: "Creus que els cardenals acceptaran la meva obra?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Si la lletra s'entén, sí.", correct: true, response: "Confio en això. La bellesa salvarà la música." },
+                        { text: "No, odien la música.", correct: false, response: "Tinc fe que canviaran d'opinió en sentir el meu Kyrie." }
+                    ]
+                },
+                { type: 'msg', text: "Gràcies, amic. Crec que he salvat la música sacra!", delay: 1500 }
+            ],
+            'josquin': [
+                { type: 'msg', text: "Bon dia. Sóc Josquin des Prez.", delay: 1000 },
+                { type: 'msg', text: "Tothom diu que sóc el mestre de les notes, però vull més emoció.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes que la música 'pinti' les paraules.", correct: true, response: "Això faré! L'Humanisme ens ensenya que l'emoció humana és important." },
+                        { text: "Torna al Cant Gregorià.", correct: false, response: "El Gregorià és antic. Estem al Renaixement!" }
+                    ]
+                },
+                { type: 'msg', text: "Com puc fer que les veus es relacionin entre elles?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Utilitza la imitació contínua.", correct: true, response: "Sí, una veu imitarà l'altra com un eco diví." },
+                        { text: "Fes que cantin totes alhora sempre.", correct: false, response: "Això seria massa avorrit i simple." }
+                    ]
+                },
+                { type: 'msg', text: "I si el text parla de dolor i tristesa?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Utilitza dissonàncies i ritmes lents.", correct: true, response: "Clar! La música ha d'expressar el text (Mille Regretz)." },
+                        { text: "Fes una melodia alegre i ràpida.", correct: false, response: "No tindria sentit! La música ha de servir la paraula." }
+                    ]
+                },
+                { type: 'msg', text: "On hauria de treballar per ser famós?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "A la Capella Sixtina, a Roma.", correct: true, response: "A Roma! Allà el meu art serà etern i admirat pel Papa." },
+                        { text: "En una taverna local.", correct: false, response: "Sóc un mestre, no un músic de carrer!" }
+                    ]
+                },
+                { type: 'msg', text: "La meva música serà recordada per sempre.", delay: 1500 }
+            ],
+            'bach': [
+                { type: 'msg', text: "Guten Tag. Sóc Johann Sebastian Bach.", delay: 1000 },
+                { type: 'msg', text: "M'han demanat una obra per a teclat que demostri totes les tonalitats.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu 'El Clavecí Ben Temperat'!", correct: true, response: "Wunderbar! Així demostraré que podem tocar en totes les tecles." },
+                        { text: "Escriu una òpera famosa.", correct: false, response: "Jo mai he escrit òpera! Sóc un músic d'església." }
+                    ]
+                },
+                { type: 'msg', text: "Però és molt difícil fer-ho en totes les tonalitats...", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes un Preludi i Fuga per a cada to.", correct: true, response: "Preludi i Fuga! Genial. Un per escalfar i l'altre per pensar." },
+                        { text: "Fes només escales avorrides.", correct: false, response: "Nein! La música ha de ser interessant i complexa." }
+                    ]
+                },
+                { type: 'msg', text: "També he de fer música per a la missa de diumenge a Leipzig.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu una Cantata nova cada setmana.", correct: true, response: "És molta feina, però ho faré per la glòria de Déu (Soli Deo Gloria)." },
+                        { text: "Repeteix la mateixa cançó sempre.", correct: false, response: "Els feligresos s'adormirien! Cal varietat." }
+                    ]
+                },
+                { type: 'msg', text: "I per a l'orgue? Vull fer alguna cosa espectacular.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes una Tocata i Fuga en Re Menor.", correct: true, response: "Sí! Faré tremolar l'església amb els tubs més greus!" },
+                        { text: "Toca només amb un dit.", correct: false, response: "Tinc deu dits i dos peus! Els faré servir tots!" }
+                    ]
+                },
+                { type: 'msg', text: "Ara he d'anar a ensenyar llatí als nens... Auf Wiedersehen!", delay: 1500 }
+            ],
+            'vivaldi': [
+                { type: 'msg', text: "Ciao! Sóc el 'Capellà Pèl-roig'.", delay: 1000 },
+                { type: 'msg', text: "Les meves alumnes de l'orfenat toquen de meravella el violí.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu concerts per a elles (Les 4 Estacions).", correct: true, response: "Bravissimo! Elles són virtuoses i el món ha d'escoltar-les." },
+                        { text: "Millor dedica't al piano.", correct: false, response: "Piano? Jo sóc el rei del violí!" }
+                    ]
+                },
+                { type: 'msg', text: "Vull descriure la natura amb música.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes que els violins imitin els ocells i les tempestes.", correct: true, response: "Quina gran idea! Música programàtica!" },
+                        { text: "La música no pot imitar res.", correct: false, response: "I tant que sí! Ja veuràs com faig ploure amb l'arc." }
+                    ]
+                },
+                { type: 'msg', text: "Per a la 'Primavera', què hi poso?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Ocells cantant i rius fluint.", correct: true, response: "Sí, trinos alegres i aigua corrent." },
+                        { text: "Neu i fred.", correct: false, response: "Això seria l'Hivern! Estem a la Primavera." }
+                    ]
+                },
+                { type: 'msg', text: "I per a l'Estiu? Fa molta calor a Itàlia.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Una tempesta forta d'estiu.", correct: true, response: "Exacte! Trons i llamps amb les cordes!" },
+                        { text: "Fulles caient.", correct: false, response: "Això és la Tardor." }
+                    ]
+                },
+                { type: 'msg', text: "Perfecte! Serà un èxit a Venècia. Presto!", delay: 1500 }
+            ],
+            'mozart': [
+                { type: 'msg', text: "Hola! Sóc en Wolfie! 🎵", delay: 1000 },
+                { type: 'msg', text: "Un home misteriós de negre m'ha encarregat una missa de difunts.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Accepta l'encàrrec (Rèquiem).", correct: true, response: "D'acord... Encara que sento que l'estic escrivint per al meu propi funeral..." },
+                        { text: "Demana feina a Bach.", correct: false, response: "En Bach va morir fa temps! No puc demanar-li res!" }
+                    ]
+                },
+                { type: 'msg', text: "Em sento molt cansat i malalt...", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Descansa una mica, Wolfie.", correct: false, response: "No puc! Necessito els diners i tinc massa música al cap!" },
+                        { text: "Treballa, però fes també una òpera divertida.", correct: true, response: "Sí! Necessito riure una mica." }
+                    ]
+                },
+                { type: 'msg', text: "Faré una òpera en alemany amb màgia.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu 'La Flauta Màgica'.", correct: true, response: "Sí! Una història de màgia, amor i proves maçòniques!" },
+                        { text: "Fes una tragèdia grega avorrida.", correct: false, response: "Uf, no! Jo vull que la gent rigui i plori d'emoció." }
+                    ]
+                },
+                { type: 'msg', text: "I el personatge de la Reina de la Nit?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Que canti notes súper agudes!", correct: true, response: "Jaja! Sí, faré patir a la soprano amb Fa sobreaguts!" },
+                        { text: "Que reciti un poema.", correct: false, response: "Això és òpera, no teatre! Ha de cantar!" }
+                    ]
+                },
+                { type: 'msg', text: "Sento que em queda poc temps... he d'escriure ràpid!", delay: 1500 }
+            ],
+            'haydn': [
+                { type: 'msg', text: "Servus. Sóc Joseph Haydn.", delay: 1000 },
+                { type: 'msg', text: "El públic de Londres s'adorm als concerts lents.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes un cop fort de timbal (Simfonia Sorpresa).", correct: true, response: "Jaja! Sí! Això els despertarà de cop." },
+                        { text: "Posa música electrònica.", correct: false, response: "Què és l'electricitat? Estem al segle XVIII!" }
+                    ]
+                },
+                { type: 'msg', text: "Sóc el pare de la simfonia, he d'innovar. Quantes en faig?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu més de 100 simfonies!", correct: true, response: "En faré 104! Tinc molta energia." },
+                        { text: "Fes-ne només una i prou.", correct: false, response: "Una? Tinc idees per a mil!" }
+                    ]
+                },
+                { type: 'msg', text: "Tinc un alumne jove molt tossut, un tal Beethoven.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Tingues paciència, és un geni.", correct: true, response: "Ho sé, però té un caràcter... serà gran, ho presento." },
+                        { text: "Fes-lo fora de classe.", correct: false, response: "No puc, té massa talent. El món ha de conèixer-lo." }
+                    ]
+                },
+                { type: 'msg', text: "Els músics de la cort volen marxar a casa de vacances.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes la 'Simfonia dels Adéus'.", correct: true, response: "Sí! Marxaran un per un de l'escenari fins que el príncep ho entengui." },
+                        { text: "No els deixis marxar mai.", correct: false, response: "Pobrets, necessiten descansar." }
+                    ]
+                },
+                { type: 'msg', text: "Quina broma més bona! El príncep riurà. Adéu!", delay: 1500 }
+            ],
+            'beethoven': [
+                { type: 'msg', text: "NO HI SENTO RES!!!", delay: 1000 },
+                { type: 'msg', text: "Com puc dirigir l'orquestra si no escolto els violins?", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "La música és al teu cap. Escriu la 9a Simfonia!", correct: true, response: "Tens raó! La música brolla de la meva ànima, no de les meves orelles." },
+                        { text: "Doncs fes música suau com Mozart.", correct: false, response: "MAI! La meva música és lluita i tempesta!" }
+                    ]
+                },
+                { type: 'msg', text: "Estic enfadat amb el destí per la meva sordesa.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Expressa aquesta ràbia a la 5a Simfonia.", correct: true, response: "TA-TA-TA-TAAA! El destí truca a la porta!" },
+                        { text: "Fes cançons de bressol.", correct: false, response: "No vull dormir! Vull lluitar!" }
+                    ]
+                },
+                { type: 'msg', text: "Vull afegir veus a una simfonia. És una bogeria?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes-ho! L'Himne a l'Alegria.", correct: true, response: "Sí! 'Tots els homes seran germans'. Serà l'himne de la humanitat." },
+                        { text: "No, les simfonies són només instrumentals.", correct: false, response: "Jo trenco les normes! Sóc Beethoven!" }
+                    ]
+                },
+                { type: 'msg', text: "Diuen que no es pot fer això...", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Les normes són per als mediocres!", correct: true, response: "Exacte! Jo sóc Beethoven i faig el que vull!" },
+                        { text: "Demana permís.", correct: false, response: "A qui? A Napoleó? Bah!" }
+                    ]
+                },
+                { type: 'msg', text: "La meva música viurà per sempre!", delay: 1500 }
+            ],
+            'chopin': [
+                { type: 'msg', text: "Bonsoir. Sóc Frédéric Chopin.", delay: 1000 },
+                { type: 'msg', text: "Enyoro la meva terra, Polònia. Estic a París però el meu cor és allà.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu Poloneses i Masurques.", correct: true, response: "Sí... faré que el piano canti les melodies de la meva pàtria." },
+                        { text: "Escriu una gran simfonia alemanya.", correct: false, response: "No m'agrada l'orquestra. Jo sóc el poeta del piano." }
+                    ]
+                },
+                { type: 'msg', text: "El piano és l'únic instrument que m'entén.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Dedica't només al piano sol.", correct: true, response: "És el meu amic fidel. No necessito res més." },
+                        { text: "Aprèn a tocar la trompeta.", correct: false, response: "Massa sorollosa! Jo busco intimitat." }
+                    ]
+                },
+                { type: 'msg', text: "Vull que la música respiri, que no sigui rígida.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Explora el Rubato i l'expressivitat.", correct: true, response: "El Rubato... robar temps per tornar-lo després. Com la vida." },
+                        { text: "Toca sempre amb un metrònom rígid.", correct: false, response: "Horrible! La música ha de tenir ànima." }
+                    ]
+                },
+                { type: 'msg', text: "I per millorar la tècnica dels meus alumnes?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Fes Estudis que siguin obres d'art.", correct: true, response: "Sí, la tècnica al servei de l'emoció (Estudi Revolucionari)." },
+                        { text: "Fes exercicis avorrits.", correct: false, response: "Mai! L'art no ha de ser avorrit." }
+                    ]
+                },
+                { type: 'msg', text: "La George Sand m'espera. Au revoir.", delay: 1500 }
+            ],
+            'debussy': [
+                { type: 'msg', text: "Bonjour. Claude Debussy aquí.", delay: 1000 },
+                { type: 'msg', text: "Al Conservatori em diuen que la meva harmonia està 'malament'.", delay: 2000 },
+                {
+                    type: 'choice', options: [
+                        { text: "Crea atmosferes i colors (Impressionisme).", correct: true, response: "Exacte. La música no ha de ser rígida, ha de flotar." },
+                        { text: "Torna al sistema dodecafònic.", correct: false, response: "Dodecafonisme? Això és massa matemàtic!" }
+                    ]
+                },
+                { type: 'msg', text: "M'inspira l'aigua, la llum, els núvols...", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Escriu 'Clair de Lune' o 'La Mer'.", correct: true, response: "Sí, pintaré el mar amb sons. Onades de música." },
+                        { text: "Escriu una marxa militar.", correct: false, response: "Quina vulgaritat! Jo busco la subtilesa." }
+                    ]
+                },
+                { type: 'msg', text: "Vull utilitzar escales noves.", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Utilitza l'escala de tons sencers.", correct: true, response: "Tons sencers... sona com un somni, sense direcció clara." },
+                        { text: "Només Do Major.", correct: false, response: "Massa simple. Vull colors nous." }
+                    ]
+                },
+                { type: 'msg', text: "I el ritme? Ha de ser marcat?", delay: 1500 },
+                {
+                    type: 'choice', options: [
+                        { text: "Que sigui fluid, sense barres clares.", correct: true, response: "Com el vent. El plaer és l'única regla." },
+                        { text: "Molt marcat i fort.", correct: false, response: "No, això trencaria l'encanteri." }
+                    ]
+                },
+                { type: 'msg', text: "Escolteu el silenci entre les notes...", delay: 1500 }
+            ]
+        };
+
+        // --- STATE ---
+        let completedChats = new Set();
+        let currentChatId = null;
+        let currentStep = 0;
+        let isTyping = false;
+
+        // --- DOM ---
+        const contactListEl = document.getElementById('contact-list');
+        const chatScreen = document.getElementById('chat-screen');
+        const chatArea = document.getElementById('chat-area');
+        const inputArea = document.getElementById('input-area');
+        const chatName = document.getElementById('chat-name');
+        const chatAvatar = document.getElementById('chat-avatar');
+
+        // --- INIT ---
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+        }
+
+        function init() {
+            renderContacts();
+        }
+
+        function renderContacts() {
+            contactListEl.innerHTML = '';
+            CONTACTS.forEach(contact => {
+                const el = document.createElement('div');
+                el.className = 'contact-item';
+
+                let checkMark = '';
+                if (completedChats.has(contact.id)) {
+                    checkMark = '<span style="color:var(--header-bg); font-weight:bold; font-size:1.2rem; margin-left:auto;">✅</span>';
+                }
+
+                el.innerHTML = `
+                    <img src="${contact.img}" class="avatar">
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.name}</div>
+                        <div class="contact-status">En línia</div>
+                    </div>
+                    ${checkMark}
+                `;
+                el.onclick = () => openChat(contact);
+                contactListEl.appendChild(el);
+            });
+        }
+
+        function openChat(contact) {
+            currentChatId = contact.id;
+            chatName.textContent = contact.name;
+            chatAvatar.src = contact.img;
+            chatScreen.classList.add('active');
+            chatArea.innerHTML = '';
+            inputArea.innerHTML = '';
+            currentStep = 0;
+
+            processStep();
+        }
+
+        function closeChat() {
+            chatScreen.classList.remove('active');
+            currentChatId = null;
+            isTyping = false;
+        }
+
+        function completeChat() {
+            completedChats.add(currentChatId);
+            renderContacts();
+            document.getElementById('success-modal').style.display = 'none';
+            closeChat();
+        }
+
+        function processStep() {
+            const steps = CONVERSATIONS[currentChatId];
+            if (!steps || currentStep >= steps.length) {
+                // End of conversation
+                setTimeout(() => {
+                    document.getElementById('success-modal').style.display = 'flex';
+                }, 1000);
+                return;
+            }
+
+            const step = steps[currentStep];
+
+            if (step.type === 'msg') {
+                isTyping = true;
+                setTimeout(() => {
+                    addMessage(step.text, 'incoming');
+                    isTyping = false;
+                    currentStep++;
+                    processStep();
+                }, step.delay || 1000);
+            } else if (step.type === 'choice') {
+                showChoices(step.options);
+            }
+        }
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = `
+                ${text}
+                <span class="tts-btn" onclick="speak('${text.replace(/'/g, "\\'")}')">🔊</span>
+                <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            `;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            playSendSound();
+        }
+
+        function showChoices(choices) {
+            inputArea.innerHTML = '';
+            choices.forEach(choice => {
+                const btn = document.createElement('div');
+                btn.className = 'choice-btn';
+                btn.textContent = choice.text;
+                btn.onclick = () => handleChoice(choice);
+                inputArea.appendChild(btn);
+            });
+        }
+
+        function handleChoice(choice) {
+            if (isTyping) return;
+            isTyping = true;
+            inputArea.innerHTML = ''; // Clear choices
+
+            // Add user message
+            addMessage(choice.text, 'outgoing');
+
+            setTimeout(() => {
+                if (choice.correct) {
+                    addMessage(choice.response, 'incoming');
+                    currentStep++;
+                    isTyping = false;
+                    setTimeout(processStep, 1000);
+                } else {
+                    addMessage(choice.response, 'incoming');
+                    lives--;
+                    updateLives();
+                    if (lives <= 0) {
+                        setTimeout(() => document.getElementById('game-over-modal').style.display = 'flex', 1000);
+                    } else {
+                        // Retry logic (stay on same step, show choices again)
+                        setTimeout(() => {
+                            isTyping = false;
+                            const steps = CONVERSATIONS[currentChatId];
+                            showChoices(steps[currentStep].options);
+                        }, 2000);
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateLives() {
+            let hearts = "";
+            for (let i = 0; i < lives; i++) hearts += "❤️";
+            livesDisplay.textContent = hearts;
+        }
+
+        // --- AUDIO & TTS ---
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ca-ES'; // Catalan
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playSendSound() {
+            // Simple beep
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            gain.gain.setValueAtTime(0.05, ctx.currentTime);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+        }
+
+        init();
+
+    </script>
+    <script src="../../../js/rewards.js"></script>
+</body>
+
+</html>

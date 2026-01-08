@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Vitrall Musical</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --bg-dark: #000000;
+            --glass-glow: #e0f7fa;
+            --lead: #1a1a1a;
+            --accent: #ffd700;
+            --dialogue-bg: rgba(0, 0, 0, 0.85);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            position: relative;
+            background: url('img/bg.jpg') no-repeat center center;
+            background-size: cover;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            border: 4px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- START SCREEN --- */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(13, 13, 13, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 800px;
+        }
+
+        .btn-era {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            color: #fff;
+            padding: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-era:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .btn-era.completed {
+            border-color: #00ffcc;
+            color: #00ffcc;
+        }
+
+        /* --- GAMEPLAY AREA --- */
+        #game-area {
+            flex: 1;
+            display: flex;
+            position: relative;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        #game-area.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* MASTER CHARACTER */
+        #master-container {
+            position: absolute;
+            bottom: -50px;
+            right: -20px;
+            /* Right Side */
+            width: 400px;
+            height: 500px;
+            pointer-events: none;
+            z-index: 10;
+            transition: transform 0.5s;
+            transform: scaleX(-1);
+            /* Flip to face left */
+        }
+
+        #master-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.7));
+        }
+
+        #dialogue-box {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            /* Left Side */
+            right: 300px;
+            /* Space for master */
+            background: var(--dialogue-bg);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 15;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        #dialogue-text {
+            font-size: 1.3rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        #options-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #aaa;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .btn-option:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--accent);
+        }
+
+        /* PUZZLE AREA */
+        #puzzle-stage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #window-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%);
+            /* Center, slightly up */
+            width: 360px;
+            height: 360px;
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border: 4px solid #444;
+            pointer-events: auto;
+        }
+
+        #final-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: 100% 100%;
+            opacity: 0.1;
+            filter: grayscale(100%);
+            transition: all 1s;
+        }
+
+        /* TRAY - Now at TOP CENTER */
+        #shards-tray {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            min-width: 120px;
+            height: 120px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            pointer-events: auto;
+            z-index: 20;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .shard {
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            background-size: 100% 100%;
+            cursor: grab;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+            transition: transform 0.1s;
+            touch-action: none;
+            z-index: 50;
+        }
+
+        /* Shard appearance in top tray */
+        .shard.in-tray {
+            position: relative;
+            transform-origin: center center;
+            transform: scale(0.25);
+            margin: 0;
+            left: auto;
+            top: auto;
+        }
+
+        .shard-wrapper {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shard.placed {
+            pointer-events: none;
+            z-index: 1;
+            filter: drop-shadow(0 0 0 transparent);
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            text-align: right;
+            text-shadow: 0 2px 4px black;
+            z-index: 100;
+        }
+
+        #return-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: 1px solid #d32f2f;
+            color: #ef5350;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            pointer-events: auto;
+            z-index: 100;
+        }
+
+        #return-btn:hover {
+            background: #d32f2f;
+            color: white;
+        }
+
+        /* WIN EFFECT */
+        @keyframes shine {
+            0% {
+                box-shadow: 0 0 10px var(--accent);
+            }
+
+            50% {
+                box-shadow: 0 0 50px var(--accent), 0 0 100px white;
+            }
+
+            100% {
+                box-shadow: 0 0 10px var(--accent);
+            }
+        }
+
+        .window-complete {
+            animation: shine 2s infinite alternate;
+            border: 2px solid white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* VOLUME CONTROL */
+        .volume-control {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #555;
+        }
+
+        .volume-icon {
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        input[type=range] {
+            width: 80px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>EL VITRALL MUSICAL</h1>
+            <p class="subtitle">Aprèn els secrets de la música amb el Mestre i restaura el vitrall.</p>
+            <div class="era-grid">
+                <button class="btn-era" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="btn-era" data-era="renaixement">Renaixement</button>
+                <button class="btn-era" data-era="barroc">Barroc</button>
+                <button class="btn-era" data-era="classicisme">Classicisme</button>
+                <button class="btn-era" data-era="romanticisme">Romanticisme</button>
+                <button class="btn-era" data-era="segle_xx">Segle XX</button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div id="game-area">
+            <div id="hud">
+                FRAGMENTS: <span id="pieces-count">0</span>/6
+            </div>
+            <button id="return-btn" onclick="showStartScreen()">SORTIR</button>
+
+            <!-- Master & Dialogue -->
+            <div id="master-container">
+                <img id="master-img" src="img/nan.png" alt="Mestre Vitraller">
+            </div>
+
+            <div id="dialogue-box">
+                <div id="dialogue-text">Benvingut, aprenent. Estàs llest per restaurar la història?</div>
+                <div id="options-container">
+                    <!-- Dynamic Options -->
+                    <button class="btn-option">Si, mestre.</button>
+                </div>
+            </div>
+
+            <!-- Puzzle Area -->
+            <div id="puzzle-stage">
+                <div id="shards-tray">
+                    <!-- Spawned shards appear here -->
+                </div>
+
+                <div id="window-frame">
+                    <div id="final-image"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BACKGROUND MUSIC -->
+    <audio id="bg-music" loop>
+        <source src="audio/Glasswork Riddles.m4a" type="audio/mpeg">
+    </audio>
+
+    <!-- VOLUME SLIDER -->
+    <div class="volume-control">
+        <span class="volume-icon" onclick="toggleMute()">🎵</span>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5" oninput="setVolume(this.value)">
+    </div>
+
+    <!-- Audio -->
+    <script>
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        // --- GAME DATA ---
+        const ERAS = {
+            edat_mitjana: { image: 'img/glass_medieval.png', color: '#5d4037' },
+            renaixement: { image: 'img/glass_renaixement.png', color: '#ff5722' },
+            barroc: { image: 'img/glass_barroc.png', color: '#ffd700' },
+            classicisme: { image: 'img/glass_classicisme.png', color: '#03a9f4' },
+            romanticisme: { image: 'img/glass_romanticisme.png', color: '#e91e63' },
+            segle_xx: { image: 'img/glass_modern.png', color: '#9c27b0' }
+        };
+
+        const QUESTIONS = {
+            edat_mitjana: [
+                { q: "Quin cant religiós predominava als monestirs?", options: ["Cant Gregorià", "Opera", "Rock"], correct: 0 },
+                { q: "Com es deien les primeres notes musicals?", options: ["Punts", "Neumes", "Emojis"], correct: 1 },
+                { q: "Qui eren els músics de carrer?", options: ["Trobadors", "Joglars", "Monjos"], correct: 1 },
+                { q: "Quin instrument és típic d'aquesta època?", options: ["Guitarra elèctrica", "LLAÜT (o viola de roda)", "Viola de roda"], correct: 2 },
+                { q: "L'art Gòtic buscava...", options: ["La foscor", "La llum i l'alçada", "El silenci"], correct: 1 },
+                { q: "Les 'Cantigas de Santa María' són de...", options: ["Alfons X el Savi", "Bach", "Mozart"], correct: 0 }
+            ],
+            renaixement: [
+                { q: "Què vol dir 'Renaixement'?", options: ["Tornar a néixer (Cultura Clàssica)", "Dormir molt", "Menjar bé"], correct: 0 },
+                { q: "Quin invent va ajudar a difondre partitures?", options: ["La Impremta", "Internet", "El Telègraf"], correct: 0 },
+                { q: "La música religiosa més important era...", options: ["La Missa Polifònica", "El Jazz", "La Sardana"], correct: 0 },
+                { q: "Quin instrument de tecla era popular?", options: ["Piano", "Orgue Portàtil", "Clavecin"], correct: 1 }, /* Orgue or Clavecin okay */
+                { q: "Música vocal sense instruments es diu...", options: ["A Capella", "Karaoke", "Instrumental"], correct: 0 },
+                { q: "Un compositor famós?", options: ["Palestrina", "Beatles", "Wagner"], correct: 0 }
+            ],
+            barroc: [
+                { q: "El Barroc és l'època del...", options: ["Minimalisme", "Ornamentació exagerada", "Silenci"], correct: 1 },
+                { q: "Compositor del 'Messies'?", options: ["Händel", "Verdi", "Stravinsky"], correct: 0 },
+                { q: "L'instrument rei del teclat era...", options: ["Clavicèmbal", "Sintetitzador", "Acordió"], correct: 0 },
+                { q: "Què neix a Florència l'any 1600?", options: ["L'Òpera", "El Ballet", "El Circ"], correct: 0 },
+                { q: "Qui va compondre les 'Quatre Estacions'?", options: ["Mozart", "Vivaldi", "Bach"], correct: 1 },
+                { q: "Johann Sebastian Bach va ser un mestre de la...", options: ["Fuga", "Salsa", "Rumba"], correct: 0 }
+            ],
+            classicisme: [
+                { q: "El Classicisme busca...", options: ["Caos", "Equilibri i claredat", "Por"], correct: 1 },
+                { q: "La formació de cambra més famosa és...", options: ["Quartet de Corda", "Banda de Rock", "Solista"], correct: 0 },
+                { q: "Instrument que substitueix al Clavicèmbal?", options: ["Pianoforte", "Orgue", "Arpa"], correct: 0 },
+                { q: "Nen prodigi que va viatjar per tot Europa.", options: ["Mozart", "Beethoven", "Salieri"], correct: 0 },
+                { q: "Beethoven va fer el pont cap al...", options: ["Romanticisme", "Barroc", "Futurisme"], correct: 0 },
+                { q: "Ciutat capital de la música?", options: ["Viena", "Nova York", "Tòquio"], correct: 0 }
+            ],
+            romanticisme: [
+                { q: "L'artista romàntic expressa...", options: ["Sentiments i emocions", "Matemàtiques", "Fredor"], correct: 0 },
+                { q: "El piano es va convertir en...", options: ["Un moble", "L'instrument rei", "Una nosa"], correct: 1 },
+                { q: "Compositor polonès del piano.", options: ["Chopin", "Liszt", "Bach"], correct: 0 },
+                { q: "L'òpera arriba al seu màxim esplendor amb...", options: ["Wagner i Verdi", "Lully", "Monteverdi"], correct: 0 },
+                { q: "Què és el 'Lied'?", options: ["Cançó per a veu i piano", "Ball de saló", "Menjar típic"], correct: 0 },
+                { q: "El nacionalisme musical busca...", options: ["Arrels populars del país", "Copiar a altres", "Res"], correct: 0 }
+            ],
+            segle_xx: [
+                { q: "L'Impressionisme musical busca suggerir...", options: ["Atmosferes i colors", "Històries clares", "Soroll"], correct: 0 },
+                { q: "Stravinsky va causar un escàndol amb...", options: ["La Consagració de la Primavera", "El Llac dels Cignes", "Frozen"], correct: 0 },
+                { q: "El Jazz neix a...", options: ["Nova Orleans", "París", "Berlín"], correct: 0 },
+                { q: "Mètode de composició amb 12 notes.", options: ["Dodecafonisme", "Tonalitat", "Aleatorietat"], correct: 0 },
+                { q: "El Rock and Roll apareix als anys...", options: ["50s", "20s", "90s"], correct: 0 },
+                { q: "La música electrònica utilitza...", options: ["Sintetitzadors", "Flautes de bec", "Llaüts"], correct: 0 }
+            ]
+        };
+
+        // 6-Piece Rectangular Layout (2x3 grid rough clip paths for 360x360)
+        const GRID_6 = [
+            'polygon(0% 0%, 50% 0%, 50% 33.3%, 0% 33.3%)', // Top Left
+            'polygon(50% 0%, 100% 0%, 100% 33.3%, 50% 33.3%)', // Top Right
+            'polygon(0% 33.3%, 50% 33.3%, 50% 66.6%, 0% 66.6%)', // Mid Left
+            'polygon(50% 33.3%, 100% 33.3%, 100% 66.6%, 50% 66.6%)', // Mid Right
+            'polygon(0% 66.6%, 50% 66.6%, 50% 100%, 0% 100%)', // Bot Left
+            'polygon(50% 66.6%, 100% 66.6%, 100% 100%, 50% 100%)' // Bot Right
+        ];
+
+        let gameState = {
+            era: null,
+            currentShards: [], // Indices unlocked
+            placedCount: 0,
+            completedEras: new Set(),
+            waitingForAnswer: false
+        };
+
+        // --- LOGIC ---
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            btn.addEventListener('click', () => {
+                initGame(btn.dataset.era);
+            });
+        });
+
+        function initGame(era) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Start BG Music
+            const music = document.getElementById('bg-music');
+            music.volume = document.getElementById('volume-slider').value;
+            music.play().catch(e => console.log("Audio autoplay prevented:", e));
+
+            gameState.era = era;
+            gameState.placedCount = 0;
+            gameState.currentShards = [];
+            gameState.waitingForAnswer = true;
+
+            document.getElementById('start-screen').style.display = 'none';
+
+            const area = document.getElementById('game-area');
+            area.classList.remove('hidden');
+            setTimeout(() => area.classList.add('active'), 50);
+
+            document.getElementById('pieces-count').textContent = '0';
+            document.getElementById('shards-tray').innerHTML = '';
+            document.querySelectorAll('.shard.placed').forEach(el => el.remove());
+
+            const data = ERAS[era];
+            const finalImg = document.getElementById('final-image');
+            finalImg.style.backgroundImage = `url('${data.image}')`;
+            finalImg.style.opacity = '0.1';
+            document.getElementById('window-frame').classList.remove('window-complete');
+
+            // Master Intro
+            setDialogue("Benvingut al taller! Si respons correctament, et donaré un fragment del vitrall.", ["Començar"], startQuestionLoop);
+        }
+
+        function setDialogue(text, options, callback) {
+            document.getElementById('dialogue-text').textContent = text;
+            const optCont = document.getElementById('options-container');
+            optCont.innerHTML = '';
+
+            options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.textContent = optText;
+                btn.onclick = () => {
+                    if (callback) callback(index);
+                };
+                optCont.appendChild(btn);
+            });
+        }
+
+        function startQuestionLoop() {
+            if (gameState.placedCount >= 6) {
+                winEra();
+                return;
+            }
+
+            // Get question for current index
+            const qIndex = gameState.placedCount;
+            // Fallback checks
+            const questions = QUESTIONS[gameState.era] || QUESTIONS['edat_mitjana'];
+            const q = questions[qIndex] || questions[0];
+
+            // Shuffle options for display but keep track of correct answer string
+            const correctStr = q.options[q.correct];
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+
+            setDialogue(q.q, shuffledOptions, (idx) => {
+                const selectedStr = shuffledOptions[idx];
+                if (selectedStr === correctStr) {
+                    // Correct
+                    playSound('correct');
+                    setDialogue("Molt bé! Aquí tens un fragment.", ["Agafar fragment"], spawnShard);
+                } else {
+                    // Wrong
+                    playSound('fail');
+                    setDialogue("Incorrecte. Torna-ho a intentar.", ["Reintentar"], startQuestionLoop);
+                }
+            });
+        }
+
+        function spawnShard() {
+            const index = gameState.placedCount; // 0 to 5
+            const trait = ERAS[gameState.era];
+            const clip = GRID_6[index];
+
+            const s = document.createElement('div');
+            s.className = 'shard in-tray';
+            s.style.clipPath = clip;
+            s.dataset.index = index;
+
+            // Image setup
+            s.style.backgroundImage = `url('${trait.image}')`;
+            s.style.backgroundPosition = '0 0'; // Fixed position approach won't work easily with clip-path scaling
+            // Actually, for clip path to work perfect, size must be 360x360.
+            // In tray, we use transform scale. 
+
+            // Wrap it
+            const wrap = document.createElement('div');
+            wrap.className = 'shard-wrapper'; // 90x90
+            wrap.appendChild(s);
+            document.getElementById('shards-tray').appendChild(wrap);
+
+            enableDrag(s);
+
+            // Advance dialogue
+            setDialogue("Col·loca el fragment al seu lloc.", [], null); // No buttons, wait for placement
+        }
+
+        function enableDrag(el) {
+            let isDragging = false;
+
+            const onDown = (e) => {
+                if (el.classList.contains('placed')) return;
+                isDragging = true;
+
+                el.classList.remove('in-tray');
+                el.style.transform = 'scale(1)'; // Full size
+
+                // Move to game-area body
+                document.getElementById('game-area').appendChild(el);
+
+                moveAt(e);
+                el.style.zIndex = 1000;
+            };
+
+            const moveAt = (e) => {
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                // Center is 180 (360/2)
+                el.style.left = (clientX - 180) + 'px';
+                el.style.top = (clientY - 180) + 'px';
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                moveAt(e);
+            };
+
+            const onUp = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                checkSnap(el);
+            };
+
+            el.addEventListener('mousedown', onDown);
+            el.addEventListener('touchstart', onDown);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('touchmove', onMove);
+            window.addEventListener('mouseup', onUp);
+            window.addEventListener('touchend', onUp);
+        }
+
+        function checkSnap(el) {
+            const frame = document.getElementById('window-frame');
+            const rect = frame.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+
+            const frameCx = rect.left + rect.width / 2;
+            const frameCy = rect.top + rect.height / 2;
+            const elCx = elRect.left + elRect.width / 2;
+            const elCy = elRect.top + elRect.height / 2;
+
+            const dist = Math.hypot(frameCx - elCx, frameCy - elCy);
+
+            if (dist < 60) {
+                // SNAP
+                el.classList.add('placed');
+                el.style.left = '0';
+                el.style.top = '0';
+                el.style.transform = 'none';
+                frame.appendChild(el);
+
+                playSound('snap');
+                gameState.placedCount++;
+                document.getElementById('pieces-count').textContent = gameState.placedCount;
+
+                // Next question
+                setTimeout(startQuestionLoop, 1000);
+            } else {
+                // Return to tray
+                el.classList.add('in-tray');
+                el.style.transform = 'scale(0.25)';
+                el.style.left = '0';
+                el.style.top = '0';
+                el.style.zIndex = '';
+
+                // Find its wrapper or making new one? The wrapper is still in tray
+                // Actually I didn't keep ref to wrapper. 
+                // Simplified: Append to a new wrapper in tray.
+                const wrap = document.createElement('div');
+                wrap.className = 'shard-wrapper';
+                wrap.appendChild(el);
+                document.getElementById('shards-tray').appendChild(wrap);
+
+                setDialogue("No va allà... Prova una altra vegada.", [], null);
+            }
+        }
+
+        function winEra() {
+            playSound('win');
+            document.getElementById('window-frame').classList.add('window-complete');
+            document.getElementById('final-image').style.opacity = '1';
+            document.getElementById('final-image').style.filter = 'grayscale(0%)';
+
+            gameState.completedEras.add(gameState.era);
+
+            setDialogue("Magnífic! Has restaurat la història!", ["Tornar al Menú"], () => {
+                showStartScreen();
+            });
+        }
+
+        function showStartScreen() {
+            document.getElementById('game-area').classList.remove('active');
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('start-screen').style.display = 'flex';
+
+            document.querySelectorAll('.btn-era').forEach(btn => {
+                if (gameState.completedEras.has(btn.dataset.era)) {
+                    btn.classList.add('completed');
+                    if (!btn.innerHTML.includes('✓')) btn.innerHTML += ' <br>RESTORED ✓';
+                }
+            });
+        }
+
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const t = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.frequency.setValueAtTime(600, t);
+                osc.frequency.exponentialRampToValueAtTime(1000, t + 0.1);
+                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.linearRampToValueAtTime(0, t + 0.2);
+                osc.start(t); osc.stop(t + 0.2);
+            } else if (type === 'snap') {
+                osc.frequency.setValueAtTime(200, t);
+                gain.gain.setValueAtTime(0.2, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+                osc.start(t); osc.stop(t + 0.1);
+            } else if (type === 'fail') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, t);
+                osc.frequency.linearRampToValueAtTime(100, t + 0.3);
+                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.linearRampToValueAtTime(0, t + 0.3);
+                osc.start(t); osc.stop(t + 0.3);
+            } else if (type === 'win') {
+                [261.63, 329.63, 392.00, 523.25].forEach((f, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.frequency.value = f;
+                    g.gain.value = 0.1;
+                    g.gain.exponentialRampToValueAtTime(0.01, t + 3);
+                    o.start(t + i * 0.1);
+                    o.stop(t + 3);
+                });
+            }
+        }
+
+        function setVolume(val) {
+            const music = document.getElementById('bg-music');
+            music.volume = val;
+        }
+
+        function toggleMute() {
+            const music = document.getElementById('bg-music');
+            const slider = document.getElementById('volume-slider');
+            if (music.volume > 0) {
+                music.dataset.lastVol = music.volume;
+                music.volume = 0;
+                slider.value = 0;
+            } else {
+                const vol = music.dataset.lastVol || 0.5;
+                music.volume = vol;
+                slider.value = vol;
+            }
+        }
+
+    </script>
+</body>
+
+</html>

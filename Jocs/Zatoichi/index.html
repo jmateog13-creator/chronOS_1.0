@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zatoichi: L'Espasa Cega</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f0f0;
+            --ink: #111;
+            --blood: #cc0000;
+            --paper-texture: url('img/fons.jpg');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            background-image: var(--paper-texture);
+            background-size: cover;
+            background-position: center;
+            color: var(--ink);
+            font-family: 'Noto Serif JP', serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            transition: filter 0.2s;
+        }
+
+        /* BLUR BG ONLY */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            filter: blur(5px);
+            z-index: -1;
+            transform: scale(1.05);
+        }
+
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 60%, black 120%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            /* Align top now that we have margin-top battle scene */
+            position: relative;
+            z-index: 20;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.5rem;
+            border-bottom: 4px solid var(--ink);
+            padding-bottom: 10px;
+            z-index: 30;
+        }
+
+        .life-symbol {
+            font-size: 1.5rem;
+            color: var(--ink);
+        }
+
+        .life-symbol.lost {
+            color: #ccc;
+            opacity: 0.3;
+        }
+
+        /* BATTLE SCENE LAYOUT (RPG STYLE) */
+        #battle-scene {
+            display: flex;
+            justify-content: space-between;
+            /* Left - Center - Right */
+            align-items: flex-end;
+            /* Ground level */
+            width: 95%;
+            max-width: 1400px;
+            height: 80%;
+            /* Takes up most of the screen */
+            margin-top: 80px;
+            /* Space for HUD */
+            position: relative;
+        }
+
+        /* CHARACTERS */
+        .char-column {
+            width: 35%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            position: relative;
+            z-index: 15;
+            overflow: visible;
+        }
+
+        .char-column img {
+            height: 65%;
+            max-width: none;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
+            transition: filter 0.5s;
+            transform-origin: bottom center;
+        }
+
+        #player-img {
+            transform: translateX(20px);
+        }
+
+        /* Enemic Effect */
+        #p-enemy-img {
+            filter: blur(3px) contrast(150%);
+            transform: translateX(-20px);
+        }
+
+        .revealed {
+            filter: blur(0px) contrast(100%) !important;
+        }
+
+        /* CENTER INTERACTION ZONE */
+        #center-zone {
+            width: 30%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 20px;
+            z-index: 25;
+        }
+
+        #dialog-box {
+            background: rgba(255, 255, 255, 0.9);
+            border: 4px solid var(--ink);
+            padding: 20px;
+            width: 100%;
+            min-height: 150px;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #instruction-text {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* TIMER BAR */
+        #timer-bar-container {
+            width: 100%;
+            height: 10px;
+            border: 2px solid var(--ink);
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--ink);
+            transition: width 0.1s linear;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn-option {
+            background: transparent;
+            border: 2px solid var(--ink);
+            padding: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+
+        .btn-option:hover {
+            background: var(--ink);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* LISTEN BUTTON - FLOATING TOP CENTER */
+        #btn-listen {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--ink);
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: none;
+            /* Managed by JS */
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        #btn-listen:hover {
+            background: var(--ink);
+            color: #fff;
+        }
+
+        .btn-action {
+            font-family: inherit;
+            font-size: 1.5rem;
+            padding: 15px 40px;
+            background: transparent;
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 900;
+        }
+
+        .btn-action:hover {
+            background: var(--ink);
+            color: #fff;
+        }
+
+        /* FX */
+        #fx-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+
+        @keyframes slashAnim {
+            0% {
+                transform: scale(0.5) rotate(-45deg);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5) rotate(-45deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bloodAnim {
+            0% {
+                opacity: 0.8;
+                background: var(--blood);
+            }
+
+            100% {
+                opacity: 0;
+                background: transparent;
+            }
+        }
+
+        .fx-slash {
+            background: url('img/ink_splash.png') no-repeat center;
+            background-size: contain;
+            animation: slashAnim 0.5s ease-out forwards;
+        }
+
+        .fx-blood {
+            animation: bloodAnim 0.5s ease-out forwards;
+        }
+
+        /* SCREENS */
+        #start-screen,
+        #end-screen {
+            position: absolute;
+            inset: 0;
+            background: var(--bg);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin: 0;
+            border-bottom: 5px solid var(--ink);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="fx-overlay"></div>
+
+    <div id="start-screen">
+        <h1>ZATOICHI</h1>
+        <p style="font-size: 1.5rem; margin-top:10px;">L'Espasa Cega</p>
+        <p style="max-width: 500px; margin: 30px;">
+            Ets el guardià de les escriptures antigues.<br>
+            La teva espasa només pot colpejar si identifiques l'esperit (la música) del teu rival.<br>
+            Escolta, identifica i ataca abans de <strong>15 segons</strong>.
+        </p>
+        <button class="btn-action" onclick="startGame()">DESENBEINAR</button>
+    </div>
+
+    <div id="game-container" style="display:none;">
+        <div id="hud">
+            <div>ENEMIC: <span id="level-display">1 / 18</span></div>
+            <div id="lives-display">
+                <span class="life-symbol">🌑</span><span class="life-symbol">🌑</span><span
+                    class="life-symbol">🌑</span>
+            </div>
+        </div>
+
+        <div id="battle-scene">
+            <!-- PLAYER LEFT -->
+            <div class="char-column">
+                <img id="player-img" src="img/personatge.png" alt="Zatoichi">
+            </div>
+
+            <!-- ACTION CENTER -->
+            <div id="center-zone">
+                <button id="btn-listen" onclick="startRound()">
+                    ESCOLTAR AMENAÇA
+                </button>
+
+                <div id="dialog-box">
+                    <div id="timer-bar-container">
+                        <div id="timer-bar"></div>
+                    </div>
+                    <div id="instruction-text">...</div>
+
+                    <div id="options-container" class="options-grid"></div>
+                </div>
+            </div>
+
+            <!-- ENEMY RIGHT -->
+            <div class="char-column">
+                <img id="p-enemy-img" src="" alt="Enemic">
+            </div>
+        </div>
+    </div>
+
+    <div id="end-screen" style="display:none;">
+        <h1 id="end-title">FINAL</h1>
+        <p id="end-msg" style="font-size: 1.5rem; margin: 20px;"></p>
+        <button class="btn-action" onclick="location.reload()">TORNAR A COMENÇAR</button>
+    </div>
+
+    <audio id="bg-audio"></audio>
+
+    <script>
+        const RAW_FILES = [
+            "Ànonim- Organum.Tu patris sempiternu.m4a", "Ànonim-Greensleeves.m4a",
+            "Bach-Toccata & Fugue D Minor, BWV 565.m4a", "Beethoven- 5a Simfonia.m4a",
+            "Chopin - Nocturne op.9 No.2.m4a", "Franz Joseph Haydn - ＂Simfonia Sorpresa＂ (Symphony no. 94).m4a",
+            "Haendel- Lascia ch'io pianga.m4a", "Hildegard of Bingen： De Spiritu Sancto (Holy Spirit, The Quickener Of Life).m4a",
+            "Jellybean Fenderson-Oscilloscope Music.m4a", "Mozart-Pequeña Serenata Nocturna.m4a",
+            "P. Tchaikovsky - Pas de Deux ('The Nutcracker').m4a", "Palestrina-O bone Jesu.m4a",
+            "Richard Wagner- Cavalcada de les Valkiries.m4a", "Schoemberg-Tres piezas para piano.m4a",
+            "Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a",
+            "Trobador anònim-Fi d'amor.m4a", "Verdelot-Con soave parlar.m4a",
+            "Vivaldi- Four Seasons： Winter (L'Inverno).m4a"
+        ];
+
+        const ENEMY_TYPES = [
+            { id: '1', img: 'img/enemic1.png', name: 'Ronin Salvatge' },
+            { id: '2', img: 'img/enemic2.png', name: 'Ninja' },
+            { id: '3', img: 'img/enemic3.png', name: 'Samurai amb llança' },
+            { id: '4', img: 'img/enemic4.png', name: 'Monjo Guerrer' },
+            { id: '5', img: 'img/enemic5.png', name: 'Geisha Assassina' },
+            { id: '6', img: 'img/enemic6.png', name: 'Sumo' },
+            { id: '7', img: 'img/enemic7.png', name: 'Arquer Kyudo' },
+            { id: '8', img: 'img/enemic8.png', name: 'Bandoler' },
+            { id: '9', img: 'img/enemic9.png', name: 'Shogun Cuirassat' },
+            { id: '10', img: 'img/enemic10.png', name: 'Pagès Rebel' },
+            { id: '11', img: 'img/enemic11.png', name: 'Ninja amb cadenes' },
+            { id: '12', img: 'img/enemic12.png', name: 'Mestre d\'Espasa' },
+            { id: '13', img: 'img/enemic13.png', name: 'Dimoni Tengu' },
+            { id: '14', img: 'img/enemic14.png', name: 'Actor Kabuki' },
+            { id: '15', img: 'img/enemic15.png', name: 'Yakuza' },
+            { id: '16', img: 'img/enemic16.png', name: 'Vell Mestre' },
+            { id: '17', img: 'img/enemic17.png', name: 'Guerrera Onna-bugeisha' },
+            { id: '18', img: 'img/enemic18.png', name: 'Assassí Silenciós' }
+        ];
+
+        let levels = [];
+        let currentLevel = 0;
+        let lives = 3;
+        let timerInterval;
+        let currentTimer = 15;
+        let isPhaseTwo = false;
+
+        function parseLevels() {
+            let shuffledEnemies = [...ENEMY_TYPES].sort(() => Math.random() - 0.5);
+            return RAW_FILES.map((file, index) => {
+                let clean = file.replace('.m4a', '');
+                let parts = clean.split(/[-–—:]/);
+                let composer = parts.length >= 2 ? parts[0].trim() : "Desconegut";
+                let work = parts.length >= 2 ? parts.slice(1).join(' ').trim().replace(/[＂"']/g, '') : clean;
+                return {
+                    src: '../../assets/audio_shared/' + file,
+                    composer: composer,
+                    work: work,
+                    enemy: shuffledEnemies[index % shuffledEnemies.length]
+                };
+            });
+        }
+
+        function startGame() {
+            levels = parseLevels().sort(() => Math.random() - 0.5);
+            currentLevel = 0;
+            lives = 3;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            loadLevel(0);
+        }
+
+        function loadLevel(idx) {
+            if (idx >= levels.length) {
+                gameOver(true);
+                return;
+            }
+            currentLevel = idx;
+            const level = levels[idx];
+
+            document.getElementById('level-display').innerText = `${idx + 1} / ${levels.length}`;
+            updateLives();
+
+            const enemyImg = document.getElementById('p-enemy-img');
+            enemyImg.src = level.enemy.img;
+            enemyImg.className = '';
+
+            document.getElementById('options-container').innerHTML = '';
+            document.getElementById('timer-bar-container').style.display = 'none';
+            document.getElementById('instruction-text').innerText = `Un ${level.enemy.name} s'apropa...`;
+            document.getElementById('btn-listen').style.display = 'inline-block';
+
+            const audio = document.getElementById('bg-audio');
+            audio.src = level.src;
+            audio.load();
+        }
+
+        function startRound() {
+            document.getElementById('btn-listen').style.display = 'none';
+            document.getElementById('instruction-text').innerText = "QUI ÉS EL COMPOSITOR?";
+            document.getElementById('bg-audio').play().catch(e => console.log('Audio Blocked'));
+
+            currentTimer = 15;
+            document.getElementById('timer-bar-container').style.display = 'block';
+            document.getElementById('timer-bar').style.width = '100%';
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                currentTimer -= 0.1;
+                document.getElementById('timer-bar').style.width = (currentTimer / 15 * 100) + '%';
+                if (currentTimer <= 0) {
+                    failRound("Temps esgotat!");
+                }
+            }, 100);
+
+            isPhaseTwo = false;
+            generateOptions('composer');
+        }
+
+        function generateOptions(type) {
+            const level = levels[currentLevel];
+            const correct = type === 'composer' ? level.composer : level.work;
+            let pool = levels.map(l => type === 'composer' ? l.composer : l.work).filter(x => x !== correct);
+            pool = [...new Set(pool)].sort(() => Math.random() - 0.5);
+            let wrong = pool.slice(0, 3);
+            let options = [correct, ...wrong].sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(opt === correct);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect) {
+            if (!isCorrect) {
+                failRound("Error!");
+                return;
+            }
+            if (!isPhaseTwo) {
+                isPhaseTwo = true;
+                document.getElementById('instruction-text').innerText = "QUINA OBRA ÉS?";
+                document.getElementById('p-enemy-img').style.filter = "blur(5px)";
+                generateOptions('work');
+            } else {
+                winRound();
+            }
+        }
+
+        function winRound() {
+            clearInterval(timerInterval);
+            document.getElementById('bg-audio').pause();
+
+            // Victory Msg
+            document.getElementById('instruction-text').innerText = "ENEMIC ABATUT!";
+
+            document.getElementById('p-enemy-img').className = 'revealed';
+            triggerFX('slash');
+
+            setTimeout(() => {
+                loadLevel(currentLevel + 1);
+            }, 2000);
+        }
+
+        function failRound(reason) {
+            clearInterval(timerInterval);
+            document.getElementById('bg-audio').pause();
+            lives--;
+            updateLives();
+            triggerFX('blood');
+            if (lives <= 0) {
+                gameOver(false);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('instruction-text').innerText = `${reason} Reintentant...`;
+                    setTimeout(() => loadLevel(currentLevel), 1000);
+                }, 1000);
+            }
+        }
+
+        function triggerFX(type) {
+            const ol = document.getElementById('fx-overlay');
+            ol.className = '';
+            ol.style.display = 'block';
+            void ol.offsetWidth;
+            ol.className = type === 'slash' ? 'fx-slash' : 'fx-blood';
+            setTimeout(() => { ol.style.display = 'none'; }, 500);
+        }
+
+        function updateLives() {
+            const container = document.getElementById('lives-display');
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                let s = document.createElement('span');
+                s.className = 'life-symbol ' + (i < lives ? '' : 'lost');
+                s.innerText = '🌑';
+                container.appendChild(s);
+            }
+        }
+
+        function gameOver(win) {
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'flex';
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+            if (win) {
+                title.innerText = "HONOR RESTAURAT";
+                msg.innerText = "Victòria honorable.";
+                document.body.style.background = "#fff";
+            } else {
+                title.innerText = "MORT EN COMBAT";
+                msg.innerText = "Has caigut.";
+                document.body.style.background = "#000";
+                document.body.style.color = "#cc0000";
+            }
+        }
+    </script>
+</body>
+
+</html>

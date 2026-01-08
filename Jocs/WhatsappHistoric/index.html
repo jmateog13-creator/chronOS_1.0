@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Grup de WhatsApp Històric 📱</title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #e5ddd5;
+            --header-green: #008069;
+            --msg-out: #d9fdd3;
+            --msg-in: #ffffff;
+            --text-primary: #111b21;
+            --text-secondary: #667781;
+            --wa-blue: #007aff;
+            --wa-gray: #f0f2f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Phone Container */
+        #phone {
+            width: 375px;
+            height: 750px;
+            background: var(--bg-app);
+            border-radius: 30px;
+            border: 10px solid #111;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Header */
+        header {
+            background: var(--header-green);
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .back-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .group-icon {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .group-info {
+            flex: 1;
+        }
+
+        .group-name {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .group-members {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Chat Area */
+        #chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%23e5ddd5'/%3E%3Cpath d='M10 10h10v10H10z' fill='%23d1d7db' opacity='0.2'/%3E%3C/svg%3E");
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px;
+            border-radius: 10px;
+            position: relative;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .message:hover {
+            transform: scale(1.02);
+        }
+
+        .message.selected {
+            border: 2px solid red;
+            background: #ffe6e6 !important;
+        }
+
+        .msg-in {
+            align-self: flex-start;
+            background: var(--msg-in);
+            border-top-left-radius: 0;
+        }
+
+        .msg-out {
+            align-self: flex-end;
+            background: var(--msg-out);
+            border-top-right-radius: 0;
+        }
+
+        .sender-name {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #e542a3;
+            margin-bottom: 2px;
+        }
+
+        .msg-time {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 10px;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-box {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* Menu Screen */
+        #menu-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-header {
+            background: var(--header-green);
+            color: white;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .chat-item:hover {
+            background: #f5f5f5;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            background: #ddd;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .chat-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-preview {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .completed-mark {
+            color: #2ecc71;
+            font-weight: bold;
+            display: none;
+        }
+
+        .chat-item.completed {
+            background: #f0fff4;
+        }
+
+        .chat-item.completed .completed-mark {
+            display: inline;
+        }
+
+        /* Tooltip */
+        .chat-tooltip {
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            width: 220px;
+            z-index: 100;
+            left: 60px;
+            bottom: 60px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: left;
+        }
+
+        .chat-item:hover .chat-tooltip {
+            opacity: 1;
+        }
+
+        /* Start Screen */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+
+        .start-card {
+            background: white;
+            color: #333;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+        }
+
+        .start-card h2 {
+            color: var(--header-green);
+            margin-top: 0;
+        }
+
+        .btn-wa {
+            background: var(--header-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        /* Custom Modal */
+        #custom-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .modal-body {
+            background: white;
+            border-radius: 15px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .modal-text {
+            padding: 25px;
+            font-size: 1rem;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #eee;
+            display: flex;
+        }
+
+        .modal-footer button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            color: var(--wa-blue);
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .modal-footer button:active {
+            background: #f5f5f5;
+        }
+
+        /* Report Button */
+        #report-btn {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            background: red;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            z-index: 15;
+            display: none;
+        }
+
+        /* Volume Control */
+        #volume-control {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #volume-slider {
+            width: 60px;
+            cursor: pointer;
+            accent-color: var(--header-green);
+        }
+
+        #mute-icon-btn {
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="phone">
+        <!-- Audio -->
+        <audio id="bg-music" loop>
+            <source src="audio/Cozy Chat Bubbles.m4a" type="audio/mpeg">
+        </audio>
+
+        <div id="volume-control">
+            <span id="mute-icon-btn" onclick="toggleMute()">🔊</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                oninput="setVolume(this.value)">
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="overlay">
+            <div class="start-card">
+                <h2>📱 WhatsApp Històric</h2>
+                <p>Els grans compositors han creat grups, però hi ha <b>infiltrats</b> del futur enviant missatges
+                    anacrònics!</p>
+                <div style="text-align: left; font-size: 0.9rem; margin-top: 20px;">
+                    <p>✅ Tria un grup per investigar.</p>
+                    <p>✅ Fes clic sobre els missatges "falsos".</p>
+                    <p>✅ Pulsa 🚨 per denunciar-los.</p>
+                </div>
+                <button class="btn-wa" onclick="hideStartScreen()">COMENÇAR</button>
+            </div>
+        </div>
+
+        <!-- Custom Modal -->
+        <div id="custom-modal">
+            <div class="modal-body">
+                <div class="modal-text" id="modal-msg">Missatge de prova</div>
+                <div class="modal-footer">
+                    <button onclick="closeModal()">Tancar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat View -->
+        <header id="chat-header" style="display:none;">
+            <div class="back-btn" onclick="showMenu()">←</div>
+            <div class="group-icon" id="header-icon">🎵</div>
+            <div class="group-info">
+                <div class="group-name" id="header-title">Grup</div>
+                <div class="group-members" id="header-members">...</div>
+            </div>
+        </header>
+
+        <div id="chat-area" style="display:none;">
+            <!-- Messages -->
+        </div>
+
+        <footer id="chat-footer" style="display:none;">
+            <div class="input-box">Escriure un missatge...</div>
+        </footer>
+
+        <div id="report-btn" onclick="reportMessages()">🚨</div>
+
+        <!-- Menu View -->
+        <div id="menu-screen">
+            <div class="menu-header">WhatsApp Històric</div>
+            <div class="chat-list" id="chat-list">
+                <!-- Chat items injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const GROUPS = [
+            {
+                id: 1,
+                name: "Fans del Barroc",
+                icon: "🎻",
+                description: "Bach, Vivaldi i Händel discuteixen sobre contrapunt, perruques i grans estrenes religioses.",
+                members: "Bach, Vivaldi, Händel",
+                messages: [
+                    { sender: "Bach", text: "Algú ha vist la meva perruca?", fake: false },
+                    { sender: "Vivaldi", text: "Estic component una cosa sobre les estacions.", fake: false },
+                    { sender: "Händel", text: "Jo estic ocupat amb els Reials Focs d'Artifici.", fake: false },
+                    { sender: "Bach", text: "He de caminar 400km per veure Buxtehude.", fake: false },
+                    { sender: "Vivaldi", text: "He comprat una guitarra elèctrica Fender.", fake: true },
+                    { sender: "Händel", text: "El rei Jordi està molt pesat avui.", fake: false },
+                    { sender: "Bach", text: "He acabat la Passió segons Sant Mateu.", fake: false },
+                    { sender: "Vivaldi", text: "Us passo l'enllaç de Spotify del meu nou àlbum.", fake: true },
+                    { sender: "Händel", text: "Aleluya!", fake: false }
+                ]
+            },
+            {
+                id: 2,
+                name: "Viena Classics",
+                icon: "🎹",
+                description: "L'elit de la Viena clàssica: Mozart, Haydn i un Beethoven que no sent gaire bé els missatges.",
+                members: "Mozart, Haydn, Beethoven",
+                messages: [
+                    { sender: "Haydn", text: "Bon dia nois, he escrit una altra simfonia.", fake: false },
+                    { sender: "Mozart", text: "Només una? Jo n'he fet tres abans d'esmorzar.", fake: false },
+                    { sender: "Beethoven", text: "QUÈ DIUS? NO ET SENTO BÉ.", fake: false },
+                    { sender: "Mozart", text: "He dit que ets un geni, Ludwig.", fake: false },
+                    { sender: "Haydn", text: "He reservat un Uber per anar al concert.", fake: true },
+                    { sender: "Beethoven", text: "La meva 5a simfonia comença amb ta-ta-ta-taaa.", fake: false },
+                    { sender: "Mozart", text: "M'encanta jugar al billar.", fake: false },
+                    { sender: "Haydn", text: "El príncep Esterházy em paga bé.", fake: false },
+                    { sender: "Beethoven", text: "He penjat un TikTok dirigint l'orquestra.", fake: true }
+                ]
+            },
+            {
+                id: 3,
+                name: "Romàntics Anònims",
+                icon: "💔",
+                description: "Emoció a flor de pell. Chopin, Liszt i Schubert comparteixen les seves penes íntimes.",
+                members: "Chopin, Liszt, Schubert",
+                messages: [
+                    { sender: "Schubert", text: "Estic trist. Faré un Lied.", fake: false },
+                    { sender: "Chopin", text: "Jo també. Plou a Mallorca.", fake: false },
+                    { sender: "Liszt", text: "Jo estic de gira, les fans criden molt.", fake: false },
+                    { sender: "Schubert", text: "He perdut les meves ulleres.", fake: false },
+                    { sender: "Chopin", text: "He comprat un sintetitzador Moog.", fake: true },
+                    { sender: "Liszt", text: "El piano és el millor instrument.", fake: false },
+                    { sender: "Schubert", text: "Fem una videotrucada per Zoom?", fake: true },
+                    { sender: "Chopin", text: "No puc, estic tossint sang.", fake: false },
+                    { sender: "Liszt", text: "Ànims Frederic!", fake: false }
+                ]
+            },
+            {
+                id: 4,
+                name: "Segle XX Rebels",
+                icon: "❓",
+                description: "Trencant totes les regles: atonalitat, silenci i ritmes salvatges amb Stravinsky i Cage.",
+                members: "Stravinsky, Schönberg, Cage",
+                messages: [
+                    { sender: "Stravinsky", text: "Heu vist l'escàndol de la meva estrena?", fake: false },
+                    { sender: "Schönberg", text: "La tonalitat ha mort. Visca el dodecafonisme.", fake: false },
+                    { sender: "Cage", text: "...", fake: false },
+                    { sender: "Stravinsky", text: "M'agrada el ritme irregular.", fake: false },
+                    { sender: "Schönberg", text: "He fet servir IA per compondre això.", fake: true },
+                    { sender: "Cage", text: "El silenci és or.", fake: false },
+                    { sender: "Stravinsky", text: "Vaig a veure una peli a Netflix.", fake: true },
+                    { sender: "Schönberg", text: "Compte amb el serialisme integral.", fake: false }
+                ]
+            },
+            {
+                id: 5,
+                name: "Dives de l'Òpera",
+                icon: "👸",
+                description: "L'espectacle total. Maria Callas i Montserrat Caballé parlen de l'art del cant i la glòria.",
+                members: "Callas, Caballé, Farinelli",
+                messages: [
+                    { sender: "Farinelli", text: "La meva veu és la més aguda.", fake: false },
+                    { sender: "Callas", text: "Jo soc la Divina, ningú em supera.", fake: false },
+                    { sender: "Caballé", text: "Barcelona és la millor ciutat.", fake: false },
+                    { sender: "Farinelli", text: "Utilitzo micròfon sense fils a l'escenari.", fake: true },
+                    { sender: "Callas", text: "He perdut pes per al paper de Violetta.", fake: false },
+                    { sender: "Caballé", text: "Cantem 'Barcelona' amb Freddie Mercury?", fake: false },
+                    { sender: "Farinelli", text: "Tinc molts seguidors a Twitter.", fake: true },
+                    { sender: "Callas", text: "L'art és sacrifici.", fake: false }
+                ]
+            },
+            {
+                id: 6,
+                name: "Edat Mitjana Vibes",
+                icon: "城堡",
+                description: "Mística i naixement de la notació. Guido d'Arezzo i Hildegard van Bingen en ple segle XI.",
+                members: "Guido, Hildegard, Alfons X",
+                messages: [
+                    { sender: "Guido", text: "He inventat un nom per a les notes!", fake: false },
+                    { sender: "Hildegard", text: "He tingut una visió mística.", fake: false },
+                    { sender: "Alfons X", text: "M'agraden les Cantigues a la Verge.", fake: false },
+                    { sender: "Guido", text: "Ut, Re, Mi, Fa, Sol, La...", fake: false },
+                    { sender: "Hildegard", text: "He enviat un email al Papa.", fake: true },
+                    { sender: "Alfons X", text: "El llaüt sona molt bé.", fake: false },
+                    { sender: "Guido", text: "He penjat un tutorial a YouTube.", fake: true },
+                    { sender: "Hildegard", text: "La música és l'alè de Déu.", fake: false }
+                ]
+            },
+            {
+                id: 7,
+                name: "Renaixement Team",
+                icon: "🎨",
+                description: "L'edat d'or de la polifonia. Palestrina i Josquin redefineixen la música sacra.",
+                members: "Palestrina, Josquin, Victoria",
+                messages: [
+                    { sender: "Josquin", text: "El meu motet és el millor.", fake: false },
+                    { sender: "Palestrina", text: "El Concili de Trento vol prohibir la polifonia!", fake: false },
+                    { sender: "Victoria", text: "Jo faig música molt seriosa i mística.", fake: false },
+                    { sender: "Josquin", text: "He imprès les meves partitures en 3D.", fake: true },
+                    { sender: "Palestrina", text: "He salvat la música sacra!", fake: false },
+                    { sender: "Victoria", text: "M'en torno a Àvila.", fake: false },
+                    { sender: "Josquin", text: "M'han fet un like a Instagram.", fake: true },
+                    { sender: "Palestrina", text: "La claredat del text és el més important.", fake: false }
+                ]
+            },
+            {
+                id: 8,
+                name: "Compositoras Power",
+                icon: "👩‍🎤",
+                description: "Grans dones de la música: Clara Schumann i Fanny Mendelssohn reivindiquen el seu talent.",
+                members: "Clara, Fanny, Hildegard",
+                messages: [
+                    { sender: "Clara", text: "Soc una pianista virtuosa, no només la dona de Robert.", fake: false },
+                    { sender: "Fanny", text: "El meu germà Fèlix publica les meves obres amb el seu nom...", fake: false },
+                    { sender: "Hildegard", text: "Jo soc la primera de totes!", fake: false },
+                    { sender: "Clara", text: "He de cuidar 8 fills i fer gires.", fake: false },
+                    { sender: "Fanny", text: "He creat un grup de WhatsApp per a dones.", fake: true },
+                    { sender: "Hildegard", text: "He escrit un llibre de medicina.", fake: false },
+                    { sender: "Clara", text: "He comprat entrades per al concert online.", fake: true },
+                    { sender: "Fanny", text: "La música és l'ornament de la nostra vida.", fake: false }
+                ]
+            },
+            {
+                id: 9,
+                name: "Club de la 9a Simfonia",
+                icon: "💀",
+                description: "La llegenda de la novena simfonia. Beethoven, Schubert i Dvořák parlen de la maledicció.",
+                members: "Beethoven, Schubert, Dvořák",
+                messages: [
+                    { sender: "Beethoven", text: "Jo vaig ser el primer en fer-ne 9 i prou.", fake: false },
+                    { sender: "Schubert", text: "Jo no la vaig acabar...", fake: false },
+                    { sender: "Dvořák", text: "Jo en vaig fer 9 i vaig anar a Amèrica.", fake: false },
+                    { sender: "Beethoven", text: "La maledicció és real!", fake: false },
+                    { sender: "Schubert", text: "He vist la sèrie de Netflix sobre nosaltres.", fake: true },
+                    { sender: "Dvořák", text: "La Simfonia del Nou Món mola molt.", fake: false },
+                    { sender: "Beethoven", text: "M'han regalat uns AirPods.", fake: true },
+                    { sender: "Mahler", text: "Jo vaig intentar enganyar la mort fent-ne una sense número!", fake: false }
+                ]
+            },
+            {
+                id: 10,
+                name: "Nacionalisme Musical",
+                icon: "🚩",
+                description: "Estimant les pròpies arrels. Grieg, Sibelius i Falla discuteixen sobre la música i la pàtria.",
+                members: "Grieg, Sibelius, Falla",
+                messages: [
+                    { sender: "Grieg", text: "La música noruega és la millor.", fake: false },
+                    { sender: "Sibelius", text: "Finlàndia és trista però bella.", fake: false },
+                    { sender: "Falla", text: "El flamenc té 'duende'.", fake: false },
+                    { sender: "Grieg", text: "He vist un troll al bosc.", fake: false },
+                    { sender: "Sibelius", text: "He fet servir Google Translate per entendre't.", fake: true },
+                    { sender: "Falla", text: "L'Amor Brujo és màgic.", fake: false },
+                    { sender: "Grieg", text: "M'agrada el salmó.", fake: false },
+                    { sender: "Sibelius", text: "He guanyat Eurovisió.", fake: true }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentGroup = null;
+        let selectedMessages = [];
+        let playedGroups = JSON.parse(localStorage.getItem('wa_played')) || [];
+
+        // --- LOGIC ---
+
+        function init() {
+            renderMenu();
+        }
+
+        function hideStartScreen() {
+            document.getElementById('start-screen').classList.add('hidden');
+            const music = document.getElementById('bg-music');
+            music.play().catch(e => console.log("Auto-play blocked, waiting for interaction"));
+        }
+
+        // --- AUDIO CONTROLS ---
+        function setVolume(v) {
+            const m = document.getElementById('bg-music');
+            m.volume = v;
+            document.getElementById('mute-icon-btn').textContent = v == 0 ? "🔇" : "🔊";
+        }
+
+        function toggleMute() {
+            const m = document.getElementById('bg-music');
+            const s = document.getElementById('volume-slider');
+            if (m.volume > 0) {
+                m.dataset.oldVol = m.volume;
+                m.volume = 0;
+                s.value = 0;
+                document.getElementById('mute-icon-btn').textContent = "🔇";
+            } else {
+                m.volume = m.dataset.oldVol || 0.5;
+                s.value = m.volume;
+                document.getElementById('mute-icon-btn').textContent = "🔊";
+            }
+        }
+
+        function showWhatsAppModal(text) {
+            document.getElementById('modal-msg').innerHTML = text;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        function renderMenu() {
+            const list = document.getElementById('chat-list');
+            list.innerHTML = '';
+            GROUPS.forEach(g => {
+                const isCompleted = playedGroups.includes(g.id);
+                const item = document.createElement('div');
+                item.className = `chat-item ${isCompleted ? 'completed' : ''}`;
+                item.innerHTML = `
+                    <div class="chat-avatar">${g.icon}</div>
+                    <div class="chat-details">
+                        <div class="chat-title">
+                            ${g.name}
+                            <span class="completed-mark">✓</span>
+                        </div>
+                        <div class="chat-preview">${g.messages[g.messages.length - 1].text}</div>
+                    </div>
+                    <div class="chat-tooltip">${g.description}</div>
+                `;
+                item.onclick = () => openChat(g);
+                list.appendChild(item);
+            });
+        }
+
+        function openChat(group) {
+            currentGroup = group;
+            selectedMessages = [];
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('chat-header').style.display = 'flex';
+            document.getElementById('chat-area').style.display = 'flex';
+            document.getElementById('chat-footer').style.display = 'flex';
+            document.getElementById('report-btn').style.display = 'flex';
+
+            document.getElementById('header-title').textContent = group.name;
+            document.getElementById('header-icon').textContent = group.icon;
+            document.getElementById('header-members').textContent = group.members;
+
+            renderMessages();
+        }
+
+        function showMenu() {
+            document.getElementById('menu-screen').style.display = 'flex';
+            document.getElementById('chat-header').style.display = 'none';
+            document.getElementById('chat-area').style.display = 'none';
+            document.getElementById('chat-footer').style.display = 'none';
+            document.getElementById('report-btn').style.display = 'none';
+            renderMenu();
+        }
+
+        function renderMessages() {
+            const area = document.getElementById('chat-area');
+            area.innerHTML = '';
+
+            currentGroup.messages.forEach((msg, idx) => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.sender === 'Jo' ? 'msg-out' : 'msg-in'}`;
+                const color = getColor(msg.sender);
+                div.innerHTML = `
+                    <div class="sender-name" style="color:${color}">${msg.sender}</div>
+                    <div>${msg.text}</div>
+                    <div class="msg-time">12:${10 + idx}</div>
+                `;
+                div.onclick = () => toggleSelect(div, idx);
+                area.appendChild(div);
+            });
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function getColor(name) {
+            const colors = ['#e542a3', '#1f7aec', '#d4af37', '#e74c3c', '#2ecc71', '#8e44ad', '#f39c12'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function toggleSelect(el, idx) {
+            if (el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                selectedMessages = selectedMessages.filter(i => i !== idx);
+            } else {
+                el.classList.add('selected');
+                selectedMessages.push(idx);
+            }
+        }
+
+        function reportMessages() {
+            if (selectedMessages.length === 0) {
+                showWhatsAppModal("Per favor, selecciona primer els missatges infiltrats.");
+                return;
+            }
+
+            let correct = 0;
+            let wrong = 0;
+            let totalFakes = currentGroup.messages.filter(m => m.fake).length;
+
+            selectedMessages.forEach(idx => {
+                if (currentGroup.messages[idx].fake) correct++;
+                else wrong++;
+            });
+
+            if (wrong > 0) {
+                showWhatsAppModal("<b>Atenció!</b> Has reportat missatges correctes. Revisa bé l'època!");
+            } else if (correct === totalFakes) {
+                if (!playedGroups.includes(currentGroup.id)) {
+                    playedGroups.push(currentGroup.id);
+                    localStorage.setItem('wa_played', JSON.stringify(playedGroups));
+                }
+                showWhatsAppModal("<b>EXCEL·LENT!</b> Has identificat tots els missatges anacrònics.");
+                setTimeout(showMenu, 1500);
+            } else {
+                showWhatsAppModal(`Has detectat <b>${correct}</b> de <b>${totalFakes}</b> anacronismes. Segueix buscant!`);
+            }
+
+            // Reset selection
+            document.querySelectorAll('.message.selected').forEach(el => el.classList.remove('selected'));
+            selectedMessages = [];
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>

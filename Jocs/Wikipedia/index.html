@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viquipèdia: Revisió d'Articles</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Linux+Libertine:wght@400;700&family=Inter:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --wiki-bg: #ffffff;
+            --wiki-text: #202122;
+            --wiki-link: #3366cc;
+            --wiki-border: #a2a9b1;
+            --wiki-panel: #f8f9fa;
+            --wiki-header-bg: #ffffff;
+            --wiki-sidebar-bg: #f8f9fa;
+            --error-bg: #ffebe9;
+            --error-border: #ff8182;
+            --success-bg: #e6ffec;
+            --success-border: #00cc44;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--wiki-text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        #site-header {
+            background: #ffffff;
+            height: 60px;
+            border-bottom: 1px solid #a2a9b1;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 20px;
+            font-family: 'Linux Libertine', serif;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .wiki-logo-icon {
+            width: 35px;
+            height: 35px;
+            background: #000;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 0.9rem;
+        }
+
+        .user-menu {
+            margin-left: auto;
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--wiki-link);
+            font-weight: bold;
+        }
+
+        /* Main Layout */
+        #content-wrapper {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Left Sidebar */
+        #left-sidebar {
+            width: 176px;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 6px 0;
+            color: #0645ad;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .sidebar-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Content */
+        #main-content {
+            flex: 1;
+            background: #ffffff;
+            padding: 30px;
+            border-left: 1px solid #a2a9b1;
+            border-right: 1px solid #a2a9b1;
+            min-height: 80vh;
+            padding-bottom: 120px;
+        }
+
+        /* Article Styles */
+        .article-title-text {
+            font-family: 'Linux Libertine', 'Georgia', Times, serif;
+            font-size: 2rem;
+            font-weight: 400;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #a2a9b1;
+        }
+
+        /* Infobox */
+        .infobox {
+            float: right;
+            clear: right;
+            width: 280px;
+            margin: 0 0 1em 1em;
+            border: 1px solid #a2a9b1;
+            background: #f8f9fa;
+            padding: 5px;
+            font-size: 0.9rem;
+        }
+
+        .infobox-title {
+            background: #cedff2;
+            text-align: center;
+            font-weight: bold;
+            padding: 8px;
+        }
+
+        .infobox-image {
+            width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+
+        .infobox-row {
+            display: flex;
+            padding: 4px 0;
+            border-bottom: 1px solid #eaecf0;
+        }
+
+        .infobox-label {
+            font-weight: bold;
+            width: 40%;
+            padding-right: 8px;
+        }
+
+        .infobox-data {
+            width: 60%;
+        }
+
+        /* Sentences */
+        .sentence {
+            cursor: pointer;
+            transition: background 0.2s;
+            padding: 1px 0;
+        }
+
+        .sentence:hover {
+            background: #e8f0fe;
+            border-radius: 2px;
+        }
+
+        .sentence.selected {
+            background: #ffebe9;
+            text-decoration: line-through;
+            color: #d73a49;
+        }
+
+        .sentence.correct-highlight {
+            background: #e6ffec;
+            text-decoration: none;
+            color: #006400;
+        }
+
+        /* Banner */
+        #era-banner {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #a2a9b1;
+            text-align: center;
+            border-radius: 2px;
+        }
+
+        .era-btn {
+            background: #fff;
+            border: 1px solid #a2a9b1;
+            padding: 8px 12px;
+            margin: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .era-btn.active {
+            background: #3366cc;
+            color: white;
+            border-color: #3366cc;
+        }
+
+        .era-btn.completed {
+            background: #e6ffec;
+            border-color: #00cc44;
+            color: #006400;
+        }
+
+        .era-btn.completed::after {
+            content: " ✓";
+            font-weight: bold;
+        }
+
+        /* HUD */
+        #hud {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-top: 1px solid #a2a9b1;
+            padding: 15px 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+            box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.1);
+            z-index: 500;
+        }
+
+        .btn-action {
+            padding: 12px 30px;
+            background: #3366cc;
+            color: white;
+            border: none;
+            border-radius: 2px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-action:disabled {
+            background: #a2a9b1;
+            cursor: not-allowed;
+        }
+
+        #volume-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8f9fa;
+            padding: 6px 15px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+        }
+
+        #volume-slider {
+            width: 90px;
+            cursor: pointer;
+            accent-color: #3366cc;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .start-card {
+            background: white;
+            max-width: 550px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Feedback Modals (Common) */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon {
+            font-size: 5rem;
+            margin-bottom: 25px;
+            display: block;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+        }
+
+        .modal-title {
+            font-family: 'Linux Libertine', serif;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .modal-msg {
+            font-size: 1.1rem;
+            color: #444;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .success-accent {
+            color: #2e7d32;
+        }
+
+        .error-accent {
+            color: #c62828;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-screen" class="overlay">
+        <div class="start-card">
+            <h2 style="font-family: 'Linux Libertine', serif; font-size: 2rem;">Viquipèdia: Portal de Revisió</h2>
+            <p>Articles de la història de la música han estat vandalitzats amb informació falsa o anacrònica.</p>
+            <div
+                style="text-align: left; margin: 20px 0; background: #f8f9fa; padding: 15px; border-left: 4px solid #3366cc;">
+                <p>1. Tria una època al banner superior.</p>
+                <p>2. Selecciona les frases que creguis que s'han de corregir.</p>
+                <p>3. Prem "Validar Canvis" per completar l'article.</p>
+            </div>
+            <button class="btn-action" onclick="hideStartScreen()">COMENÇAR</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="audio/Soft Focus Footnotes.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="site-header">
+        <div class="logo-container">
+            <div class="wiki-logo-icon">W</div><span>Viquipèdia</span>
+        </div>
+        <div class="search-box"><input type="text" class="search-input" placeholder="Cerca a Viquipèdia"></div>
+        <div class="user-menu"><span>Crea un compte</span><span>Inicia la sessió</span></div>
+    </div>
+
+    <div id="content-wrapper">
+        <div id="left-sidebar">
+            <h3 style="font-size: 0.85rem; color: #54595d; border-bottom: 1px solid #eaecf0; margin-bottom: 8px;">
+                Navegació</h3>
+            <a href="#" class="sidebar-link">Pàgina principal</a>
+            <a href="#" class="sidebar-link">Contingut</a>
+            <a href="#" class="sidebar-link">Actualitat</a>
+            <a href="#" class="sidebar-link">Article a l'atzar</a>
+            <h3
+                style="font-size: 0.85rem; color: #54595d; border-bottom: 1px solid #eaecf0; margin-top: 15px; margin-bottom: 8px;">
+                Participació</h3>
+            <a href="#" class="sidebar-link">Portal viquipedista</a>
+            <a href="#" class="sidebar-link">Donatius</a>
+        </div>
+
+        <div id="main-content">
+            <div id="era-banner">
+                <div id="era-buttons">
+                    <button class="era-btn" id="btn-Edat Mitjana" onclick="loadEra('Edat Mitjana')">Edat
+                        Mitjana</button>
+                    <button class="era-btn" id="btn-Renaixement" onclick="loadEra('Renaixement')">Renaixement</button>
+                    <button class="era-btn" id="btn-Barroc" onclick="loadEra('Barroc')">Barroc</button>
+                    <button class="era-btn" id="btn-Classicisme" onclick="loadEra('Classicisme')">Classicisme</button>
+                    <button class="era-btn" id="btn-Romanticisme"
+                        onclick="loadEra('Romanticisme')">Romanticisme</button>
+                    <button class="era-btn" id="btn-Segle XX" onclick="loadEra('Segle XX')">Segle XX</button>
+                </div>
+            </div>
+
+            <div id="article-container" style="display: none;">
+                <h1 id="firstHeading" class="article-title-text">Títol</h1>
+                <div class="infobox">
+                    <div class="infobox-title" id="info-title">Dades</div>
+                    <img id="info-img" src="" class="infobox-image" alt="Article image">
+                    <div id="info-rows"></div>
+                </div>
+                <div id="article-text-content"></div>
+            </div>
+
+            <div id="welcome-msg" style="text-align: center; padding: 100px 20px; color: #54595d;">
+                <h3>Benvingut Editor!</h3>
+                <p>Selecciona una època per començar la correcció d'articles.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="hud">
+        <div style="display:flex; align-items:center; gap:20px;">
+            <div id="volume-control">
+                <span id="mute-icon-btn" style="cursor:pointer;" onclick="toggleMute()">🔊</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5"
+                    oninput="setVolume(this.value)">
+            </div>
+            <div style="font-weight: bold;">Progrés: <span id="current-article">0/7</span></div>
+        </div>
+        <div style="display:flex; justify-content:center;">
+            <button id="submit-btn" class="btn-action" onclick="checkAnswers()" disabled>Validar Canvis</button>
+        </div>
+        <div style="display:flex; justify-content:flex-end;">
+            <div id="feedback" style="font-weight: bold; font-size: 1.1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <span id="fb-icon" class="modal-icon"></span>
+            <h2 id="fb-title" class="modal-title"></h2>
+            <p id="fb-msg" class="modal-msg"></p>
+            <button id="fb-btn" class="btn-action" onclick="closeFeedbackModal()"></button>
+        </div>
+    </div>
+
+    <!-- Reward Modal -->
+    <div id="reward-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-icon">📚</span>
+            <h2 class="modal-title success-accent">Època Revisada!</h2>
+            <p class="modal-msg">Has publicat tots els articles corregits de l'època amb èxit. La història de la música
+                torna a estar fora de perill.</p>
+            <p style="font-weight: bold; margin-bottom: 30px; color: #2e7d32;">✓ Verificació lliurada a la comunitat.
+            </p>
+            <button class="btn-action" onclick="closeRewardModal()">Tornar al Menú</button>
+        </div>
+    </div>
+
+    <script>
+        const DB = {
+            "Edat Mitjana": [
+                { title: "Cant Gregorià", text: ["El cant gregorià és un tipus de cant litúrgic utilitzat per l'Església Catòlica.", "És una música monòdica, és a dir, consta d'una sola línia melòdica sense acompanyament.", "Té un ritme marcat i regular de compàs 4/4 per facilitar la marxa.", "El text està escrit sempre en llatí i el ritme és lliure."], fakes: [2], info: { period: "Medieval", type: "Cant litúrgic" } },
+                { title: "Els Trobadors", text: ["Els trobadors eran poetes i músics cultes que componien en llengua occitana.", "La temàtica principal de les seves obres era l'amor cortès.", "Solien acompanyar-se d'instruments com el llaüt o l'arpa.", "Escrivien exclusivament en llatí culte per a les universitats."], fakes: [3], info: { period: "S. XI-XIII", type: "Música profana" } },
+                { title: "Guido d'Arezzo", text: ["Guido d'Arezzo va ser un monjo benedictí fonamental per a la notació.", "Va introduir el pentagrama de cinc línies tal com el coneixem avui.", "També va donar nom a les notes musicals (Ut, Re, Mi, Fa, Sol, La).", "Va desenvolupar la mà guidoniana per ensenyar els intervals."], fakes: [1], info: { birth: "c. 991", job: "Teòric musical" } },
+                { title: "Ars Nova", text: ["L'Ars Nova va ser un corrent musical del segle XIV a França i Itàlia.", "Va introduir una gran complexitat rítmica i la notació de la síncope.", "Es caracteritza per l'ús de sintetitzadors analògics per generar baixos.", "Compositors com Guillaume de Machaut en van ser referents."], fakes: [2], info: { century: "XIV", style: "Polifonia complexa" } },
+                { title: "Alfons X el Savi", text: ["Va patrocinar la creació de les 'Cantigas de Santa María'.", "És una de les col·leccions més importants de cançó monòdica medieval.", "Totes les cantigues es van gravar en disc de vinil de 45 RPM.", "Estan dedicades a miracles de la Mare de Déu."], fakes: [2], info: { king: "Castella", language: "Galaicoportuguès" } },
+                { title: "Escola de Notre Dame", text: ["A París, es va desenvolupar la polifonia més complexa anomenada organum.", "Léonin i Pérotin són els noms associats a aquest moviment.", "Van inventar la música disco per ballar durant les misses de diumenge.", "Van ser pioners en la divisió del temps en valors rítmics."], fakes: [2], info: { location: "París", era: "S. XII-XIII" } },
+                { title: "Hildegard von Bingen", text: ["Va ser una mística, compositora i visionària de l'Edat Mitjana.", "Va escriure 'Ordo Virtutum', un drama litúrgic sobre les virtuts.", "Va participar en el festival d'Eurovisió amb una cançó pop.", "La seva música té una gamma melòdica molt àmplia per a l'època."], fakes: [2], info: { role: "Abadessa", century: "XII" } }
+            ],
+            "Renaixement": [
+                { title: "Josquin des Prez", text: ["Va ser un compositor influents del Renaixement francoflamenc.", "Mestre del contrapunt imitatiu i la polifonia vocal.", "Va escriure nombroses misses i motets de gran qualitat.", "Va utilitzar el correu electrònic per enviar partitures al Papa."], fakes: [3], info: { period: "Renaixement", area: "Flandes/Itàlia" } },
+                { title: "Palestrina", text: ["Considerat el màxim exponent de la música sacra del segle XVI.", "El seu estil és equilibrat i respecta la claredat del text litúrgic.", "Va compondre la 'Missa Papae Marcelli' amb acompanyament de bateria.", "Va ser la referència per al Concili de Trento."], fakes: [2], info: { city: "Roma", era: "S. XVI" } },
+                { title: "L'Impremta Musical", text: ["Ottaviano Petrucci va ser el pioner en imprimir música el 1501.", "Gràcies a això, la música es va difondre ràpidament per tot Europa.", "Les partitures es podien descarregar directament en format PDF.", "Es feia servir un sistema de triple impressió molt complex."], fakes: [2], info: { inventor: "Petrucci", year: "1501" } },
+                { title: "Claudio Monteverdi", text: ["Va ser la figura de transició entre el Renaixement i el Barroc.", "Autor de l'òpera 'L'Orfeo', considerada la primera gran obra del gènere.", "Va guanyar un premi Grammy al millor àlbum de música dance.", "Va revolucionar la música amb el concepte de la 'seconda prattica'."], fakes: [2], info: { city: "Màntua", field: "Òpera/Madrigal" } },
+                { title: "El Madrigal", text: ["Forma poètico-musical vocal molt popular durant tot el segle XVI.", "Solia ser a quatre o cinc veus sobre textos profans de qualitat.", "Els cantants utilitzaven autotune per no desafinar en les notes altes.", "Buscava l'expressió directa dels sentiments a través de la música."], fakes: [2], info: { type: "Profana", era: "S. XVI" } },
+                { title: "Tomás Luis de Victoria", text: ["El compositor espanyol més famós del Renaixement tardà.", "Va escriure exclusivament música religiosa amb una gran càrrega mística.", "Va ser l'autor de la banda sonora de la pel·lícula Star Wars.", "L'Officium Defunctorum és una de les seves obres mestres."], fakes: [2], info: { origin: "Àvila", style: "Contrareforma" } },
+                { title: "William Byrd", text: ["Compositor anglès del Renaixement que va escriure música per a teclat.", "Va compondre peces per a virginal incloses a 'My Ladye Nevells Booke'.", "Va patentar el primer teclat MIDI via connexió Bluetooth.", "Va haver de mantenir la seva fe catòlica en secret a l'Anglaterra anglicana."], fakes: [2], info: { country: "Anglaterra", instr: "Virginal" } }
+            ],
+            "Barroc": [
+                { title: "Johann Sebastian Bach", text: ["Mestre absolut del contrapunt i la fuga d'origen alemany.", "Va escriure obres com 'El Clavecí Ben Temperat'.", "Va enregistrar aquestes obres en un estudi digital de Berlin.", "Va exercir com a Cantor a l'església de Sant Tomàs de Leipzig."], fakes: [2], info: { status: "Mestre", country: "Alemanya" } },
+                { title: "Antonio Vivaldi", text: ["Compositor venecià conegut com 'il Prete Rosso'.", "La seva obra més famosa és la col·lecció de concerts 'Les Quatre Estacions'.", "Tenia milers de subscriptors al seu canal de directes a Twitch.", "Va ser mestre de violí a l'Ospedale della Pietà."], fakes: [2], info: { city: "Venècia", job: "Violinista" } },
+                { title: "Händel", text: ["Compositor d'origen alemany que va triomfar a Londres.", "Famosos pels seus oratoris com 'El Messies'.", "Va fer una gira mundial amb drons i efectes de realitat augmentada.", "Va compondre 'Música per als Reials Focs d'Artifici'."], fakes: [2], info: { city: "Londres", genre: "Oratori" } },
+                { title: "Purcell", text: ["El compositor anglès més important del període barroc.", "Autor de l'òpera 'Dido i Enees'.", "Va compondre el tema principal per a la sèrie Game of Thrones.", "Va treballar per a la cort real anglesa."], fakes: [2], info: { country: "Anglaterra", works: "Òpera" } },
+                { title: "Corelli", text: ["Violinista i compositor clau en el desenvolupament del Concerto Grosso.", "La seva música va influir enormement en Vivaldi i Händel.", "Va dissenyar la primera guitarra elèctrica amb doble mànec.", "Es va especialitzar en obres per a corda a Itàlia."], fakes: [2], info: { city: "Roma", genre: "Sonata/Concert" } },
+                { title: "Lully", text: ["Compositor oficial de la cort de Lluís XIV, el Rei Sol.", "Va crear el gènere de la tragedie en musique francesa.", "Feia servir ulleres de realitat virtual per dirigir l'orquestra.", "Va morir per una ferida al peu causada pel seu propi bastó de director."], fakes: [2], info: { king: "Lluís XIV", country: "França" } },
+                { title: "Rameau", text: ["Teòric de l'harmonia i gran compositor d'òpera a França.", "Va escriure el 'Tractat de l'Harmonia' que va fixar les bases del sistema tonal.", "Va programar el primer sintetitzador Moog de la història.", "Les seves peces per a clavicèmbal són molt reconegudes."], fakes: [2], info: { field: "Teoria/Òpera", era: "Barroc tardà" } }
+            ],
+            "Classicisme": [
+                { title: "Wolfgang Amadeus Mozart", text: ["Nen prodigi i geni indiscutible de la música vianesa.", "Va escriure més de 600 obres en una vida molt breu.", "Es comunicava amb la seva germana Nannerl a través de WhatsApp.", "Va renovar el gènere de l'òpera amb títols com 'La Flauta Màgica'."], fakes: [2], info: { period: "Classicisme", city: "Viena" } },
+                { title: "Haydn", text: ["Conegut com el 'Pare de la Simfonia' i el 'Pare del Quartet de Corda'.", "Va passar gran part de la seva vida al servei de la família Esterházy.", "Va gravar les seves simfonies en format MP3 per a la ràdio.", "La seva sèrie de 104 simfonies és un pilar del Classicisme."], fakes: [2], info: { status: "Mestre", relation: "Esterházy" } },
+                { title: "Beethoven", text: ["Figura monumental que marca el pas cap al Romanticisme.", "La seva Tercera Simfonia, 'Eroica', va canviar la història de la música.", "Va utilitzar uns AirPods Pro per pal·liar la seva sordesa.", "Va patir una sordesa progressiva que no li va impedir seguir component."], fakes: [2], info: { birth: "Bonn", era: "Transició" } },
+                { title: "Gluck", text: ["Compositor que va dur a terme la reforma de l'òpera al segle XVIII.", "Buscava que la música estigués al servei del drama i de la poesia.", "Va crear un joc de realitat virtual basat en l'òpera Orfeu i Eurídice.", "Va eliminar els ornaments excessius de l'estil italià anterior."], fakes: [2], info: { field: "Òpera", focus: "Reforma" } },
+                { title: "Clementi", text: ["Pianista i compositor famós per les seves sonatines per a piano.", "Va ser el primer en promocionar la fabricació de pianos industrials.", "Va guanyar una partida d'escacs contra un ordinador quàntic.", "La seva tècnica va influir en la generació posterior de pianistes."], fakes: [2], info: { instr: "Piano", career: "Emprenedor" } },
+                { title: "Boccherini", text: ["Compositor i violoncel·lista italià instal·lat a la cort de Madrid.", "Famosos pels seus quintets de corda i el cèlebre 'Minuet'.", "Utilitzava un iPhone per gravar les seves idees musicals.", "La seva música té un estil elegant i ple de matisos melòdics."], fakes: [2], info: { city: "Madrid", instr: "Vcl" } },
+                { title: "Salieri", text: ["Figura influent a la cort de Viena i mestre de molts genis.", "Va escriure òperes que van tenir un gran èxit a la seva època.", "Va ser un hacker que va intentar esborrar les partitures de Mozart.", "El mite de la seva rivalitat amb Mozart ha ocupat l'imaginari popular."], fakes: [2], info: { role: "Mestre de cort", city: "Viena" } }
+            ],
+            "Romanticisme": [
+                { title: "Frédéric Chopin", text: ["El gran poèta del piano d'origen polonès.", "Gairebé tota la seva producció està dedicada a aquest instrument.", "Va compondre cançons de heavy metal per a piano elèctric.", "Va viure a París i va tenir una relació amb George Sand."], fakes: [2], info: { instrument: "Piano", origin: "Polònia" } },
+                { title: "Schubert", text: ["Mestre del Lied alemany, cançons per a veu i piano.", "Va compondre el cicle 'Viatge d'hivern' i la simfonia 'Inacabada'.", "Va realitzar una videoconferència amb Beethoven el 1827.", "Va morir als 31 anys deixant una obra immensa."], fakes: [2], info: { genre: "Lied", city: "Viena" } },
+                { title: "Wagner", text: ["Format de l'òpera cap al concepte d'Obra d'Art Total.", "Va fer construir el seu propi teatre a Bayreuth pel seu festival.", "Muntava les escenografies amb pantalles LED d'última generació.", "L'ús de leitmotivs va revolucionar la narrativa musical."], fakes: [2], info: { focus: "Bayreuth", style: "Gesamtkunstwerk" } },
+                { title: "Verdi", text: ["El màxim representant de l'òpera italiana del segle XIX.", "Autor d'obres universals com 'La Traviata' o 'Aida'.", "Enviava missatges per Telegram per convocar els cors als assajos.", "El seu nom es va utilitzar com a acrònim Patriòtic."], fakes: [2], info: { country: "Itàlia", field: "Òpera" } },
+                { title: "Liszt", text: ["Considerat el millor pianista de tots els temps.", "Va inventar el recital de piano tal com el coneixem avui dia.", "Tenia milions de seguidors a TikTok que imitaven la seva tècnica.", "Va viatjar per tot Europa causant una autèntica 'Lisztomania'."], fakes: [2], info: { role: "Virtuós", type: "Pianista" } },
+                { title: "Brahms", text: ["Representant del romanticisme alemany més conservador i acadèmic.", "Va compondre un famós 'Rèquiem Alemany'.", "Escrivia les seves simfonies utilitzant el programari Sibelius.", "Buscava mantenir el llegat de Beethoven en un marc romàntic."], fakes: [2], info: { style: "Continuïtat", country: "Alemanya" } },
+                { title: "Tchaikovsky", text: ["Compositor rus cèlebre pels seus ballets com 'El Llac dels Cignes'.", "La seva música té un aire melancòlic i una gran expressivitat.", "Va obrir un compte personal de Twitter per parlar amb fans.", "Va ser el primer compositor rus que es va fer famós internacionalment."], fakes: [2], info: { country: "Rússia", genre: "Ballet/Simfonia" } }
+            ],
+            "Segle XX": [
+                { title: "Igor Stravinsky", text: ["Revolucionari del ritme amb el seu ballet 'La Consagració de la Primavera'.", "La seva estrena a París el 1913 va causar un autèntic escàndol.", "Va utilitzar una batedora elèctrica per fer sons de percussió.", "Va passar pel primitivisme, el neoclassicisme i el serialisme."], fakes: [2], info: { period: "S. XX", works: "Ballets Russos" } },
+                { title: "Schoenberg", text: ["Creador del sistema dodecafònic que va trencar amb la tonalitat.", "Líder de la Segona Escola de Viena.", "Es va fer viral amb un vídeo de ball del seu nou mètode.", "Va fugir als Estats Units durant la pujada del nazisme."], fakes: [2], info: { method: "Dodecafonisme", city: "Viena/LA" } },
+                { title: "Debussy", text: ["Compositor francès associat a l'impressionisme musical.", "Buscava atmosferes i colors sonors en lloc d'estructures clàssiques.", "Utilitzava una tauleta digital per pintar les seves partitures.", "Obres com 'Prélude à l'après-midi d'un faune' són claus."], fakes: [2], info: { style: "Impressionisme", country: "França" } },
+                { title: "Bartók", text: ["Investigador de la música popular hongaresa i etnomusicòleg.", "Va integrar els ritmes i escales del folklore en l'avantguarda.", "Va enregistrar el folklore amb un telèfon intel·ligent 5G.", "La seva 'Música per a corda, percussió i celesta' és mítica."], fakes: [2], info: { country: "Hongria", focus: "Etnomusicologia" } },
+                { title: "Gershwin", text: ["Compositor americà que va unir la música clàssica amb el jazz.", "Autor de la 'Rhapsody in Blue' i l'òpera 'Porgy and Bess'.", "Va tocar en concerts virtuals en línia dins de Fortnite.", "Va escriure nombroses cançons per als musicals de Broadway."], fakes: [2], info: { origin: "EUA", style: "Jazz/Classic" } },
+                { title: "Stockhausen", text: ["Pioner de la música electrònica i aleatòria al segle XX.", "Va experimentar amb la música espacial i els sintetitzadors.", "Va afirmar que venia del planeta Sírius per fer la seva música.", "Va compondre un quartet de corda on els músics van en helicòpter."], fakes: [2], info: { style: "Avantguarda", tech: "Electrònica" } },
+                { title: "Philip Glass", text: ["Un dels màxims representants del minimalisme musical.", "Basa la seva música en la repetició i el canvi gradual de patrons.", "Va dissenyar la interfície d'usuari del sistema operatiu Windows.", "Autor de nombroses bandes sonores de cinema i òperes."], fakes: [2], info: { style: "Minimalisme", area: "EUA" } }
+            ]
+        };
+
+        let currentEra = "";
+        let currentArticleIndex = 0;
+        let currentArticleData = null;
+        let selectedSentences = [];
+        let completedEras = JSON.parse(localStorage.getItem('wiki_completed_eras')) || [];
+
+        function init() { updateEraButtons(); }
+
+        function hideStartScreen() {
+            document.getElementById('start-screen').classList.add('hidden');
+            const music = document.getElementById('bg-music');
+            music.play().catch(() => console.log("Music blocked"));
+        }
+
+        function setVolume(v) {
+            document.getElementById('bg-music').volume = v;
+            document.getElementById('mute-icon-btn').textContent = v == 0 ? "🔇" : "🔊";
+        }
+
+        function toggleMute() {
+            const m = document.getElementById('bg-music');
+            const s = document.getElementById('volume-slider');
+            if (m.volume > 0) { m.dataset.oldVol = m.volume; m.volume = 0; s.value = 0; document.getElementById('mute-icon-btn').textContent = "🔇"; }
+            else { m.volume = m.dataset.oldVol || 0.5; s.value = m.volume; document.getElementById('mute-icon-btn').textContent = "🔊"; }
+        }
+
+        function updateEraButtons() {
+            document.querySelectorAll('.era-btn').forEach(btn => {
+                const eraName = btn.id.replace('btn-', '');
+                if (completedEras.includes(eraName)) btn.classList.add('completed');
+            });
+        }
+
+        function loadEra(era) {
+            currentEra = era;
+            currentArticleIndex = 0;
+            document.querySelectorAll('.era-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${era}`).classList.add('active');
+            document.getElementById('welcome-msg').style.display = 'none';
+            document.getElementById('article-container').style.display = 'block';
+            loadArticle();
+        }
+
+        function loadArticle() {
+            const articles = DB[currentEra];
+            if (currentArticleIndex >= articles.length) { finishEra(); return; }
+            currentArticleData = articles[currentArticleIndex];
+            selectedSentences = [];
+            document.getElementById('firstHeading').textContent = currentArticleData.title;
+
+            document.getElementById('info-title').textContent = currentArticleData.title;
+            const imgPath = `../../img/${currentArticleData.title.toLowerCase().replace(/ /g, '_')}.jpg`;
+            document.getElementById('info-img').src = imgPath;
+            document.getElementById('info-img').onerror = function () { this.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/300px-Wikipedia-logo-v2.svg.png'; };
+
+            let rowsHtml = "";
+            for (let [key, val] of Object.entries(currentArticleData.info)) {
+                rowsHtml += `<div class="infobox-row"><div class="infobox-label">${key}</div><div class="infobox-data">${val}</div></div>`;
+            }
+            document.getElementById('info-rows').innerHTML = rowsHtml;
+
+            const container = document.getElementById('article-text-content');
+            container.innerHTML = `<p>${currentArticleData.text.map((s, idx) => `<span class="sentence" onclick="toggleSentence(${idx}, this)">${s}</span> `).join('')}</p>`;
+            document.getElementById('current-article').textContent = (currentArticleIndex + 1) + "/" + articles.length;
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('feedback').textContent = "";
+        }
+
+        function toggleSentence(idx, el) {
+            if (selectedSentences.includes(idx)) { selectedSentences = selectedSentences.filter(i => i !== idx); el.classList.remove('selected'); }
+            else { selectedSentences.push(idx); el.classList.add('selected'); }
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        function checkAnswers() {
+            const fakes = currentArticleData.fakes;
+            const isCorrect = fakes.length === selectedSentences.length && fakes.every(v => selectedSentences.includes(v));
+            if (isCorrect) {
+                showFeedbackModal(true);
+            } else {
+                showFeedbackModal(false);
+            }
+        }
+
+        function showFeedbackModal(success) {
+            const modal = document.getElementById('feedback-modal');
+            const icon = document.getElementById('fb-icon');
+            const title = document.getElementById('fb-title');
+            const msg = document.getElementById('fb-msg');
+            const btn = document.getElementById('fb-btn');
+
+            if (success) {
+                icon.textContent = "📜";
+                title.textContent = "Article Corregit!";
+                title.className = "modal-title success-accent";
+                msg.textContent = "Has detectat tots els errors històrics. Ja podem publicar aquesta versió neta de l'article.";
+                btn.textContent = "Següent Article";
+                modal.dataset.action = "next";
+            } else {
+                icon.textContent = "⚠️";
+                title.textContent = "Queden Errors";
+                title.className = "modal-title error-accent";
+                msg.textContent = "Encara detectem informació sospitosa o frases que no haurien d'estar seleccionades. Torna-ho a mirar.";
+                btn.textContent = "Seguir Revisant";
+                modal.dataset.action = "retry";
+            }
+            modal.style.display = "flex";
+        }
+
+        function closeFeedbackModal() {
+            const modal = document.getElementById('feedback-modal');
+            modal.style.display = "none";
+            if (modal.dataset.action === "next") {
+                nextArticle();
+            }
+        }
+
+        function nextArticle() { currentArticleIndex++; loadArticle(); }
+
+        function finishEra() {
+            if (!completedEras.includes(currentEra)) {
+                completedEras.push(currentEra);
+                localStorage.setItem('wiki_completed_eras', JSON.stringify(completedEras));
+            }
+            updateEraButtons();
+            document.getElementById('reward-modal').style.display = 'flex';
+            document.getElementById('article-container').style.display = 'none';
+            document.getElementById('welcome-msg').style.display = 'block';
+            document.getElementById('welcome-msg').innerHTML = `<h2 style="color:green; font-family:'Linux Libertine', serif;">${currentEra} Completada!</h2><p>L'era s'ha revisat correctament. La Viquipèdia t'ho agraeix!</p>`;
+        }
+
+        function closeRewardModal() { document.getElementById('reward-modal').style.display = 'none'; }
+
+        init();
+    </script>
+</body>
+
+</html>
