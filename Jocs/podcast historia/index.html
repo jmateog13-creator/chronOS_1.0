@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Podcast del Temps</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff00;
+            --neon-red: #ff0000;
+            --bg-dark: #111;
+            --panel-bg: #222;
+            --text-color: #eee;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                url('img/background_studio.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: #000;
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            z-index: 10;
+        }
+
+        .logo {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .hud {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .audience-meter {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #555;
+            position: relative;
+        }
+
+        .audience-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+            transition: width 0.5s ease;
+        }
+
+        .audience-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .on-air {
+            background: #300;
+            color: #500;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 900;
+            border: 2px solid #500;
+            transition: all 0.3s;
+        }
+
+        .on-air.active {
+            background: var(--neon-red);
+            color: white;
+            box-shadow: 0 0 20px var(--neon-red);
+            border-color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* MAIN STUDIO */
+        #studio {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .table {
+            position: absolute;
+            bottom: -50px;
+            width: 80%;
+            height: 200px;
+            background: #333;
+            border-radius: 100px 100px 0 0;
+            border-top: 5px solid #555;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .guests-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            justify-items: center;
+            gap: 2rem;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto 30px auto;
+            z-index: 2;
+        }
+
+        .guest-seat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+
+        .avatar-container {
+            width: 160px;
+            /* Sizing for 3x2 grid */
+            height: 160px;
+            border-radius: 50%;
+            border: 5px solid #555;
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .avatar-container.highlight {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: scale(1.05);
+        }
+
+        .avatar-container.correct {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 30px var(--neon-green);
+        }
+
+        .avatar-container.wrong {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 30px var(--neon-red);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+        }
+
+        /* Special fix for Renaixement centering */
+        #avatar-RENAIXEMENT .avatar-img {
+            transform: scale(1.1) translateX(10px);
+        }
+
+        .era-tag {
+            background: #000;
+            color: var(--neon-blue);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--neon-blue);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            /* Smaller to fit */
+            text-align: center;
+            margin-top: -20px;
+            z-index: 3;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            white-space: nowrap;
+        }
+
+        .era-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: white;
+            color: black;
+            padding: 10px 15px;
+            border-radius: 15px;
+            width: 220px;
+            font-size: 0.8rem;
+            text-align: center;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+
+        .speech-bubble.show {
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+        }
+
+        /* TELEPROMPTER (BOTTOM) */
+        #teleprompter {
+            height: 180px;
+            background: #000;
+            border-top: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .prompter-label {
+            font-family: 'Share Tech Mono', monospace;
+            color: #555;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .phrase-card {
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: grab;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s;
+            max-width: 800px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phrase-card:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+
+        .audio-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            margin-right: 10px;
+            transition: transform 0.2s;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.2);
+        }
+
+        /* OVERLAYS */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: var(--neon-blue);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            margin-top: 2rem;
+        }
+
+        .btn:hover {
+            background: var(--neon-green);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-green);
+        }
+
+        /* DRAG GHOST */
+        .dragging {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen">
+        <h1>El Podcast del Temps</h1>
+        <p style="font-size: 1.2rem; max-width: 600px; text-align: center; line-height: 1.6;">
+            Benvingut a l'estudi! Tenim 4 convidats històrics avui.<br>
+            La teva feina és assignar cada frase del guió al personatge correcte.<br>
+            No t'equivoquis o perdrem audiència!
+        </p>
+        <button class="btn" onclick="startGame()">ENTRAR A L'ESTUDI</button>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="gameover-screen" class="screen hidden">
+        <h1 id="go-title" style="color: var(--neon-red);">PROGRAMA CANCEL·LAT</h1>
+        <p id="go-msg" style="font-size: 1.5rem;">L'audiència ha marxat...</p>
+        <button class="btn" onclick="location.reload()">TORNAR A GRAVAR</button>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-screen" class="screen hidden">
+        <h1 style="color: var(--neon-green);">ÈXIT D'AUDIÈNCIA!</h1>
+        <p style="font-size: 1.5rem;">El programa ha estat un èxit total!</p>
+        <button class="btn" onclick="location.reload()">NOU EPISODI</button>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop src="music.m4a"></audio>
+
+    <header>
+        <div class="logo">🎙️ PODCAST DEL TEMPS</div>
+        <div class="hud">
+            <div class="audience-meter">
+                <div class="audience-fill" id="audience-bar"></div>
+                <div class="audience-label">AUDIÈNCIA</div>
+            </div>
+            <div id="on-air-sign" class="on-air active">ON AIR</div>
+            <div style="font-family: 'Share Tech Mono'; color: var(--neon-red);">VIDES: <span id="lives-val">3</span>
+            </div>
+        </div>
+    </header>
+
+    <div id="studio">
+        <div class="guests-container" id="guests-container">
+            <!-- Guests will be injected here -->
+        </div>
+        <div class="table"></div>
+    </div>
+
+    <div id="teleprompter">
+        <div class="prompter-label">/// TELEPROMPTER - ARROSSEGA LA FRASE ///</div>
+        <div id="current-phrase-container">
+            <!-- Draggable phrase appears here -->
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const PODCAST_DB = {
+            "MITJANA": {
+                icon: "🏰",
+                avatar: "img/mitjana.png",
+                voice: { pitch: 1.3, rate: 0.9, gender: 'female' }, // Trobadairitz (F)
+                phrases: [
+                    "Visc en un monestir i reso tot el dia.",
+                    "La meva música és per a Déu, no per ballar.",
+                    "Canto en llatí perquè és l'idioma sagrat.",
+                    "Soc un trobador i canto a la meva dama.",
+                    "Toco el llaüt als castells.",
+                    "No fem servir instruments a l'església."
+                ]
+            },
+            "RENAIXEMENT": {
+                icon: "🧠",
+                avatar: "img/renaixement.png",
+                voice: { pitch: 0.8, rate: 1.0, gender: 'male' }, // Savi (M)
+                phrases: [
+                    "Gràcies a la impremta, la meva música viatja luny.",
+                    "Busco la bellesa i l'equilibri en les veus.",
+                    "Som un cor i cantem tots a la vegada (Polifonia).",
+                    "L'ésser humà és el centre del món (Humanisme).",
+                    "Escric música religiosa però que s'entengui la lletra.",
+                    "M'agrada cantar madrigals amb els amics."
+                ]
+            },
+            "BARROC": {
+                icon: "👑",
+                avatar: "img/barroc.png",
+                voice: { pitch: 1.4, rate: 1.1, gender: 'female' }, // Compositora (F)
+                phrases: [
+                    "M'encanta omplir la música de notes i ornaments.",
+                    "El clavecí marca el ritme de fons (Baix Continu).",
+                    "He escrit una Òpera amb escenaris increïbles.",
+                    "La meva música és forta i fluixa (Contrast).",
+                    "Porto una perruca blanca molt elegant.",
+                    "Soc un virtuós del violí."
+                ]
+            },
+            "CLASSICISME": {
+                icon: "🎹",
+                avatar: "img/classicisme.png",
+                voice: { pitch: 0.9, rate: 1.0, gender: 'male' }, // Mozart style (M)
+                phrases: [
+                    "La meva música és senzilla, ordenada i elegant.",
+                    "No m'agrada el desordre ni l'exageració.",
+                    "Toco el piano-forte, que és millor que el clavecí.",
+                    "L'orquestra està molt ben organitzada per seccions.",
+                    "Busco la melodia perfecta i acompanyada.",
+                    "Visc a Viena, la capital de la música."
+                ]
+            },
+            "ROMANTICISME": {
+                icon: "❤️",
+                avatar: "img/romanticisme.png",
+                voice: { pitch: 1.2, rate: 0.9, gender: 'female' }, // Clara Schumann style (F)
+                phrases: [
+                    "La música serveix per explicar els meus sentiments.",
+                    "Estic trist i la meva música plora amb mi.",
+                    "M'agraden les tempestes i la natura salvatge.",
+                    "El piano és el rei, puc colpejar-lo amb passió!",
+                    "La meva orquestra és gegant i sorollosa.",
+                    "No segueixo les normas, soc un geni lliure."
+                ]
+            },
+            "S. XX": {
+                icon: "⚡",
+                avatar: "img/segleXX.png",
+                voice: { pitch: 0.85, rate: 1.2, gender: 'male' }, // Jazz/Modern rebel (M)
+                phrases: [
+                    "Vull trencar totes les normes del passat.",
+                    "Utilitzo l'electricitat per fer sons nous.",
+                    "Gravo la meva música en discos i ràdios.",
+                    "El ritme del Jazz em fa ballar.",
+                    "De vegades la meva música sembla soroll (Dissonància).",
+                    "Busco colors i atmosferes (Impressionisme)."
+                ]
+            }
+        };
+
+        const ERROR_PHRASES = [
+            "Això no va amb mi!",
+            "Quin disbarat!",
+            "T'equivoques d'època!",
+            "No he dit pas això!",
+            "Estàs segur?"
+        ];
+
+        // --- STATE ---
+        let state = {
+            activeEras: [], // The 4 eras in play
+            activeGuests: [], // { era, img, id }
+            currentPhrase: null, // { text, era }
+            score: 0,
+            lives: 3,
+            phrasesQueue: []
+        };
+
+        // --- DOM ---
+        const guestsContainer = document.getElementById('guests-container');
+        const phraseContainer = document.getElementById('current-phrase-container');
+        const audienceBar = document.getElementById('audience-bar');
+        const livesVal = document.getElementById('lives-val');
+        const onAirSign = document.getElementById('on-air-sign');
+
+        // --- AUDIO ---
+        const synth = window.speechSynthesis;
+
+        function speak(text, era) {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            const utterThis = new SpeechSynthesisUtterance(text);
+            utterThis.lang = 'ca-ES';
+
+            const eraData = PODCAST_DB[era];
+            if (!eraData) return;
+
+            const voices = synth.getVoices();
+            const caVoices = voices.filter(v => v.lang.startsWith('ca'));
+
+            if (caVoices.length > 0) {
+                const eras = Object.keys(PODCAST_DB);
+                const eraIndex = eras.indexOf(era);
+
+                if (caVoices.length >= 2) {
+                    const femaleVoices = caVoices.filter(v =>
+                        v.name.toLowerCase().includes('female') ||
+                        v.name.toLowerCase().includes('amely') ||
+                        v.name.toLowerCase().includes('joana') ||
+                        v.name.toLowerCase().includes('monica')
+                    );
+                    const maleVoices = caVoices.filter(v =>
+                        v.name.toLowerCase().includes('male') ||
+                        v.name.toLowerCase().includes('jordi') ||
+                        v.name.toLowerCase().includes('thomas') ||
+                        v.name.toLowerCase().includes('pau')
+                    );
+
+                    if (eraData.voice.gender === 'female' && femaleVoices.length > 0) {
+                        utterThis.voice = femaleVoices[eraIndex % femaleVoices.length];
+                    } else if (eraData.voice.gender === 'male' && maleVoices.length > 0) {
+                        utterThis.voice = maleVoices[eraIndex % maleVoices.length];
+                    } else {
+                        utterThis.voice = caVoices[eraIndex % caVoices.length];
+                    }
+                } else {
+                    utterThis.voice = caVoices[0];
+                }
+            }
+
+            utterThis.pitch = eraData.voice.pitch;
+            utterThis.rate = eraData.voice.rate;
+
+            synth.speak(utterThis);
+        }
+
+        function playSound(type) {
+            // Simple beep synthesis
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            }
+        }
+
+        // --- LOGIC ---
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            state.score = 0;
+            state.lives = 3;
+            updateHUD();
+
+            // Try to play background music
+            const bgMusic = document.getElementById('bg-music');
+            if (bgMusic) {
+                bgMusic.volume = 0.2;
+                bgMusic.play().catch(e => console.log("Audio play failed:", e));
+            }
+
+            setupRound();
+        }
+
+        function setupRound() {
+            // Use all 6 eras
+            state.activeEras = Object.keys(PODCAST_DB);
+
+            // Setup Guests
+            state.activeGuests = state.activeEras.map((era, index) => {
+                const eraData = PODCAST_DB[era];
+                return {
+                    id: index,
+                    era: era,
+                    avatar: eraData.avatar
+                };
+            });
+
+            renderGuests();
+            generatePhraseQueue();
+            nextPhrase();
+        }
+
+        function renderGuests() {
+            guestsContainer.innerHTML = '';
+            state.activeGuests.forEach(guest => {
+                const seat = document.createElement('div');
+                seat.className = 'guest-seat';
+                seat.dataset.era = guest.era;
+
+                // Drop Zone Events
+                seat.ondragover = (e) => e.preventDefault();
+                seat.ondrop = (e) => handleDrop(e, guest);
+
+                const avatarCont = document.createElement('div');
+                avatarCont.className = 'avatar-container';
+                avatarCont.id = `avatar-${guest.era}`; // Changed to era-based ID for CSS targeting
+
+                const img = document.createElement('img');
+                img.src = guest.avatar;
+                img.className = 'avatar-img';
+                avatarCont.appendChild(img);
+
+                const tag = document.createElement('div');
+                tag.className = 'era-tag';
+                tag.textContent = guest.era;
+
+                seat.appendChild(avatarCont);
+                seat.appendChild(tag);
+                guestsContainer.appendChild(seat);
+            });
+        }
+
+        function generatePhraseQueue() {
+            state.phrasesQueue = [];
+            // Generate 3 phrases per active era (12 total rounds)
+            state.activeEras.forEach(era => {
+                const phrases = [...PODCAST_DB[era].phrases];
+                // Shuffle and pick 3
+                phrases.sort(() => Math.random() - 0.5);
+                const selected = phrases.slice(0, 3);
+                selected.forEach(p => {
+                    state.phrasesQueue.push({ text: p, era: era });
+                });
+            });
+            // Shuffle queue
+            state.phrasesQueue.sort(() => Math.random() - 0.5);
+        }
+
+        function nextPhrase() {
+            if (state.phrasesQueue.length === 0) {
+                winGame();
+                return;
+            }
+
+            state.currentPhrase = state.phrasesQueue.pop();
+            renderPhrase(state.currentPhrase);
+        }
+
+        function renderPhrase(phraseObj) {
+            phraseContainer.innerHTML = '';
+
+            const card = document.createElement('div');
+            card.className = 'phrase-card';
+            card.draggable = true;
+            card.ondragstart = (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify(phraseObj));
+                card.classList.add('dragging');
+            };
+            card.ondragend = () => card.classList.remove('dragging');
+
+            const audioBtn = document.createElement('button');
+            audioBtn.className = 'audio-btn';
+            audioBtn.textContent = '🔊';
+            audioBtn.onclick = () => speak(phraseObj.text, phraseObj.era);
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = `"${phraseObj.text}"`;
+
+            card.appendChild(audioBtn);
+            card.appendChild(textSpan);
+            phraseContainer.appendChild(card);
+        }
+
+        function handleDrop(e, guest) {
+            e.preventDefault();
+            const data = e.dataTransfer.getData('text/plain');
+            if (!data) return;
+
+            const droppedPhrase = JSON.parse(data);
+
+            if (droppedPhrase.era === guest.era) {
+                handleCorrect(guest, droppedPhrase.text);
+            } else {
+                handleWrong(guest);
+            }
+        }
+
+        function handleCorrect(guest, text) {
+            playSound('correct');
+            speak(text, guest.era); // Read with character voice
+            state.score += 10;
+            updateHUD();
+
+            // Visuals
+            const avatar = document.getElementById(`avatar-${guest.era}`);
+            avatar.classList.add('correct');
+
+            // Feedback in Teleprompter (Script Style)
+            const eraColor = getEraColor(guest.era);
+            phraseContainer.innerHTML = `
+                <div class="phrase-card" style="border-color: ${eraColor}; box-shadow: 0 0 20px ${eraColor}; transform: scale(1.05); justify-content: flex-start;">
+                    <span style="color: ${eraColor}; font-weight: bold; margin-right: 10px; font-family: 'Share Tech Mono';">${guest.era}:</span>
+                    <span>"${text}"</span>
+                </div>`;
+
+            setTimeout(() => {
+                avatar.classList.remove('correct');
+                nextPhrase();
+            }, 3000); // Wait for speech
+        }
+
+        function getEraColor(era) {
+            switch (era) {
+                case 'MITJANA': return '#95a5a6';
+                case 'RENAIXEMENT': return '#e6dcae';
+                case 'BARROC': return '#f1c40f';
+                case 'CLASSICISME': return '#3498db';
+                case 'ROMANTICISME': return '#e74c3c';
+                case 'S. XX': return '#8e44ad';
+                default: return '#fff';
+            }
+        }
+
+        function handleWrong(guest) {
+            playSound('wrong');
+            state.lives--;
+            updateHUD();
+
+            // Visuals
+            const avatar = document.getElementById(`avatar-${guest.era}`);
+            avatar.classList.add('wrong');
+
+            // Show error in teleprompter
+            const errorMsg = ERROR_PHRASES[Math.floor(Math.random() * ERROR_PHRASES.length)];
+            phraseContainer.innerHTML = `
+                <div class="phrase-card" style="border-color: red; color: red;">
+                    <span>🚫 ${errorMsg}</span>
+                </div>`;
+
+            onAirSign.classList.remove('active'); // Flicker effect
+            setTimeout(() => onAirSign.classList.add('active'), 200);
+
+            setTimeout(() => {
+                avatar.classList.remove('wrong');
+                // Restore current phrase
+                renderPhrase(state.currentPhrase);
+
+                if (state.lives <= 0) {
+                    loseGame();
+                }
+            }, 1500);
+        }
+
+        function updateHUD() {
+            livesVal.textContent = state.lives;
+            // Max score is 6 eras * 3 phrases * 10 = 180
+            const maxScore = 180;
+            const pct = (state.score / maxScore) * 100;
+            audienceBar.style.width = `${pct}%`;
+        }
+
+        function winGame() {
+            document.getElementById('win-screen').classList.remove('hidden');
+        }
+
+        function loseGame() {
+            document.getElementById('gameover-screen').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+
+</html>
