@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Alquimista de les Arts</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Lato:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #2c3e50;
+            --cauldron-color: #34495e;
+            --liquid-color: #27ae60;
+            --text-color: #ecf0f1;
+            --accent: #e67e22;
+        }
+
+        body {
+            font-family: 'MedievalSharp', cursive;
+            background-color: #1a1a2d;
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #2c3e50 0%, #000 100%);
+        }
+
+        #game-ui {
+            width: 100%;
+            max-width: 1000px;
+            height: 95vh;
+            display: grid;
+            grid-template-rows: 60px 1fr 340px;
+            /* Increased from 220px to show all items */
+            gap: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Header */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0 20px;
+            border-bottom: 2px solid var(--accent);
+            border-radius: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Center Stage */
+        #stage {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            position: relative;
+        }
+
+        /* Client Card */
+        #client-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #7f8c8d;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.5s;
+        }
+
+        .avatar {
+            font-size: 5rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .bubble {
+            background: #fff;
+            color: #000;
+            padding: 15px;
+            border-radius: 20px;
+            font-family: 'Lato', sans-serif;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .bubble::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            border-width: 0 10px 10px;
+            border-style: solid;
+            border-color: #fff transparent;
+            transform: translateX(-50%);
+        }
+
+        /* Cauldron Area */
+        #cauldron-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #cauldron {
+            width: 250px;
+            height: 200px;
+            background: #444;
+            border-radius: 0 0 100px 100px;
+            position: relative;
+            border: 5px solid #222;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            overflow: visible;
+            /* Allow smoke/bubbles to go out */
+            transition: transform 0.2s;
+        }
+
+        #cauldron::before {
+            content: '';
+            /* Rim */
+            position: absolute;
+            top: -20px;
+            left: -10px;
+            width: 270px;
+            height: 40px;
+            background: #555;
+            border-radius: 50%;
+            border: 5px solid #222;
+            z-index: 5;
+        }
+
+        #liquid {
+            width: 230px;
+            height: 40px;
+            background: var(--liquid-color);
+            border-radius: 50%;
+            position: absolute;
+            top: -10px;
+            z-index: 6;
+            transition: background 1s;
+            box-shadow: 0 0 20px var(--liquid-color);
+            opacity: 0.8;
+        }
+
+        .dropped-item {
+            position: absolute;
+            top: 20px;
+            font-size: 2rem;
+            animation: float 3s infinite ease-in-out;
+            z-index: 10;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        #mix-btn {
+            margin-top: 50px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'MedievalSharp', cursive;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #d35400;
+            transition: all 0.2s;
+        }
+
+        #mix-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #d35400;
+        }
+
+        #mix-btn:disabled {
+            background: #7f8c8d;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Shelf / Inventory */
+        #shelf {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #555;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .shelf-col {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px;
+            border-radius: 5px;
+            scrollbar-width: none;
+        }
+
+        .shelf-col::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-title {
+            text-align: center;
+            font-weight: bold;
+            color: #ffd700;
+            border-bottom: 1px solid #777;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+
+        .item {
+            background: #34495e;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            border: 1px solid #555;
+            transition: transform 0.2s;
+        }
+
+        .item:hover {
+            background: #4a6b8a;
+            transform: translateX(5px);
+        }
+
+        .item:active {
+            cursor: grabbing;
+        }
+
+        .item-used {
+            opacity: 0.5;
+            filter: grayscale(1);
+            transform: scale(0.95);
+            border-style: dashed;
+        }
+
+        .droppable-hover {
+            transform: scale(1.05);
+            border-color: #ffd700 !important;
+        }
+
+        /* Feedback Overlay */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Custom Result Modal */
+        #result-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2c3e50;
+            padding: 30px;
+            border: 4px solid #ffd700;
+            border-radius: 15px;
+            text-align: center;
+            color: #fff;
+            z-index: 300;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            min-width: 300px;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        #result-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #result-msg {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        #result-close {
+            padding: 10px 30px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #d35400;
+        }
+
+        #result-close:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #d35400;
+        }
+
+        #reset-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-family: 'MedievalSharp', cursive;
+            background: #c0392b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #96281b;
+            transition: all 0.2s;
+        }
+
+        #reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #96281b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-ui">
+        <div id="header">
+            <div>Clients: <span id="progress">0/12</span></div>
+            <div style="font-size: 2rem;">L'Alquimista de les Arts</div>
+            <div>Vides: <span id="lives">❤️❤️❤️❤️❤️</span></div>
+        </div>
+
+        <div id="stage">
+            <div id="client-card">
+                <div class="avatar" id="c-avatar">👤</div>
+                <div style="font-size: 1.2rem; color: #ffd700;" id="c-name">Nom del Client</div>
+                <div class="bubble" id="c-req">Request text...</div>
+            </div>
+
+            <div id="cauldron-area">
+                <div id="cauldron">
+                    <div id="liquid"></div>
+                    <!-- Dropped items appear here -->
+                </div>
+                <button id="mix-btn" onclick="validateMix()" disabled>BARREJAR</button>
+                <button id="reset-btn" onclick="resetCauldron()" disabled>BUIDAR 🗑️</button>
+            </div>
+        </div>
+
+        <div id="shelf">
+            <div class="shelf-col" id="col-bases">
+                <div class="category-title">BASES (Líquids)</div>
+            </div>
+            <div class="shelf-col" id="col-ingredients">
+                <div class="category-title">INGREDIENTS</div>
+            </div>
+            <div class="shelf-col" id="col-methods">
+                <div class="category-title">MÈTODES</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal">
+        <div id="result-title">TITOL</div>
+        <div id="result-msg">Missatge</div>
+        <button id="result-close" onclick="closeResult()">CONTINUAR</button>
+    </div>
+
+    <div id="overlay">
+        <h1 id="ov-title" style="color: #ffd700; font-size: 3rem;">L'Alquimista</h1>
+        <p id="ov-desc" style="font-size: 1.2rem; color: #fff; max-width: 600px;">
+            Ets l'apotecari de la història. Cura als artistes amb la barreja correcta.
+            <br>Arrossega 1 Base, 1 Ingredient i 1 Mètode al calder.
+        </p>
+        <button id="ov-btn" onclick="startGame()"
+            style="padding: 15px 30px; font-size: 1.5rem; background: #e67e22; border:none; cursor: pointer; color: white; border-radius: 5px; margin-top:20px;">Començar</button>
+    </div>
+
+    <script>
+        const GAME_DATA = {
+            "config": { "initial_lives": 5, "total_clients": 12 },
+            "assets": {
+                "bases": [
+                    { "id": "base_mitjana", "label": "Aigua de Monodia", "color": "#a8e6cf", "hint": "Base pura d'una sola veu (Edat Mitjana)" },
+                    { "id": "base_renaix", "label": "Elixir d'Humanisme", "color": "#f39c12", "hint": "Equilibri i raó humana (Renaixement)" },
+                    { "id": "base_barroc", "label": "Oli de Motor Continu", "color": "#8e44ad", "hint": "Dens, recarregat i mecànic (Barroc)" },
+                    { "id": "base_classic", "label": "Sèrum de Simetria", "color": "#ecf0f1", "hint": "Clar, ordenat i sense excessos (Classicisme)" },
+                    { "id": "base_roman", "label": "Llàgrimes d'Individualisme", "color": "#c0392b", "hint": "Emoció subjectiva i fosca (Romanticisme)" },
+                    { "id": "base_sxx", "label": "Àcid de Ruptura", "color": "#2ecc71", "hint": "Corrosiu contra la tradició (Segle XX)" }
+                ],
+                "ingredients": [
+                    { "id": "ing_mitjana", "label": "Arrel de Cant Pla", "icon": "📜", "hint": "Melodia sense acompanyament" },
+                    { "id": "ing_renaix", "label": "Flors de Polifonia", "icon": "🎼", "hint": "Teixit de veus iguals" },
+                    { "id": "ing_barroc", "label": "Perles de Contrast", "icon": "🎻", "hint": "Lluita entre solista i tutti" },
+                    { "id": "ing_classic", "label": "Cristalls de Forma Sonata", "icon": "🏛️", "hint": "Estructura A-B-A perfecte" },
+                    { "id": "ing_roman", "label": "Lied Intimista", "icon": "🥀", "hint": "Poesia i piano fusionats" },
+                    { "id": "ing_sxx", "label": "Fragments de Soroll", "icon": "🔨", "hint": "Ús de sons no musicals" }
+                ],
+                "methods": [
+                    { "id": "met_mitjana", "label": "Resar un Text Sagrat", "desc": "Música al servei de Déu" },
+                    { "id": "met_renaix", "label": "Imitar les Veus", "desc": "Repetició entre parts (Cànons)" },
+                    { "id": "met_barroc", "label": "Ornamentar sense Parar", "desc": "Afegir trinos i decoració" },
+                    { "id": "met_classic", "label": "Ordenar les Frases", "desc": "4 compassos + 4 compassos" },
+                    { "id": "met_roman", "label": "Trencar el Tempo (Rubato)", "desc": "Accelerar i frenar per emoció" },
+                    { "id": "met_sxx", "label": "Experimentar sense Normes", "desc": "Llibertat total i atonalitat" }
+                ]
+            },
+            "eras": {
+                "mitjana": { "id": "mitjana", "solution": ["base_mitjana", "ing_mitjana", "met_mitjana"] },
+                "renaix": { "id": "renaix", "solution": ["base_renaix", "ing_renaix", "met_renaix"] },
+                "barroc": { "id": "barroc", "solution": ["base_barroc", "ing_barroc", "met_barroc"] },
+                "classic": { "id": "classic", "solution": ["base_classic", "ing_classic", "met_classic"] },
+                "roman": { "id": "roman", "solution": ["base_roman", "ing_roman", "met_roman"] },
+                "sxx": { "id": "sxx", "solution": ["base_sxx", "ing_sxx", "met_sxx"] }
+            },
+            "clients_db": [
+                { "era": "mitjana", "name": "Novici Poruc", "avatar": "🙏", "req": "Tinc por de desafinar als matines. Vull puresa, una sola veu i santedat." },
+                { "era": "mitjana", "name": "Cavaller Ferit", "avatar": "⚔️", "req": "Vull una cura simple i directa. Res de mescles rares, només Déu i jo." },
+                { "era": "renaix", "name": "Dama de la Cort", "avatar": "💃", "req": "Estic trista. Vull bellesa, simetria i que tot al meu voltant estigui en perfecta harmonia." },
+                { "era": "renaix", "name": "El Mecenes", "avatar": "💰", "req": "Vull finançar una obra que posi l'Home al centre. Dona'm saviesa humanista i equilibri." },
+                { "era": "barroc", "name": "Rei Sol", "avatar": "🌞", "req": "La meva vida és avorrida. Vull DRAMA! Vull contrastos! Vull que la poció brilli i sigui recarregada!" },
+                { "era": "barroc", "name": "Divo Castrato", "avatar": "🎤", "req": "Vull fer una nota que duri tres minuts i tingui mil giragonses. Dona'm virtuosisme exagerat." },
+                { "era": "classic", "name": "L'Enciclopedista", "avatar": "📖", "req": "Tinc un embolic al cap. Necessito ordre, claredat i una estructura lògica per pensar bé." },
+                { "era": "classic", "name": "Director d'Orquestra", "avatar": "🎻", "req": "Els músics fan el que volen! Necessito una poció que els faci seguir la partitura sense improvisar." },
+                { "era": "roman", "name": "Escriptor Suïcida", "avatar": "💀", "req": "Sento massa... El món em fa mal. Vull una poció per expressar el meu turment interior." },
+                { "era": "roman", "name": "Lluita de Classes", "avatar": "🚩", "req": "La meva nació està oprimida! Vull llibertat, força i trencar les cadenes del ritme!" },
+                { "era": "sxx", "name": "Pintor Dadaista", "avatar": "🖌️", "req": "La bellesa és morta. Vull una poció que tingui gust de metall i no tingui sentit." },
+                { "era": "sxx", "name": "Músic Electrònic", "avatar": "🤖", "req": "Vull sons nous! Oblida la melodia. Dona'm freqüències, xiulets i electricitat." }
+            ]
+        };
+
+        // Game State
+        let currentQueue = [];
+        let currentClient = null;
+        let lives = 5;
+        let cauldronContent = { base: null, ingredient: null, method: null };
+        let clientsSolved = 0;
+
+        function init() {
+            // Background Music Setup
+            const bgMusic = new Audio('music/Cauldron Brew Loop.m4a');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.3;
+            // Global access
+            window.bgMusic = bgMusic;
+
+            // Music Controls Container
+            const musicContainer = document.createElement('div');
+            musicContainer.style.position = 'absolute';
+            musicContainer.style.bottom = '10px';
+            musicContainer.style.right = '10px';
+            musicContainer.style.zIndex = '200';
+            musicContainer.style.background = 'rgba(0,0,0,0.7)';
+            musicContainer.style.padding = '10px';
+            musicContainer.style.borderRadius = '30px';
+            musicContainer.style.display = 'flex';
+            musicContainer.style.alignItems = 'center';
+            musicContainer.style.gap = '10px';
+
+            // Mute/Play Button
+            const muteBtn = document.createElement('button');
+            muteBtn.innerHTML = "🎵";
+            muteBtn.style.background = 'transparent';
+            muteBtn.style.color = 'white';
+            muteBtn.style.border = 'none';
+            muteBtn.style.cursor = 'pointer';
+            muteBtn.style.fontSize = '1.5rem';
+            muteBtn.onclick = () => {
+                if (bgMusic.paused) {
+                    bgMusic.play();
+                    muteBtn.innerHTML = "🎵";
+                } else {
+                    bgMusic.pause();
+                    muteBtn.innerHTML = "🔇";
+                }
+            };
+
+            // Volume Slider
+            const volSlider = document.createElement('input');
+            volSlider.type = "range";
+            volSlider.min = 0;
+            volSlider.max = 1;
+            volSlider.step = 0.1;
+            volSlider.value = 0.3;
+            volSlider.style.width = "80px";
+            volSlider.style.accentColor = "#e67e22";
+            volSlider.oninput = (e) => {
+                bgMusic.volume = e.target.value;
+            };
+
+            musicContainer.appendChild(muteBtn);
+            musicContainer.appendChild(volSlider);
+            document.body.appendChild(musicContainer);
+
+
+            // Shuffle and Populate Shelf
+            const bases = [...GAME_DATA.assets.bases].sort(() => Math.random() - 0.5);
+            const ingredients = [...GAME_DATA.assets.ingredients].sort(() => Math.random() - 0.5);
+            const methods = [...GAME_DATA.assets.methods].sort(() => Math.random() - 0.5);
+
+            const baseCol = document.getElementById('col-bases');
+            bases.forEach(item => createItemElement(item, 'base', baseCol));
+
+            const ingCol = document.getElementById('col-ingredients');
+            ingredients.forEach(item => createItemElement(item, 'ingredient', ingCol));
+
+            const metCol = document.getElementById('col-methods');
+            methods.forEach(item => createItemElement(item, 'method', metCol));
+
+            // Setup Drop Zone
+            const cauldron = document.getElementById('cauldron');
+            cauldron.ondragover = (e) => { e.preventDefault(); cauldron.classList.add('droppable-hover'); };
+            cauldron.ondragleave = () => cauldron.classList.remove('droppable-hover');
+            cauldron.ondrop = handleDrop;
+        }
+
+        function createItemElement(data, type, container) {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.id = "ui_" + data.id; // Identifier for UI feedback
+            div.draggable = true;
+            div.innerHTML = (data.icon ? data.icon + " " : "") + `<b>${data.label}</b>`;
+            div.title = data.hint || data.desc;
+
+            // Allow drag
+            div.ondragstart = (e) => {
+                e.dataTransfer.setData('itemId', data.id);
+                e.dataTransfer.setData('itemType', type);
+                if (data.color) e.dataTransfer.setData('itemColor', data.color);
+            };
+            container.appendChild(div);
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('cauldron').classList.remove('droppable-hover');
+
+            const id = e.dataTransfer.getData('itemId');
+            const type = e.dataTransfer.getData('itemType');
+            const color = e.dataTransfer.getData('itemColor');
+
+            // Logic: can only have 1 of each type
+            cauldronContent[type] = id;
+
+            // Visual update
+            updateCauldronVisuals(type, color, id);
+            checkMixReady();
+        }
+
+        function updateCauldronVisuals(type, color, id) {
+            const liquid = document.getElementById('liquid');
+
+            if (type === 'base' && color) {
+                liquid.style.backgroundColor = color;
+                liquid.style.boxShadow = `0 0 20px ${color}`;
+            }
+
+            // Highlight selected item in shelf
+            if (id) {
+                // If replacing an item of same type, we should uncheck the old one?
+                // For simplicity, we just add class. reset will clear all.
+                // Or better: clear class from other items of same type? Complex to find.
+                // Let's just add class. The user can hit reset.
+                const el = document.getElementById("ui_" + id);
+                if (el) el.classList.add('item-used');
+            }
+        }
+
+        function checkMixReady() {
+            const btn = document.getElementById('mix-btn');
+            const resetBtn = document.getElementById('reset-btn');
+
+            const hasItems = cauldronContent.base || cauldronContent.ingredient || cauldronContent.method;
+            if (resetBtn) resetBtn.disabled = !hasItems;
+
+            if (cauldronContent.base && cauldronContent.ingredient && cauldronContent.method) {
+                btn.disabled = false;
+                btn.innerHTML = "BARREJAR ✨";
+            } else {
+                btn.disabled = true;
+                btn.innerHTML = "BARREJAR";
+            }
+        }
+
+        function startGame() {
+            document.getElementById('overlay').classList.add('hidden');
+            if (window.bgMusic) window.bgMusic.play().catch(e => console.log(e));
+            lives = 5;
+            clientsSolved = 0;
+            currentQueue = [...GAME_DATA.clients_db].sort(() => Math.random() - 0.5);
+            updateUI();
+            nextClient();
+        }
+
+        function nextClient() {
+            if (lives <= 0) {
+                showEnd(false);
+                return;
+            }
+            if (currentQueue.length === 0) {
+                showEnd(true);
+                return;
+            }
+
+            currentClient = currentQueue.pop();
+            document.getElementById('c-name').textContent = currentClient.name;
+            document.getElementById('c-avatar').textContent = currentClient.avatar;
+            document.getElementById('c-req').textContent = currentClient.req;
+
+            // Reset Cauldron
+            resetCauldron();
+        }
+
+        function resetCauldron() {
+            cauldronContent = { base: null, ingredient: null, method: null };
+            document.getElementById('liquid').style.backgroundColor = '#2c3e50';
+            document.getElementById('liquid').style.boxShadow = 'none';
+
+            // Clear shelf usage
+            document.querySelectorAll('.item-used').forEach(el => el.classList.remove('item-used'));
+
+            checkMixReady();
+        }
+
+        function validateMix() {
+            // Check solution
+            const eraKey = currentClient.era;
+            const sol = GAME_DATA.eras[eraKey].solution; // [base, ing, met]
+
+            const userSelection = [cauldronContent.base, cauldronContent.ingredient, cauldronContent.method];
+            const isCorrect = userSelection.every(id => sol.includes(id));
+
+            if (isCorrect) {
+                clientsSolved++;
+                showResult(true, "ÈXIT! El client està curat.");
+            } else {
+                lives--;
+                showResult(false, "EXPLOSIÓ! Has ferit el client.");
+            }
+        }
+
+        function showResult(success, msg) {
+            const m = document.getElementById('result-modal');
+            const t = document.getElementById('result-title');
+            const b = document.getElementById('result-msg');
+
+            m.style.display = 'block';
+            m.style.borderColor = success ? '#2ecc71' : '#e74c3c';
+            t.innerText = success ? "🎉 VICTÒRIA" : "💥 FRACÀS";
+            t.style.color = success ? '#2ecc71' : '#e74c3c';
+            b.innerText = msg;
+        }
+
+        function closeResult() {
+            document.getElementById('result-modal').style.display = 'none';
+            resetCauldron();
+            updateUI();
+            nextClient();
+        }
+
+        function updateUI() {
+            document.getElementById('progress').textContent = `${clientsSolved}/${GAME_DATA.config.total_clients}`;
+            document.getElementById('lives').textContent = "❤️".repeat(lives);
+        }
+
+        function showEnd(win) {
+            const ov = document.getElementById('overlay');
+            ov.classList.remove('hidden');
+            if (win) {
+                document.getElementById('ov-title').textContent = "VICTÒRIA MAGISTRAL";
+                document.getElementById('ov-desc').textContent = "Ets el Gran Alquimista de les Arts!";
+            } else {
+                document.getElementById('ov-title').textContent = "GAME OVER";
+                document.getElementById('ov-desc').textContent = "T'han tancat el laboratori per perillós.";
+            }
+            document.getElementById('ov-btn').textContent = "Jugar de nou";
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

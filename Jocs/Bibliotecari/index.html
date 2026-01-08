@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EL BIBLIOTECARI: ORDRE MUSICAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Lora:ital@0;1&display=swap');
+
+        body {
+            margin: 0;
+            background-color: #3e2723;
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            font-family: 'Lora', serif;
+            color: #d7ccc8;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        #header {
+            background: #211612;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid #8d6e63;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            height: 60px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            margin: 0;
+            text-shadow: 2px 2px 0 #000;
+            color: #d7ccc8;
+            font-size: 1.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #check-btn {
+            background: #4caf50;
+            color: #fff;
+            border: 2px solid #2e7d32;
+            padding: 10px 30px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 0 #2e7d32;
+            transition: transform 0.1s;
+        }
+
+        #check-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* Audio Controls */
+        #audio-panel {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid #8d6e63;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+        }
+
+        #volume-slider {
+            accent-color: #cda434;
+            width: 80px;
+            cursor: pointer;
+        }
+
+        /* MAIN AREA */
+        #main-area {
+            flex-grow: 1;
+            display: flex;
+            position: relative;
+            height: calc(100vh - 80px);
+            /* Subtract header */
+        }
+
+        /* LIBRARY SHELVES (DROP ZONES) */
+        #library {
+            width: 75%;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            box-sizing: border-box;
+            background: url('https://www.transparenttextures.com/patterns/dark-wood.png');
+            height: 100%;
+        }
+
+        .shelf {
+            background: rgba(0, 0, 0, 0.4);
+            border: 8px solid #5d4037;
+            border-radius: 5px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            min-height: 0;
+            /* Important for grid */
+        }
+
+        .shelf-label {
+            background: #cda434;
+            color: #211612;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            padding: 2px 10px;
+            text-align: center;
+            width: 70%;
+            margin: -15px auto 5px auto;
+            border-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            font-size: 0.8rem;
+            border: 1px solid #8d6e63;
+        }
+
+        .shelf-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 5px;
+            gap: 2px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* CART (SOURCE) */
+        #cart-area {
+            width: 25%;
+            background: #2d201c;
+            border-left: 5px solid #1a120e;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+            z-index: 5;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        #cart-title {
+            font-family: 'Cinzel', serif;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1rem;
+            color: #ffd700;
+        }
+
+
+        /* Drop Feedback */
+        .shelf.drag-over {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffd700;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 100;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .overlay h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #cda434;
+            text-shadow: 0 0 20px rgba(205, 164, 52, 0.5);
+        }
+
+        .overlay p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: #d7ccc8;
+        }
+
+        .overlay button {
+            padding: 15px 50px;
+            font-size: 1.4rem;
+            background: #cda434;
+            color: #211612;
+            border: none;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 0 #8d6e63;
+        }
+
+        .overlay button:hover {
+            transform: scale(1.05);
+            background: #ffd700;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="header">
+        <h1>BIBLIOTECA HISTÒRICA</h1>
+        <div class="header-controls">
+            <div id="audio-panel">
+                <span>FIL MUSICAL</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <button id="check-btn" onclick="checkSorting()">COMPROVAR</button>
+        </div>
+    </div>
+
+    <div id="main-area">
+        <div id="library">
+            <div class="shelf" data-era="EDAT MITJANA">
+                <div class="shelf-label">EDAT MITJANA</div>
+                <div class="shelf-content"></div>
+            </div>
+            <div class="shelf" data-era="RENAIXEMENT">
+                <div class="shelf-label">RENAIXEMENT</div>
+                <div class="shelf-content"></div>
+            </div>
+            <div class="shelf" data-era="BARROC">
+                <div class="shelf-label">BARROC</div>
+                <div class="shelf-content"></div>
+            </div>
+            <div class="shelf" data-era="CLASSICISME">
+                <div class="shelf-label">CLASSICISME</div>
+                <div class="shelf-content"></div>
+            </div>
+            <div class="shelf" data-era="ROMANTICISME">
+                <div class="shelf-label">ROMANTICISME</div>
+                <div class="shelf-content"></div>
+            </div>
+            <div class="shelf" data-era="SEGLE XX">
+                <div class="shelf-label">SEGLE XX</div>
+                <div class="shelf-content"></div>
+            </div>
+        </div>
+
+        <div id="cart-area">
+            <div id="cart-title">CARRO DE RETORN</div>
+            <div id="book-pile">
+                <!-- Books injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Overlay -->
+    <div id="start-overlay" class="overlay">
+        <h2>EL BIBLIOTECARI</h2>
+        <p>Aquesta mítica biblioteca ha quedat feta un desastre. <br>
+            <b>Arrossega</b> els llibres del carro fins a la prestatgeria que els correspon segons el seu títol i
+            contingut. <br>
+            Ensurt al Sr. Compàs (el bibliotecari) si no ho fas bé!
+        </p>
+        <button onclick="startGame()">ORDENAR</button>
+    </div>
+
+    <!-- End Overlay -->
+    <div id="end-overlay" class="overlay hidden">
+        <h2 id="end-title">ORDRE PERFECTE!</h2>
+        <p id="end-msg">Has aconseguit classificar tot el saber musical de la història.</p>
+        <button onclick="location.reload()">TORNAR A COMENÇAR</button>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const BOOKS = [
+            // EDAT MITJANA (5)
+            { id: 1, title: "Joc de Trons: La Ira del Cant Pla", desc: "Batalles de monodia èpica.", era: "EDAT MITJANA", color: "red" },
+            { id: 2, title: "Guido i la seva Mà Negra", desc: "Thriller sobre notació musical.", era: "EDAT MITJANA", color: "blue" },
+            { id: 3, title: "Trobador o Troba't un ofici?", desc: "Autoajuda per a músics a l'atur.", era: "EDAT MITJANA", color: "green" },
+            { id: 4, title: "Neuma't a fer punyetes", desc: "Manual de notació quadrada.", era: "EDAT MITJANA", color: "black" },
+            { id: 5, title: "House of Chants", desc: "Intrigues al Vaticà pel millor solo.", era: "EDAT MITJANA", color: "red" },
+            // RENAIXEMENT (5)
+            { id: 6, title: "Polifonia i prou!", desc: "Guia per no trepitjar-se les veus.", era: "RENAIXEMENT", color: "blue" },
+            { id: 7, title: "El Presoner del Contrapunt", desc: "Aventures màgiques de Josquin.", era: "RENAIXEMENT", color: "green" },
+            { id: 8, title: "El Codi Da Palestrina", desc: "Misteris ocults a la missa.", era: "RENAIXEMENT", color: "black" },
+            { id: 9, title: "Madrigals que fan mal", desc: "Poemes dramàtics per desafinar.", era: "RENAIXEMENT", color: "red" },
+            { id: 10, title: "L'Home de Vitruvi balla la Pavana", desc: "Tractat de dansa anatòmica.", era: "RENAIXEMENT", color: "blue" },
+            // BARROC (5)
+            { id: 11, title: "Bach to the Future", desc: "Viatge en el temps amb clau.", era: "BARROC", color: "black" },
+            { id: 12, title: "Vivaldi la Vida Loca", desc: "Memòries d'un capellà rocker.", era: "BARROC", color: "red" },
+            { id: 13, title: "Händel i Gretel", desc: "Una òpera molt dolça.", era: "BARROC", color: "green" },
+            { id: 14, title: "Operació Castrati", desc: "Novel·la de terror quirúrgic.", era: "BARROC", color: "blue" },
+            { id: 15, title: "Avorriment Constant", desc: "Diari d'un baix continu.", era: "BARROC", color: "black" },
+            // CLASSICISME (5)
+            { id: 16, title: "Fifty Shades of Haydn", desc: "Sorpreses simfòniques picants.", era: "CLASSICISME", color: "red" },
+            { id: 17, title: "Mozart, deixa'm en pau!", desc: "Confessions de Salieri.", era: "CLASSICISME", color: "blue" },
+            { id: 18, title: "NO M'ESCOLTIS, LLEGEIX-ME", desc: "Autobiografia de Beethoven.", era: "CLASSICISME", color: "black" },
+            { id: 19, title: "La Forma Sonata: Estructura o Tortura?", desc: "Assaig filosòfic repetitiu.", era: "CLASSICISME", color: "green" },
+            { id: 20, title: "Sonata, sweet Sonata", desc: "Novel·la rosa equilibrada.", era: "CLASSICISME", color: "red" },
+            // ROMANTICISME (5)
+            { id: 21, title: "La Llista de Chopin", desc: "Nocturns per no dormir.", era: "ROMANTICISME", color: "black" },
+            { id: 22, title: "Lied to Me", desc: "Mentides amb piano.", era: "ROMANTICISME", color: "blue" },
+            { id: 23, title: "L'Anell Inacabable", desc: "Com sobreviure a Wagner.", era: "ROMANTICISME", color: "red" },
+            { id: 24, title: "Se'ns va acabar la tinta", desc: "El misteri de la Simfonia de Schubert.", era: "ROMANTICISME", color: "green" },
+            { id: 25, title: "El Diable vesteix de Paganini", desc: "Moda i virtuosisme.", era: "ROMANTICISME", color: "black" },
+            // SEGLE XX (5)
+            { id: 26, title: "L'Art de Callar (Volum I)", desc: "400 pàgines de John Cage (buides).", era: "SEGLE XX", color: "white", style: "border:1px dashed #000;color:#000;" },
+            { id: 27, title: "Dodecafonia per a Dummies", desc: "Comptar fins a 12 sense plorar.", era: "SEGLE XX", color: "red" },
+            { id: 28, title: "Sacre! Cops de puny a l'estrena", desc: "Crònica negra de Stravinsky.", era: "SEGLE XX", color: "black" },
+            { id: 29, title: "No porto ulleres, és Impressionisme", desc: "Debussy i la visió borrosa.", era: "SEGLE XX", color: "blue" },
+            { id: 30, title: "La repetició. La repetició...", desc: "Minimalisme extrem.", era: "SEGLE XX", color: "green" }
+        ];
+
+        // --- STATE & AUDIO ---
+        let currentBooks = [];
+        const bgMusic = new Audio('Stacks of Sunlight.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        const volSlider = document.getElementById('volume-slider');
+        volSlider.oninput = () => bgMusic.volume = volSlider.value;
+
+        function startGame() {
+            document.getElementById('start-overlay').classList.add('hidden');
+            bgMusic.play().catch(e => console.log("Music blocked", e));
+            initElements();
+        }
+
+        function initElements() {
+            const pile = document.getElementById('book-pile');
+            pile.innerHTML = '';
+            currentBooks = [...BOOKS].sort(() => Math.random() - 0.5);
+
+            currentBooks.forEach(book => {
+                const el = createBookElement(book);
+                pile.appendChild(el);
+            });
+
+            // Allow Drop on Shelves
+            document.querySelectorAll('.shelf').forEach(shelf => {
+                shelf.ondragover = e => { e.preventDefault(); shelf.classList.add('drag-over'); };
+                shelf.ondragleave = () => shelf.classList.remove('drag-over');
+                shelf.ondrop = e => handleDrop(e, shelf);
+            });
+
+            // Allow Return to Cart
+            const cart = document.getElementById('cart-area');
+            cart.ondragover = e => e.preventDefault();
+            cart.ondrop = e => handleReturn(e);
+        }
+
+        function createBookElement(book) {
+            const el = document.createElement('div');
+            el.className = `book ${book.color}`;
+            if (book.style) el.style = book.style;
+            el.innerHTML = `<div><b>${book.title}</b><br><span class="book-desc">${book.desc}</span></div>`;
+            el.draggable = true;
+            el.dataset.id = book.id;
+
+            el.ondragstart = (e) => {
+                e.dataTransfer.setData('text/plain', book.id);
+                el.classList.add('dragging');
+            };
+            el.ondragend = () => el.classList.remove('dragging');
+            return el;
+        }
+
+        function handleDrop(e, shelf) {
+            e.preventDefault();
+            shelf.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            const bookEl = document.querySelector(`.book[data-id="${id}"]`);
+
+            if (bookEl.parentElement.id === 'book-pile') {
+                convertToSpine(bookEl);
+            }
+            shelf.querySelector('.shelf-content').appendChild(bookEl);
+            bookEl.classList.remove('correct', 'incorrect');
+        }
+
+        function handleReturn(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text/plain');
+            const bookEl = document.querySelector(`.book[data-id="${id}"]`);
+
+            if (bookEl.parentElement.classList.contains('shelf-content')) {
+                convertToCover(bookEl);
+            }
+            document.getElementById('book-pile').appendChild(bookEl);
+            bookEl.classList.remove('correct', 'incorrect');
+        }
+
+        function convertToSpine(el) {
+            el.style.width = "35px";
+            el.style.height = "120px";
+            el.style.writingMode = "vertical-rl";
+            el.style.padding = "5px 0";
+            const bookData = BOOKS.find(b => b.id == el.dataset.id);
+            if (bookData.style) {
+                el.style.cssText += bookData.style;
+                el.style.width = "35px";
+                el.style.height = "120px";
+                el.style.writingMode = "vertical-rl";
+            }
+            el.querySelector('b').style.display = "block";
+        }
+
+        function convertToCover(el) {
+            el.style = ""; // Reset inline
+            const bookData = BOOKS.find(b => b.id == el.dataset.id);
+            if (bookData.style) el.style = bookData.style;
+        }
+
+        function checkSorting() {
+            let correct = 0;
+            let totalPlaced = 0;
+
+            document.querySelectorAll('.shelf').forEach(shelf => {
+                const targetEra = shelf.dataset.era;
+                const contents = shelf.querySelectorAll('.book');
+
+                contents.forEach(bookEl => {
+                    totalPlaced++;
+                    const id = bookEl.dataset.id;
+                    const bookData = BOOKS.find(b => b.id == id);
+
+                    if (bookData.era === targetEra) {
+                        bookEl.classList.add('correct');
+                        bookEl.classList.remove('incorrect');
+                        correct++;
+                    } else {
+                        bookEl.classList.add('incorrect');
+                        bookEl.classList.remove('correct');
+                    }
+                });
+            });
+
+            const pileCount = document.getElementById('book-pile').children.length;
+
+            if (pileCount > 0) {
+                say("Encara queden llibres al carro! No sigui mandrós!");
+                return;
+            }
+
+            if (correct === 30) {
+                endGame(true);
+            } else {
+                const errors = 30 - correct;
+                say(`Té ${errors} llibres mal col·locats. Miri els vermells!`);
+            }
+        }
+
+        function say(text) {
+            const title = document.getElementById('cart-title');
+            title.textContent = text;
+            title.style.color = "#ff1744";
+            setTimeout(() => {
+                title.textContent = "CARRO DE RETORN";
+                title.style.color = "#ffd700";
+            }, 3000);
+        }
+
+        function endGame(win) {
+            const overlay = document.getElementById('end-overlay');
+            overlay.classList.remove('hidden');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-msg');
+
+            if (win) {
+                title.textContent = "ORDRE PERFECTE!";
+                msg.textContent = "Has aconseguit classificar tot el saber musical de la història. El bibliotecari respira tranquil.";
+            }
+        }
+
+    </script>
+</body>
+
+</html>

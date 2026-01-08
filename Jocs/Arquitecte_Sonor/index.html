@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sound Architect: The 6 Towers</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="grid-bg"></div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="modal">
+        <div class="modal-content">
+            <h1>THE SOUND ARCHITECT</h1>
+            <p>Ets l'Arquitecte del Temps.</p>
+            <p>Construeix les 6 Torres de la Història de la Música superant els reptes de cada època.</p>
+            <p>Comença per l'Edat Mitjana i desbloqueja el futur.</p>
+            <button id="start-btn">COMENÇAR OBRA</button>
+        </div>
+    </div>
+
+    <div id="game-ui" class="hidden-ui">
+        <!-- Sidebar Selection -->
+        <aside id="project-selector">
+            <h2>PROJECTES</h2>
+            <ul id="tower-list">
+                <!-- Generated JS -->
+            </ul>
+        </aside>
+
+        <!-- Main Construction Site -->
+        <main id="construction-site">
+            <header>
+                <div class="h-info">PROJECTE: <span id="current-project-name">CAP</span></div>
+                <div class="h-info">FASE: <span id="current-phase">SELECCIONA</span></div>
+            </header>
+
+            <!-- The Tower Container -->
+            <div id="tower-base">
+                <div id="tower-stack">
+                    <!-- Floors go here -->
+                </div>
+                <div id="ground-line"></div>
+            </div>
+
+            <!-- Foreman / Question Area -->
+            <div id="foreman-area">
+                <div id="speech-bubble" class="hidden">
+                    <p id="question-text">Pregunta...</p>
+                    <div id="options-container">
+                        <!-- Avatar Removed -->
+                    </div>
+        </main>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="victory-title">TORRE COMPLETADA!</h2>
+            <img id="victory-img" src="" alt="Torre Completa"
+                style="max-width: 100%; height: 300px; display: block; margin: 10px auto; object-fit: contain;">
+            <p id="victory-msg">L'estructura és sòlida i ressonant.</p>
+            <button id="close-modal-btn">Continuar</button>
+        </div>
+    </div>
+
+    <!-- Error/Feedback Modal -->
+    <div id="feedback-modal" class="modal hidden">
+        <div class="modal-content" style="border-color: #ff3333;">
+            <h2 style="color: #ff3333; border-bottom-color: #ff3333;">ALERTA D'OBRA!</h2>
+            <p id="feedback-msg">¡Cuidat! Parts equivocades. Torna-ho a provar.</p>
+            <button id="close-feedback-btn" style="background: #ff3333;">Tornar-ho a provar</button>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="bg-music" loop>
+        <source src="audio/Cozy Construction Loop.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="volume-control">
+        <span id="volume-icon">🎵</span>
+        <input type="range" id="bg-music-slider" min="0" max="1" step="0.1" value="0.2">
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

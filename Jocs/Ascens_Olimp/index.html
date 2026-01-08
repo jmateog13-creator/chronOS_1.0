@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Ascens a l'Olimp: Edició Llegendària</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&family=Uncial+Antiqua&family=Playfair+Display:ital,wght@1,400&family=Libre+Baskerville:wght@700&family=Cormorant+Garamond:ital,wght@1,500&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --gold: #d4af37;
+            --marble: #f0f0f0;
+            --dark-blue: #0f172a;
+            --red: #ef4444;
+            --green: #22c55e;
+            --parchment: #fdf5e6;
+        }
+
+        /* FONTS PER ERA */
+        .font-mitjana {
+            font-family: 'Uncial Antiqua', serif;
+        }
+
+        .font-renaix {
+            font-family: 'Cinzel', serif;
+        }
+
+        .font-barroc {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+        }
+
+        .font-classic {
+            font-family: 'Libre Baskerville', serif;
+        }
+
+        .font-roman {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1.4rem !important;
+        }
+
+        .font-sxx {
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        .font-zeus {
+            font-family: 'Cinzel', serif;
+            text-shadow: 0 0 10px gold;
+            font-weight: bold;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            font-family: 'Lato', sans-serif;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* MAIN GAME CONTAINER */
+        #game-container {
+            width: 100%;
+            max-width: 1024px;
+            height: 100%;
+            max-height: 768px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.5);
+            transition: background-image 1s ease-in-out;
+            background-image: url('img/background_start.jpg');
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* OVERLAYS */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--marble);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--gold), #b8860b);
+            border: 2px solid #fff;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, filter 0.2s;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .hud-box {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--gold);
+            padding: 10px 20px;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            border-radius: 5px;
+        }
+
+        #lives-display {
+            color: var(--red);
+            display: none;
+        }
+
+        /* GOD CHARACTER */
+        #god-character {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            height: 80%;
+            max-height: 600px;
+            width: auto;
+            z-index: 5;
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+            transition: transform 0.5s ease-out, opacity 0.5s;
+        }
+
+        #god-character.enter {
+            animation: slideIn 1s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* DIALOGUE AREA */
+        #dialogue-section {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 800px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #dialogue-box {
+            background: var(--parchment);
+            border: 4px solid var(--gold);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        #dialogue-box::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        #speaker-name {
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--dark-blue);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--gold);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        #question-text {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+            min-height: 60px;
+        }
+
+        /* OPTIONS */
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 2px solid var(--dark-blue);
+            color: var(--dark-blue);
+            padding: 15px;
+            font-size: 1.1rem;
+            font-family: 'Lato', sans-serif;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:hover {
+            background: linear-gradient(90deg, #f0f0f0, #e0e0e0);
+            border-color: var(--gold);
+        }
+
+        .option-btn.correct {
+            background: var(--green) !important;
+            color: #fff !important;
+            border-color: #166534 !important;
+        }
+
+        .option-btn.wrong {
+            background: var(--red) !important;
+            color: #fff !important;
+            border-color: #991b1b !important;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        /* FEEDBACK FLASH */
+        #flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 200;
+            transition: opacity 0.3s;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            #god-character {
+                height: 50%;
+                right: -20px;
+            }
+
+            #dialogue-section {
+                bottom: 10px;
+                width: 95%;
+            }
+
+            #question-text {
+                font-size: 1.1rem;
+            }
+
+            .option-btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- BACKGROUND LAYER handled via CSS background-image on container -->
+
+        <!-- HUD -->
+        <div id="hud">
+            <div id="level-display" class="hud-box">NIVELL 1: HESTIA</div>
+            <div id="lives-display" class="hud-box">VIDES: <span id="lives-count">3</span></div>
+        </div>
+
+        <!-- CHARACTER -->
+        <img id="god-character" src="" alt="Déu" class="hidden">
+
+        <!-- DIALOGUE UI -->
+        <div id="dialogue-section" class="hidden">
+            <div id="dialogue-box">
+                <div id="speaker-name">Hestia</div>
+                <div id="question-text">Pregunta...</div>
+            </div>
+            <div id="options-container">
+                <button class="option-btn">Opció A</button>
+                <button class="option-btn">Opció B</button>
+                <button class="option-btn">Opció C</button>
+            </div>
+        </div>
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="overlay">
+            <h1>L'ASCENS A L'OLIMP</h1>
+            <p>Benvingut, mortal. Per convertir-te en un Semidéu Musical, hauràs de superar el judici dels 6 Déus de les
+                Èpoques.<br><br>Finalment, t'enfrontaràs a Zeus en un examen final.<br>Estàs preparat?</p>
+            <button onclick="GAME.startAscent()">INICIAR L'ASCENS</button>
+        </div>
+
+        <!-- AUDIO CONTROLS -->
+        <div id="audio-controls"
+            style="position: absolute; top: 10px; right: 10px; z-index: 200; display:flex; gap:10px; align-items:center;">
+            <span style="color:var(--gold); font-family:'Cinzel'; font-size:0.8rem;">MUSIC</span>
+            <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+
+        <!-- AUDIO TRACKS -->
+        <audio id="mus-mitjana" loop src="audio/Mitjana (Hestia).m4a"></audio>
+        <audio id="mus-renaix" loop src="audio/Renaixement (Apollo).m4a"></audio>
+        <audio id="mus-barroc" loop src="audio/Barroc (Dionysus).m4a"></audio>
+        <audio id="mus-classic" loop src="audio/Classicisme (Athena).m4a"></audio>
+        <audio id="mus-roman" loop src="audio/Romanticisme (Poseidon).m4a"></audio>
+        <audio id="mus-sxx" loop src="audio/Segle XX (Hephaestus).m4a"></audio>
+        <audio id="mus-zeus" loop src="audio/Zeus Ultima Bellum.m4a"></audio>
+        <audio id="mus-victory" src="audio/victory.m4a"></audio>
+
+        <!-- GAME OVER SCREEN -->
+        <div id="game-over-screen" class="overlay hidden">
+            <h1 style="color: var(--red);">HAS CAIGUT!</h1>
+            <p>Zeus t'ha fulminat. No has pogut demostrar la teva vàlua.</p>
+            <button onclick="GAME.restartGame()">TRORNAR A INTENTAR-HO</button>
+        </div>
+
+        <!-- VICTORY SCREEN -->
+        <div id="victory-screen" class="overlay hidden">
+            <h1 style="color: var(--gold);">GLÒRIA ETERNA!</h1>
+            <p>Has superat totes les proves i has demostrat un coneixement diví de la història de la música.<br>Ara ets
+                un d'ells.</p>
+            <button onclick="location.reload()">NOVA PARTIDA</button>
+        </div>
+
+        <div id="flash-overlay"></div>
+    </div>
+
+    <script>
+        const GAME_DATA = [
+            {
+                id: "mitjana",
+                god: "HESTIA (Edat Mitjana)",
+                bg: "img/fonsmitjana.jpg",
+                char: "img/hestia.png",
+                musicId: "mus-mitjana",
+                fontClass: "font-mitjana",
+                intro: "Benvingut al monestir. Aquí només tens 4 oportunitats abans que la flama s'apagui. Digues-me, coneixes els orígens sagrats?",
+                taunts: ["La teva ignorància apaga la flama.", "No mereixes la meva llum.", "Torna a la foscor, mortal."],
+                praises: ["La fe és forta en tu.", "Brillant com una espelma.", "Has trobat el camí."],
+                questions: [
+                    { q: "On vivien els monjos que cantaven per a Déu?", options: ["Als Castells", "Als Monestirs", "A les Ciutats"], answer: 1 },
+                    { q: "En quin idioma cantaven el Cant Gregorià?", options: ["Llatí", "Català", "Anglès"], answer: 0 },
+                    { q: "Quina textura té el Cant Gregorià (una sola línia)?", options: ["Polifonia", "Monodia", "Melodia Acompanyada"], answer: 1 },
+                    { q: "Qui eren els músics profans que vivien als castells?", options: ["Els Monjos", "Els Trobadors", "Els DJs"], answer: 1 }
+                ]
+            },
+            {
+                id: "renaix",
+                god: "APOL·LO (Renaixement)",
+                bg: "img/fonsrenaixement.jpg",
+                char: "img/apollo.png",
+                musicId: "mus-renaix",
+                fontClass: "font-renaix",
+                intro: "L'harmonia perfecta no admet errors. Tens 4 vides per demostrar la teva vàlua. Estàs a l'altura de l'humanisme?",
+                taunts: ["Dissonant...", "Et falta equilibri.", "No ets digne de l'Olimp."],
+                praises: ["Sublim.", "Perfecta harmonia.", "Brillant."],
+                questions: [
+                    { q: "Quin moviment cultural posa l'Ésser Humà al centre?", options: ["Teocentrisme", "Humanisme", "Expressionisme"], answer: 1 },
+                    { q: "Quin invent va permetre fer partitures ràpidament?", options: ["La Impremta", "L'Ordinador", "La Ploma"], answer: 0 },
+                    { q: "Què significa 'Polifonia'?", options: ["Una sola veu", "Moltes veus equilibrades", "Soroll"], answer: 1 },
+                    { q: "Com es diu la veu més aguda d'una dona?", options: ["Baix", "Tenor", "Soprano"], answer: 2 }
+                ]
+            },
+            {
+                id: "barroc",
+                god: "DIONÍS (Barroc)",
+                bg: "img/fonsbarroc.jpg",
+                char: "img/dionisio.png",
+                musicId: "mus-barroc",
+                fontClass: "font-barroc",
+                intro: "El Barroc és drama o mort! Tens 4 oportunitats per impressionar-me amb excessos i contrastos. No m'avorreixis!",
+                taunts: ["Massa simple!", "Quin avorriment...", "Fora del meu palau!"],
+                praises: ["Magnífic!", "Quin drama!", "Més or, més música!"],
+                questions: [
+                    { q: "Com eren els palaus i l'art del Barroc?", options: ["Senzills", "Plens de luxe i ornaments", "Tristos"], answer: 1 },
+                    { q: "Quina característica musical defineix el Barroc?", options: ["Avorriment", "El Contrast (Fort/Fluix)", "Silenci"], answer: 1 },
+                    { q: "Quin instrument fa el 'Baix Continu'?", options: ["El Clavicèmbal", "El Piano", "La Flauta"], answer: 0 },
+                    { q: "Què és l'Òpera?", options: ["Teatre parlat", "Teatre cantat amb disfresses", "Música d'església"], answer: 1 }
+                ]
+            },
+            {
+                id: "classic",
+                god: "ATENEA (Classicisme)",
+                bg: "img/fonsclassicisme.jpg",
+                char: "img/atenea.png",
+                musicId: "mus-classic",
+                fontClass: "font-classic",
+                intro: "L'ordre és la base de tot. Tens 4 intents per seguir les normes clàssiques. No toleraré el caos.",
+                taunts: ["Caòtic.", "On és l'estructura?", "Desordenat."],
+                praises: ["Lògic i clar.", "Elegant.", "Ben estructurat."],
+                questions: [
+                    { q: "Què buscava la gent del Classicisme?", options: ["Desordre", "Raó, Ordre i Equilibri", "Passió extrema"], answer: 1 },
+                    { q: "Quina textura domina el Classicisme?", options: ["Polifonia", "Melodia Acompanyada", "Monodia"], answer: 1 },
+                    { q: "Quin instrument substitueix al Clavicèmbal?", options: ["L'Orgue", "El Piano", "La Guitarra"], answer: 1 },
+                    { q: "Com s'organitza l'orquestra clàssica?", options: ["Caos", "Per seccions ordenades", "Només percussió"], answer: 1 }
+                ]
+            },
+            {
+                id: "roman",
+                god: "POSEIDÓ (Romanticisme)",
+                bg: "img/fonsromanticisme.jpg",
+                char: "img/poseidon.png",
+                musicId: "mus-roman",
+                fontClass: "font-roman",
+                intro: "El mar no perdona la feblesa. Tens 4 vides per navegar les meves aigües. Sent la passió o ofega't!",
+                taunts: ["Et falta passió!", "Fred com el gel...", "El mar t'engolirà."],
+                praises: ["Poderós.", "Això és passió!", "Navegues amb força."],
+                questions: [
+                    { q: "Què és més important pels romàntics?", options: ["Raó", "Sentiments i Passió", "Diners"], answer: 1 },
+                    { q: "Què és el 'Rubato'?", options: ["Robar", "Canviar la velocitat amb llibertat", "Tocar igual"], answer: 1 },
+                    { q: "Quin compositor va escriure la 9a Simfonia estant sord?", options: ["Mozart", "Beethoven", "Vivaldi"], answer: 1 },
+                    { q: "Què inspira als artistes romàntics?", options: ["Fàbriques", "La Natura salvatge", "L'ordre"], answer: 1 }
+                ]
+            },
+            {
+                id: "sxx",
+                god: "HEFEST (Segle XX)",
+                bg: "img/fonssegleXX.jpg",
+                char: "img/hefesto.png",
+                musicId: "mus-sxx",
+                fontClass: "font-sxx",
+                intro: "El futur és implacable. Tens 4 vides. Si falles, seràs ferralla obsoleta.",
+                taunts: ["Obsolet.", "T'has quedat al passat.", "Error del sistema."],
+                praises: ["Innovador.", "Trenques esquemes.", "El futur és teu."],
+                questions: [
+                    { q: "Com escoltem música a casa al S.XX?", options: ["Ràdio i disc", "Impremta", "Telègraf"], answer: 0 },
+                    { q: "Quin estil busca crear somnis (Debussy)?", options: ["Expressionisme", "Impressionisme", "Realisme"], answer: 1 },
+                    { q: "Quin estil expressa por i crit (Munch)?", options: ["Impressionisme", "Expressionisme", "Romanticisme"], answer: 1 },
+                    { q: "Què és la Dissonància?", options: ["So agradable", "So tens que xoca", "Silenci"], answer: 1 }
+                ]
+            }
+        ];
+
+        const ZEUS_DATA = {
+            id: "zeus",
+            god: "ZEUS (El Judici Final)",
+            bg: "img/fonszeus.jpg",
+            char: "img/zeus.png",
+            musicId: "mus-zeus",
+            fontClass: "font-zeus",
+            intro: "MORTAL! Tens 3 vides per derrotar el Rei de l'Olimp. Contesta una pregunta de cada era... o sigues fulminat!",
+            taunts: ["PATHETIC!", "MIRA COM CAUS!", "JO SOC EL DÉU!"],
+            praises: ["IMPRESSIONANT...", "GAAAH!", "MALDIT MORTAL!"]
+        };
+
+        const GAME = {
+            currentLevel: 0,
+            isBossFight: false,
+            lives: 4,
+            zeusLives: 3,
+            eraQuestionsPool: [],
+            currentQuestion: null,
+            questionsAnsweredInEra: 0,
+            requiredToPass: 4, // 4 questions to pass
+            canAnswer: false,
+            currentAudio: null,
+            isDialogueMode: false,
+
+            init: function () {
+                document.getElementById('vol-slider').addEventListener('input', (e) => {
+                    const vol = e.target.value;
+                    document.querySelectorAll('audio').forEach(a => a.volume = vol);
+                });
+            },
+
+            playMusic: function (id) {
+                if (this.currentAudio) {
+                    this.currentAudio.pause();
+                    this.currentAudio.currentTime = 0;
+                }
+                const audio = document.getElementById(id);
+                if (audio) {
+                    this.currentAudio = audio;
+                    audio.volume = document.getElementById('vol-slider').value;
+                    audio.play().catch(e => console.log("Audio play failed:", e));
+                }
+            },
+
+            startAscent: function () {
+                this.init();
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('dialogue-section').classList.remove('hidden');
+                this.currentLevel = 0;
+                this.isBossFight = false;
+                this.loadLevel(0);
+            },
+
+            loadLevel: function (index) {
+                if (index >= GAME_DATA.length) {
+                    this.startBossFight();
+                    return;
+                }
+
+                this.currentLevel = index;
+                this.lives = 4; // Reset lives
+                this.questionsAnsweredInEra = 0;
+                const data = GAME_DATA[index];
+
+                this.playMusic(data.musicId);
+
+                // Prepare pool
+                this.eraQuestionsPool = [...data.questions].sort(() => Math.random() - 0.5);
+
+                // Visuals
+                document.getElementById('game-container').style.backgroundImage = `url('${data.bg}')`;
+
+                // Fonts
+                const textEls = [document.getElementById('speaker-name'), document.getElementById('question-text')];
+                textEls.forEach(el => {
+                    el.className = '';
+                    el.classList.add(data.fontClass);
+                });
+
+                const charImg = document.getElementById('god-character');
+                charImg.src = data.char;
+                charImg.classList.remove('hidden');
+                charImg.classList.remove('enter');
+
+                // Fix Silhouette Bug
+                charImg.style.filter = "drop-shadow(0 0 20px rgba(0, 0, 0, 0.5))";
+                charImg.style.transform = "none";
+                charImg.style.opacity = "1";
+
+                void charImg.offsetWidth;
+                charImg.classList.add('enter');
+
+                // HUD
+                document.getElementById('level-display').textContent = `NIVELL ${index + 1}: ${data.god.split(' ')[0]}`;
+                document.getElementById('lives-display').style.display = 'block';
+                document.getElementById('lives-count').textContent = this.lives;
+
+                // Intro
+                this.startDialogue(data.god, data.intro, () => {
+                    this.nextEraQuestion();
+                });
+            },
+
+            nextEraQuestion: function () {
+                if (this.questionsAnsweredInEra >= this.requiredToPass || this.eraQuestionsPool.length === 0) {
+                    this.showGodDefeatedMsg();
+                    return;
+                }
+
+                this.currentQuestion = this.eraQuestionsPool.pop();
+                const data = GAME_DATA[this.currentLevel];
+                this.displayQuestion(data.god, this.currentQuestion);
+            },
+
+            startBossFight: function () {
+                this.isBossFight = true;
+                this.lives = 3;
+                this.zeusQuestions = GAME_DATA.map(era => {
+                    return era.questions[Math.floor(Math.random() * era.questions.length)];
+                });
+                this.zeusQuestions.sort(() => Math.random() - 0.5);
+
+                this.playMusic(ZEUS_DATA.musicId);
+
+                document.getElementById('game-container').style.backgroundImage = `url('${ZEUS_DATA.bg}')`;
+                const charImg = document.getElementById('god-character');
+                charImg.src = ZEUS_DATA.char;
+                charImg.style.filter = "none";
+                charImg.style.transform = "none";
+                charImg.style.opacity = "1";
+                charImg.classList.remove('enter');
+                void charImg.offsetWidth;
+                charImg.classList.add('enter');
+
+                document.getElementById('speaker-name').className = ZEUS_DATA.fontClass;
+                document.getElementById('question-text').className = ZEUS_DATA.fontClass;
+
+                document.getElementById('level-display').textContent = "BOSS FINAL: ZEUS";
+                document.getElementById('lives-count').textContent = this.lives;
+
+                this.startDialogue("ZEUS", ZEUS_DATA.intro, () => {
+                    this.nextZeusQuestion();
+                });
+            },
+
+            nextZeusQuestion: function () {
+                if (this.zeusQuestions.length === 0) {
+                    this.victory();
+                    return;
+                }
+                this.currentQuestion = this.zeusQuestions.pop();
+                this.displayQuestion("ZEUS", this.currentQuestion);
+            },
+
+            startDialogue: function (name, text, onFinishCallback) {
+                this.isDialogueMode = true;
+                this.canAnswer = false;
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('speaker-name').textContent = name;
+                document.getElementById('question-text').textContent = text;
+                document.getElementById('options-container').innerHTML = '';
+
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = "CONTINUAR...";
+                btn.style.textAlign = "center";
+                btn.style.fontWeight = "bold";
+                btn.onclick = () => {
+                    this.isDialogueMode = false;
+                    document.getElementById('hud').style.display = 'flex';
+                    onFinishCallback();
+                };
+                document.getElementById('options-container').appendChild(btn);
+            },
+
+            displayQuestion: function (name, qData) {
+                if (!this.isBossFight) {
+                    document.getElementById('level-display').textContent = `NIVELL ${this.currentLevel + 1}: ${name.split(' ')[0]}`;
+                    document.getElementById('lives-display').style.display = 'block';
+                }
+
+                document.getElementById('speaker-name').textContent = name;
+                document.getElementById('question-text').textContent = qData.q;
+
+                const opts = document.getElementById('options-container');
+                opts.innerHTML = '';
+                qData.options.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt;
+                    btn.onclick = () => this.handleAnswer(index, btn);
+                    opts.appendChild(btn);
+                });
+                this.canAnswer = true;
+            },
+
+            handleAnswer: function (selectedIndex, btnElement) {
+                if (!this.canAnswer) return;
+                this.canAnswer = false;
+                const isCorrect = (selectedIndex === this.currentQuestion.answer);
+
+                if (isCorrect) {
+                    btnElement.classList.add('correct');
+                    this.flashScreen();
+
+                    const data = this.isBossFight ? ZEUS_DATA : GAME_DATA[this.currentLevel];
+                    const praise = data.praises[Math.floor(Math.random() * data.praises.length)];
+                    document.getElementById('question-text').textContent = praise;
+
+                    if (!this.isBossFight) this.questionsAnsweredInEra++;
+
+                    setTimeout(() => {
+                        if (this.isBossFight) this.nextZeusQuestion();
+                        else this.nextEraQuestion();
+                    }, 1500);
+
+                } else {
+                    btnElement.classList.add('wrong');
+                    this.lives--;
+                    document.getElementById('lives-count').textContent = this.lives;
+
+                    const data = this.isBossFight ? ZEUS_DATA : GAME_DATA[this.currentLevel];
+                    const taunt = data.taunts[Math.floor(Math.random() * data.taunts.length)];
+                    document.getElementById('question-text').textContent = taunt;
+
+                    if (this.lives <= 0) {
+                        setTimeout(() => this.gameOver(), 1500);
+                    } else {
+                        setTimeout(() => {
+                            btnElement.classList.remove('wrong');
+                            // Retry same question logic
+                            this.displayQuestion(data.god, this.currentQuestion);
+                        }, 2000);
+                    }
+                }
+            },
+
+            showGodDefeatedMsg: function () {
+                const flash = document.getElementById('flash-overlay');
+                flash.innerHTML = "<h1 style='color:red; font-size:5rem; font-family:Cinzel; text-shadow:0 0 20px black;'>DÉU CAIGUT</h1>";
+                flash.style.display = "flex";
+                flash.style.justifyContent = "center";
+                flash.style.alignItems = "center";
+                flash.style.opacity = 1;
+                flash.style.background = "rgba(0,0,0,0.8)";
+
+                const godImg = document.getElementById('god-character');
+                godImg.style.transition = "transform 1s, filter 1s";
+                godImg.style.transform = "scale(1.2) rotate(10deg)";
+                godImg.style.filter = "brightness(0) sepia(1) hue-rotate(-50deg) saturate(5) contrast(2)";
+                setTimeout(() => { godImg.style.opacity = 0; }, 1000);
+
+                setTimeout(() => {
+                    flash.style.opacity = 0;
+                    flash.innerHTML = "";
+                    flash.style.background = "white";
+                    flash.style.display = "none";
+                    this.loadLevel(this.currentLevel + 1);
+                }, 3000);
+            },
+
+            flashScreen: function () {
+                const flash = document.getElementById('flash-overlay');
+                flash.style.display = "block";
+                flash.style.opacity = 0.5;
+                setTimeout(() => flash.style.opacity = 0, 200);
+            },
+
+            gameOver: function () {
+                if (this.isBossFight) {
+                    document.getElementById('game-over-screen').classList.remove('hidden');
+                    document.getElementById('dialogue-section').classList.add('hidden');
+                } else {
+                    this.startDialogue(GAME_DATA[this.currentLevel].god, "Mortal Patètic... Torna-ho a intentar si t'atreveixes.", () => {
+                        this.loadLevel(this.currentLevel);
+                    });
+                }
+            },
+
+            restartGame: function () { location.reload(); },
+            victory: function () {
+                this.playMusic('mus-victory');
+                document.getElementById('victory-screen').classList.remove('hidden');
+                document.getElementById('dialogue-section').classList.add('hidden');
+            }
+        };
+    </script>
+</body>
+
+</html>

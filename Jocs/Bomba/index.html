@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Operació: Desactivació Musical</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Courier+Prime:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #111;
+            --panel-bg: #222;
+            --text-color: #eee;
+            --accent-red: #ff3333;
+            --accent-green: #33ff33;
+            --accent-yellow: #ffff33;
+            --wire-color: #aaa;
+            --font-digital: 'Share Tech Mono', monospace;
+            --font-code: 'Courier Prime', monospace;
+            --wire-yellow: #f1c40f;
+            --wire-orange: #e67e22;
+            --wire-red: #e74c3c;
+            --wire-blue: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, #333 0%, #000 100%);
+            color: var(--text-color);
+            font-family: var(--font-code);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+
+        /* --- HEADER & TIMER --- */
+        #top-panel {
+            width: 100%;
+            padding: 10px 20px;
+            background: #000;
+            border-bottom: 4px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .mission-info {
+            font-family: var(--font-digital);
+            color: var(--accent-yellow);
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px var(--accent-yellow);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #timer-box {
+            background: #000;
+            border: 2px solid #555;
+            padding: 5px 15px;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        #timer {
+            font-family: var(--font-digital);
+            font-size: 2.5rem;
+            color: var(--accent-red);
+            text-shadow: 0 0 10px var(--accent-red);
+            letter-spacing: 2px;
+        }
+
+        /* Volume Slider */
+        #audio-panel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid #444;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-digital);
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        #volume-slider {
+            accent-color: var(--accent-yellow);
+            width: 80px;
+            cursor: pointer;
+        }
+
+        /* --- GAME AREA --- */
+        #game-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #canvas-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 80%;
+            width: 40%;
+            z-index: 10;
+        }
+
+        .item-box {
+            background: linear-gradient(180deg, #333, #222);
+            border: 2px solid #555;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+        }
+
+        .item-box:hover {
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 10px var(--accent-yellow);
+        }
+
+        .item-box.connected {
+            border-color: var(--accent-green);
+            background: #1a331a;
+            box-shadow: 0 0 15px var(--accent-green);
+            pointer-events: none;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-family: var(--font-digital);
+            font-size: 4rem;
+            color: var(--accent-red);
+            text-shadow: 0 0 20px var(--accent-red);
+            margin-bottom: 20px;
+            animation: flicker 0.1s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 1;
+                text-shadow: 0 0 30px var(--accent-red);
+            }
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 15px 50px;
+            font-family: var(--font-digital);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: var(--accent-green);
+            color: #000;
+            box-shadow: 0 0 30px var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .level-select-btn {
+            background: #111;
+            border: 1px solid #444;
+            color: var(--accent-yellow);
+            padding: 15px;
+            font-family: var(--font-digital);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .level-select-btn:hover {
+            border-color: var(--accent-yellow);
+            background: #222;
+        }
+
+        /* --- FX --- */
+        .shake {
+            animation: shake 0.2s infinite;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .intense-red {
+            box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.8) !important;
+            background-color: #200 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="intro-screen" class="screen">
+        <h1>OPERACIÓ: BOMBA</h1>
+        <p style="max-width: 600px; font-size: 1.4rem; color: #aaa; margin-bottom: 20px;">
+            Atenció Agent! Una bomba rítmica està a punt d'exclatar. <br>
+            <b>Arrossega</b> per connectar els cables entre conceptes de la mateixa era. <br>
+            Cada error reduirà el temps dràsticament.
+        </p>
+        <div class="level-grid" id="level-grid">
+            <!-- Generated by JS -->
+        </div>
+    </div>
+
+    <!-- GAME UI -->
+    <div id="top-panel">
+        <div class="mission-info">
+            ERA: <span id="era-display">...</span> | NIVELL: <span id="level-display">1/4</span>
+        </div>
+        <div class="header-controls">
+            <div id="audio-panel">
+                <span>VOL</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <div id="timer-box">
+                <div id="timer">00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <canvas id="canvas-layer"></canvas>
+        <div class="column left-col" id="left-col"></div>
+        <div class="column right-col" id="right-col"></div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="game-over-screen" class="screen hidden">
+        <h1 style="color: var(--accent-red); font-size: 6rem;">BOOOOM!</h1>
+        <p style="font-size: 2rem;">La bomba ha explotat i la història s'ha esborrat.</p>
+        <button class="btn" onclick="location.reload()">REINTENTAR</button>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-screen" class="screen hidden">
+        <h1 style="color: var(--accent-green); animation: none;">MISSIÓ COMPLETA</h1>
+        <p style="font-size: 1.5rem;">Has salvat la música d'una destrucció total.</p>
+        <button class="btn" onclick="location.reload()">NOVA MISSIÓ</button>
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATABASE ---
+        const DATABASE = {
+            "EDAT MITJANA": [
+                { l: "Cant Gregorià", r: "Monòdic" }, { l: "Llatí", r: "Idioma Església" },
+                { l: "Trobadors", r: "Llengua Vulgar" }, { l: "Hildegard von Bingen", r: "Mística" },
+                { l: "Neumes", r: "Primera Notació" }, { l: "Monjos", r: "Copistes" },
+                { l: "Organum", r: "Inici Polifonia" }, { l: "Ars Nova", r: "Ritme Complex" },
+                { l: "Guillaume de Machaut", r: "Missa Notre Dame" }, { l: "Llaüt", r: "Instrument Corda" },
+                { l: "Joglars", r: "Artistes Carrer" }, { l: "Feudalisme", r: "Societat Estamental" },
+                { l: "Teocentrisme", r: "Déu al Centre" }, { l: "Manuscrit", r: "Fet a Mà" },
+                { l: "Gòtic", r: "Catedrals Llum" }, { l: "Romànic", r: "Murs Gruixuts" },
+                { l: "Adam de la Halle", r: "Jeu de Robin" }, { l: "Cantigas", r: "Santa Maria" },
+                { l: "Alfons X", r: "El Savi" }, { l: "Flauta de Bec", r: "Instrument Vent" }
+            ],
+            "RENAIXEMENT": [
+                { l: "Polifonia", r: "Diverses Veus" }, { l: "Palestrina", r: "Missa Papa Marcelo" },
+                { l: "Impremta", r: "Petrucci" }, { l: "Madrigal", r: "Música Profana" },
+                { l: "A Cappella", r: "Sense Instruments" }, { l: "Humanisme", r: "Home al Centre" },
+                { l: "Josquin des Prez", r: "Mestre Polifonia" }, { l: "Tomás L. de Victoria", r: "Místic Espanyol" },
+                { l: "Viola da Gamba", r: "Arc i trasts" }, { l: "Pavana", r: "Dansa Lenta" },
+                { l: "Gallarda", r: "Dansa Ràpida" }, { l: "Luter", r: "Reforma Protestant" },
+                { l: "Concili de Trento", r: "Contrareforma" }, { l: "Chanson", r: "Cançó Francesa" },
+                { l: "Villancico", r: "Cançó Popular" }, { l: "Monteverdi", r: "Transició Barroc" },
+                { l: "Perspectiva", r: "Art Visual" }, { l: "Leonardo da Vinci", r: "Geni Universal" },
+                { l: "Florència", r: "Bressol Art" }, { l: "Mecenes", r: "Protector Artistes" }
+            ],
+            "BARROC": [
+                { l: "Baix Continu", r: "Base Rítmica" }, { l: "Contrast", r: "Fort / Fluix" },
+                { l: "Vivaldi", r: "Concert" }, { l: "Bach", r: "Fuga" },
+                { l: "Händel", r: "El Messies" }, { l: "Òpera", r: "Teatre Cantat" },
+                { l: "Clavicèmbal", r: "Teclado Pinçat" }, { l: "Castrati", r: "Estrelles Vocals" },
+                { l: "Ornamentació", r: "Decoració Melòdica" }, { l: "Dinàmica Terrassa", r: "Sense Gradació" },
+                { l: "Lully", r: "Òpera Francesa" }, { l: "Purcell", r: "Barroc Anglès" },
+                { l: "Pachelbel", r: "Cànon" }, { l: "Stradivarius", r: "Luthier" },
+                { l: "Absolutisme", r: "Poder Reial" }, { l: "Versalles", r: "Palau Lluís XIV" },
+                { l: "Oratori", r: "Òpera Religiosa" }, { l: "Cantata", r: "Música Vocal" },
+                { l: "Suite", r: "Conjunt Danses" }, { l: "Toccata", r: "Virtuosisme Teclat" }
+            ],
+            "CLASSICISME": [
+                { l: "Melodia Acompanyada", r: "Claredat" }, { l: "Equilibri", r: "Ordre Formal" },
+                { l: "Mozart", r: "Nen Prodigi" }, { l: "Haydn", r: "Pare Simfonia" },
+                { l: "Piano", r: "Substitueix Clavecí" }, { l: "Forma Sonata", r: "Estructura A-B-A" },
+                { l: "Viena", r: "Capital Musical" }, { l: "Il·lustració", r: "Raó i Ciència" },
+                { l: "Beethoven", r: "Pont al Romanticisme" }, { l: "Simfonia", r: "Orquestra Completa" },
+                { l: "Quartet de Corda", r: "Música Cambra" }, { l: "Clarinet", r: "Nou Instrument" },
+                { l: "Concert Públic", r: "Nou Públic" }, { l: "Gluck", r: "Reforma Òpera" },
+                { l: "Salieri", r: "Compositor Cort" }, { l: "Clementi", r: "Pedagog Piano" },
+                { l: "Gràcia", r: "Elegància" }, { l: "Homofonia", r: "Textura Vertical" },
+                { l: "Revolució Industrial", r: "Màquina Vapor" }, { l: "Revolució Francesa", r: "Llibertat" }
+            ],
+            "ROMANTICISME": [
+                { l: "Subjectivisme", r: "Sentiments" }, { l: "Beethoven", r: "9a Simfonia" },
+                { l: "Virtuosisme", r: "Tècnica Difícil" }, { l: "Wagner", r: "Òpera Total" },
+                { l: "Lied", r: "Veu i Piano" }, { l: "Chopin", r: "Poeta del Piano" },
+                { l: "Liszt", r: "Showman" }, { l: "Nacionalisme", r: "Folklore" },
+                { l: "Orquestra", r: "Gegantina" }, { l: "Música Programàtica", r: "Explica Història" },
+                { l: "Verdi", r: "Òpera Italiana" }, { l: "Puccini", r: "Verisme" },
+                { l: "Txaikovski", r: "Ballet" }, { l: "Schubert", r: "Simfonia Inacabada" },
+                { l: "Berlioz", r: "Simfonia Fantàstica" }, { l: "Brahms", r: "Classicista" },
+                { l: "Mahler", r: "Simfonia Titànica" }, { l: "Dvorak", r: "Nou Món" },
+                { l: "Natura", r: "Font Inspiració" }, { l: "Individualisme", r: "Heroi Romàntic" }
+            ],
+            "SEGLE XX": [
+                { l: "Impressionisme", r: "Atmosfera" }, { l: "Debussy", r: "Clair de Lune" },
+                { l: "Dodecafonisme", r: "12 Tons" }, { l: "Jazz", r: "Improvisació" },
+                { l: "Avantguardes", r: "Nous Sons" }, { l: "Stravinsky", r: "Consagració Primavera" },
+                { l: "Schönberg", r: "Atonalitat" }, { l: "Electrònica", r: "Sintetitzadors" },
+                { l: "Minimalisme", r: "Repetició" }, { l: "Rock", r: "Guitarra Elèctrica" },
+                { l: "The Beatles", r: "Icones Pop" }, { l: "John Cage", r: "4'33'' (Silenci)" },
+                { l: "Gershwin", r: "Rhapsody in Blue" }, { l: "Cinema", r: "Banda Sonora" },
+                { l: "Ràdio", r: "Difusió Massiva" }, { l: "Enregistrament", r: "Vinil / CD" },
+                { l: "Globalització", r: "Fusió Estils" }, { l: "Dissonància", r: "Tensió Sonora" },
+                { l: "Ravel", r: "Bolero" }, { l: "John Williams", r: "Star Wars" }
+            ]
+        };
+
+        // --- GAME STATE & AUDIO ---
+        let currentEra = "";
+        let currentLevel = 1;
+        const maxLevels = 4;
+        let timeLeft = 60;
+        let timerInterval;
+        let currentPairs = [];
+        let connections = [];
+        let selectedItem = null;
+
+        const bgMusic = new Audio('Countdown Cutter.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        // Audio Effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'hit') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'select') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
+        // --- DOM ---
+        const canvas = document.getElementById('canvas-layer');
+        const ctx = canvas.getContext('2d');
+        const leftCol = document.getElementById('left-col');
+        const rightCol = document.getElementById('right-col');
+        const timerEl = document.getElementById('timer');
+        const eraDisplay = document.getElementById('era-display');
+        const levelDisplay = document.getElementById('level-display');
+        const volSlider = document.getElementById('volume-slider');
+
+        volSlider.oninput = () => bgMusic.volume = volSlider.value;
+
+        // --- INIT ---
+        function initMenu() {
+            const grid = document.getElementById('level-grid');
+            Object.keys(DATABASE).forEach(era => {
+                const btn = document.createElement('div');
+                btn.className = 'level-select-btn';
+                btn.textContent = era;
+                btn.onclick = () => startGame(era);
+                grid.appendChild(btn);
+            });
+        }
+
+        function startGame(era) {
+            currentEra = era;
+            currentLevel = 1;
+            timeLeft = 60;
+            document.getElementById('intro-screen').classList.add('hidden');
+            bgMusic.play().catch(e => console.log("Music blocked"));
+            startLevel();
+        }
+
+        function startLevel() {
+            const pool = [...DATABASE[currentEra]];
+            currentPairs = [];
+            for (let i = 0; i < 4; i++) {
+                const idx = Math.floor(Math.random() * pool.length);
+                currentPairs.push(pool[idx]);
+                pool.splice(idx, 1);
+            }
+
+            eraDisplay.textContent = currentEra;
+            levelDisplay.textContent = `${currentLevel}/${maxLevels}`;
+            connections = [];
+            selectedItem = null;
+            renderItems();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(tick, 1000);
+            resizeCanvas();
+        }
+
+        function renderItems() {
+            leftCol.innerHTML = '';
+            rightCol.innerHTML = '';
+            const rightItems = [...currentPairs].sort(() => Math.random() - 0.5);
+
+            currentPairs.forEach((pair, index) => {
+                leftCol.appendChild(createItem(pair.l, 'left', index));
+            });
+            rightItems.forEach((pair, index) => {
+                const originalIndex = currentPairs.findIndex(p => p.r === pair.r);
+                rightCol.appendChild(createItem(pair.r, 'right', originalIndex));
+            });
+        }
+
+        function createItem(text, side, id) {
+            const div = document.createElement('div');
+            div.className = 'item-box';
+            div.textContent = text;
+            div.dataset.id = id;
+            div.dataset.side = side;
+            if (text.length > 20) div.style.fontSize = '0.7rem';
+            div.onclick = (e) => handleItemClick(e, id, side, div);
+            return div;
+        }
+
+        function handleItemClick(e, id, side, el) {
+            if (el.classList.contains('connected')) return;
+            if (!selectedItem) {
+                selectedItem = { id, side, el };
+                el.style.borderColor = 'var(--accent-yellow)';
+                playSound('select');
+                return;
+            }
+            if (selectedItem.el === el) {
+                selectedItem.el.style.borderColor = '#555';
+                selectedItem = null;
+                return;
+            }
+            if (selectedItem.side === side) {
+                selectedItem.el.style.borderColor = '#555';
+                selectedItem = { id, side, el };
+                el.style.borderColor = 'var(--accent-yellow)';
+                playSound('select');
+                return;
+            }
+            checkMatch(selectedItem, { id, side, el });
+        }
+
+        function checkMatch(item1, item2) {
+            if (item1.id === item2.id) {
+                connections.push({ startEl: item1.el, endEl: item2.el });
+                item1.el.classList.add('connected');
+                item2.el.classList.add('connected');
+                selectedItem = null;
+                playSound('hit');
+                checkWin();
+            } else {
+                timeLeft -= 10;
+                updateTimer();
+                playSound('error');
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 400);
+                item1.el.style.borderColor = '#555';
+                selectedItem = null;
+            }
+            drawConnections();
+        }
+
+        function tick() {
+            timeLeft--;
+            updateTimer();
+            if (timeLeft <= 10) {
+                document.body.classList.add('intense-red');
+            } else {
+                document.body.classList.remove('intense-red');
+            }
+            if (timeLeft <= 0) gameOver();
+        }
+
+        function updateTimer() {
+            if (timeLeft < 0) timeLeft = 0;
+            const s = timeLeft.toString().padStart(2, '0');
+            timerEl.textContent = `00:${s}`;
+        }
+
+        function checkWin() {
+            if (connections.length === 4) {
+                clearInterval(timerInterval);
+                setTimeout(() => {
+                    if (currentLevel < maxLevels) {
+                        currentLevel++;
+                        startLevel();
+                    } else {
+                        document.getElementById('win-screen').classList.remove('hidden');
+                    }
+                }, 800);
+            }
+        }
+
+        function gameOver() {
+            clearInterval(timerInterval);
+            bgMusic.pause();
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+
+        function drawConnections() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#3f3";
+            ctx.strokeStyle = "#3f3";
+
+            connections.forEach(conn => {
+                const r1 = conn.startEl.getBoundingClientRect();
+                const r2 = conn.endEl.getBoundingClientRect();
+                const container = canvas.getBoundingClientRect();
+
+                ctx.beginPath();
+                const x1 = r1.left + r1.width / 2 - container.left;
+                const y1 = r1.top + r1.height / 2 - container.top;
+                const x2 = r2.left + r2.width / 2 - container.left;
+                const y2 = r2.top + r2.height / 2 - container.top;
+
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            });
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            drawConnections();
+        }
+
+        window.onresize = resizeCanvas;
+        initMenu();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musical History Bartender - Taverna del Temps</title>
+    <style>
+        :root {
+            --bg-color: #0f0c29;
+            --bar-wood: #3e2723;
+            --bar-gold: #ffd700;
+            --bar-red: #c62828;
+            --text-light: #f5f5f5;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #000;
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background: #111;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            color: var(--bar-gold);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7), 2px 2px 5px #000;
+            margin: 15px 0;
+            font-size: 2.8rem;
+            letter-spacing: 3px;
+        }
+
+        #game-container {
+            position: relative;
+            width: 95%;
+            max-width: 1100px;
+            height: 85vh;
+            background: #1a1a1a;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('img/tavern_bg.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 8px solid var(--bar-wood);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Top Bar */
+        #info-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.85);
+            border-bottom: 2px solid var(--bar-gold);
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            color: var(--bar-gold);
+            z-index: 50;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Main Area */
+        #main-stage {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #client-area {
+            width: 380px;
+            text-align: center;
+            transition: all 0.5s ease;
+            position: relative;
+            z-index: 5;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+        }
+
+        #client-avatar {
+            width: 160px;
+            height: 160px;
+            background: #eee;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 6px solid var(--bar-gold);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+        }
+
+        .speech-bubble {
+            background: #fff;
+            color: #111;
+            padding: 20px;
+            border-radius: 20px;
+            position: relative;
+            font-style: italic;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+            margin-bottom: 15px;
+            font-size: 1.15rem;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: #fff transparent;
+        }
+
+        /* The Bar / Counter */
+        #bar-counter {
+            height: 90px;
+            background: linear-gradient(to bottom, #5d4037, #3e2723);
+            border-top: 4px solid var(--bar-gold);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        #serving-glass {
+            width: 60px;
+            height: 80px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #glass-liquid {
+            width: 100%;
+            height: 0%;
+            background: var(--bar-gold);
+            transition: height 0.5s ease;
+        }
+
+        /* Drinks Shelf (Bottom) */
+        #shelf {
+            height: 230px;
+            background-color: #1a110f;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://www.transparenttextures.com/patterns/dark-wood.png');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            gap: 20px;
+            z-index: 20;
+            border-top: 4px solid #000;
+        }
+
+        .drink-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 105px;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .drink-container:hover {
+            transform: translateY(-12px);
+        }
+
+        .drink {
+            width: 55px;
+            height: 95px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px 5px 15px 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            /* Let container handle click */
+        }
+
+        .liquid {
+            width: 100%;
+            height: 75%;
+        }
+
+        .drink-label {
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            text-align: center;
+            font-weight: bold;
+            pointer-events: none;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #555;
+            line-height: 1.1;
+        }
+
+        .drink-container:hover .drink-label {
+            border-color: var(--bar-gold);
+            color: var(--bar-gold);
+        }
+
+        /* Audio Controls */
+        #audio-panel {
+            position: absolute;
+            bottom: 245px;
+            right: 25px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--bar-gold);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        #audio-panel label {
+            font-size: 0.75rem;
+            font-family: 'Cinzel', serif;
+            color: var(--bar-gold);
+        }
+
+        #volume-slider {
+            accent-color: var(--bar-gold);
+            cursor: pointer;
+            width: 80px;
+        }
+
+        /* Screens */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #start-overlay {
+            background-image: radial-gradient(circle, rgba(62, 39, 35, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%);
+        }
+
+        .start-btn {
+            padding: 20px 60px;
+            font-size: 2.2rem;
+            font-family: 'Cinzel', serif;
+            background: var(--bar-gold);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 30px;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--bar-gold);
+        }
+
+        .feedback-message {
+            position: absolute;
+            font-size: 4.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 30px #000;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Particle FX */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 300;
+            animation: particleFloat 1s forwards ease-out;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes feedPop {
+            0% {
+                transform: scale(0.3) translateY(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1) translateY(-20px);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1) translateY(-40px);
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Musical History Bartender</h1>
+
+    <div id="game-container">
+        <!-- Info Bar -->
+        <div id="info-bar">
+            <span>CLIENTS RESTANTS: <span id="round-disp">10</span></span>
+            <span>PROPINA TOTAL: <span id="score-disp">0</span> ⭐</span>
+        </div>
+
+        <!-- Main Stage -->
+        <div id="main-stage">
+            <div id="client-area" class="hidden">
+                <div id="client-avatar">👤</div>
+                <div class="speech-bubble" id="dialogue">...</div>
+                <div id="client-era"
+                    style="color: var(--bar-gold); font-weight: bold; margin-top: 10px; font-family: 'Cinzel'; font-size: 1.2rem;">
+                </div>
+            </div>
+            <div id="feedback" class="feedback-message"></div>
+        </div>
+
+        <!-- Bar Counter -->
+        <div id="bar-counter">
+            <div id="serving-glass">
+                <div id="glass-liquid"></div>
+            </div>
+            <div
+                style="font-family: 'Cinzel'; color: var(--bar-gold); margin-left: 20px; font-weight: bold; letter-spacing: 1px;">
+                TRIA UNA BEGUDA</div>
+        </div>
+
+        <!-- Shelf -->
+        <div id="shelf">
+            <!-- Drinks go here -->
+        </div>
+
+        <!-- Audio Panel -->
+        <div id="audio-panel">
+            <label>FIL MUSICAL</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.4">
+        </div>
+
+        <!-- Start Overlay -->
+        <div id="start-overlay" class="overlay">
+            <h1 style="font-size: 4.5rem; letter-spacing: 5px;">BARTENDER HISTÒRIC</h1>
+            <p style="max-width: 650px; font-size: 1.3rem; line-height: 1.6; color: #ccc;">Benvingut a la taverna més
+                exclusiva de la història. Presta atenció a cada mestre de la música i <b>fes clic</b> a l'ampolla que
+                busquen.</p>
+            <button class="start-btn" onclick="startGame()">OBRIR BARRA</button>
+        </div>
+
+        <!-- End Overlay -->
+        <div id="end-overlay" class="overlay hidden">
+            <h1 id="end-title">FINAL DE LA JORNADA</h1>
+            <p id="end-result" style="font-size: 1.8rem; margin-top: 25px; color: var(--bar-gold);"></p>
+            <p id="end-rank" style="font-size: 1.2rem; color: #fff; margin-top: 10px;"></p>
+            <button class="start-btn" onclick="location.reload()">REOBRIR TAVERNA</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME CONTENT ---
+        const CONTENT = {
+            "medieval": {
+                name: "Edat Mitjana",
+                avatar: "🙏🏽",
+                orders: [
+                    "Bona hora tingueu. Busco la puresa d'una sola veu lliure i monòdica. Res de mescles impures.",
+                    "Un bon dia a la taverna. Vull quelcom que m'ajudi a cantar en llatí tot el matí.",
+                    "La meva set és profunda. Serveix-me la línia melòdica més neta que tinguis."
+                ],
+                drinks: [
+                    { n: "Monodia Fresca", c: "#a8e6cf" },
+                    { n: "Licor Gregorià", c: "#708090" },
+                    { n: "Xarop de Neumes", c: "#d4af37" },
+                    { n: "Cant Recte", c: "#add8e6" }
+                ]
+            },
+            "renaixement": {
+                name: "Renaixement",
+                avatar: "🤵🏽",
+                orders: [
+                    "Busco l'equilibri de les veus. Vull sentir com cada glop s'entrellaça amb el següent en perfecta harmonia.",
+                    "L'humanisme ha arribat a la barra! Serveix-me una barreja polifònica equilibrada.",
+                    "Una copa, si us plau. Vull que totes les notes sonin alhora amb claredat."
+                ],
+                drinks: [
+                    { n: "Polifonia Royal", c: "#ffb7b2" },
+                    { n: "Madrigal Sour", c: "#ff69b4" },
+                    { n: "Palestrina Fizz", c: "#f5f5dc" },
+                    { n: "Xarop Humà", c: "#deb887" }
+                ]
+            },
+            "barroc": {
+                name: "Barroc",
+                avatar: "🤵🏼‍♀️",
+                orders: [
+                    "VULL EXCÉS! Omple la copa d'ornaments, trinos i decoracions! No vull veure ni un buit!",
+                    "Dona'm moviment, contrast i dramatisme! Que el baix continu no pari de sonar!",
+                    "Un 'horror vacui' líquid, si us plau. Com més complicat, millor."
+                ],
+                drinks: [
+                    { n: "Fuga de Cointreau", c: "#b22222" },
+                    { n: "Baix Continu Fort", c: "#ffa500" },
+                    { n: "Vivaldi 4 Estacions", c: "#87ceeb" },
+                    { n: "Horror Vacui Mix", c: "#daa520" }
+                ]
+            },
+            "classicisme": {
+                name: "Classicisme",
+                avatar: "🤵🏻",
+                orders: [
+                    "Estructura i ordre. Tema A, Tema B i punt. Racionalitat per sobre de tot.",
+                    "Senzillesa elegant. Vull una melodia clara sobre un acompanyament net.",
+                    "Una beguda il·lustrada. Res d'exuberàncies, només la forma perfecta."
+                ],
+                drinks: [
+                    { n: "Sinfonia Clara", c: "#f0f8ff" },
+                    { n: "Mozart-ito", c: "#98fb98" },
+                    { n: "Haydn Gin", c: "#ffff00" },
+                    { n: "Sonata Racional", c: "#e6e6fa" }
+                ]
+            },
+            "romanticisme": {
+                name: "Romanticisme",
+                avatar: "🧖🏻‍♂️",
+                orders: [
+                    "ESTELANT! Vull passió! Vull sentir la boira, la natura i el patiment a la gola!",
+                    "Dona'm llibertat creativa. Vull rubato, vull sentiments salvatges!",
+                    "Un heroi tràgic com jo necessita una beguda intensa i fosca com la nit."
+                ],
+                drinks: [
+                    { n: "Llàgrimes de Chopin", c: "#4b0082" },
+                    { n: "Passió Wagneriana", c: "#ff4500" },
+                    { n: "Nocturn de Mora", c: "#800000" },
+                    { n: "Heroic Stout", c: "#000000" }
+                ]
+            },
+            "segle_xx": {
+                name: "Segle XX",
+                avatar: "🧑🏽‍🎤",
+                orders: [
+                    "Trenca les regles! Vull dissonància! Vull quelcom que no m'hagi servit ningú mai!",
+                    "Avorrida tonalitat... dona'm sèries dodecafòniques o soroll industrial!",
+                    "Sorprèn-me amb el caos. Que la copa sembli un televisor trencat."
+                ],
+                drinks: [
+                    { n: "Dodeca-Tònic", c: "#00ff00" },
+                    { n: "Absenta Atonal", c: "#7fff00" },
+                    { n: "Caos Industrial", c: "#ff00ff" },
+                    { n: "Pols Electrònic", c: "#00ffff" }
+                ]
+            }
+        };
+
+        // --- GAME STATE ---
+        let currentRound = 0;
+        let score = 0;
+        let activeEra = '';
+        let remainingEras = [];
+        const TOTAL_CLIENTS = 10;
+        let isServing = false;
+
+        // Music setup
+        const bgMusic = new Audio('Velvet Glass & Late Nights.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.4;
+
+        const volSlider = document.getElementById('volume-slider');
+        volSlider.oninput = () => bgMusic.volume = volSlider.value;
+
+        function startGame() {
+            document.getElementById('start-overlay').classList.add('hidden');
+            bgMusic.play().catch(e => console.log("Music blocked", e));
+            score = 0;
+            currentRound = 0;
+            remainingEras = [];
+            nextRound();
+        }
+
+        function refillEras() {
+            remainingEras = Object.keys(CONTENT).sort(() => Math.random() - 0.5);
+        }
+
+        function nextRound() {
+            if (currentRound >= TOTAL_CLIENTS) {
+                showEnd();
+                return;
+            }
+            currentRound++;
+            document.getElementById('round-disp').textContent = (TOTAL_CLIENTS - currentRound + 1);
+            document.getElementById('score-disp').textContent = score;
+            document.getElementById('glass-liquid').style.height = '0%';
+            isServing = false;
+
+            if (remainingEras.length === 0) refillEras();
+            activeEra = remainingEras.pop();
+            const data = CONTENT[activeEra];
+
+            const clientArea = document.getElementById('client-area');
+            clientArea.classList.add('hidden');
+
+            setTimeout(() => {
+                document.getElementById('client-avatar').textContent = data.avatar;
+                document.getElementById('dialogue').textContent = data.orders[Math.floor(Math.random() * data.orders.length)];
+                document.getElementById('client-era').textContent = data.name.toUpperCase();
+                clientArea.classList.remove('hidden');
+                renderShelf();
+            }, 500);
+        }
+
+        function renderShelf() {
+            const shelf = document.getElementById('shelf');
+            shelf.innerHTML = '';
+
+            const correctDrink = CONTENT[activeEra].drinks[Math.floor(Math.random() * CONTENT[activeEra].drinks.length)];
+            let options = [{ ...correctDrink, correct: true }];
+
+            const eras = Object.keys(CONTENT);
+            while (options.length < 5) {
+                const rEra = eras[Math.floor(Math.random() * eras.length)];
+                if (rEra === activeEra) continue;
+                const wDrink = CONTENT[rEra].drinks[Math.floor(Math.random() * CONTENT[rEra].drinks.length)];
+                if (!options.find(o => o.n === wDrink.n)) {
+                    options.push({ ...wDrink, correct: false });
+                }
+            }
+
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const cont = document.createElement('div');
+                cont.className = 'drink-container';
+                cont.onclick = (e) => handleServe(opt.correct, opt.c, e);
+
+                const drk = document.createElement('div');
+                drk.className = 'drink';
+
+                const liq = document.createElement('div');
+                liq.className = 'liquid';
+                liq.style.backgroundColor = opt.c;
+                drk.appendChild(liq);
+
+                const lbl = document.createElement('div');
+                lbl.className = 'drink-label';
+                lbl.textContent = opt.n;
+
+                cont.appendChild(drk);
+                cont.appendChild(lbl);
+                shelf.appendChild(cont);
+            });
+        }
+
+        function handleServe(success, color, event) {
+            if (isServing) return;
+            isServing = true;
+
+            const glassLiquid = document.getElementById('glass-liquid');
+            glassLiquid.style.backgroundColor = color;
+            glassLiquid.style.height = '100%';
+
+            createParticles(event.clientX, event.clientY, color);
+
+            const fb = document.getElementById('feedback');
+            if (success) {
+                score++;
+                fb.textContent = "🍷 BRAVO! 🍷";
+                fb.style.color = "#00ff00";
+            } else {
+                fb.textContent = "🤢 AGH! 🤢";
+                fb.style.color = "#ff4444";
+            }
+            fb.style.animation = 'feedPop 1s ease forwards';
+
+            setTimeout(() => {
+                fb.style.animation = '';
+                nextRound();
+            }, 1200);
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.width = Math.random() * 10 + 5 + 'px';
+                p.style.height = p.style.width;
+                p.style.backgroundColor = color;
+                p.style.boxShadow = `0 0 10px ${color}`;
+
+                const tx = (Math.random() - 0.5) * 300;
+                const ty = (Math.random() - 0.8) * 300;
+                p.style.setProperty('--tx', `${tx}px`);
+                p.style.setProperty('--ty', `${ty}px`);
+
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
+            }
+        }
+
+        function showEnd() {
+            const overlay = document.getElementById('end-overlay');
+            overlay.classList.remove('hidden');
+            document.getElementById('end-result').textContent = `Balanç: ${score} estrelles de ${TOTAL_CLIENTS} clients.`;
+
+            let rank = "";
+            if (score === TOTAL_CLIENTS) rank = "Ets el mestre de les cançons i les copes!";
+            else if (score >= 8) rank = "Molt bon servei, t'has guanyat un descans.";
+            else if (score >= 5) rank = "No està malament, però alguns clients han marxat enfadats.";
+            else rank = "Caldria repassar els apunts de música abans de tornar a obrir...";
+
+            document.getElementById('end-rank').textContent = rank;
+        }
+    </script>
+</body>
+
+</html>

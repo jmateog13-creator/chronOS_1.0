@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banda Tribut: El Càsting</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap');
+
+        :root {
+            --comic-yellow: #fff200;
+            --comic-cyan: #00aeef;
+            --comic-magenta: #ec008c;
+            --comic-black: #111;
+            --comic-white: #fff;
+            --comic-border: 4px solid var(--comic-black);
+            --comic-shadow: 6px 6px 0px var(--comic-black);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Neue', cursive, sans-serif;
+            background-color: var(--comic-yellow);
+            /* Halftone pattern */
+            background-image:
+                radial-gradient(var(--comic-magenta) 20%, transparent 20%),
+                radial-gradient(var(--comic-magenta) 20%, transparent 20%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            color: var(--comic-black);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Start Screen */
+        #start-screen {
+            text-align: center;
+            max-width: 900px;
+            padding: 3rem;
+            background: var(--comic-white);
+            border: var(--comic-border);
+            box-shadow: var(--comic-shadow);
+            transform: rotate(-2deg);
+        }
+
+        h1 {
+            font-family: 'Bangers', cursive;
+            font-size: 6rem;
+            color: var(--comic-cyan);
+            margin: 0 0 1rem 0;
+            text-shadow: 4px 4px 0 var(--comic-black);
+            letter-spacing: 2px;
+            -webkit-text-stroke: 2px var(--comic-black);
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--comic-black);
+            font-weight: bold;
+            background: var(--comic-yellow);
+            display: inline-block;
+            padding: 5px 15px;
+            border: 2px solid var(--comic-black);
+            transform: rotate(1deg);
+        }
+
+        .instructions {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            padding: 15px;
+            background: #eee;
+            border: 2px dashed var(--comic-black);
+            text-align: left;
+        }
+
+        .era-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            transform: rotate(2deg);
+        }
+
+        .btn-era {
+            background: var(--comic-white);
+            color: var(--comic-black);
+            border: var(--comic-border);
+            padding: 1rem;
+            font-size: 1.5rem;
+            font-family: 'Bangers', cursive;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0 var(--comic-black);
+            position: relative;
+        }
+
+        .btn-era:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0 var(--comic-black);
+            background: var(--comic-cyan);
+            color: white;
+            text-shadow: 2px 2px 0 black;
+        }
+
+        .btn-era:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--comic-black);
+        }
+
+        /* Game Interface */
+        #game-interface {
+            width: 95%;
+            height: 90%;
+            background: var(--comic-white);
+            border: var(--comic-border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: var(--comic-shadow);
+        }
+
+        /* Header */
+        #phase-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: var(--comic-border);
+            background: var(--comic-yellow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #phase-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.05) 10px, rgba(0, 0, 0, 0.05) 20px);
+            pointer-events: none;
+        }
+
+        #phase-title {
+            font-family: 'Bangers', cursive;
+            font-size: 3.5rem;
+            color: var(--comic-magenta);
+            margin: 0;
+            text-shadow: 3px 3px 0 var(--comic-black);
+            -webkit-text-stroke: 1px var(--comic-black);
+            position: relative;
+            z-index: 2;
+        }
+
+        #phase-instruction {
+            margin-top: 10px;
+            font-size: 1.5rem;
+            color: var(--comic-black);
+            font-weight: bold;
+            background: white;
+            border: 2px solid black;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Content Area */
+        #content-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            overflow-y: auto;
+            background: linear-gradient(90deg, transparent 95%, rgba(0, 0, 0, 0.1) 95%), linear-gradient(transparent 95%, rgba(0, 0, 0, 0.1) 95%);
+            background-size: 20px 20px;
+        }
+
+        /* Cards */
+        .card {
+            width: 180px;
+            height: 240px;
+            background: var(--comic-white);
+            border: var(--comic-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .card:hover {
+            transform: scale(1.05) rotate(-2deg);
+            border-color: var(--comic-black);
+            box-shadow: 10px 10px 0 var(--comic-cyan);
+            z-index: 5;
+        }
+
+        .card.selected {
+            border-color: var(--comic-black);
+            background: var(--comic-yellow);
+            box-shadow: 8px 8px 0 var(--comic-black);
+            transform: rotate(2deg) scale(1.05);
+        }
+
+        .card-icon {
+            font-size: 5rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
+            transition: transform 0.2s;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .card-label {
+            font-family: 'Comic Neue', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            color: var(--comic-black);
+            background: white;
+            border: 2px solid black;
+            padding: 2px 8px;
+            width: 90%;
+            box-shadow: 2px 2px 0 #ccc;
+        }
+
+        /* Footer */
+        #footer {
+            padding: 20px;
+            border-top: var(--comic-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--comic-cyan);
+        }
+
+        #progress-bar {
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border: 3px solid black;
+            border-radius: 30px;
+        }
+
+        .progress-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ddd;
+            border: 2px solid black;
+        }
+
+        .progress-dot.active {
+            background: var(--comic-magenta);
+            box-shadow: 0 0 0 2px white inset;
+        }
+
+        #next-btn {
+            background: var(--comic-yellow);
+            color: var(--comic-black);
+            border: var(--comic-border);
+            padding: 10px 30px;
+            font-size: 1.5rem;
+            font-family: 'Bangers', cursive;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0 var(--comic-black);
+            opacity: 0.5;
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+
+        #next-btn.enabled {
+            opacity: 1;
+            pointer-events: all;
+            animation: pulse-comic 1s infinite alternate;
+        }
+
+        @keyframes pulse-comic {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.05);
+            }
+        }
+
+        #next-btn:hover {
+            background: white;
+            box-shadow: 6px 6px 0 var(--comic-magenta);
+            transform: translate(-2px, -2px);
+        }
+
+        #next-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--comic-black);
+        }
+
+        /* Poster Result */
+        #poster-container {
+            width: 450px;
+            height: 650px;
+            background: var(--comic-white);
+            position: relative;
+            overflow: hidden;
+            border: var(--comic-border);
+            box-shadow: 20px 20px 0 rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+        }
+
+        #poster-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.8;
+            filter: contrast(120%) saturate(120%) grayscale(20%);
+        }
+
+        #poster-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(black 1px, transparent 1px);
+            background-size: 4px 4px;
+            opacity: 0.2;
+        }
+
+        #poster-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            text-align: center;
+            border: 10px solid white;
+            box-sizing: border-box;
+        }
+
+        #poster-band-name {
+            font-family: 'Bangers', cursive;
+            font-size: 4rem;
+            color: var(--comic-yellow);
+            text-shadow: 4px 4px 0 var(--comic-black);
+            -webkit-text-stroke: 2px var(--comic-black);
+            margin-top: 10px;
+            line-height: 1;
+            transform: rotate(-3deg);
+        }
+
+        #poster-musicians {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.7);
+            border: 3px solid black;
+            padding: 10px;
+            transform: rotate(2deg);
+        }
+
+        .poster-musician {
+            font-size: 3.5rem;
+            filter: drop-shadow(3px 3px 0 black);
+            transition: transform 0.2s;
+        }
+
+        .poster-musician:hover {
+            transform: scale(1.2);
+        }
+
+        #poster-single {
+            font-family: 'Bangers', cursive;
+            font-size: 2rem;
+            color: var(--comic-white);
+            text-shadow: 3px 3px 0 var(--comic-black);
+            -webkit-text-stroke: 1px var(--comic-black);
+            background: var(--comic-magenta);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 3px solid black;
+            box-shadow: 5px 5px 0 black;
+            transform: rotate(-1deg);
+        }
+
+        #poster-sponsor {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            font-size: 2.5rem;
+            background: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid black;
+            box-shadow: 3px 3px 0 black;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Comic "POW!" effect */
+        .comic-pow {
+            position: absolute;
+            font-family: 'Bangers', cursive;
+            color: var(--comic-yellow);
+            text-shadow: 2px 2px 0 black;
+            font-size: 2rem;
+            pointer-events: none;
+            animation: pow-anim 0.5s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes pow-anim {
+            0% {
+                transform: scale(0) rotate(-20deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.5) rotate(10deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        #completed-msg {
+            display: none;
+            font-family: 'Bangers', cursive;
+            color: var(--comic-cyan);
+            font-size: 2rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="overlay">
+            <h1>Banda Tribut</h1>
+
+            <div class="instructions">
+                <strong>INSTRUCCIONS:</strong>
+                <ul style="list-style-type: none; padding: 0;">
+                    <li>1. Tria una Època Musical.</li>
+                    <li>2. Selecciona els músics, roba i escenari correctes.</li>
+                    <li>3. Completa totes les èpoques per guanyar el joc!</li>
+                </ul>
+            </div>
+
+            <div class="era-grid">
+                <button class="btn-era" data-era="edat_mitjana">Edat Mitjana</button>
+                <button class="btn-era" data-era="renaixement">Renaixement</button>
+                <button class="btn-era" data-era="barroc">Barroc</button>
+                <button class="btn-era" data-era="classicisme">Classicisme</button>
+                <button class="btn-era" data-era="romanticisme">Romanticisme</button>
+                <button class="btn-era" data-era="segle_xx">Segle XX</button>
+            </div>
+
+            <div id="completed-msg">🎉 Totes les èpoques completades! Ets una llegenda! 🎉</div>
+        </div>
+
+        <!-- Game Interface -->
+        <div id="game-interface" class="hidden">
+            <div id="phase-header">
+                <h2 id="phase-title">FASE 1: EL CÀSTING</h2>
+                <p id="phase-instruction">Selecciona els 4 músics correctes.</p>
+            </div>
+
+            <div id="content-area">
+                <!-- Dynamic Content -->
+            </div>
+
+            <div id="footer">
+                <div id="progress-bar">
+                    <div class="progress-dot active"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                </div>
+                <button id="next-btn">SEGÜENT FASE</button>
+            </div>
+        </div>
+
+        <!-- Poster Result -->
+        <div id="poster-overlay" class="overlay hidden">
+            <div id="poster-container">
+                <div id="poster-bg"></div>
+                <div id="poster-content">
+                    <div id="poster-band-name">NOM BANDA</div>
+                    <div id="poster-musicians"></div>
+                    <div id="poster-single">Presentant: Single</div>
+                    <div id="poster-sponsor">👕</div>
+                </div>
+            </div>
+            <button class="btn-era" id="restart-btn" style="margin-top: 20px;">TORNAR AL MENÚ</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const DB = {
+            edat_mitjana: {
+                musicians: {
+                    c: [
+                        { n: "Trobador", i: "🪕" }, { n: "Monjo", i: "🙏" }, { n: "Viola de Roda", i: "🎻" }, { n: "Flauta de Bec", i: "🥢" }
+                    ],
+                    w: [
+                        { n: "Piano", i: "🎹" }, { n: "Saxòfon", i: "🎷" }, { n: "DJ", i: "🎧" }, { n: "Guitarra Elèctrica", i: "🎸" }
+                    ]
+                },
+                outfits: {
+                    c: { n: "Túnica i Malles", i: "🧥" },
+                    w: [{ n: "Esmoquin", i: "🤵" }, { n: "Texans", i: "👖" }, { n: "Vestit Espacial", i: "👩‍🚀" }]
+                },
+                visuals: {
+                    c: { n: "Castell Medieval", i: "🏰", url: "https://images.unsplash.com/photo-1599598425947-d3516b0c7ed9?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" },
+                    w: [
+                        { n: "Gratacels", i: "🏙️" }, { n: "Discoteca", i: "🪩" }, { n: "Estadi", i: "🏟️" }
+                    ]
+                },
+                names: {
+                    c: "Els Trobadors Anònims",
+                    w: ["The Rolling Stones", "Mozart's Band", "Barroc & Roll"]
+                },
+                songs: {
+                    c: "Cantigas de Santa Maria",
+                    w: ["Simfonia núm. 5", "Bohemian Rhapsody", "Les Quatre Estacions"]
+                }
+            },
+            renaixement: {
+                musicians: {
+                    c: [
+                        { n: "Llaüt", i: "🎸" }, { n: "Viola da Gamba", i: "🎻" }, { n: "Cantant Madrigal", i: "🗣️" }, { n: "Flauta Dolça", i: "🥢" }
+                    ],
+                    w: [
+                        { n: "Sintetitzador", i: "🎹" }, { n: "Bateria", i: "🥁" }, { n: "Director Orquestra", i: "🪄" }, { n: "Tuba", i: "🎺" }
+                    ]
+                },
+                outfits: {
+                    c: { n: "Gorguera i Vellut", i: "🧣" },
+                    w: [{ n: "Perruca Blanca", i: "🐩" }, { n: "Xandall", i: "👟" }, { n: "Roba de Platja", i: "🩳" }]
+                },
+                visuals: {
+                    c: { n: "Palau Florentí", i: "🏛️", url: "https://images.unsplash.com/photo-1555650763-71a29910c410?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" },
+                    w: [{ n: "Fàbrica", i: "🏭" }, { n: "Selva", i: "🌴" }, { n: "Espai", i: "🌌" }]
+                },
+                names: {
+                    c: "Polyphonic Crew",
+                    w: ["Monody Boys", "The Romantics", "Atonal Gang"]
+                },
+                songs: {
+                    c: "Missa del Papa Marcel",
+                    w: ["Tocata i Fuga", "La Traviata", "Thriller"]
+                }
+            },
+            barroc: {
+                musicians: {
+                    c: [
+                        { n: "Clavicèmbal", i: "🎹" }, { n: "Violí", i: "🎻" }, { n: "Oboè", i: "🥢" }, { n: "Violoncel", i: "🎻" }
+                    ],
+                    w: [
+                        { n: "Piano de Cua", i: "🎹" }, { n: "Guitarra Espanyola", i: "🎸" }, { n: "Clarinet", i: "🎷" }, { n: "Theremin", i: "📻" }
+                    ]
+                },
+                outfits: {
+                    c: { n: "Perruca i Casaca", i: "🐩" },
+                    w: [{ n: "Túnica", i: "🧥" }, { n: "Barret de Copa", i: "🎩" }, { n: "Roba Punk", i: "🤘" }]
+                },
+                visuals: {
+                    c: { n: "Església Daurada", i: "⛪", url: "https://images.unsplash.com/photo-1548625361-9882cf0f410a?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" },
+                    w: [{ n: "Camp Obert", i: "🌾" }, { n: "Laboratori", i: "🧪" }, { n: "Platja", i: "🏖️" }]
+                },
+                names: {
+                    c: "Basso Continuo",
+                    w: ["Gregorian Monks", "Classic Harmony", "Jazz Cats"]
+                },
+                songs: {
+                    c: "Les Quatre Estacions",
+                    w: ["Oda a l'Alegria", "Carmina Burana", "Yesterday"]
+                }
+            },
+            classicisme: {
+                musicians: {
+                    c: [
+                        { n: "Piano", i: "🎹" }, { n: "Clarinet", i: "🎷" }, { n: "Violí", i: "🎻" }, { n: "Director", i: "🪄" }
+                    ],
+                    w: [
+                        { n: "Clavicèmbal", i: "🎹" }, { n: "Guitarra Elèctrica", i: "🎸" }, { n: "Llaüt", i: "🪕" }, { n: "Gong", i: "🔔" }
+                    ]
+                },
+                outfits: {
+                    c: { n: "Elegància i Senzillesa", i: "👔" },
+                    w: [{ n: "Exagerat Barroc", i: "🎭" }, { n: "Roba Esportiva", i: "⚽" }, { n: "Armadura", i: "🛡️" }]
+                },
+                visuals: {
+                    c: { n: "Saló de Palau", i: "🛋️", url: "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" },
+                    w: [{ n: "Catedral Gòtica", i: "⛪" }, { n: "Bosc Fosc", i: "🌲" }, { n: "Carrer", i: "🛣️" }]
+                },
+                names: {
+                    c: "Sonata Form",
+                    w: ["Fuga Masters", "Emotional Storm", "Noise Makers"]
+                },
+                songs: {
+                    c: "Petita Serenata Nocturna",
+                    w: ["El Messies", "La Valquíria", "Imagine"]
+                }
+            },
+            romanticisme: {
+                musicians: {
+                    c: [
+                        { n: "Piano Virtuós", i: "🎹" }, { n: "Gran Orquestra", i: "🎻" }, { n: "Cantant d'Òpera", i: "🗣️" }, { n: "Tuba", i: "🎺" }
+                    ],
+                    w: [
+                        { n: "Clavicèmbal", i: "🎹" }, { n: "Viola da Gamba", i: "🎻" }, { n: "Ordinador", i: "💻" }, { n: "Flauta de Bec", i: "🥢" }
+                    ]
+                },
+                outfits: {
+                    c: { n: "Frac i Barret", i: "🎩" },
+                    w: [{ n: "Perruca Blanca", i: "🐩" }, { n: "Malles", i: "🧦" }, { n: "Roba Futurista", i: "👽" }]
+                },
+                visuals: {
+                    c: { n: "Ruïnes i Boira", i: "🌫️", url: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" },
+                    w: [{ n: "Jardí Simètric", i: "🌳" }, { n: "Laboratori", i: "🧪" }, { n: "Supermercat", i: "🛒" }]
+                },
+                names: {
+                    c: "Sturm und Drang",
+                    w: ["Reason & Logic", "God's Servants", "Digital Love"]
+                },
+                songs: {
+                    c: "La Valquíria",
+                    w: ["Simfonia Sorpresa", "Al·leluia", "4'33''"]
+                }
+            },
+            segle_xx: {
+                musicians: {
+                    c: [
+                        { n: "Sintetitzador", i: "🎹" }, { n: "Guitarra Elèctrica", i: "🎸" }, { n: "Bateria", i: "🥁" }, { n: "Saxo", i: "🎷" }
+                    ],
+                    w: [
+                        { n: "Llaüt", i: "🪕" }, { n: "Clavicèmbal", i: "🎹" }, { n: "Viola da Gamba", i: "🎻" }, { n: "Castrato", i: "🗣️" }
+                    ]
+                },
+                outfits: {
+                    c: { n: "Casual / Futurista", i: "🕶️" },
+                    w: [{ n: "Frac", i: "🎩" }, { n: "Perruca", i: "🐩" }, { n: "Túnica", i: "🧥" }]
+                },
+                visuals: {
+                    c: { n: "Neons i Abstracte", i: "🎆", url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" },
+                    w: [{ n: "Església", i: "⛪" }, { n: "Palau", i: "🏛️" }, { n: "Ruïnes", i: "🏚️" }]
+                },
+                names: {
+                    c: "Atonal Punks",
+                    w: ["The Classics", "Baroque Boys", "Gregorian Chant"]
+                },
+                songs: {
+                    c: "La Consagració de la Primavera",
+                    w: ["Ave Maria", "Cànon de Pachelbel", "Clar de Lluna"]
+                }
+            }
+        };
+
+        // --- GAME STATE ---
+        let currentEra = null;
+        let currentPhase = 0;
+        let selections = { musicians: [], outfit: null, visual: null, name: null, song: null };
+        let completedEras = [];
+
+        // --- MUSIC ---
+        // Ensuring correct path if needed
+        const bgMusic = new Audio('Press Start to Rock.m4a');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        // --- AUDIO SYNTESIS ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'select') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.3); // Comic "fart" noise
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'applause') {
+                const bufferSize = audioCtx.sampleRate * 3;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 800;
+                noise.connect(filter);
+                filter.connect(gainNode);
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
+                noise.start(now);
+            }
+        }
+
+        // --- VISUAL EFFECTS ---
+        function showPow(x, y) {
+            const pow = document.createElement('div');
+            pow.className = 'comic-pow';
+            pow.innerText = ["POW!", "BAM!", "ZAP!", "BOOM!"][Math.floor(Math.random() * 4)];
+            pow.style.left = (x - 50) + 'px';
+            pow.style.top = (y - 50) + 'px';
+            pow.style.transform = `rotate(${Math.random() * 40 - 20}deg)`;
+            document.body.appendChild(pow);
+            setTimeout(() => pow.remove(), 600);
+        }
+
+        // --- LOGIC ---
+        // Start Music on first interaction
+        document.body.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio autoplay block:", e));
+            }
+        }, { once: true });
+
+        document.querySelectorAll('.btn-era').forEach(btn => {
+            if (btn.id === 'restart-btn') return;
+            btn.addEventListener('click', (e) => {
+                const eraKey = btn.dataset.era;
+                // If using "Progression", maybe allow replaying but it's already marked?
+                // For now, let's allow replay.
+
+                currentEra = eraKey;
+                showPow(e.clientX, e.clientY);
+                playSound('select');
+                startGame();
+            });
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            document.getElementById('poster-overlay').classList.add('hidden');
+            document.getElementById('start-screen').style.display = 'block';
+            checkCompletion();
+        });
+
+        document.getElementById('next-btn').addEventListener('click', nextPhase);
+
+        function checkCompletion() {
+            const allEras = Object.keys(DB);
+            let doneCount = 0;
+
+            document.querySelectorAll('.btn-era').forEach(btn => {
+                if (btn.id === 'restart-btn') return;
+                const era = btn.dataset.era;
+
+                if (completedEras.includes(era)) {
+                    doneCount++;
+                    btn.classList.add('completed');
+                    btn.style.backgroundColor = '#2ecc71';
+                    btn.style.color = 'white';
+                    if (!btn.innerText.includes("✅")) {
+                        btn.innerText += " ✅";
+                    }
+                }
+            });
+
+            if (doneCount === allEras.length) {
+                document.getElementById('completed-msg').style.display = 'block';
+                playSound('applause');
+            }
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-interface').classList.remove('hidden');
+            currentPhase = 1;
+            selections = { musicians: [], outfit: null, visual: null, name: null, song: null };
+            loadPhase();
+        }
+
+        function loadPhase() {
+            const content = document.getElementById('content-area');
+            const title = document.getElementById('phase-title');
+            const instr = document.getElementById('phase-instruction');
+            const nextBtn = document.getElementById('next-btn');
+
+            content.innerHTML = '';
+            nextBtn.classList.remove('enabled');
+            updateProgressBar();
+
+            const eraData = DB[currentEra];
+
+            if (currentPhase === 1) {
+                // Musicians
+                title.textContent = "FASE 1: EL CÀSTING";
+                instr.textContent = "Selecciona els 4 músics correctes (Instrumentació).";
+
+                let options = [...eraData.musicians.c.map(m => ({ ...m, v: true })), ...eraData.musicians.w.map(m => ({ ...m, v: false }))];
+                options.sort(() => Math.random() - 0.5);
+
+                options.forEach(opt => {
+                    const card = createCard(opt.i, opt.n);
+                    card.onclick = (e) => {
+                        if (card.classList.contains('selected')) {
+                            card.classList.remove('selected');
+                            selections.musicians = selections.musicians.filter(m => m.n !== opt.n);
+                        } else {
+                            if (selections.musicians.length < 4) {
+                                if (opt.v) {
+                                    card.classList.add('selected');
+                                    selections.musicians.push(opt);
+                                    playSound('select');
+                                    showPow(e.clientX, e.clientY);
+                                } else {
+                                    playSound('error');
+                                    card.style.borderColor = 'red';
+                                    showPow(e.clientX, e.clientY);
+                                    setTimeout(() => card.style.borderColor = '#111', 500);
+                                }
+                            }
+                        }
+                        if (selections.musicians.length === 4) nextBtn.classList.add('enabled');
+                        else nextBtn.classList.remove('enabled');
+                    };
+                    content.appendChild(card);
+                });
+
+            } else if (currentPhase === 2) {
+                // Wardrobe
+                title.textContent = "FASE 2: EL VESTUARI";
+                instr.textContent = "Tria el 'Look' adequat per a l'època.";
+
+                let options = [{ ...eraData.outfits.c, v: true }, ...eraData.outfits.w.map(o => ({ ...o, v: false }))];
+                options.sort(() => Math.random() - 0.5);
+
+                options.forEach(opt => {
+                    const card = createCard(opt.i, opt.n);
+                    card.onclick = (e) => {
+                        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+                        if (opt.v) {
+                            card.classList.add('selected');
+                            selections.outfit = opt;
+                            playSound('select');
+                            showPow(e.clientX, e.clientY);
+                            nextBtn.classList.add('enabled');
+                        } else {
+                            playSound('error');
+                            card.style.borderColor = 'red';
+                            setTimeout(() => card.style.borderColor = '#111', 500);
+                        }
+                    };
+                    content.appendChild(card);
+                });
+
+            } else if (currentPhase === 3) {
+                // Visuals
+                title.textContent = "FASE 3: ELS VISUALS";
+                instr.textContent = "Tria l'escenografia perfecta.";
+
+                let options = [{ ...eraData.visuals.c, v: true }, ...eraData.visuals.w.map(o => ({ ...o, v: false }))];
+                options.sort(() => Math.random() - 0.5);
+
+                options.forEach(opt => {
+                    const card = createCard(opt.i, opt.n);
+                    card.onclick = (e) => {
+                        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+                        if (opt.v) {
+                            card.classList.add('selected');
+                            selections.visual = opt;
+                            playSound('select');
+                            showPow(e.clientX, e.clientY);
+                            nextBtn.classList.add('enabled');
+                        } else {
+                            playSound('error');
+                            card.style.borderColor = 'red';
+                            setTimeout(() => card.style.borderColor = '#111', 500);
+                        }
+                    };
+                    content.appendChild(card);
+                });
+
+            } else if (currentPhase === 4) {
+                // Naming
+                title.textContent = "FASE 4: EL NAMING";
+                instr.textContent = "Quin nom utilitza terminologia correcta?";
+
+                let options = [{ n: eraData.names.c, v: true }, ...eraData.names.w.map(n => ({ n: n, v: false }))];
+                options.sort(() => Math.random() - 0.5);
+
+                options.forEach(opt => {
+                    const card = createCard("🏷️", opt.n);
+                    card.onclick = (e) => {
+                        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+                        if (opt.v) {
+                            card.classList.add('selected');
+                            selections.name = opt.n;
+                            playSound('select');
+                            showPow(e.clientX, e.clientY);
+                            nextBtn.classList.add('enabled');
+                        } else {
+                            playSound('error');
+                            card.style.borderColor = 'red';
+                            setTimeout(() => card.style.borderColor = '#111', 500);
+                        }
+                    };
+                    content.appendChild(card);
+                });
+
+            } else if (currentPhase === 5) {
+                // Single
+                title.textContent = "FASE 5: EL SINGLE";
+                instr.textContent = "Tria l'obra mestra real d'aquesta època.";
+
+                let options = [{ n: eraData.songs.c, v: true }, ...eraData.songs.w.map(n => ({ n: n, v: false }))];
+                options.sort(() => Math.random() - 0.5);
+
+                options.forEach(opt => {
+                    const card = createCard("🎵", opt.n);
+                    card.onclick = (e) => {
+                        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+                        if (opt.v) {
+                            card.classList.add('selected');
+                            selections.song = opt.n;
+                            playSound('select');
+                            showPow(e.clientX, e.clientY);
+                            nextBtn.classList.add('enabled');
+                        } else {
+                            playSound('error');
+                            card.style.borderColor = 'red';
+                            setTimeout(() => card.style.borderColor = '#111', 500);
+                        }
+                    };
+                    content.appendChild(card);
+                });
+            }
+        }
+
+        function nextPhase() {
+            if (currentPhase < 5) {
+                currentPhase++;
+                loadPhase();
+            } else {
+                generatePoster();
+            }
+        }
+
+        function createCard(icon, label) {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `<div class="card-icon">${icon}</div><div class="card-label">${label}</div>`;
+            return div;
+        }
+
+        function updateProgressBar() {
+            document.querySelectorAll('.progress-dot').forEach((dot, idx) => {
+                if (idx < currentPhase) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+        }
+
+        function generatePoster() {
+            document.getElementById('game-interface').classList.add('hidden');
+            const overlay = document.getElementById('poster-overlay');
+            overlay.classList.remove('hidden');
+            overlay.style.display = 'flex'; // Ensure flex display
+
+            if (selections.visual && selections.visual.url) {
+                document.getElementById('poster-bg').style.backgroundImage = `url('${selections.visual.url}')`;
+            }
+            document.getElementById('poster-band-name').innerText = selections.name;
+            document.getElementById('poster-single').innerText = "Presentant: " + selections.song;
+            document.getElementById('poster-sponsor').textContent = selections.outfit.i;
+
+            const musiciansDiv = document.getElementById('poster-musicians');
+            musiciansDiv.innerHTML = '';
+            selections.musicians.forEach(m => {
+                const span = document.createElement('span');
+                span.className = 'poster-musician';
+                span.innerText = m.i;
+                musiciansDiv.appendChild(span);
+            });
+
+            playSound('applause');
+
+            // Register completion
+            if (!completedEras.includes(currentEra)) {
+                completedEras.push(currentEra);
+            }
+
+            // Add stars
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => showPow(
+                    window.innerWidth / 2 + (Math.random() * 400 - 200),
+                    window.innerHeight / 2 + (Math.random() * 400 - 200)
+                ), i * 300);
+            }
+        }
+
+    </script>
+</body>
+
+</html>

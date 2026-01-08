@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazonia Musical - El Luthier Online</title>
+    <style>
+        :root {
+            --primary: #232f3e;
+            --secondary: #37475a;
+            --accent: #febd69;
+            --accent-hover: #f3a847;
+            --bg-color: #eaeded;
+            --white: #ffffff;
+            --text: #111111;
+            --price: #B12704;
+            --font-main: "Amazon Ember", Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: var(--font-main);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .mission-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        select {
+            padding: 5px;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Product Grid */
+        .product-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .mission-banner {
+            background: var(--white);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--accent);
+        }
+
+        .mission-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: var(--white);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-img {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-price {
+            color: var(--price);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .add-btn {
+            background: var(--accent);
+            border: 1px solid #a88734;
+            border-radius: 3px;
+            padding: 8px 15px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .add-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Cart Sidebar */
+        .cart-sidebar {
+            width: 300px;
+            background: var(--white);
+            border-left: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .cart-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f7f7f7;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .remove-btn {
+            color: #007185;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .remove-btn:hover {
+            text-decoration: underline;
+            color: #c7511f;
+        }
+
+        .cart-total {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .checkout-btn {
+            background: #ffd814;
+            border: 1px solid #fcd200;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
+        }
+
+        .checkout-btn:hover {
+            background: #f7ca00;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal h2 {
+            margin-top: 0;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: #c7511f;
+        }
+
+        .modal-btn {
+            background: var(--white);
+            border: 1px solid #d5d9d9;
+            border-radius: 8px;
+            padding: 8px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Amazonia<span>Musical</span></div>
+        <div class="mission-selector">
+            <button id="start-btn" class="add-btn" style="background:#febd69; font-weight:bold;"
+                onclick="game.startGame()">COMENÇAR JORNADA</button>
+            <div id="music-controls" style="display:flex; align-items:center; gap:10px; margin-left:15px; color:white;">
+                <!-- Music controls injected here or static -->
+                <span id="score-display">Comandes: 0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="product-area">
+            <div class="mission-banner" id="mission-banner"
+                style="display:none; background: #fff8e1; border-color: #ffd814;">
+                <div class="mission-title" style="font-size: 1.3rem;">📦 NOVA COMANDA REBUDA</div>
+                <div id="mission-context" style="font-weight: bold; color: #d35400;"></div>
+                <div id="mission-desc" style="font-size: 1.1rem; margin-top: 5px;"></div>
+            </div>
+
+            <div id="welcome-msg" style="text-align:center; margin-top:50px;">
+                <h1>Et donem la benvinguda al magatzem!</h1>
+                <p>Prepara les comandes per als músics de totes les èpoques.</p>
+                <p>Prem "COMENÇAR JORNADA" per rebre la primera comanda.</p>
+            </div>
+
+            <div class="grid" id="product-grid" style="display:none;">
+                <!-- Products generated by JS -->
+            </div>
+        </div>
+
+        <div class="cart-sidebar">
+            <div class="cart-title">Cistell d'Enviament</div>
+            <div class="cart-items" id="cart-items">
+                <!-- Cart items -->
+            </div>
+            <div class="cart-total">Total: <span id="cart-total-price">0€</span></div>
+            <button class="checkout-btn" onclick="game.checkout()">ENVIAR PAQUET 🚚</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="modal-title">Resultat</h2>
+            <p id="modal-msg">Missatge</p>
+            <button class="modal-btn" onclick="game.closeModal()">Següent Comanda ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const INVENTORY = [
+            // EDAT MITJANA
+            { id: 'veus', name: 'Cor de Veus', icon: '🗣️', price: 500, era: 'middle_ages' },
+            { id: 'llaut', name: 'Llaüt', icon: '🎸', price: 300, era: 'middle_ages' },
+            { id: 'flauta_bec', name: 'Flauta de Bec', icon: '🥢', price: 50, era: 'middle_ages' },
+            { id: 'orgue_portatil', name: 'Orgue Portàtil', icon: '🎹', price: 800, era: 'middle_ages' },
+
+            // RENAIXEMENT
+            { id: 'viola_gamba', name: 'Viola da Gamba', icon: '🎻', price: 1200, era: 'renaissance' },
+
+            // BARROC
+            { id: 'claveci', name: 'Clavecí', icon: '🎹', price: 2500, era: 'baroque' },
+            { id: 'violi', name: 'Violí', icon: '🎻', price: 1500, era: 'baroque' },
+            { id: 'violoncel', name: 'Violoncel', icon: '🎻', price: 1800, era: 'baroque' },
+            { id: 'viola', name: 'Viola', icon: '🎻', price: 1400, era: 'baroque' },
+            { id: 'contrabaix', name: 'Contrabaix', icon: '🎻', price: 2000, era: 'baroque' },
+            { id: 'orq_corda', name: 'Orquestra de Corda', icon: '🎻🎻', price: 5000, era: 'baroque' },
+
+            // CLASSICISME
+            { id: 'orq_classica', name: 'Orquestra Clàssica', icon: '🎻🎺', price: 8000, era: 'classicism' },
+            { id: 'pianoforte', name: 'Pianoforte', icon: '🎹', price: 3000, era: 'classicism' },
+            { id: 'clarinet', name: 'Clarinet', icon: '🌭', price: 800, era: 'classicism' },
+
+            // ROMANTICISME
+            { id: 'gran_orq', name: 'Gran Orquestra Simf.', icon: '🎻🎺🥁', price: 15000, era: 'romanticism' },
+            { id: 'piano_cua', name: 'Piano de Cua', icon: '🎹', price: 10000, era: 'romanticism' },
+            { id: 'tuba', name: 'Tuba', icon: '🎺', price: 2500, era: 'romanticism' },
+            { id: 'arpa', name: 'Arpa', icon: '🎼', price: 4000, era: 'romanticism' },
+            { id: 'saxo', name: 'Saxòfon', icon: '🎷', price: 1200, era: 'romanticism' },
+
+            // SEGLE XX
+            { id: 'bateria', name: 'Bateria', icon: '🥁', price: 1500, era: '20th_century' },
+            { id: 'sintetitzador', name: 'Sintetitzador', icon: '🎛️', price: 2000, era: '20th_century' },
+            { id: 'theremin', name: 'Theremin', icon: '📡', price: 800, era: '20th_century' },
+            { id: 'guitarra_elec', name: 'Guitarra Elèctrica', icon: '🎸', price: 1000, era: '20th_century' }
+        ];
+
+        const MISSIONS = {
+            middle_ages: {
+                name: "Edat Mitjana",
+                color: "#d6eaf8",
+                missions: [
+                    { id: 'cant_gregoria', name: 'Cant Gregorià', req: ['veus'], desc: "Els monjos necessiten <b>veus</b> per cantar l'ofici diví. (Necessites 1 instrument)" },
+                    { id: 'dansa_joglar', name: 'Dansa de Joglar', req: ['llaut', 'flauta_bec'], desc: "Un joglar necessita un <b>llaüt</b> i una <b>flauta de bec</b> per animar la festa. (Necessites 2 instruments)" },
+                    { id: 'missa_notre', name: 'Missa Notre Dame', req: ['veus', 'orgue_portatil'], desc: "Per la gran catedral necessitem <b>veus</b> i un <b>orgue portàtil</b>. (Necessites 2 instruments)" }
+                ]
+            },
+            renaissance: {
+                name: "Renaixement",
+                color: "#fadbd8",
+                missions: [
+                    { id: 'madrigal', name: 'Madrigal', req: ['veus'], desc: "Una reunió d'amics per cantar amb <b>veus</b> polifonia profana. (Necessites 1 instrument)" },
+                    { id: 'consort', name: 'Consort de Violes', req: ['viola_gamba'], desc: "Un <b>consort</b> necessita una <b>viola de gamba</b> per a la cort. (Necessites 1 instrument per músic)" },
+                    { id: 'musica_cort', name: 'Música de Cort', req: ['llaut', 'veus'], desc: "Cançons elegants acompanyades de <b>llaüt</b> i <b>veus</b>. (Necessites 2 instruments)" }
+                ]
+            },
+            baroque: {
+                name: "Barroc",
+                color: "#f9e79f",
+                missions: [
+                    { id: 'concert', name: 'Concert', req: ['violi', 'orq_corda', 'claveci'], desc: "Vivaldi necessita <b>violí</b>, <b>orquestra de corda</b> i <b>clavecí</b>. (Necessites 3 instruments)" },
+                    { id: 'suite', name: 'Suite per a Solista', req: ['violoncel'], desc: "Bach escriu una suite de danses per a <b>violoncel</b> sol. (Necessites 1 instrument)" },
+                    { id: 'opera', name: 'Òpera', req: ['veus', 'orq_corda', 'claveci'], desc: "L'estrena d'una òpera necessita <b>veus</b>, <b>orquestra de corda</b> i <b>clavecí</b>. (Necessites 3 instruments)" }
+                ]
+            },
+            classicism: {
+                name: "Classicisme",
+                color: "#f5cba7",
+                missions: [
+                    { id: 'quartet', name: 'Quartet de Corda', req: ['violi', 'violi', 'viola', 'violoncel'], desc: "Haydn vol fer música de cambra amb <b>2 violins</b>, <b>viola</b> i <b>violoncel</b>. (Necessites 4 instruments)" },
+                    { id: 'simfonia', name: 'Simfonia', req: ['orq_classica', 'clarinet'], desc: "Mozart afegeix un <b>clarinet</b> a l'<b>orquestra clàssica</b>. (Necessites 2 instruments)" },
+                    { id: 'sonata', name: 'Sonata', req: ['pianoforte'], desc: "Una peça per al <b>pianoforte</b>, el teclat que fa fort i fluix. (Necessites 1 instrument)" }
+                ]
+            },
+            romanticism: {
+                name: "Romanticisme",
+                color: "#d2b4de",
+                missions: [
+                    { id: 'lied', name: 'Lied', req: ['piano_cua', 'veus'], desc: "Schubert vol musicar un poema íntim amb <b>piano de cua</b> i <b>veus</b>. (Necessites 2 instruments)" },
+                    { id: 'gran_opera', name: 'Gran Òpera', req: ['gran_orq', 'tuba', 'arpa'], desc: "Wagner vol <b>gran orquestra</b>, <b>tuba</b> i <b>arpa</b>. (Necessites 3 instruments)" },
+                    { id: 'concert_virtuos', name: 'Concert Virtuós', req: ['violi'], desc: "Paganini vol demostrar la seva tècnica diabòlica amb el <b>violí</b>. (Necessites 1 instrument)" }
+                ]
+            },
+            '20th_century': {
+                name: "Segle XX",
+                color: "#a9dfbf",
+                missions: [
+                    { id: 'jazz', name: 'Jazz Band', req: ['saxo', 'contrabaix', 'bateria'], desc: "Un trio de <b>saxòfon</b>, <b>contrabaix</b> i <b>bateria</b> per al club. (Necessites 3 instruments)" },
+                    { id: 'minimalisme', name: 'Minimalisme', req: ['piano_cua'], desc: "Música repetitiva i hipnòtica per a <b>piano de cua</b>. (Necessites 1 instrument)" },
+                    { id: 'electronica', name: 'Música Electrònica', req: ['sintetitzador', 'theremin'], desc: "Sons creats amb electricitat, <b>sintetitzador</b> i <b>theremin</b>. (Necessites 2 instruments)" }
+                ]
+            }
+        };
+
+        // --- GAME ENGINE ---
+        class Game {
+            constructor() {
+                this.cart = [];
+                this.currentMission = null;
+                this.score = 0;
+                this.missionQueue = []; // Queue of all missions
+                this.bgMusic = null;
+                this.initAudio();
+                this.renderInventory();
+            }
+
+            initAudio() {
+                const container = document.getElementById('music-controls');
+
+                // Reuse existing buttons if present (hot reload safety)
+                if (container.querySelector('button')) return;
+
+                this.bgMusic = new Audio('music/Click to Cart.m4a');
+                this.bgMusic.loop = true;
+                this.bgMusic.volume = 0.3;
+
+                const muteBtn = document.createElement('button');
+                muteBtn.innerHTML = "🔇";
+                muteBtn.style.background = 'transparent';
+                muteBtn.style.border = 'none';
+                muteBtn.style.fontSize = '1.2rem';
+                muteBtn.style.cursor = 'pointer';
+
+                muteBtn.onclick = () => {
+                    if (this.bgMusic.paused) {
+                        this.bgMusic.play();
+                        muteBtn.innerHTML = "🎵";
+                    } else {
+                        this.bgMusic.pause();
+                        muteBtn.innerHTML = "🔇";
+                    }
+                };
+
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.min = 0; slider.max = 1; slider.step = 0.1; slider.value = 0.3;
+                slider.style.width = '80px';
+                slider.oninput = (e) => this.bgMusic.volume = e.target.value;
+
+                container.prepend(slider);
+                container.prepend(muteBtn);
+            }
+
+            startGame() {
+                document.getElementById('start-btn').style.display = 'none';
+                document.getElementById('welcome-msg').style.display = 'none';
+                document.getElementById('product-grid').style.display = 'grid';
+
+                this.bgMusic.play().then(() => {
+                    const btn = document.querySelector('#music-controls button');
+                    if (btn) btn.innerHTML = "🎵";
+                }).catch(e => console.log("Audio autoplay blocked"));
+
+                this.score = 0;
+                this.updateScore();
+                this.generateMissionQueue();
+                this.nextOrder();
+            }
+
+            generateMissionQueue() {
+                // Flatten all missions into a single array
+                this.missionQueue = [];
+                for (const key in MISSIONS) {
+                    const era = MISSIONS[key];
+                    // Pick 2 random missions from this era
+                    const eraMissions = [...era.missions].sort(() => Math.random() - 0.5).slice(0, 2);
+
+                    eraMissions.forEach(m => {
+                        this.missionQueue.push({ ...m, eraName: era.name });
+                    });
+                }
+                // Shuffle the final queue
+                this.missionQueue.sort(() => Math.random() - 0.5);
+            }
+
+            nextOrder() {
+                if (this.missionQueue.length === 0) {
+                    this.showVictory();
+                    return;
+                }
+
+                // Pop next mission
+                const mission = this.missionQueue.pop();
+                this.currentMission = mission;
+
+                // Update UI
+                const banner = document.getElementById('mission-banner');
+                banner.style.display = 'block';
+                document.getElementById('mission-context').innerText = `Època: ${mission.eraName} | Sol·licitud: ${mission.name}`;
+                document.getElementById('mission-desc').innerHTML = mission.desc;
+
+                // Clear Cart
+                this.cart = [];
+                this.updateCartUI();
+            }
+
+            showVictory() {
+                document.getElementById('mission-banner').style.display = 'none';
+                document.getElementById('product-grid').style.display = 'none';
+                this.showModal("🏆 ENHORABONA! 🏆",
+                    "Has completat totes les comandes d'Amazonia Musical!<br>Has desbloquejat el títol de: <b>Mestre de la Logística Històrica</b>.",
+                    "success",
+                    true // isEndGame
+                );
+            }
+
+            renderInventory() {
+                const grid = document.getElementById('product-grid');
+                grid.innerHTML = '';
+                INVENTORY.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.classList.add(`card-${item.era}`); // Add class for coloring
+
+                    // Map era to color
+                    const eraKey = item.era;
+                    const eraData = MISSIONS[eraKey];
+                    const bg = eraData ? eraData.color : '#ffffff';
+
+                    card.style.backgroundColor = bg;
+                    card.innerHTML = `
+                        <div class="product-img">${item.icon}</div>
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-price">${item.price}€</div>
+                        <button class="add-btn" onclick="game.addToCart('${item.id}')">Afegir al Cistell</button>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            addToCart(itemId) {
+                if (!this.currentMission) return;
+                const item = INVENTORY.find(i => i.id === itemId);
+                this.cart.push(item);
+                this.updateCartUI();
+            }
+
+            removeFromCart(index) {
+                this.cart.splice(index, 1);
+                this.updateCartUI();
+            }
+
+            updateCartUI() {
+                const container = document.getElementById('cart-items');
+                container.innerHTML = '';
+                let total = 0;
+
+                this.cart.forEach((item, idx) => {
+                    total += item.price;
+                    const el = document.createElement('div');
+                    el.className = 'cart-item';
+                    el.innerHTML = `
+                        <span>${item.name}</span>
+                        <span>${item.price}€ <span class="remove-btn" onclick="game.removeFromCart(${idx})">Eliminar</span></span>
+                    `;
+                    container.appendChild(el);
+                });
+
+                document.getElementById('cart-total-price').textContent = `${total}€`;
+            }
+
+            checkout() {
+                if (!this.currentMission) return;
+
+                const required = this.currentMission.req;
+                const cartIds = this.cart.map(i => i.id);
+
+                let success = true;
+                let missing = [];
+                let extras = [];
+
+                const reqCounts = {};
+                required.forEach(id => reqCounts[id] = (reqCounts[id] || 0) + 1);
+
+                const cartCounts = {};
+                cartIds.forEach(id => cartCounts[id] = (cartCounts[id] || 0) + 1);
+
+                // Special logic for Suite/Concert Virtuos (OR condition)
+                if (this.currentMission.id === 'suite') {
+                    if (cartIds.includes('violoncel') && cartIds.length === 1) success = true;
+                    else if (cartIds.includes('claveci') && cartIds.length === 1) success = true;
+                    else success = false;
+                } else if (this.currentMission.id === 'concert_virtuos') {
+                    if ((cartIds.includes('violi') || cartIds.includes('piano_cua')) && cartIds.length === 1) success = true;
+                    else success = false;
+                } else {
+                    // Standard check
+                    for (const id in reqCounts) {
+                        if ((cartCounts[id] || 0) < reqCounts[id]) {
+                            success = false;
+                            missing.push(INVENTORY.find(i => i.id === id).name);
+                        }
+                    }
+                    const totalReq = required.length;
+                    const totalCart = cartIds.length;
+                    if (totalCart > totalReq) {
+                        success = false;
+                        extras.push("Items innecessaris");
+                    }
+                }
+
+                if (success) {
+                    this.score++;
+                    this.updateScore();
+                    this.showModal("Comanda Completada! ✅", "Has enviat els instruments correctes. El client està content!", "success");
+                } else {
+                    let msg = "La comanda no és correcta ❌<br>";
+                    if (missing.length > 0) msg += `Falten: ${missing.join(', ')}.<br>`;
+                    if (extras.length > 0) msg += `Sobren items o hi ha anacronismes.`;
+                    if (this.currentMission.id === 'suite' || this.currentMission.id === 'concert_virtuos') msg = "Selecciona només UN instrument adequat.";
+
+                    this.showModal("Error en l'Enviament", msg, "error");
+                }
+            }
+
+            updateScore() {
+                document.getElementById('score-display').textContent = `Comandes: ${this.score}`;
+            }
+
+            showModal(title, msg, type, isEndGame = false) {
+                const titleEl = document.getElementById('modal-title');
+                titleEl.textContent = title;
+                titleEl.className = type; // .success or .error
+
+                // Color override
+                if (type === 'success') titleEl.style.color = 'green';
+                else titleEl.style.color = '#c7511f';
+
+                document.getElementById('modal-msg').innerHTML = msg;
+                const overlay = document.getElementById('modal-overlay');
+                overlay.classList.remove('hidden');
+
+                // Clear old bindings or just replace the button
+                const btn = overlay.querySelector('.modal-btn');
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+
+                if (isEndGame) {
+                    newBtn.innerText = "Tornar a Jugar";
+                    newBtn.onclick = () => location.reload();
+                } else {
+                    newBtn.innerText = type === 'success' ? "Següent Comanda ➡️" : "Tornar-ho a provar ↩️";
+                    if (type === 'success') {
+                        newBtn.onclick = () => this.closeModalAndNext();
+                    } else {
+                        newBtn.onclick = () => this.closeModalRetry();
+                    }
+                }
+            }
+
+            closeModalAndNext() {
+                document.getElementById('modal-overlay').classList.add('hidden');
+                this.nextOrder();
+            }
+
+            closeModalRetry() {
+                document.getElementById('modal-overlay').classList.add('hidden');
+            }
+        }
+
+        const game = new Game();
+
+    </script>
+</body>
+
+</html>

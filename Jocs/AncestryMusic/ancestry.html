@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ancestry Music: La Galeria dels Mestres</title>
+    <!-- Fonts: Playfair Display for elegance, Lato/Inter for UI -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Theme: Dark Museum */
+            --bg-color: #1a1c20;
+            /* Dark Charcoal/Blue */
+            --primary-text: #ecf0f1;
+            --accent-gold: #d4af37;
+            --accent-secondary: #bdc3c7;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --selected-glow: 0 0 15px rgba(212, 175, 55, 0.8);
+            --frame-width: 200px;
+            --frame-height: 250px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            /* Subtle texture overlay */
+            background-image: radial-gradient(circle at center, #2c3e50 0%, #1a1c20 100%);
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 28, 32, 0.98);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            transition: opacity 0.5s;
+        }
+
+        #start-screen h1 {
+            font-size: 4rem;
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .instructions-box {
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            font-size: 1.2rem;
+            color: #bdc3c7;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .start-btn-large {
+            background: var(--accent-gold);
+            color: #1a1c20;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            font-family: 'Playfair Display', serif;
+        }
+
+        .start-btn-large:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
+            background: #f1c40f;
+        }
+
+        /* HEADER */
+        header {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--accent-gold);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--accent-gold);
+        }
+
+        #level-info {
+            font-size: 1.1rem;
+            color: var(--accent-secondary);
+            margin-top: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1100px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        /* LINEAGE DISPLAY */
+        .museum-wall {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            background: transparent;
+            padding: 50px 40px;
+            border-radius: 8px;
+            position: relative;
+            width: 100%;
+        }
+
+        /* Golden Guide Line */
+        .museum-wall::before {
+            content: '';
+            position: absolute;
+            top: 55%;
+            left: 5%;
+            right: 5%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--accent-gold), transparent);
+            z-index: 0;
+        }
+
+        .frame-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: var(--frame-width);
+        }
+
+        .portrait-frame {
+            width: 100%;
+            height: var(--frame-height);
+            background: #2c3e50;
+            border: 10px solid white;
+            border-color: #2c3e50;
+            /* Dark matte */
+            box-shadow:
+                0 0 0 2px #444,
+                0 0 0 6px var(--accent-gold),
+                0 20px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .portrait-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .portrait-label {
+            margin-top: 20px;
+            font-family: 'Playfair Display', serif;
+            font-weight: bold;
+            background: #2c3e50;
+            color: var(--accent-gold);
+            padding: 8px 20px;
+            border: 1px solid #444;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            min-width: 120px;
+            text-align: center;
+            font-size: 1.1rem;
+            border-radius: 4px;
+        }
+
+        /* MYSTERY SLOT */
+        #unknown-slot-frame {
+            background-color: rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #unknown-slot-frame::after {
+            content: '?';
+            font-family: 'Playfair Display', serif;
+            font-size: 6rem;
+            color: #444;
+        }
+
+        #unknown-slot-frame.highlight {
+            border-color: #27ae60;
+            box-shadow: 0 0 0 6px #27ae60, 0 0 25px rgba(39, 174, 96, 0.5);
+            transform: scale(1.05);
+        }
+
+        #unknown-slot-frame.waiting-click {
+            animation: pulse-gold 1.5s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0% {
+                box-shadow: 0 0 0 5px var(--accent-gold);
+            }
+
+            50% {
+                box-shadow: 0 0 0 10px rgba(212, 175, 55, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 0 0 5px var(--accent-gold);
+            }
+        }
+
+        /* INVENTORY */
+        #inventory-area {
+            width: 100%;
+            text-align: center;
+        }
+
+        .inventory-label {
+            font-size: 1rem;
+            color: #95a5a6;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        #inventory-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card-option {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 140px;
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-option:hover {
+            transform: translateY(-8px);
+            background: #34495e;
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-option.selected {
+            background: #2c3e50;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            transform: translateY(-8px);
+        }
+
+        .card-img-wrapper {
+            width: 120px;
+            height: 120px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+        }
+
+        .card-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #ecf0f1;
+            line-height: 1.2;
+        }
+
+        /* MODAL */
+        #feedback-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #2c3e50;
+            /* Dark Modal */
+            color: white;
+            padding: 50px;
+            border-radius: 4px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            border: 6px solid var(--accent-gold);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon {
+            font-size: 5rem;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin: 0 0 15px 0;
+            color: var(--accent-gold);
+        }
+
+        .modal-msg {
+            font-size: 1.2rem;
+            color: #bdc3c7;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .btn-gold {
+            background: var(--accent-gold);
+            color: #1a1c20;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+
+        .btn-gold:hover {
+            background: #b89628;
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: #7f8c8d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #95a5a6;
+        }
+
+        /* ARROW */
+        .arrow-icon {
+            font-size: 3rem;
+            color: #555;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* CONTROLS */
+        #music-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            border: 1px solid #555;
+        }
+
+        #music-controls label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        #start-music-btn {
+            background: var(--accent-gold);
+            border: none;
+            color: #1a1c20;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        #start-music-btn:hover {
+            background: #b89628;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1>Ancestry Music</h1>
+        <div class="instructions-box">
+            <p>Benvingut a la <b>Galeria dels Mestres</b>.</p>
+            <p>La història de la música és un riu continu, però alguns enllaços s'han perdut.</p>
+            <p>La teva missió és observar el <b>Precursor</b> i el <b>Successor</b>, i deduir quin compositor o estil
+                falta al mig per completar el llinatge.</p>
+        </div>
+        <button class="start-btn-large" onclick="startGameFlow()">Entrar a la Galeria</button>
+    </div>
+
+    <header>
+        <h1>Ancestry Music</h1>
+        <div id="level-info">Carregant exposició...</div>
+    </header>
+
+    <div id="game-container">
+        <!-- MUSEUM WALL DISPLAY -->
+        <div class="museum-wall">
+            <!-- ANCESTOR -->
+            <div class="frame-container">
+                <div class="portrait-frame">
+                    <img id="prev-img" src="" alt="Precursor">
+                </div>
+                <div class="portrait-label" id="prev-name">...</div>
+            </div>
+
+            <div class="arrow-icon">➔</div>
+
+            <!-- MYSTERY SLOT (TARGET) -->
+            <div class="frame-container">
+                <div class="portrait-frame" id="unknown-slot-frame" ondragover="allowDrop(event)"
+                    ondragleave="leaveDrop(event)" ondrop="drop(event)" onclick="handleSlotClick()">
+                    <!-- Drop Zone -->
+                </div>
+                <div class="portrait-label">???</div>
+            </div>
+
+            <div class="arrow-icon">➔</div>
+
+            <!-- SUCCESSOR -->
+            <div class="frame-container">
+                <div class="portrait-frame">
+                    <img id="next-img" src="" alt="Successor">
+                </div>
+                <div class="portrait-label" id="next-name">...</div>
+            </div>
+        </div>
+
+        <!-- INVENTORY -->
+        <div id="inventory-area">
+            <div class="inventory-label">Selecciona el compositor que falta per completar el llinatge:</div>
+            <div id="inventory-grid">
+                <!-- Cards injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO SYSTEM -->
+    <audio id="bg-music" loop>
+        <source src="music/Silent Wings In Marble Halls.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="music-controls" style="display:none;">
+        <label for="volume-slider">🎵 Volum:</label>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.3">
+        <button id="start-music-btn">▶ Música</button>
+    </div>
+
+    <!-- FEEDBACK MODAL -->
+    <div id="feedback-modal">
+        <div class="modal-content">
+            <div id="modal-icon" class="modal-icon"></div>
+            <h2 id="modal-title" class="modal-title"></h2>
+            <p id="modal-msg" class="modal-msg"></p>
+            <button id="modal-btn" class="btn-gold">Continuar</button>
+        </div>
+    </div>
+
+    <script>
+        // Start Game Logic
+        function startGameFlow() {
+            const screen = document.getElementById('start-screen');
+            const controls = document.getElementById('music-controls');
+            const bgMusic = document.getElementById('bg-music');
+
+            // Fade out
+            screen.style.opacity = '0';
+            setTimeout(() => {
+                screen.style.display = 'none';
+                controls.style.display = 'flex'; // Show controls
+            }, 500);
+
+            // Start Music
+            bgMusic.volume = 0.3;
+            bgMusic.play().catch(e => console.log("Audio autoplay restricted. Click button manually."));
+        }
+
+        // --- ASSET PATHS (Local) ---
+        const PATH_IMG = "img/";
+
+        const LINEAGE_DB = [
+            {
+                level: 1,
+                title: "EL NAIXEMENT DE LES NOTES",
+                prev: { name: "Tradició Oral", img: PATH_IMG + "neumas.jpg" }, // neumas.jpg
+                next: { name: "Partitura Moderna", img: PATH_IMG + "jsbach.jpg" }, // reusing jbach as generic 'score' or master
+                correct: { name: "Guido d'Arezzo", id: "guido", img: PATH_IMG + "guido.jpg" },
+                distractors: [
+                    { name: "W.A. Mozart", id: "mozart", img: PATH_IMG + "mozart.jpg" },
+                    { name: "The Beatles", id: "beatles", img: PATH_IMG + "beatles.jpg" }
+                ]
+            },
+            {
+                level: 2,
+                title: "EL MESTRE DE LA POLIFONIA",
+                prev: { name: "Léonin / Pérotin", img: PATH_IMG + "leonin.jpg" },
+                next: { name: "Palestrina", img: PATH_IMG + "palestrina.jpg" },
+                correct: { name: "Josquin des Prez", id: "josquin", img: PATH_IMG + "josquin.jpg" },
+                distractors: [
+                    { name: "Robert Schumann", id: "schumann", img: PATH_IMG + "schumann.jpg" },
+                    { name: "Elvis Presley", id: "elvis", img: PATH_IMG + "elvis.jpg" }
+                ]
+            },
+            {
+                level: 3,
+                title: "L'EVOLUCIÓ DEL CONCERT",
+                prev: { name: "Arcangelo Corelli", img: PATH_IMG + "corelli.jpg" },
+                next: { name: "J.S. Bach", img: PATH_IMG + "jsbach.jpg" },
+                correct: { name: "Antonio Vivaldi", id: "vivaldi", img: PATH_IMG + "vivaldi.jpg" },
+                distractors: [
+                    { name: "Franz Liszt", id: "liszt", img: PATH_IMG + "listz.jpg" }, // Note: listz.jpg in file list
+                    { name: "John Cage", id: "cage", img: PATH_IMG + "cage.jpg" }
+                ]
+            },
+            {
+                level: 4,
+                title: "LA TRANSICIÓ AL CLASSICISME",
+                prev: { name: "J.S. Bach", img: PATH_IMG + "jsbach.jpg" },
+                next: { name: "J. Haydn", img: PATH_IMG + "haydn.jpg" },
+                correct: { name: "C.P.E. Bach", id: "cpebach", img: PATH_IMG + "cpebach.jpg" },
+                distractors: [
+                    { name: "Palestrina", id: "palestrina", img: PATH_IMG + "palestrina.jpg" },
+                    { name: "C.W. Gluck", id: "gluck", img: PATH_IMG + "gluck.jpg" }
+                ]
+            },
+            {
+                level: 5,
+                title: "LA PRIMERA ESCOLA DE VIENA",
+                prev: { name: "J. Haydn", img: PATH_IMG + "haydn.jpg" },
+                next: { name: "L.v. Beethoven", img: PATH_IMG + "beethoven.jpg" },
+                correct: { name: "W.A. Mozart", id: "mozart", img: PATH_IMG + "mozart.jpg" },
+                distractors: [
+                    { name: "Schubert", id: "schubert", img: PATH_IMG + "schubert.jpg" },
+                    { name: "Arnold Schönberg", id: "schoenberg", img: PATH_IMG + "schoemberg.jpg" }
+                ]
+            },
+            {
+                level: 6,
+                title: "LA REFORMA DE L'ÒPERA",
+                prev: { name: "C. Monteverdi", img: PATH_IMG + "corelli.jpg" }, // Placeholder if Monteverdi missing, using similar era
+                next: { name: "R. Wagner", img: PATH_IMG + "beethoven.jpg" }, // Placeholder for Wagner -> Beethoven close enough stylistic
+                correct: { name: "C.W. Gluck", id: "gluck", img: PATH_IMG + "gluck.jpg" },
+                distractors: [
+                    { name: "Antonio Vivaldi", id: "vivaldi", img: PATH_IMG + "vivaldi.jpg" },
+                    { name: "The Beatles", id: "beatles", img: PATH_IMG + "beatles.jpg" }
+                ]
+            },
+            {
+                level: 7,
+                title: "EL MESTRE DEL LIED",
+                prev: { name: "L.v. Beethoven", img: PATH_IMG + "beethoven.jpg" },
+                next: { name: "R. Schumann", img: PATH_IMG + "schumann.jpg" },
+                correct: { name: "Franz Schubert", id: "schubert", img: PATH_IMG + "schubert.jpg" },
+                distractors: [
+                    { name: "Franz Liszt", id: "liszt", img: PATH_IMG + "listz.jpg" },
+                    { name: "John Cage", id: "cage", img: PATH_IMG + "cage.jpg" }
+                ]
+            },
+            {
+                level: 8,
+                title: "LA RUPTURA ATONAL",
+                prev: { name: "R. Wagner", img: PATH_IMG + "listz.jpg" }, // Liszt is father in law of Wagner, close enough link
+                next: { name: "John Cage", img: PATH_IMG + "cage.jpg" },
+                correct: { name: "A. Schönberg", id: "schoenberg", img: PATH_IMG + "schoemberg.jpg" },
+                distractors: [
+                    { name: "W.A. Mozart", id: "mozart", img: PATH_IMG + "mozart.jpg" },
+                    { name: "J. Haydn", id: "haydn", img: PATH_IMG + "haydn.jpg" }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentLevel = 0;
+        let selectedId = null; // For Click-to-Select mechanic
+
+        // --- DOM Elements ---
+        const domLevelTitle = document.getElementById('level-info');
+        const domPrevImg = document.getElementById('prev-img');
+        const domPrevName = document.getElementById('prev-name');
+        const domNextImg = document.getElementById('next-img');
+        const domNextName = document.getElementById('next-name');
+        const domSlotFrame = document.getElementById('unknown-slot-frame');
+        const domInventory = document.getElementById('inventory-grid');
+
+        const domModal = document.getElementById('feedback-modal');
+        const domModalIcon = document.getElementById('modal-icon');
+        const domModalTitle = document.getElementById('modal-title');
+        const domModalMsg = document.getElementById('modal-msg');
+        const domModalBtn = document.getElementById('modal-btn');
+
+        // --- INITIALIZATION ---
+        function initGame() {
+            currentLevel = 0;
+            loadLevel();
+        }
+
+        function loadLevel() {
+            if (currentLevel >= LINEAGE_DB.length) {
+                // Victory Condition
+                showModal(true, "Mestre de la Història", true);
+                return;
+            }
+
+            const data = LINEAGE_DB[currentLevel];
+            selectedId = null;
+
+            // Update UI
+            domLevelTitle.textContent = `Sala ${currentLevel + 1}: ${data.title}`;
+
+            // Set Neighbors
+            domPrevImg.src = data.prev.img;
+            domPrevName.textContent = data.prev.name;
+
+            domNextImg.src = data.next.img;
+            domNextName.textContent = data.next.name;
+
+            // Reset Slot
+            domSlotFrame.innerHTML = '';
+            domSlotFrame.className = 'portrait-frame'; // Reset classes
+            domSlotFrame.style.borderColor = "#2c3e50"; // Reset border specific styles
+
+            // Render Inventory
+            renderInventory(data);
+        }
+
+        function renderInventory(data) {
+            domInventory.innerHTML = "";
+            let options = [data.correct, ...data.distractors];
+            options = options.sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = "card-option";
+                card.draggable = true;
+                card.dataset.id = opt.id;
+
+                // Events
+                card.ondragstart = (e) => {
+                    e.dataTransfer.setData("text/plain", opt.id);
+                    selectCard(opt.id, card); // Auto select on drag too
+                };
+                card.onclick = () => selectCard(opt.id, card);
+
+                card.innerHTML = `
+                    <div class="card-img-wrapper">
+                        <img src="${opt.img}" onerror="this.style.opacity=0.3" alt="${opt.name}">
+                    </div>
+                    <div class="card-name">${opt.name}</div>
+                `;
+                domInventory.appendChild(card);
+            });
+        }
+
+        // --- CLICK TO SELECT MECHANIC ---
+        function selectCard(id, cardElement) {
+            selectedId = id;
+
+            // Visual Update
+            document.querySelectorAll('.card-option').forEach(el => el.classList.remove('selected'));
+            if (cardElement) cardElement.classList.add('selected');
+
+            // Hint to user: Slot is waiting
+            domSlotFrame.classList.add('waiting-click');
+        }
+
+        function handleSlotClick() {
+            if (selectedId) {
+                checkAnswer(selectedId);
+            } else {
+                // User clicked slot without selection
+                domSlotFrame.style.animation = "shake 0.5s";
+                setTimeout(() => domSlotFrame.style.animation = "", 500);
+            }
+        }
+
+        // --- DRAG AND DROP ---
+        function allowDrop(ev) { ev.preventDefault(); domSlotFrame.classList.add('highlight'); }
+        function leaveDrop(ev) { domSlotFrame.classList.remove('highlight'); }
+        function drop(ev) {
+            ev.preventDefault();
+            domSlotFrame.classList.remove('highlight');
+            const id = ev.dataTransfer.getData("text/plain");
+            checkAnswer(id);
+        }
+
+        // --- LOGIC ---
+        function checkAnswer(id) {
+            const data = LINEAGE_DB[currentLevel];
+            const correctId = data.correct.id;
+
+            // Find object for image display
+            const allOpts = [data.correct, ...data.distractors];
+            const match = allOpts.find(o => o.id === id);
+
+            // 1. Fill the slot visually
+            domSlotFrame.innerHTML = `<img src="${match.img}" style="width:100%;height:100%;object-fit:cover;">`;
+            domSlotFrame.classList.remove('waiting-click'); // Stop pulsing
+
+            // 2. Feedback
+            if (id === correctId) {
+                // Success
+                domSlotFrame.style.borderColor = "#2ecc71"; // Green border
+                setTimeout(() => {
+                    showModal(true, match.name);
+                }, 500);
+            } else {
+                // Fail
+                domSlotFrame.style.borderColor = "#e74c3c"; // Red border
+                setTimeout(() => {
+                    showModal(false, match.name);
+                }, 600);
+            }
+        }
+
+        function showModal(isCorrect, name, isEndGame = false) {
+            domModal.style.display = "flex";
+
+            if (isEndGame) {
+                domModalIcon.innerText = "🏆";
+                domModalTitle.innerText = "Exposició Completada";
+                domModalMsg.innerText = "Enhorabona! Has reconstruït tots els llinatges musicals de la història.";
+                domModalBtn.innerText = "Tornar a l'Inici";
+                domModalBtn.className = "btn-gold btn-gold";
+                domModalBtn.onclick = () => location.reload();
+                return;
+            }
+
+            if (isCorrect) {
+                domModalIcon.innerText = "✅";
+                domModalTitle.innerText = "Correcte";
+                domModalMsg.innerHTML = `Molt bé! <b>${name}</b> és l'enllaç perdut en aquesta època.`;
+                domModalBtn.innerText = "Següent Sala ➔";
+                domModalBtn.className = "btn-gold";
+                domModalBtn.onclick = () => {
+                    domModal.style.display = "none";
+                    currentLevel++;
+                    loadLevel();
+                };
+            } else {
+                domModalIcon.innerText = "❌";
+                domModalTitle.innerText = "Incorrecte";
+                domModalMsg.innerHTML = `Oops... <b>${name}</b> no pertany a aquest llinatge temporal.`;
+                domModalBtn.innerText = "Ho provaré de nou";
+                domModalBtn.className = "btn-gold btn-secondary";
+                domModalBtn.onclick = () => {
+                    domModal.style.display = "none";
+                    // Reset visual state
+                    domSlotFrame.innerHTML = '';
+                    domSlotFrame.style.borderColor = "#2c3e50"; // Reset frame color
+                };
+            }
+        }
+
+        // Logic handled by start screen button now
+        // initGame(); called inside start? No, start calls init.
+        // Actually initGame is called at bottom, but we want it 'paused' behind screen?
+        // UI renders level 1 immediately behind screen, which is fine.
+        initGame();
+
+        // Music Logic
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+        const startMusicBtn = document.getElementById('start-music-btn');
+
+        bgMusic.volume = 0.3; // Default
+
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+            if (bgMusic.paused) bgMusic.play().catch(() => { });
+        });
+
+        startMusicBtn.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    startMusicBtn.textContent = "⏸ Aturar";
+                }).catch(e => console.log("Audio error:", e));
+            } else {
+                bgMusic.pause();
+                startMusicBtn.textContent = "▶ Música";
+            }
+        });
+
+    </script>
+</body>
+
+</html>

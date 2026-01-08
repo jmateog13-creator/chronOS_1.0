@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assassin's Harmony: La Germandat del So</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Cinzel:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --animus-blue: #00a8ff;
+            --animus-dark: #121212;
+            --animus-light: #e0e0e0;
+            --eagle-gold: #ffcc00;
+            --glitch-red: #ff3f3f;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            background-color: #000;
+            color: var(--animus-light);
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #animus-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background: radial-gradient(circle at center, #1a2a3a 0%, #000 100%);
+            border: 2px solid var(--animus-blue);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(0, 168, 255, 0.3);
+            overflow: hidden;
+        }
+
+        /* --- UI OVERLAY --- */
+        #ui-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(0, 168, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 168, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- HEADER --- */
+        #header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--animus-blue);
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+
+        #sync-meter {
+            width: 300px;
+            height: 10px;
+            background: #333;
+            position: relative;
+            border-radius: 5px;
+        }
+
+        #sync-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--animus-blue);
+            transition: width 0.3s;
+            box-shadow: 0 0 10px var(--animus-blue);
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            z-index: 10;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 64px;
+            color: var(--animus-blue);
+            margin: 0;
+            letter-spacing: 5px;
+        }
+
+        #start-screen .sub {
+            font-size: 18px;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .btn-animus {
+            margin-top: 40px;
+            padding: 15px 40px;
+            background: transparent;
+            color: var(--animus-blue);
+            border: 1px solid var(--animus-blue);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-animus:hover {
+            background: var(--animus-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--animus-blue);
+        }
+
+        /* --- MISSION UI --- */
+        #mission-info {
+            position: absolute;
+            top: 100px;
+            left: 40px;
+            text-align: left;
+            border-left: 3px solid var(--animus-blue);
+            padding-left: 20px;
+        }
+
+        .mission-label {
+            color: var(--animus-blue);
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .mission-val {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        /* --- GAMEPLAY AREA --- */
+        #gameplay-area {
+            display: none;
+        }
+
+        #dialogue-box {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--animus-blue);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+        }
+
+        #speaker-name {
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            background: var(--animus-blue);
+            color: #000;
+            padding: 5px 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        #question-text {
+            font-family: 'Cinzel', serif;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 168, 255, 0.3);
+            color: white;
+            padding: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            animation: slideIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .option-btn:hover {
+            border-color: var(--animus-blue);
+            background: rgba(0, 168, 255, 0.2);
+            transform: translateX(10px);
+            box-shadow: -5px 0 15px rgba(0, 168, 255, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* --- EFFECTS --- */
+        .glitch {
+            animation: glitch-anim 0.3s infinite;
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                transform: translate(0);
+            }
+
+            20% {
+                transform: translate(-5px, 5px);
+                color: var(--glitch-red);
+            }
+
+            40% {
+                transform: translate(5px, -5px);
+            }
+
+            60% {
+                transform: translate(-5px, -5px);
+                color: var(--animus-blue);
+            }
+
+            80% {
+                transform: translate(5px, 5px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        /* --- NARRATIVE --- */
+        #narrative-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            padding: 50px;
+        }
+
+        #narrative-box {
+            display: flex;
+            gap: 40px;
+            max-width: 1000px;
+            width: 100%;
+            align-items: center;
+        }
+
+        #narrative-portrait {
+            width: 300px;
+            height: 400px;
+            border: 2px solid var(--animus-blue);
+            background: #1a1a1a;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 168, 255, 0.2);
+            flex-shrink: 0;
+            /* Prevent shrinking */
+        }
+
+        #narrative-portrait::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 90%, var(--animus-blue));
+            z-index: 1;
+        }
+
+        #narrative-portrait img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(0.5) contrast(1.2);
+        }
+
+        #narrative-content {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        #narrative-name {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            color: var(--animus-blue);
+            border-bottom: 2px solid var(--animus-blue);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        #narrative-text {
+            font-size: 20px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            min-height: 100px;
+        }
+
+        /* --- WHITE ROOM --- */
+        #white-room {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: none;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .white-room-active #white-room {
+            display: block;
+            opacity: 1;
+        }
+
+        #bg-image-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.4) saturate(0.5);
+            z-index: 0;
+            transition: background-image 1s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="animus-container">
+        <div id="bg-image-layer"></div>
+        <div id="ui-grid"></div>
+        <div id="white-room"></div>
+
+        <!-- NEW NARRATIVE LAYER -->
+        <div id="narrative-overlay">
+            <div id="narrative-box">
+                <div id="narrative-portrait"><img id="port-img" src="" alt="?"></div>
+                <div id="narrative-content">
+                    <div id="narrative-name">REBECCA</div>
+                    <div id="narrative-text"></div>
+                    <button class="btn-animus" id="narrative-next">CONTINUAR TRANSMISSIÓ</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="header">
+            <div>ANIMUS 5.0 // MEMORY SYNC</div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <span>SYNC:</span>
+                <div id="sync-meter">
+                    <div id="sync-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen">
+            <h1>ASSASSIN'S HARMONY</h1>
+            <div class="sub">LA GERMANDAT DEL SO</div>
+            <div style="max-width: 600px; margin-top: 30px; line-height: 1.6; opacity: 0.8;">
+                Iniciat, entra a l'Animus. Els Templers estan corrompent la història de la música. Utilitza els records
+                dels teus avantpassats per restablir l'harmonia. Silenci per infiltrar-se, coneixement per assassinar.
+            </div>
+            <button class="btn-animus" onclick="game.start()">INICIAR SEQÜÈNCIA 01</button>
+        </div>
+
+        <!-- GAMEPLAY SCREEN -->
+        <div id="gameplay-area" class="screen">
+            <div id="mission-info">
+                <div class="mission-label">UBICACIÓ</div>
+                <div class="mission-val" id="val-loc">---</div>
+                <div class="mission-label">OBJECTIU TEMPLER</div>
+                <div class="mission-val" id="val-target">---</div>
+                <div class="mission-label">FASE</div>
+                <div class="mission-val" id="val-phase">INFILTRACIÓ</div>
+            </div>
+
+            <div id="dialogue-box">
+                <div id="speaker-name">REBECCA</div>
+                <div id="question-text">Analitzant memòria genètica...</div>
+                <div id="options-container">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- END SCREEN -->
+        <div id="end-screen" class="screen" style="display:none;">
+            <h1 id="end-status">MEMÒRIA SINCRONITZADA</h1>
+            <div id="end-buttons" style="display: flex; gap: 20px;">
+                <button class="btn-animus" id="retry-btn" onclick="game.restartEra()" style="display:none;">REINTENTAR
+                    SINCRONITZACIÓ</button>
+                <button class="btn-animus" onclick="location.reload()">TORNAR AL FUTUR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MEMORY_SEQUENCES = [
+            {
+                id: "seq_medieval",
+                era: "1200 - EDAT MITJANA",
+                target: "Fray Silencio (El Inquisidor)",
+                location: "Monestir de Poblet",
+                briefing: "Escolta, Iniciat. Estem entrant a una de les memòries més tèrboles del segle XIII. Ens trobem al 1200, en plena Edat Mitjana. El teu objectiu és Fray Silencio, un inquisidor fanàtic que creu que qualsevol melodia que no sigui el cant pur és heretgia. Està tancat al Monestir de Poblet preparant una gran foguera per cremar manuscrits musicals i instruments. No podem permetre que esborri segles d'evolució sonora. Infiltra't en el silenci dels seus passadissos i troba la manera d'arribar fins a ell abans que el foc ho consumeixi tot.",
+                inf_bg: "infmitjana.jpg",
+                boss_bg: "fondobossmitjana.jpg",
+                boss_port: "bossmitjana.jpg",
+                boss_audio: "Medieval Boss.m4a",
+                stealth_questions: [
+                    { q: "On vivien els monjos que pregaven i treballaven?", options: ["Al Castell", "Al Monestir", "A la Ciutat"], correct: 1 },
+                    { q: "Quin idioma utilitzaven per cantar?", options: ["Català", "Llatí", "Francès"], correct: 1 },
+                    { q: "Quina és la textura del Cant Gregorià?", options: ["Polifonia", "Monodia (una veu)", "Melodia Acompanyada"], correct: 1 }
+                ],
+                boss_fight: {
+                    dialogue: "Maleït intrús! La música és només per a Déu! El silenci és l'única via de puresa.",
+                    confessional: "Iniciat... creus que la música els farà més lliures? Només els farà més salvatges. El silenci... era la pau. Requiescat in Pace.",
+                    questions: [
+                        { q: "Els monjos feien servir instruments?", options: ["Sí, molts", "Només l'orgue", "No, cantaven A Cappella"], correct: 2 },
+                        { q: "Qui cantava als castells per divertir els nobles?", options: ["Els Monjos", "Els Trobadors", "Els Pagesos"], correct: 1 },
+                        { q: "De què tractaven les cançons dels Trobadors?", options: ["De Déu", "D'Amor i cavallers", "De política"], correct: 1 },
+                        { q: "FATAL BLOW: Qui va ser la primera compositora (monja)?", options: ["Maria Antonieta", "Hildegard von Bingen", "Santa Cecília"], correct: 1 }
+                    ]
+                }
+            },
+            {
+                id: "seq_renaix",
+                era: "1500 - RENAIXEMENT",
+                target: "Censor Borgia",
+                location: "Palau del Vaticà",
+                briefing: "Atenció, iniciem sincronització amb la Roma del 1500. El Renaixement bull de creativitat, però l'ordre Templer té por del poder de les noves idees. El Censor Borgia s'ha instal·lat al Vaticà i està utilitzant la seva influència per prohibir la polifonia. Diu que la barreja de veus és un caos diabòlic que confon els fidels. La realitat és que té por que l'harmonia lliure inspiri la gent a rebel·lar-se contra el seu control. Hauràs de moure't entre les ombres de les grans biblioteques vaticanes fins a trobar el seu estudi privat. La llibertat sonora depèn de tu.",
+                inf_bg: "infrenaixement.jpg",
+                boss_bg: "fondobossrenaixement.jpg",
+                boss_port: "bossrenaixement.jpg",
+                boss_audio: "Renaix Boss.m4a",
+                stealth_questions: [
+                    { q: "Què és l'Humanisme?", options: ["Déu és el centre", "L'Ésser Humà és el centre", "La Natura mana"], correct: 1 },
+                    { q: "Quin invent va permetre fer llibres ràpid?", options: ["La Màquina d'Escriure", "La Impremta", "L'Ordinador"], correct: 1 },
+                    { q: "Què significa 'Polifonia'?", options: ["Una veu", "Moltes veus alhora", "Silenci"], correct: 1 }
+                ],
+                boss_fight: {
+                    dialogue: "Les teves idees modernes són perilloses. La polifonia és un caos que allunya les ànimes del cel. Ho aturaré!",
+                    confessional: "Palestrina... ell em va convèncer que la bellesa podia ser santa. Però el poder dels Borgia no permet dissidències. He fracassat. Requiescat in Pace.",
+                    questions: [
+                        { q: "Quina veu de dona és la més aguda?", options: ["Contralt", "Soprano", "Tenor"], correct: 1 },
+                        { q: "Qui és el compositor 'Superstar' religiós?", options: ["Mozart", "Bach", "Palestrina"], correct: 2 },
+                        { q: "On treballava Palestrina?", options: ["Versalles", "Al Vaticà", "París"], correct: 1 },
+                        { q: "FATAL BLOW: Forma musical religiosa més important?", options: ["L'Òpera", "La Missa", "La Simfonia"], correct: 1 }
+                    ]
+                }
+            },
+            {
+                id: "seq_barroc",
+                era: "1650 - BARROC",
+                target: "Duc de l'Ordre",
+                location: "Versalles",
+                briefing: "Benvingut al cor de l'excés, a Versalles, l'any 1650. Estem en ple Barroc, una època de contrastos i luxe extrem. Però darrere l'or i els miralls, el Duc de l'Ordre està movent fils per suprimir l'Òpera. Considera que l'emoció desfermada del teatre cantat és una amenaça per a la disciplina nacional. Vol tancar els teatres i silenciar les orquestres perquè els cors dels ciutadans es tornin freds i obedients. Infiltra't en la galeria de miralls i avança cap a la sala on el Duc dicta les seves sentències. Que l'espectacle no s'aturi per la seva culpa.",
+                inf_bg: "infbarroc.jpg",
+                boss_bg: "fondobossbarroc.jpg",
+                boss_port: "bossbarroc.jpg",
+                boss_audio: "Barroc Boss.m4a",
+                stealth_questions: [
+                    { q: "Com és l'art del Barroc?", options: ["Senzill", "Ple d'ornaments i luxe", "Fosc"], correct: 1 },
+                    { q: "Què busca la música amb el volum?", options: ["Equilibri", "Contrast (Fort/Fluix)", "Monotonia"], correct: 1 },
+                    { q: "Quin gran invent és 'Teatre Cantat'?", options: ["La Missa", "L'Òpera", "El Concert"], correct: 1 }
+                ],
+                boss_fight: {
+                    dialogue: "Tanta decoració és vulgar! Necessitem austeritat per controlar les masses. L'òpera és un vici burgès!",
+                    confessional: "El luxe era la meva armadura... sense l'ordre, el poble es perdrà en el caos dels sentiments. Heu guanyat avui, assassins. Requiescat in Pace.",
+                    questions: [
+                        { q: "Quin instrument és el Rei del Barroc?", options: ["Piano", "Clavicèmbal", "Orgue Hammond"], correct: 1 },
+                        { q: "Qui és el gran mestre amb molts fills músics?", options: ["J.S. Bach", "Vivaldi", "Mozart"], correct: 0 },
+                        { q: "Quin instrument tocava Vivaldi?", options: ["Flauta", "Violí", "Trompeta"], correct: 1 },
+                        { q: "FATAL BLOW: Què és el 'Baix Continu'?", options: ["Un instrument fluix", "Una base rítmica constant", "Un cantant"], correct: 1 }
+                    ]
+                }
+            },
+            {
+                id: "seq_classic",
+                era: "1780 - CLASSICISME",
+                target: "General Caos",
+                location: "Viena",
+                briefing: "Viena, 1780. Estem a les portes de la Il·lustració, el Classicisme en la seva màxima esplendor. Però el General Caos, un militar de l'Ordre que odia la simetria i la raó, té un pla sinistre. Està decidit a eliminar a Mozart. Diu que la seva perfecció musical és un insult a la naturalesa bruta i caòtica que ell vol imposar. Si el General té èxit, la història de la música canviarà per sempre a pitjor. Hauràs de travessar els salons imperials de Viena i protegir la llum de la ràtio eliminant l'ombra del General abans que premi el gallet.",
+                inf_bg: "infclassicisme.jpg",
+                boss_bg: "fondobossclassic.jpg",
+                boss_port: "bossclassicisme.jpg",
+                boss_audio: "classicboss.m4a",
+                stealth_questions: [
+                    { q: "Què és important al Classicisme?", options: ["Sentiments", "La Raó i l'Ordre", "El Luxe"], correct: 1 },
+                    { q: "Com sona la música clàssica?", options: ["Desordenada", "Equilibrada i elegant", "Sorollosa"], correct: 1 },
+                    { q: "Quin instrument substitueix al Clavicèmbal?", options: ["El Piano", "L'Arpa", "La Guitarra"], correct: 0 }
+                ],
+                boss_fight: {
+                    dialogue: "L'ordre és una presó! Jo vull anarquia sonora, on només els forts imposin el seu soroll sobre la raó!",
+                    confessional: "La perfecció de Mozart... em feia sentir tan petit. Volia destruir la bellesa perquè ningú pogués veure la meva mediocritat. Requiescat in Pace.",
+                    questions: [
+                        { q: "Capital mundial de la música?", options: ["París", "Roma", "Viena"], correct: 2 },
+                        { q: "Qui va ser el Nen Prodigi més famós?", options: ["Haydn", "Mozart", "Beethoven"], correct: 1 },
+                        { q: "Com s'organitza l'orquestra?", options: ["Desordenada", "Seccions clares", "Només violins"], correct: 1 },
+                        { q: "FATAL BLOW: Qui és el 'Pare de la Simfonia'?", options: ["Haydn", "Mozart", "Bach"], correct: 0 }
+                    ]
+                }
+            },
+            {
+                id: "seq_roman",
+                era: "1830 - ROMANTICISME",
+                target: "L'Industrial",
+                location: "Londres",
+                briefing: "Estem entrant a l'etapa de la revolució industrial i el Romanticisme, Londres, 1830. Les fronteres entre els humans i les màquines comencen a difuminar-se. El teu objectiu es fa anomenar 'L'Industrial'. És un magnat que està finançant la creació de màquines mecàniques per substituir qualsevol expressió artística humana. Afirma que els sentiments romàntics i el virtuosisme dels pianistes són ineficients i perillosos per al progrés tècnic que ell vol controlar. Infiltra't entre el fum i el ferro de la seva gran fàbrica i demostra-li que l'ànima humana no pot ser mecanitzada.",
+                inf_bg: "infromanticisme.jpg",
+                boss_bg: "fondobossromanticisme.jpg",
+                boss_port: "bossromanticisme.jpg",
+                boss_audio: "Roman Boss.m4a",
+                stealth_questions: [
+                    { q: "Què és important pels romàntics?", options: ["La Raó", "Els Sentiments", "Els Diners"], correct: 1 },
+                    { q: "Instrument preferit per expressar emocions?", options: ["Flauta", "Piano", "Tambor"], correct: 1 },
+                    { q: "Què significa 'Rubato'?", options: ["Robar", "Canviar velocitat lliurement", "Tocar igual"], correct: 1 }
+                ],
+                boss_fight: {
+                    dialogue: "Les màquines no ploren! Les màquines no s'equivoquen com els vostres pianistes sentimentals!",
+                    confessional: "L'ànima humana... és massa fràgil per al futur que volia construir. Però potser és aquesta fragilitat la que fa que la música sigui real. Requiescat in Pace.",
+                    questions: [
+                        { q: "Com és l'orquestra romàntica?", options: ["Petita", "Gegant", "Inexistent"], correct: 1 },
+                        { q: "Qui fa de pont entre Classicisme i Romanticisme?", options: ["Mozart", "Beethoven", "Vivaldi"], correct: 1 },
+                        { q: "Quin problema tenia Beethoven?", options: ["Cec", "Sord", "Cix"], correct: 1 },
+                        { q: "FATAL BLOW: Quins temes agraden als romàntics?", options: ["Natura salvatge/Tempestes", "Jardins", "Fàbriques"], correct: 0 }
+                    ]
+                }
+            },
+            {
+                id: "seq_sxx",
+                era: "1920 - SEGLE XX",
+                target: "Agent de la Norma",
+                location: "Berlín",
+                briefing: "Arribem al segle XX, a un Berlín ple de canvis i experimentació. Però l'Agent de la Norma no tolerarà cap desviació del que ell considera 'l'ordre correcte'. S'ha proposat eradicar tota la innovació artística de la nova era, des de l'impressionisme fins a la dissonància més lliure. Diu que qualsevol música que no es pugui tancar en una caixa rígida és una malaltia social. Està utilitzant la ràdio i la propaganda per silenciar els nous genis. Hauràs de moure't per búnquers de formigó i despatxos freds per acabar amb la seva censura abans que les ones de ràdio siguin només silenci controlat.",
+                inf_bg: "infsegleXX.jpg",
+                boss_bg: "fonodbosssegleXX.jpg",
+                boss_port: "bosssegleXX.jpg",
+                boss_audio: "SXX Boss.m4a",
+                stealth_questions: [
+                    { q: "Què fan amb les normes al S.XX?", options: ["Les segueixen", "Les trenquen", "Les obliden"], correct: 1 },
+                    { q: "Quin invent canvia la música?", options: ["Impremta", "Enregistrament/Ràdio", "Piano"], correct: 1 },
+                    { q: "Estil que busca atmosfera de somni?", options: ["Expressionisme", "Impressionisme", "Barroc"], correct: 1 }
+                ],
+                boss_fight: {
+                    dialogue: "Això no és música, és soroll! On és la melodia que podem controlar?! La innovació és degeneració!",
+                    confessional: "El passat s'esmicola entre els meus dits. Heu obert les portes al caos... i la ràdio ho portarà a tot el món. Que Déu ens ajudi. Requiescat in Pace.",
+                    questions: [
+                        { q: "Compositor de l'Impressionisme?", options: ["Debussy", "Schönberg", "Beethoven"], correct: 0 },
+                        { q: "Què expressa l'Expressionisme?", options: ["Paisatges", "Pors i angoixa", "Alegria"], correct: 1 },
+                        { q: "Què fa Schönberg amb la tonalitat?", options: ["Sona bé", "Dissonància (xoc)", "Pop"], correct: 1 },
+                        { q: "FATAL BLOW: Què és el Dodecafonisme?", options: ["12 notes sense ordre", "12 instruments", "12 persones"], correct: 0 }
+                    ]
+                }
+            }
+        ];
+
+        class AnimusGame {
+            constructor() {
+                this.seqIndex = 0;
+                this.phase = "stealth"; // stealth or assassination
+                this.questionIndex = 0;
+                this.sync = 100;
+
+                // Audio Context
+                this.bgMusic = new Audio();
+                this.bgMusic.loop = true;
+                this.animusTheme = "audio/Animus System Theme.m4a";
+                this.stealthTheme = "audio/Universal Stealth Theme.m4a";
+            }
+
+            start() {
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('gameplay-area').style.display = 'flex';
+                this.playMusic(this.stealthTheme);
+                this.initSequence();
+            }
+
+            playMusic(src) {
+                if (this.bgMusic.src.includes(encodeURIComponent(src))) return;
+                this.bgMusic.src = src;
+                this.bgMusic.play().catch(e => console.log("Audio play blocked"));
+            }
+
+            initSequence() {
+                const seq = MEMORY_SEQUENCES[this.seqIndex];
+                document.getElementById('val-loc').innerText = seq.location;
+                document.getElementById('val-target').innerText = seq.target;
+
+                // Set Background (Infiltration)
+                document.getElementById('bg-image-layer').style.backgroundImage = `url('img/${seq.inf_bg}')`;
+
+                this.showNarrative("REBECCA (OPERADORA)", seq.briefing, () => {
+                    this.playMusic(this.stealthTheme);
+                    this.phase = "stealth";
+                    this.questionIndex = 0;
+                    this.loadQuestion();
+                });
+            }
+
+            showNarrative(character, text, callback) {
+                const overlay = document.getElementById('narrative-overlay');
+                const nameEl = document.getElementById('narrative-name');
+                const textEl = document.getElementById('narrative-text');
+                const nextBtn = document.getElementById('narrative-next');
+                const portImg = document.getElementById('port-img');
+
+                overlay.style.display = 'flex';
+                nameEl.innerText = character;
+                textEl.textContent = "";
+
+                // Set Portrait & Music
+                let imgPath = "";
+                if (character.toLowerCase().includes('rebecca')) {
+                    imgPath = "img/rebecca.jpg";
+                    this.playMusic(this.animusTheme);
+                } else {
+                    imgPath = `img/${MEMORY_SEQUENCES[this.seqIndex].boss_port}`;
+                }
+                portImg.src = imgPath;
+
+                let i = 0;
+                nextBtn.style.display = 'none';
+
+                const type = () => {
+                    if (i < text.length) {
+                        textEl.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, 30);
+                    } else {
+                        nextBtn.style.display = 'block';
+                    }
+                };
+                type();
+
+                nextBtn.onclick = () => {
+                    overlay.style.display = 'none';
+                    if (callback) callback();
+                };
+            }
+
+            loadQuestion() {
+                const seq = MEMORY_SEQUENCES[this.seqIndex];
+                const speaker = document.getElementById('speaker-name');
+                const qText = document.getElementById('question-text');
+                const phaseText = document.getElementById('val-phase');
+
+                let qData;
+                if (this.phase === "stealth") {
+                    speaker.innerText = "SISTEMA ANIMUS";
+                    phaseText.innerText = "INFILTRACIÓ";
+                    qData = seq.stealth_questions[this.questionIndex];
+                } else {
+                    speaker.innerText = seq.target.toUpperCase();
+                    phaseText.innerText = "ASSASSINAT";
+                    qData = seq.boss_fight.questions[this.questionIndex];
+                }
+
+                qText.innerText = qData.q;
+                this.showOptions(qData);
+            }
+
+            showOptions(qData) {
+                const container = document.getElementById('options-container');
+                container.innerHTML = "";
+                qData.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = opt;
+                    btn.onclick = () => this.handleAnswer(idx === qData.correct);
+                    container.appendChild(btn);
+                });
+            }
+
+            handleAnswer(isCorrect) {
+                const container = document.getElementById('animus-container');
+                const seq = MEMORY_SEQUENCES[this.seqIndex];
+
+                if (isCorrect) {
+                    container.classList.add('eagle-vision');
+                    setTimeout(() => container.classList.remove('eagle-vision'), 500);
+
+                    this.questionIndex++;
+
+                    if (this.phase === "stealth" && this.questionIndex >= 3) {
+                        this.phase = "assassination";
+                        this.questionIndex = 0;
+                        // Change Background (Boss Room)
+                        document.getElementById('bg-image-layer').style.backgroundImage = `url('img/${seq.boss_bg}')`;
+
+                        this.showNarrative("REBECCA (OPERADORA)", "Infiltració completada. Ara, a per l'assassinat! L'objectiu és davant teu.", () => {
+                            this.playMusic(`audio/${seq.boss_audio}`);
+                            this.showNarrative(seq.target, seq.boss_fight.dialogue, () => {
+                                this.loadQuestion();
+                            });
+                        });
+                    } else if (this.phase === "assassination" && this.questionIndex >= 4) {
+                        this.assassinationSuccess();
+                    } else {
+                        this.loadQuestion();
+                    }
+                } else {
+                    this.sync -= 25;
+                    this.updateSync();
+                    container.classList.add('glitch', 'shake');
+                    setTimeout(() => container.classList.remove('glitch', 'shake'), 500);
+
+                    if (this.sync <= 0) {
+                        this.desync();
+                    }
+                }
+            }
+
+            updateSync() {
+                document.getElementById('sync-bar').style.width = this.sync + "%";
+            }
+
+            assassinationSuccess() {
+                const container = document.getElementById('animus-container');
+                const seq = MEMORY_SEQUENCES[this.seqIndex];
+
+                // Stop music for the dramatic "White Room" confession
+                this.bgMusic.pause();
+                this.bgMusic.currentTime = 0;
+
+                document.body.classList.add('white-room-active');
+
+                setTimeout(() => {
+                    this.showNarrative(seq.target, seq.boss_fight.confessional, () => {
+                        document.body.classList.remove('white-room-active');
+                        this.seqIndex++;
+                        this.sync = Math.min(100, this.sync + 20);
+                        this.updateSync();
+
+                        if (this.seqIndex >= MEMORY_SEQUENCES.length) {
+                            this.victory();
+                        } else {
+                            this.initSequence();
+                        }
+                    });
+                }, 1000);
+            }
+
+            desync() {
+                this.bgMusic.pause();
+                document.getElementById('gameplay-area').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'flex';
+                document.getElementById('end-status').innerText = "DESINCRONITZACIÓ DETECTADA";
+                document.getElementById('end-status').classList.add('glitch');
+                document.getElementById('retry-btn').style.display = 'block';
+            }
+
+            restartEra() {
+                this.sync = 100;
+                this.updateSync();
+                document.getElementById('end-screen').style.display = 'none';
+                document.getElementById('retry-btn').style.display = 'none';
+                document.getElementById('gameplay-area').style.display = 'flex';
+                this.initSequence();
+            }
+
+            victory() {
+                this.playMusic(this.animusTheme);
+                document.getElementById('gameplay-area').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'flex';
+                document.getElementById('end-status').innerText = "SINCRONITZACIÓ TOTAL";
+                document.getElementById('retry-btn').style.display = 'none';
+            }
+        }
+
+        const game = new AnimusGame();
+    </script>
+</body>
+
+</html>

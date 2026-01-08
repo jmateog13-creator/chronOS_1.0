@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>13, Rue dels Compositors</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            /* Dynamic Sky */
+            font-family: 'Comic Neue', cursive;
+        }
+
+        canvas {
+            display: block;
+            touch-action: none;
+            /* Prevent scrolling on touch */
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #score-board {
+            font-family: 'Bangers', cursive;
+            font-size: 3rem;
+            color: #FFD700;
+            text-shadow: 3px 3px 0 #000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            transform: rotate(-2deg);
+            align-self: flex-start;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-family: 'Bangers', cursive;
+            font-size: 5rem;
+            color: #FF4500;
+            text-shadow: 5px 5px 0 #000;
+            margin-bottom: 20px;
+            transform: rotate(-3deg);
+        }
+
+        button {
+            font-family: 'Bangers', cursive;
+            font-size: 2rem;
+            padding: 15px 40px;
+            background: #FFD700;
+            border: 4px solid #000;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 5px 5px 0 #000;
+        }
+
+        button:hover {
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        /* Music Controls */
+        #music-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: white;
+            border: 2px solid black;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="music/Laugh Track Blues.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="ui-layer">
+        <div id="score-board">Veïns: 0/13</div>
+    </div>
+
+    <div id="music-controls">
+        <button class="control-btn" onclick="toggleMusic()">🎵</button>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
+    </div>
+
+    <div id="start-screen">
+        <h1>13, Rue dels Compositors</h1>
+        <p style="font-size: 1.5rem; max-width: 600px; text-align: center; margin-bottom: 30px;">
+            Ajuda als compositors a trobar el seu pis! Arrossega cada personatge a la seva època correcta.
+            Si t'equivoques... sortiran volant!
+        </p>
+        <button onclick="startGame()">JUGAR</button>
+    </div>
+
+    <div id="victory-screen" style="display: none;">
+        <h1>ENHORABONA! 🎉</h1>
+        <p style="font-size: 2rem; text-align: center;">Has allotjat a tots els compositors!</p>
+        <div style="font-size: 4rem; margin: 20px;">🏠🎶</div>
+        <button onclick="location.reload()">TORNAR A JUGAR</button>
+    </div>
+
+    <style>
+        #victory-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 200;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <canvas id="gameCanvas"></canvas>
+    <script src="../../../js/rewards.js"></script> <!-- Link to Rewards System -->
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- ASSETS ---
+        const bgImage = new Image();
+        bgImage.src = 'img/casa_fondo.jpg';
+
+        // --- MUSIC ---
+        const bgMusic = document.getElementById('bg-music');
+        bgMusic.volume = 0.5;
+
+        function toggleMusic() {
+            if (bgMusic.paused) bgMusic.play();
+            else bgMusic.pause();
+        }
+
+        function setVolume(val) {
+            bgMusic.volume = val;
+        }
+
+        // --- GAME CONSTANTS ---
+        const FLOORS = [
+            { id: 'medieval', name: "EDAT MITJANA", color: "#5D4037", text: "#fff" }, // Basement
+            { id: 'renaixement', name: "RENAIXEMENT", color: "#F5F5DC", text: "#000" },
+            { id: 'barroc', name: "BARROC", color: "#FFD700", text: "#000" },
+            { id: 'classicisme', name: "CLASSICISME", color: "#E0F7FA", text: "#000" },
+            { id: 'romanticisme', name: "ROMANTICISME", color: "#8B4513", text: "#fff" },
+            { id: 'segle20', name: "SEGLE XX", color: "#607D8B", text: "#fff" } // Attic
+        ];
+
+        const COMPOSERS_DB = [
+            { name: "Hildegard", era: "medieval", emoji: "🧕" },
+            { name: "Guido", era: "medieval", emoji: "📜" },
+            { name: "Josquin", era: "renaixement", emoji: "🏰" },
+            { name: "Palestrina", era: "renaixement", emoji: "⛪" },
+            { name: "Bach", era: "barroc", emoji: "🎹" },
+            { name: "Vivaldi", era: "barroc", emoji: "🎻" },
+            { name: "Mozart", era: "classicisme", emoji: "🎼" },
+            { name: "Haydn", era: "classicisme", emoji: "🎻" },
+            { name: "Beethoven", era: "romanticisme", emoji: "🦁" },
+            { name: "Chopin", era: "romanticisme", emoji: "💔" },
+            { name: "Wagner", era: "romanticisme", emoji: "🧙‍♂️" },
+            { name: "Stravinsky", era: "segle20", emoji: "🌪️" },
+            { name: "Cage", era: "segle20", emoji: "🔇" }
+        ];
+
+        // --- STATE ---
+        let state = {
+            width: 0,
+            height: 0,
+            floorHeight: 0,
+            queue: [], // Composers waiting
+            activeComposer: null, // Currently dragging
+            placedComposers: [], // {x, y, composer, floorIndex}
+            score: 0,
+            animations: [], // {type, x, y, ...}
+            gameOver: false
+        };
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'pop') {
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'boing') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(300, now + 0.1);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gainNode.gain.setValueAtTime(0.8, now);
+                gainNode.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'success') {
+                osc.type = 'square'; // More "8-bit" like coin
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        // --- INIT ---
+        function init() {
+            resize();
+            window.addEventListener('resize', resize);
+
+            // Input Events
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('touchstart', handleStart, { passive: false });
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('mouseup', handleEnd);
+            canvas.addEventListener('touchend', handleEnd);
+
+            // Wait for image to load
+            bgImage.onload = () => {
+                requestAnimationFrame(loop);
+            };
+            // Fallback if image fails or is already loaded
+            if (bgImage.complete) {
+                requestAnimationFrame(loop);
+            }
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            // Start Music
+            bgMusic.play().catch(e => console.log("Audio requires interaction"));
+
+            // Shuffle and fill queue
+            state.queue = [...COMPOSERS_DB].sort(() => Math.random() - 0.5);
+            state.score = 0;
+            state.placedComposers = [];
+            state.gameOver = false;
+            updateScore();
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            state.width = canvas.width;
+            state.height = canvas.height;
+            // Building takes up 88% height to use more space
+            state.floorHeight = (state.height * 0.88) / 6;
+        }
+
+        // --- INPUT HANDLERS ---
+        function getPos(e) {
+            if (e.touches) {
+                return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+            return { x: e.clientX, y: e.clientY };
+        }
+
+        function handleStart(e) {
+            if (state.queue.length === 0) return;
+            e.preventDefault();
+            const pos = getPos(e);
+
+            // Check if clicking on the first in queue (bottom center)
+            const queueX = state.width / 2;
+            const queueY = state.height - 50;
+            const dist = Math.hypot(pos.x - queueX, pos.y - queueY);
+
+            if (dist < 50) {
+                state.activeComposer = state.queue.pop();
+                state.activeComposer.x = pos.x;
+                state.activeComposer.y = pos.y;
+                playSound('pop');
+            }
+        }
+
+        function handleMove(e) {
+            if (!state.activeComposer) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            state.activeComposer.x = pos.x;
+            state.activeComposer.y = pos.y;
+        }
+
+        function handleEnd(e) {
+            if (!state.activeComposer) return;
+
+            // Determine drop floor
+            const buildingBottom = state.height * 0.88;
+            const y = state.activeComposer.y;
+
+            let floorIndex = -1;
+            if (y < buildingBottom && y > 0) {
+                // Map Y to 0..5 range (from top)
+                const visualIndex = Math.floor(y / state.floorHeight);
+                // Convert to logic index (0=Bottom)
+                floorIndex = 5 - visualIndex;
+            }
+
+            if (floorIndex >= 0 && floorIndex <= 5) {
+                const targetFloor = FLOORS[floorIndex];
+                if (targetFloor.id === state.activeComposer.era) {
+                    // SUCCESS
+                    handleSuccess(state.activeComposer, floorIndex);
+                } else {
+                    // FAIL
+                    handleFail(state.activeComposer, floorIndex);
+                }
+            } else {
+                // Dropped outside, return to queue
+                state.queue.push(state.activeComposer);
+            }
+
+            state.activeComposer = null;
+        }
+
+        // --- LOGIC ---
+        function handleSuccess(composer, floorIndex) {
+            playSound('success');
+            state.score++;
+            updateScore();
+
+            // Add to placed list for rendering
+            state.placedComposers.push({
+                ...composer,
+                floorIndex: floorIndex,
+                x: Math.random() * (state.width * 0.6) + (state.width * 0.2), // Random X in building
+                y: 0 // Will be calculated in render
+            });
+
+            if (state.score === COMPOSERS_DB.length) {
+                setTimeout(() => {
+                    document.getElementById('victory-screen').style.display = 'flex';
+                    // --- REWARD TRIGGER ---
+                    if (typeof Rewards !== 'undefined') {
+                        Rewards.unlockCard(
+                            '13rue_master',
+                            'Porter Major',
+                            'Has organitzat la comunitat de veïns més caòtica de la història!',
+                            '../../img/card_placeholder.png' // Placeholder image
+                        );
+                    }
+                }, 500);
+            }
+        }
+
+        function handleFail(composer, floorIndex) {
+            playSound('boing');
+            // Add kick animation
+            state.animations.push({
+                type: 'kick',
+                x: state.width / 2,
+                y: (5 - floorIndex) * state.floorHeight + (state.floorHeight / 2),
+                startTime: Date.now(),
+                composer: composer
+            });
+        }
+
+        function updateScore() {
+            document.getElementById('score-board').innerText = `Veïns: ${state.score}/${COMPOSERS_DB.length}`;
+        }
+
+        // --- RENDER ---
+        function loop() {
+            ctx.clearRect(0, 0, state.width, state.height);
+
+            // 1. Draw Building
+            drawBuilding();
+
+            // 2. Draw Placed Composers
+            drawPlacedComposers();
+
+            // 3. Draw Queue
+            drawQueue();
+
+            // 4. Draw Active Drag
+            if (state.activeComposer) {
+                drawComposer(state.activeComposer.x, state.activeComposer.y, state.activeComposer, 2.2);
+            }
+
+            // 5. Draw Animations
+            drawAnimations();
+
+            requestAnimationFrame(loop);
+        }
+
+        function drawBuilding() {
+            // More space for building
+            const w = state.width * 0.95; // 95% Width
+            const x = state.width * 0.025; // Centered
+            const h = state.floorHeight * 6; // Total height
+
+            // Draw Background Image
+            if (bgImage.complete && bgImage.naturalWidth > 0) {
+                ctx.drawImage(bgImage, x, 0, w, h);
+            } else {
+                ctx.fillStyle = "#ccc";
+                ctx.fillRect(x, 0, w, h);
+            }
+
+            // Draw pavement
+            ctx.fillStyle = "#4a4a4a";
+            ctx.fillRect(0, h, state.width, state.height - h);
+            // Sidewalk lines
+            ctx.strokeStyle = "#666";
+            ctx.beginPath();
+            ctx.moveTo(0, h + 5);
+            ctx.lineTo(state.width, h + 5);
+            ctx.stroke();
+
+            // Draw floors labels
+            for (let i = 5; i >= 0; i--) {
+                const floor = FLOORS[i];
+                const y = (5 - i) * state.floorHeight;
+
+                // Simple Stylish Label
+                ctx.save();
+                ctx.fillStyle = floor.color;
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 2;
+
+                // Rounded rect for label
+                const labelW = 180;
+                const labelH = 30;
+                const labelX = x + 10;
+                const labelY = y + 10;
+
+                ctx.beginPath();
+                ctx.roundRect(labelX, labelY, labelW, labelH, 10);
+                ctx.fill();
+                ctx.stroke();
+
+                // Text
+                ctx.fillStyle = floor.text; // Text color from DB
+                ctx.font = "bold 16px 'Comic Neue'";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(floor.name, labelX + labelW / 2, labelY + labelH / 2);
+                ctx.restore();
+            }
+        }
+
+        function drawComposer(x, y, data, scale = 1) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+
+            // Head (Circle)
+            ctx.fillStyle = "#FFCC80"; // Skin
+            ctx.beginPath();
+            ctx.arc(0, 0, 25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#000";
+            ctx.stroke();
+
+            // Emoji Face/Icon
+            ctx.font = "30px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(data.emoji, 0, 5);
+
+            // Name Tag - MOVED UP
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(-35, -45, 70, 20); // Above the head
+            ctx.strokeRect(-35, -45, 70, 20);
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 12px 'Comic Neue'";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(data.name, 0, -35);
+
+            ctx.restore();
+        }
+
+        function drawQueue() {
+            const startX = state.width / 2;
+            const startY = state.height - 90;
+
+            // Draw only the next composer (one by one)
+            if (state.queue.length > 0) {
+                const nextComposer = state.queue[state.queue.length - 1];
+                drawComposer(startX, startY, nextComposer, 2.0);
+
+                // Removed SEGÜENT Text as requested
+            }
+        }
+
+        function drawPlacedComposers() {
+            state.placedComposers.forEach(c => {
+                // Add some "dancing" animation
+                const y = (5 - c.floorIndex) * state.floorHeight + (state.floorHeight * 0.7);
+                const bounce = Math.sin(Date.now() / 200 + c.x) * 5;
+
+                drawComposer(c.x, y + bounce, c, 1.5);
+
+                // Music notes
+                if (Math.random() > 0.95) {
+                    ctx.fillStyle = "#000";
+                    ctx.font = "20px Arial";
+                    ctx.fillText("♪", c.x + (Math.random() * 40 - 20), y - 40 - Math.random() * 20);
+                }
+            });
+        }
+
+        function drawAnimations() {
+            const now = Date.now();
+            for (let i = state.animations.length - 1; i >= 0; i--) {
+                const anim = state.animations[i];
+                const elapsed = now - anim.startTime;
+
+                if (anim.type === 'kick') {
+                    if (elapsed > 1000) {
+                        // End animation, return composer to queue
+                        state.queue.unshift(anim.composer);
+                        state.animations.splice(i, 1);
+                        continue;
+                    }
+
+                    // Draw Boot
+                    const bootX = anim.x + Math.sin(elapsed * 0.02) * 50; // Shake
+                    ctx.font = "60px Arial";
+                    ctx.fillText("🥊", anim.x, anim.y);
+
+                    // Draw Flying Composer
+                    // Parabolic arc back to queue
+                    const t = elapsed / 1000;
+                    const startX = anim.x;
+                    const startY = anim.y;
+                    const endX = state.width / 2;
+                    const endY = state.height + 50;
+
+                    const curX = startX + (endX - startX) * t;
+                    const curY = startY + (endY - startY) * t - (200 * Math.sin(t * Math.PI)); // Arc
+
+                    drawComposer(curX, curY, anim.composer, 1);
+
+                    // "BOING" Text
+                    if (elapsed < 300) {
+                        ctx.fillStyle = "red";
+                        ctx.font = "bold 40px 'Bangers'";
+                        ctx.textAlign = "center";
+                        ctx.fillText("BOING!", anim.x, anim.y - 50);
+                    }
+                }
+            }
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>

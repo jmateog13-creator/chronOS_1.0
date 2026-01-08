@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agència Temporal: Línia Corrupta</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tva-green: #00ff41;
+            --tva-dark-green: #008f11;
+            --tva-bg: #0d0208;
+            --tva-text: #00ff41;
+            --tva-grid: rgba(0, 255, 65, 0.05);
+            --glitch-red: #ff003c;
+            --glitch-cyan: #00f3ff;
+            --tva-accent: #00f3ff;
+        }
+
+        body {
+            background-color: var(--tva-bg);
+            color: var(--tva-green);
+            font-family: 'VT323', monospace;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(0, 255, 65, 0.03), rgba(0, 255, 65, 0.01), rgba(0, 255, 65, 0.03));
+            z-index: 1000;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+
+        header {
+            width: 100%;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 2px solid var(--tva-green);
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: flicker 3s infinite;
+            color: var(--tva-green);
+            text-shadow: 0 0 10px var(--tva-green);
+        }
+
+        /* Volume Control */
+        .volume-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid var(--tva-green);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1001;
+        }
+
+        .volume-container label {
+            color: var(--tva-green);
+            font-size: 1rem;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 80px;
+            height: 4px;
+            background: var(--tva-dark-green);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--tva-green);
+            cursor: pointer;
+            box-shadow: 0 0 5px var(--tva-green);
+        }
+
+        .main-container {
+            flex: 1;
+            width: 95%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            position: relative;
+        }
+
+        /* Top Controls */
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .round-info {
+            font-size: 1.4rem;
+            background: var(--tva-green);
+            color: black;
+            padding: 2px 15px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px var(--tva-green);
+        }
+
+        /* Timeline Grid */
+        .timeline {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            background: var(--tva-grid);
+            padding: 15px;
+            border: 1px solid var(--tva-green);
+            min-height: 140px;
+            position: relative;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--tva-green);
+            z-index: 0;
+            box-shadow: 0 0 10px var(--tva-green);
+            opacity: 0.5;
+        }
+
+        .slot {
+            height: 150px;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .slot.hovered {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: var(--tva-green);
+            box-shadow: inset 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .slot-name {
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--tva-green);
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Data Shards */
+        .depot {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px dashed var(--tva-green);
+            justify-items: center;
+            flex: 1;
+            min-height: 250px;
+        }
+
+        .shard {
+            width: 160px;
+            height: 130px;
+            background: #000;
+            border: 1px solid var(--tva-green);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            text-align: center;
+            padding: 5px;
+            font-size: 0.9rem;
+            box-shadow: 3px 3px 0 var(--tva-dark-green);
+            transition: all 0.2s;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shard * {
+            pointer-events: none;
+        }
+
+        .shard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.05) 3px);
+            pointer-events: none;
+        }
+
+        .shard:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--tva-green);
+            border-color: var(--tva-accent);
+        }
+
+        .shard img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-bottom: 5px;
+            border: 1px solid var(--tva-dark-green);
+            filter: grayscale(1) sepia(1) hue-rotate(90deg) brightness(1.2);
+        }
+
+        .shard-text {
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 1rem;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-restore {
+            background: black;
+            color: var(--tva-green);
+            border: 2px solid var(--tva-green);
+            padding: 8px 30px;
+            font-family: 'VT323', monospace;
+            font-size: 1.5rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0 var(--tva-dark-green);
+            transition: all 0.2s;
+        }
+
+        .btn-restore:hover:not(:disabled) {
+            background: var(--tva-green);
+            color: black;
+            box-shadow: 0 0 15px var(--tva-green);
+        }
+
+        .round-info,
+        .shard,
+        .btn-restore,
+        .slot,
+        .overlay-box {
+            border-image-source: linear-gradient(45deg, var(--tva-green), var(--tva-accent));
+            border-image-slice: 1;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay-box {
+            max-width: 600px;
+            padding: 40px;
+            background: #000;
+            border: 2px solid var(--tva-green);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            position: relative;
+        }
+
+        .overlay h2 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--tva-green);
+            text-shadow: 0 0 20px var(--tva-green);
+        }
+
+        .overlay p {
+            font-size: 1.5rem;
+            color: var(--tva-text);
+            margin-bottom: 30px;
+        }
+
+        @keyframes flicker {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            52% {
+                opacity: 1;
+            }
+
+            54% {
+                opacity: 0.7;
+            }
+
+            56% {
+                opacity: 1;
+            }
+        }
+
+        .glitch-error {
+            animation: shake 0.2s infinite;
+            border-color: var(--glitch-red) !important;
+            box-shadow: 0 0 20px var(--glitch-red) !important;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translate(0);
+            }
+
+            25% {
+                transform: translate(-5px, 0);
+            }
+
+            75% {
+                transform: translate(5px, 0);
+            }
+        }
+
+        .success-flash {
+            animation: flash 0.5s ease-out;
+        }
+
+        @keyframes flash {
+            0% {
+                background: var(--tva-green);
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .timeline {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .depot {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="volume-container">
+            <label>🔊</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+        <h1>AGÈNCIA TEMPORAL: LÍNIA CORRUPTA</h1>
+    </header>
+
+    <div class="main-container">
+        <div class="top-controls">
+            <div class="round-info" id="round-indicator">Anomalia 1 / 3</div>
+            <button class="btn-restore" id="restore-btn">Restaurar Línia</button>
+        </div>
+
+        <div class="timeline" id="timeline">
+            <div class="slot" data-era="medieval"><span class="slot-name">Edat Mitjana</span></div>
+            <div class="slot" data-era="renaixement"><span class="slot-name">Renaixement</span></div>
+            <div class="slot" data-era="barroc"><span class="slot-name">Barroc</span></div>
+            <div class="slot" data-era="classicisme"><span class="slot-name">Classicisme</span></div>
+            <div class="slot" data-era="romanticisme"><span class="slot-name">Romanticisme</span></div>
+            <div class="slot" data-era="sxx"><span class="slot-name">Segle XX</span></div>
+        </div>
+
+        <div class="depot" id="depot">
+            <!-- Shards here -->
+        </div>
+    </div>
+
+    <div class="overlay" id="start-screen" style="display: flex;">
+        <div class="overlay-box">
+            <h2>AVÍS D'ANOMALIA</h2>
+            <p>La línia temporal s'està desintegrant. Els compositors han estat desplaçats de la seva època.</p>
+            <div
+                style="text-align: left; margin: 25px 0; border: 1px dashed var(--tva-green); padding: 20px; background: rgba(0,255,65,0.05); font-size: 1.1rem;">
+                <p><strong>PROTOCOLS DE RESTAURACIÓ:</strong></p>
+                <ul>
+                    <li>Arrossega els <strong>fragments de dades</strong> cap a la línia temporal.</li>
+                    <li>Sincronitza els compositors amb la seva era històrica correcta.</li>
+                    <li>Supera <strong>3 anomalies</strong> per salvar la realitat.</li>
+                </ul>
+            </div>
+            <button id="start-btn" class="btn-restore">Acceptar Missió</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="overlay-box">
+            <h2 id="overlay-title">LÍNIA RESTAURADA</h2>
+            <p id="overlay-text">La paradoxa ha estat evitada.</p>
+            <button class="btn-restore" id="next-btn">Processar</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" src="audio/Temps & Testimonies.m4a" loop></audio>
+
+    <script>
+        const TIME_DATA = {
+            medieval: [
+                { text: "Hildegard v. Bingen", img: "hildegard.jpg" },
+                { text: "G. de Machaut", img: "machaut.jpg" },
+                { text: "Monjos Anònims", img: "monjos.jpg" }
+            ],
+            renaixement: [
+                { text: "Palestrina", img: "palestrina.jpg" },
+                { text: "Josquin des Prez", img: "josquin.jpg" },
+                { text: "Tomas L. Victoria", img: "victoria.jpg" }
+            ],
+            barroc: [
+                { text: "J.S. Bach", img: "bach.jpg" },
+                { text: "A. Vivaldi", img: "vivaldi.jpg" },
+                { text: "G.F. Haendel", img: "haendel.jpg" }
+            ],
+            classicisme: [
+                { text: "W.A. Mozart", img: "mozart.jpg" },
+                { text: "F.J. Haydn", img: "haydn.jpg" },
+                { text: "Beethoven (Jove)", img: "beethovenjove.jpg" }
+            ],
+            romanticisme: [
+                { text: "F. Chopin", img: "chopin.jpg" },
+                { text: "R. Wagner", img: "wagner.jpg" },
+                { text: "Beethoven (Madur)", img: "beethovenmaduro.jpg" }
+            ],
+            sxx: [
+                { text: "I. Stravinsky", img: "stravinsky.jpg" },
+                { text: "A. Schönberg", img: "schoemberg.jpg" },
+                { text: "C. Debussy", img: "debussy.jpg" }
+            ]
+        };
+
+        const ERA_QUEUES = {};
+        Object.keys(TIME_DATA).forEach(era => {
+            ERA_QUEUES[era] = [...TIME_DATA[era]].sort(() => Math.random() - 0.5);
+        });
+
+        let currentRound = 1;
+        const totalRounds = 3;
+        let draggedShard = null;
+        const eras = ["medieval", "renaixement", "barroc", "classicisme", "romanticisme", "sxx"];
+        const bgMusic = document.getElementById('bg-music');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        volumeSlider.addEventListener('input', (e) => {
+            bgMusic.volume = e.target.value;
+        });
+
+        function initRound() {
+            const depot = document.getElementById('depot');
+            const slots = document.querySelectorAll('.slot');
+            const indicator = document.getElementById('round-indicator');
+            const timeline = document.getElementById('timeline');
+
+            indicator.innerText = `ANOMALIA ${currentRound} / ${totalRounds}`;
+            depot.innerHTML = '';
+
+            slots.forEach(slot => {
+                const existing = slot.querySelector('.shard');
+                if (existing) existing.remove();
+                slot.classList.remove('glitch-error');
+            });
+
+            const roundItems = eras.map(era => {
+                const item = ERA_QUEUES[era].pop();
+                return { ...item, era: era };
+            });
+
+            const shuffled = [...roundItems].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(item => {
+                const shard = document.createElement('div');
+                shard.className = 'shard';
+                shard.draggable = true;
+                shard.dataset.era = item.era;
+                shard.innerHTML = `
+                    <img src="img/${item.img}" alt="${item.text}">
+                    <div class="shard-text">${item.text}</div>
+                `;
+
+                shard.addEventListener('dragstart', (e) => {
+                    draggedShard = shard;
+                    shard.style.boxShadow = '0 0 15px var(--tva-green)';
+                });
+
+                shard.addEventListener('dragend', () => {
+                    draggedShard = null;
+                    slots.forEach(s => s.classList.remove('hovered'));
+                });
+
+                depot.appendChild(shard);
+            });
+        }
+
+        const slots = document.querySelectorAll('.slot');
+        slots.forEach(slot => {
+            slot.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                slot.classList.add('hovered');
+            });
+
+            slot.addEventListener('dragleave', () => {
+                slot.classList.remove('hovered');
+            });
+
+            slot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                slot.classList.remove('hovered');
+
+                if (draggedShard) {
+                    const existing = slot.querySelector('.shard');
+                    if (existing) {
+                        const originalParent = draggedShard.parentElement;
+                        originalParent.appendChild(existing);
+                    }
+                    slot.appendChild(draggedShard);
+                }
+            });
+        });
+
+        document.getElementById('depot').addEventListener('dragover', e => e.preventDefault());
+        document.getElementById('depot').addEventListener('drop', e => {
+            if (draggedShard) {
+                document.getElementById('depot').appendChild(draggedShard);
+            }
+        });
+
+        document.getElementById('restore-btn').addEventListener('click', () => {
+            const slots = document.querySelectorAll('.slot');
+            let correct = true;
+            let filledCount = 0;
+
+            slots.forEach((slot, i) => {
+                const shard = slot.querySelector('.shard');
+                if (shard) {
+                    filledCount++;
+                    if (shard.dataset.era !== eras[i]) {
+                        correct = false;
+                        slot.classList.add('glitch-error');
+                        setTimeout(() => slot.classList.remove('glitch-error'), 1000);
+                    }
+                } else {
+                    correct = false;
+                }
+            });
+
+            if (filledCount === 6 && correct) {
+                handleSuccess();
+            } else {
+                document.body.classList.add('glitch-error');
+                setTimeout(() => document.body.classList.remove('glitch-error'), 200);
+            }
+        });
+
+        function handleSuccess() {
+            document.body.classList.add('success-flash');
+            setTimeout(() => document.body.classList.remove('success-flash'), 1000);
+
+            setTimeout(() => {
+                const overlay = document.getElementById('overlay');
+                const title = document.getElementById('overlay-title');
+                const text = document.getElementById('overlay-text');
+                const nextBtn = document.getElementById('next-btn');
+
+                overlay.style.display = 'flex';
+
+                if (currentRound < totalRounds) {
+                    title.innerText = "LÍNIA RESTAURADA";
+                    text.innerText = "La paradoxa ha estat evitada. Continuem amb la següent anomalia.";
+                    nextBtn.innerText = "Sincronitzar";
+                    nextBtn.onclick = () => {
+                        overlay.style.display = 'none';
+                        currentRound++;
+                        initRound();
+                    };
+                } else {
+                    title.innerText = "TEMPS ESTABLE 100%";
+                    text.innerText = "Felicitats, Agent Temporal. Has salvat la història!";
+                    nextBtn.innerText = "Reiniciar Sistema";
+                    nextBtn.onclick = () => location.reload();
+                }
+            }, 500);
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
+            bgMusic.play().catch(e => console.log("Audio play blocked"));
+            bgMusic.volume = volumeSlider.value;
+        });
+
+        initRound();
+    </script>
+</body>
+
+</html>

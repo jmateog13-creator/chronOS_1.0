@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Paquets - Actualització de Sistema</title>
+    <!-- Ubuntu font for Linux feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #5E2750;
+            /* Ubuntu Purple Background */
+            --window-bg: #f2f2f2;
+            --header-bg: #3c3c3c;
+            /* Dark Grey Header */
+            --accent-orange: #E95420;
+            /* Ubuntu Orange */
+            --selection-blue: #cce8ff;
+            --border-color: #dcdcdc;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            /* Optional wallpaper feel */
+            background-image: linear-gradient(135deg, #772953 0%, #2c001e 100%);
+            font-family: 'Ubuntu', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            user-select: none;
+        }
+
+        /* START OVERLAY (OS Login Style) */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 0, 30, 0.95);
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            background: #ddd;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: #555;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-box {
+            text-align: center;
+        }
+
+        .login-btn {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: var(--accent-orange);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+        .login-btn:hover {
+            background: #d04010;
+        }
+
+        /* MAIN WINDOW */
+        .window-container {
+            width: 800px;
+            height: 600px;
+            background: var(--window-bg);
+            border-radius: 8px;
+            /* Rounded top corners like modern OS */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* TITLE BAR */
+        .title-bar {
+            background: linear-gradient(to bottom, #4c4c4c, #3c3c3c);
+            color: #ddd;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .win-btn {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .close {
+            background: #fc5753;
+        }
+
+        .min {
+            background: #fdbc40;
+        }
+
+        .max {
+            background: #33c748;
+        }
+
+        /* TOOLBAR / HEADER AREA */
+        .toolbar {
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .path-bar {
+            background: #fdfdfd;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px 12px;
+            width: 60%;
+            color: #555;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-icon {
+            opacity: 0.5;
+        }
+
+        /* CONTENT AREA */
+        .content-area {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 180px;
+            background: #f7f7f7;
+            border-right: 1px solid var(--border-color);
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .sidebar-item {
+            padding: 8px 10px;
+            border-radius: 4px;
+            color: #333;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-item.active {
+            background: #dedede;
+            font-weight: bold;
+        }
+
+        .sidebar-item:hover:not(.active) {
+            background: #eaeaea;
+        }
+
+        /* MAIN VIEW */
+        .file-view {
+            flex-grow: 1;
+            padding: 20px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: #333;
+        }
+
+        .subtitle {
+            color: #777;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* PROGRESS BAR */
+        .progress-wrapper {
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prog-container {
+            width: 200px;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: var(--accent-orange);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* ICON GRID */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 20px;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        .file-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .file-icon:hover {
+            background: #f0f0f0;
+        }
+
+        .file-icon.selected {
+            background: var(--selection-blue);
+            border-color: #99c9ef;
+        }
+
+        .icon-img {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+
+        .icon-label {
+            font-size: 0.85rem;
+            text-align: center;
+            word-wrap: break-word;
+            width: 100%;
+            color: #333;
+        }
+
+        /* BOTTOM BAR / CONTROLS */
+        .bottom-bar {
+            background: #f0f0f0;
+            border-top: 1px solid #ccc;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* MUSIC */
+        .music-widget {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            font-size: 0.8rem;
+        }
+
+        .restore-btn {
+            background: var(--accent-orange);
+            color: white;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .restore-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .restore-btn:hover:not(:disabled) {
+            background: #d04010;
+        }
+
+        /* MODAL (OS Pop-up) */
+        .os-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Flex */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .os-modal {
+            background: #f2f2f2;
+            width: 400px;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            border: 1px solid #999;
+        }
+
+        .os-modal-header {
+            background: #e0e0e0;
+            padding: 8px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .os-modal-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .os-modal-footer {
+            padding: 10px;
+            background: #e8e8e8;
+            border-top: 1px solid #ccc;
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div class="user-avatar">👤</div>
+        <h1>Administrador</h1>
+        <div class="login-box">
+            <p>S'requereix actualització manual del sistema.</p>
+            <button class="login-btn" onclick="login()">Iniciar Sessió</button>
+        </div>
+    </div>
+
+    <!-- MAIN WINDOW -->
+    <div class="window-container">
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <span>chronOS File Explorer - /usr/history/backups</span>
+            <div class="window-controls">
+                <span class="win-btn min"></span>
+                <span class="win-btn max"></span>
+                <span class="win-btn close" onclick="location.reload()"></span>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="path-bar">
+                <span>📁 Home / History / Backups</span>
+            </div>
+            <div class="music-widget">
+                <span style="font-size:1.2rem;">🎵</span>
+                <input type="range" min="0" max="1" step="0.1" value="0.3" oninput="setVolume(this.value)"
+                    style="width: 80px;">
+                <button style="border:none; background:none; cursor:pointer;" onclick="toggleMusic(this)">⏸</button>
+            </div>
+        </div>
+
+        <!-- Content Split -->
+        <div class="content-area">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-item">🏠 Home</div>
+                <div class="sidebar-item active">📦 Backups</div>
+                <div class="sidebar-item">🗑️ Trash</div>
+                <div class="sidebar-item">⚙️ Settings</div>
+            </div>
+
+            <!-- Main File View -->
+            <div class="file-view">
+                <div class="status-header">
+                    <h2 id="target-header">Cercant actualització...</h2>
+                    <div class="progress-wrapper">
+                        <span style="font-size:0.8rem; color:#777;">Progrés Global:</span>
+                        <div class="prog-container">
+                            <div class="prog-fill" id="global-progress"></div>
+                        </div>
+                        <span style="font-size:0.8rem; color:#777;" id="level-txt">0/6</span>
+                    </div>
+                </div>
+
+                <div class="icon-grid" id="file-grid">
+                    <!-- Files injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="bottom-bar">
+            <span style="font-size: 0.8rem; color: #777;">Select correct package to install...</span>
+            <button class="restore-btn" id="btn-install" disabled onclick="executeInstall()">Install Package</button>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="os-modal-overlay" id="modal-overlay">
+        <div class="os-modal">
+            <div class="os-modal-header">
+                <span id="modal-title-text">System Alert</span>
+                <span style="cursor:pointer;" onclick="closeModal()">✕</span>
+            </div>
+            <div class="os-modal-body">
+                <h3 id="modal-h3" style="margin-top:0;">Error</h3>
+                <p id="modal-p">File corrupted.</p>
+            </div>
+            <div class="os-modal-footer">
+                <button class="restore-btn" id="modal-btn" onclick="closeModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bg-music" loop>
+        <source src="Black Ice Backdoor.m4a" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // CONFIG
+        const BACKUPS = [
+            { id: 1, era: "EDAT MITJANA", file: "sys_monodia_gregoriana.deb", icon: "📦" },
+            { id: 2, era: "RENAIXEMENT", file: "sys_polifonia_humanista.zip", icon: "📦" },
+            { id: 3, era: "BARROC", file: "sys_baix_continu_contrast.rpm", icon: "📦" },
+            { id: 4, era: "CLASSICISME", file: "sys_sonata_equilibri.pkg", icon: "📦" },
+            { id: 5, era: "ROMANTICISME", file: "sys_sentiment_expansio.dmg", icon: "📦" },
+            { id: 6, era: "SEGLE XX", file: "sys_ruptura_atonal.tar.gz", icon: "📦" }
+        ];
+
+        // STATE
+        let level = 0;
+        let selectedFile = null;
+
+        // REFS
+        const bgMusic = document.getElementById('bg-music');
+        const modal = document.getElementById('modal-overlay');
+        const fileGrid = document.getElementById('file-grid');
+        const installBtn = document.getElementById('btn-install');
+
+        function login() {
+            // Fade out login
+            document.getElementById('start-screen').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('start-screen').style.display = 'none';
+
+                // Play music
+                bgMusic.volume = 0.3;
+                bgMusic.play().catch(e => console.log('Autoplay prevent'));
+
+                loadLevel();
+            }, 500);
+        }
+
+        function loadLevel() {
+            if (level >= BACKUPS.length) {
+                showModal(true, "System Updated", "Success! All history packages installed.", true);
+                return;
+            }
+
+            const current = BACKUPS[level];
+
+            // Update Header
+            document.getElementById('target-header').innerHTML = `Instal·lar paquet: <span style='color:#E95420'>${current.era}</span>`;
+            document.getElementById('global-progress').style.width = (level / BACKUPS.length * 100) + "%";
+            document.getElementById('level-txt').textContent = `${level + 1} / ${BACKUPS.length}`;
+
+            // Generate Files (Correct + Distractors)
+            fileGrid.innerHTML = "";
+            let pool = [current];
+
+            // Distractors
+            let others = BACKUPS.filter(b => b.id !== current.id);
+            // Shuffle others
+            others.sort(() => Math.random() - 0.5);
+            pool.push(...others.slice(0, 4)); // take 4 random distractors
+
+            pool.sort(() => Math.random() - 0.5);
+
+            pool.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'file-icon';
+                el.onclick = () => selectItem(item, el);
+                el.innerHTML = `
+                    <div class="icon-img">${item.icon}</div>
+                    <div class="icon-label">${item.file}</div>
+                `;
+                fileGrid.appendChild(el);
+            });
+
+            selectedFile = null;
+            installBtn.disabled = true;
+        }
+
+        function selectItem(item, el) {
+            selectedFile = item;
+            document.querySelectorAll('.file-icon').forEach(x => x.classList.remove('selected'));
+            el.classList.add('selected');
+            installBtn.disabled = false;
+        }
+
+        function executeInstall() {
+            if (!selectedFile) return;
+
+            const current = BACKUPS[level];
+            installBtn.textContent = "Installing...";
+
+            setTimeout(() => {
+                if (selectedFile.id === current.id) {
+                    showModal(true, "Installation Complete", `Package ${current.file} installed successfully.`);
+                } else {
+                    showModal(false, "Dependency Error", `File ${selectedFile.file} is incompatible with current era.`);
+                }
+                installBtn.textContent = "Install Package";
+            }, 800);
+        }
+
+        function showModal(success, title, msg, isEnd = false) {
+            document.getElementById('modal-title-text').textContent = title;
+            document.getElementById('modal-h3').textContent = success ? "Success" : "Error";
+            document.getElementById('modal-h3').style.color = success ? "green" : "red";
+            document.getElementById('modal-p').textContent = msg;
+
+            const btn = document.getElementById('modal-btn');
+            if (success) {
+                btn.onclick = isEnd ? () => location.reload() : () => {
+                    modal.style.display = 'none';
+                    level++;
+                    loadLevel();
+                };
+            } else {
+                btn.onclick = () => modal.style.display = 'none';
+            }
+            modal.style.display = 'flex';
+        }
+
+        function setVolume(v) { bgMusic.volume = v; }
+        function toggleMusic(btn) {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                btn.textContent = "⏸";
+            } else {
+                bgMusic.pause();
+                btn.textContent = "▶";
+            }
+        }
+    </script>
+</body>
+
+</html>

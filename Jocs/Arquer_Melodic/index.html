@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Royal Tournament: Melodic Archer</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sky-top: #2b93d6;
+            --sky-bot: #87CEEB;
+            --grass-near: #4a8523;
+            --grass-far: #2d5a12;
+            --wood: #5d4037;
+            --parchment: #f4e4bc;
+            --gold: #FFD700;
+            --font-main: 'MedievalSharp', cursive;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: var(--font-main);
+            color: #333;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            perspective: 800px;
+            /* Key for 3D effect */
+            background: url('img/bg_camp.png') no-repeat center center;
+            background-size: cover;
+        }
+
+        /* --- BACKGROUND --- */
+        #sky {
+            display: none;
+        }
+
+        #castle-bg {
+            display: none;
+        }
+
+        #ground {
+            display: none;
+        }
+
+        /* --- UI ELEMENTS --- */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            pointer-events: none;
+            /* Allow clicking through to targets */
+        }
+
+        #parchment-scroll {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 140px;
+            background: var(--parchment);
+            border: 5px solid var(--wood);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            opacity: 0.95;
+            pointer-events: auto;
+        }
+
+        #parchment-scroll::before,
+        #parchment-scroll::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40px;
+            height: 160px;
+            background: var(--wood);
+            border-radius: 5px;
+            transform: translateY(-50%);
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        #parchment-scroll::before {
+            left: -20px;
+        }
+
+        #parchment-scroll::after {
+            right: -20px;
+        }
+
+        #question-text {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #round-info {
+            font-size: 18px;
+            color: #666;
+        }
+
+        #lives-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 40px;
+        }
+
+        /* --- GAME WORLD --- */
+        #game-world {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        /* TARGETS */
+        .target-wrapper {
+            position: absolute;
+            width: 120px;
+            bottom: 30%;
+            /* Horizon line roughly */
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .target-wrapper:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+
+        /* Positions for targets - creating depth */
+        #target-0 {
+            left: 15%;
+            transform: translateZ(50px) scale(0.9);
+            bottom: 35%;
+        }
+
+        #target-1 {
+            left: 35%;
+            transform: translateZ(0px) scale(0.85);
+            bottom: 38%;
+        }
+
+        #target-2 {
+            left: 55%;
+            transform: translateZ(20px) scale(0.88);
+            bottom: 36%;
+        }
+
+        #target-3 {
+            left: 75%;
+            transform: translateZ(60px) scale(0.92);
+            bottom: 34%;
+        }
+
+        /* The Board */
+        .target-board {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            background: url('img/target_diana.png') no-repeat center center;
+            background-size: contain;
+            filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .target-leg {
+            width: 10px;
+            height: 80px;
+            background: var(--wood);
+            margin-top: -10px;
+            z-index: -1;
+        }
+
+        .target-label {
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-size: 14px;
+            text-align: center;
+            max-width: 140px;
+            border: 1px solid var(--gold);
+        }
+
+        /* --- PLAYER --- */
+        #bow-container {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            pointer-events: none;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            transition: transform 0.1s;
+        }
+
+        #bow-img {
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M10,80 Q50,0 90,80" stroke="%235d4037" stroke-width="5" fill="none"/><line x1="10" y1="80" x2="90" y2="80" stroke="%23fff" stroke-width="1"/></svg>') no-repeat center bottom;
+            background-size: contain;
+        }
+
+        #active-arrow {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 150px;
+            background: #888;
+            z-index: 49;
+            /* Simple Arrow graphic using CSS */
+            clip-path: polygon(40% 100%, 60% 100%, 60% 20%, 80% 20%, 50% 0%, 20% 20%, 40% 20%);
+            background: linear-gradient(to top, #5d4037, #ccc);
+            display: none;
+        }
+
+        .flying-arrow {
+            position: absolute;
+            width: 10px;
+            height: 80px;
+            background: linear-gradient(to top, #5d4037, #ccc);
+            clip-path: polygon(40% 100%, 60% 100%, 60% 20%, 80% 20%, 50% 0%, 20% 20%, 40% 20%);
+            z-index: 40;
+            pointer-events: none;
+            transform-origin: bottom center;
+        }
+
+        /* --- SCREENS --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            text-align: center;
+        }
+
+        .screen h1 {
+            font-size: 60px;
+            color: var(--gold);
+            text-shadow: 2px 2px 10px rgba(255, 215, 0, 0.5);
+            margin: 0;
+        }
+
+        .screen p {
+            font-size: 24px;
+            margin: 20px 0;
+            max-width: 600px;
+        }
+
+        .btn-start {
+            background: var(--gold);
+            color: #4a8523;
+            border: 4px solid #fff;
+            padding: 15px 40px;
+            font-size: 24px;
+            border-radius: 10px;
+            font-family: var(--font-main);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.1);
+        }
+
+        /* FEEDBACK OVERLAY */
+        #feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            font-weight: bold;
+            z-index: 150;
+            text-shadow: 4px 4px 0 #000;
+            pointer-events: none;
+            display: none;
+        }
+
+        .correct-txt {
+            color: var(--gold);
+        }
+
+        .wrong-txt {
+            color: #ff3333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SCENE LAYERS -->
+    <div id="game-container">
+
+        <!-- Environment -->
+        <div id="sky"></div>
+        <div id="castle-bg"></div>
+        <div id="ground"></div>
+
+        <!-- Targets Container -->
+        <div id="game-world">
+            <!-- Targets A, B, C, D will be populated here -->
+        </div>
+
+        <!-- Player Bow -->
+        <div id="bow-container">
+            <div id="bow-img"></div>
+            <div id="active-arrow"></div>
+        </div>
+
+        <!-- UI -->
+        <div id="ui-layer">
+            <div id="lives-container">❤️❤️❤️</div>
+            <div id="parchment-scroll">
+                <div id="question-text">Loading...</div>
+                <div id="round-info">Round 1 / 12</div>
+            </div>
+        </div>
+
+        <!-- Screens -->
+        <div id="start-screen" class="screen">
+            <h1>EL TORNEIG REIAL</h1>
+            <p>Benvingut, Arquer. El Rei posarà a prova el teu coneixement musical.</p>
+            <p>Encerta 12 vegades per guanyar l'Arc Daurat.</p>
+            <button class="btn-start" onclick="startGame()">COMENÇAR</button>
+        </div>
+
+        <div id="game-over-screen" class="screen" style="display: none;">
+            <h1 style="color: #ff3333;">HAS FRACASSAT</h1>
+            <p>Les teves fletxes s'han perdut, igual que el teu honor.</p>
+            <button class="btn-start" onclick="location.reload()">TORNAR-HO A PROVAR</button>
+        </div>
+
+        <div id="victory-screen" class="screen" style="display: none;">
+            <h1>VICTÒRIA!</h1>
+            <p>Has demostrat ser un mestre de la música i l'arc.</p>
+            <div style="font-size: 100px;">🏹🏆</div>
+            <p>L'Arc Daurat és teu!</p>
+            <button class="btn-start" onclick="location.reload()">JUGAR UNA ALTRA VEGADA</button>
+        </div>
+
+        <div id="feedback"></div>
+
+    </div>
+
+    <!-- AUDIO PLACEHOLDERS (Optional improvement: add real sounds) -->
+
+    <script>
+        // --- DATA ---
+        const TOURNAMENT_DATA = [
+            // --- EDAT MITJANA ---
+            { q: "REI: Quin idioma utilitzaven els monjos per cantar?", targets: ["Català", "Llatí", "Francès", "Anglès"], correct: 1 },
+            { q: "REI: Quin instrument té forma de pera?", targets: ["Guitarra", "Violí", "Llaüt", "Piano"], correct: 2 },
+
+            // --- RENAIXEMENT ---
+            { q: "REI: Quin invent feia llibres ràpidament?", targets: ["Impremta", "Ploma", "Màquina", "Ordinador"], correct: 0 },
+            { q: "REI: Quina és la veu de dona més aguda?", targets: ["Tenor", "Baix", "Soprano", "Contralt"], correct: 2 },
+
+            // --- BARROC ---
+            { q: "REI: Quin és l'instrument rei del teclat barroc?", targets: ["Piano", "Clavicèmbal", "Orgue", "Acordió"], correct: 1 },
+            { q: "REI: Què és el 'Baix Continu'?", targets: ["Base rítmica constant", "Un instrument fluix", "Un cantant", "Silenci"], correct: 0 },
+
+            // --- CLASSICISME ---
+            { q: "REI: Què és el més important al Classicisme?", targets: ["Caos", "Raó i Ordre", "Luxe", "Foscor"], correct: 1 },
+            { q: "REI: Qui va ser el nen prodigi de Viena?", targets: ["Haydn", "Beethoven", "Bach", "Mozart"], correct: 3 },
+
+            // --- ROMANTICISME ---
+            { q: "REI: Instrument preferit per expressar emocions?", targets: ["Flauta", "Tambor", "Piano", "Violí"], correct: 2 },
+            { q: "REI: Què significa 'Rubato'?", targets: ["Robar", "Velocitat flexible", "Tocar fort", "Silenci"], correct: 1 },
+
+            // --- SEGLE XX ---
+            { q: "REI: Què són les Dissonàncies?", targets: ["Notes que xoquen", "Notes maques", "Silencis", "Melodies"], correct: 0 },
+            { q: "REI: Quantes notes té el Dodecafonisme?", targets: ["7", "5", "10", "12"], correct: 3 }
+        ];
+
+        // --- GAME STATE ---
+        let currentRound = 0;
+        let lives = 3;
+        let isShooting = false;
+
+        // --- DOM ELEMENTS ---
+        const gameWorld = document.getElementById('game-world');
+        const questionText = document.getElementById('question-text');
+        const roundInfo = document.getElementById('round-info');
+        const livesContainer = document.getElementById('lives-container');
+        const bowContainer = document.getElementById('bow-container');
+        const activeArrow = document.getElementById('active-arrow'); // The loaded arrow
+        const feedbackEl = document.getElementById('feedback');
+
+        // Mouse Tracking for Bow Movement
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const width = window.innerWidth;
+            const rotation = (x - width / 2) / 20; // Mild rotation based on mouse X
+            bowContainer.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        });
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            currentRound = 0;
+            lives = 3;
+            updateLives();
+            loadRound();
+        }
+
+        function updateLives() {
+            let hearts = "";
+            for (let i = 0; i < lives; i++) hearts += "❤️";
+            livesContainer.innerText = hearts;
+        }
+
+        function loadRound() {
+            if (currentRound >= TOURNAMENT_DATA.length) {
+                showVictory();
+                return;
+            }
+
+            const data = TOURNAMENT_DATA[currentRound];
+            questionText.innerText = data.q;
+            roundInfo.innerText = `Ronda ${currentRound + 1} / 12`;
+            activeArrow.style.display = 'block'; // Reload arrow
+            gameWorld.innerHTML = ''; // Clear old targets
+
+            // Create Targets
+            data.targets.forEach((text, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'target-wrapper';
+                wrapper.id = `target-${index}`;
+
+                const board = document.createElement('div');
+                board.className = 'target-board';
+
+                const leg = document.createElement('div');
+                leg.className = 'target-leg';
+
+                const label = document.createElement('div');
+                label.className = 'target-label';
+                label.innerText = text;
+
+                wrapper.appendChild(board);
+                wrapper.appendChild(leg);
+                wrapper.appendChild(label);
+
+                wrapper.onclick = () => shootArrow(index, wrapper);
+                gameWorld.appendChild(wrapper);
+            });
+
+            isShooting = false;
+        }
+
+        function shootArrow(targetIndex, targetElement) {
+            if (isShooting) return;
+            isShooting = true;
+            activeArrow.style.display = 'none'; // Hide loaded arrow
+
+            // Create flying arrow
+            const flyArrow = document.createElement('div');
+            flyArrow.className = 'flying-arrow';
+
+            // Get positions
+            const bowRect = bowContainer.getBoundingClientRect();
+            // Start position (bottom center)
+            const startX = bowRect.left + bowRect.width / 2;
+            const startY = window.innerHeight - 50;
+
+            // Target position
+            const targetRect = targetElement.getBoundingClientRect();
+            const targetX = targetRect.left + targetRect.width / 2;
+            const targetY = targetRect.top + targetRect.height / 2;
+
+            flyArrow.style.left = startX + 'px';
+            flyArrow.style.top = startY + 'px';
+            document.body.appendChild(flyArrow);
+
+            // Animate
+            const duration = 600; // ms
+            const startTime = performance.now();
+
+            function animate(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Linear interpolation for X and Y
+                const currentX = startX + (targetX - startX) * progress;
+                const currentY = startY + (targetY - startY) * progress;
+
+                // Scale simulates depth (getting smaller)
+                const scale = 1 - (0.5 * progress);
+                // Rotate to face target roughly
+                const angle = Math.atan2(targetY - startY, targetX - startX) * (180 / Math.PI) + 90;
+
+                flyArrow.style.left = currentX + 'px';
+                flyArrow.style.top = currentY + 'px';
+                flyArrow.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${angle}deg)`;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Hit!
+                    checkAnswer(targetIndex, flyArrow);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function checkAnswer(index, arrowEl) {
+            const data = TOURNAMENT_DATA[currentRound];
+
+            if (index === data.correct) {
+                // Correct
+                showFeedback("DIANA!", "correct-txt");
+                // Arrow sticks
+                arrowEl.style.transition = 'transform 0.1s';
+                arrowEl.style.transform += ' scale(1.1)'; // Slight impact wobble
+
+                setTimeout(() => {
+                    arrowEl.remove();
+                    currentRound++;
+                    loadRound();
+                }, 1200);
+
+            } else {
+                // Wrong
+                showFeedback("FAIL!", "wrong-txt");
+                // Arrow falls
+                arrowEl.style.transition = 'top 0.5s ease-in, transform 0.5s';
+                arrowEl.style.top = (parseInt(arrowEl.style.top) + 100) + 'px';
+                arrowEl.style.transform += ' rotate(180deg)';
+
+                lives--;
+                updateLives();
+
+                setTimeout(() => {
+                    arrowEl.remove();
+                    if (lives <= 0) {
+                        showGameOver();
+                    } else {
+                        // Reload for retry of same level? Or next? 
+                        // Instructions assume lineal progression usually means retry or move on?
+                        // "Lose 3 lives" implies we stay or carry on. Let's stay on same question until correct or dead?
+                        // Actually, simplified logic: just reset functionality to try again (no round skip).
+                        activeArrow.style.display = 'block';
+                        isShooting = false;
+                    }
+                }, 1000);
+            }
+        }
+
+        function showFeedback(text, cls) {
+            feedbackEl.innerText = text;
+            feedbackEl.className = cls;
+            feedbackEl.style.display = 'block';
+            setTimeout(() => {
+                feedbackEl.style.display = 'none';
+            }, 1000);
+        }
+
+        function showGameOver() {
+            document.getElementById('game-over-screen').style.display = 'flex';
+        }
+
+        function showVictory() {
+            document.getElementById('victory-screen').style.display = 'flex';
+        }
+
+    </script>
+</body>
+
+</html>

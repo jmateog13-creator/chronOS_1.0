@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuració d'Alarma</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f7;
+            /* iOS Settings Grey */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
+
+        /* MODAL OVERLAY */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1c1c1e;
+        }
+
+        .modal-btn {
+            background: #007aff;
+            /* iOS Blue */
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-top: 20px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #0056b3;
+        }
+
+        /* APP WINDOW */
+        .app-window {
+            width: 400px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+            /* Taller for more options */
+            max-height: 800px;
+        }
+
+        .header {
+            background: #f5f5f7;
+            color: #1c1c1e;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #d1d1d6;
+        }
+
+        .time-display {
+            font-size: 4rem;
+            color: #1c1c1e;
+            text-align: center;
+            margin: 30px 0;
+            font-weight: 200;
+            font-feature-settings: "tnum";
+            font-variant-numeric: tabular-nums;
+        }
+
+        .content {
+            padding: 0 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+        }
+
+        .setting-label {
+            font-weight: 600;
+            color: #8e8e93;
+            margin-bottom: 12px;
+            display: block;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        /* IOS STYLE LIST */
+        .options-list {
+            background: #f5f5f7;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #e5e5ea;
+            font-size: 0.95rem;
+            color: #1c1c1e;
+            transition: background 0.2s;
+        }
+
+        .radio-option:last-child {
+            border-bottom: none;
+        }
+
+        .radio-option:hover {
+            background: #e5e5ea;
+        }
+
+        .radio-input {
+            margin-right: 15px;
+            accent-color: #007aff;
+            transform: scale(1.2);
+        }
+
+        /* SAVE BUTTON */
+        .save-btn {
+            background: #34c759;
+            /* iOS Green */
+            color: white;
+            border: none;
+            padding: 20px;
+            width: 100%;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #248a3d;
+        }
+
+        /* Music Controls */
+        #music-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="music/Neutral Menu Flux.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="music-controls">
+        <button class="control-btn" onclick="toggleMusic()">🔇</button> <!-- Start muted icon maybe? Or Music icon -->
+    </div>
+
+    <audio id="sfx-beep"></audio>
+
+    <!-- INSTRUCTION MODAL -->
+    <div id="modal-overlay">
+        <div class="modal-box" id="instruction-box">
+            <div class="modal-title">⏰ Temporitzador Històric</div>
+            <p style="text-align: left; margin-bottom: 15px; font-size: 1.1rem;">
+                <strong>Època:</strong> <span id="target-era-span" style="color:#007aff; font-weight:bold;">...</span>
+            </p>
+            <p style="text-align: left; color:#666;" id="target-desc">
+                ...
+            </p>
+            <button class="modal-btn" onclick="startGame()">CONFIGURAR</button>
+        </div>
+
+        <div class="modal-box" id="success-box" style="display:none;">
+            <div class="modal-title" style="color:#34c759;">✓ Configuració Guardada</div>
+            <p>L'alarma sonarà perfectament en aquesta època.</p>
+            <button class="modal-btn" style="background:#34c759;" onclick="nextLevel()">SEGÜENT ÈPOCA</button>
+        </div>
+
+        <div class="modal-box" id="error-box" style="display:none;">
+            <div class="modal-title" style="color:#ff3b30;">⚠ Error de Sincronització</div>
+            <p id="error-msg">Aquests paràmetres no encaixen amb l'època.</p>
+            <button class="modal-btn" style="background:#ff3b30;" onclick="retry()">REVISAR</button>
+        </div>
+
+        <!-- VICTORY FINAL -->
+        <div class="modal-box" id="victory-final" style="display:none;">
+            <div class="modal-title">🎉 MESTRE DEL TEMPS! 🎉</div>
+            <p>Has configurat totes les alarmes de la història.</p>
+            <div style="font-size: 3rem; margin: 20px;">🕰️✨</div>
+            <p style="color: #888; font-size: 0.9rem;">Recompensa desbloquejada...</p>
+            <button class="modal-btn" onclick="location.reload()">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP INTERFACE -->
+    <div class="app-window">
+        <div class="header">
+            <span id="header-era" style="color:#007aff; font-weight:bold; font-size: 0.9rem;">...</span>
+            <span style="font-size: 1rem; color: #000;">Editar Alarma</span>
+            <span id="header-time" style="color:#8e8e93; font-size: 0.9rem;">...</span>
+        </div>
+
+        <div class="time-display" id="clock-display">08:00</div>
+
+        <div class="content">
+            <!-- ESTRUCTURA (Frequency) -->
+            <div class="setting-group">
+                <span class="setting-label">ESTRUCTURA (Forma)</span>
+                <div class="options-list">
+                    <label class="radio-option">
+                        <input type="radio" name="freq" value="sonata" class="radio-input">
+                        Forma Sonata (Exposició-Desenvolupament)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="freq" value="monodia" class="radio-input">
+                        Monodia (Una sola veu)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="freq" value="dodeca" class="radio-input">
+                        Dodecafonisme (Sèrie de 12 tons)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="freq" value="polifonia" class="radio-input">
+                        Polifonia Imitativa (Teixit de veus)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="freq" value="poema" class="radio-input">
+                        Poema Simfònic (Llibertat formal)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="freq" value="continu" class="radio-input">
+                        Baix Continu (Cimentació harmònica)
+                    </label>
+                </div>
+            </div>
+
+            <!-- FRASEIG (Recurrence) -->
+            <div class="setting-group">
+                <span class="setting-label">FRASEIG (Ritme)</span>
+                <div class="options-list">
+                    <label class="radio-option">
+                        <input type="radio" name="rec" value="mecanic" class="radio-input">
+                        Ritme Mecànic (Motor inaturable)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="rec" value="rubato" class="radio-input">
+                        Rubato (Tempo flexible i emotiu)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="rec" value="simetric" class="radio-input">
+                        Simetria Quadrada (4+4 compassos)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="rec" value="poliritmia" class="radio-input">
+                        Polirítmia / Ritme Irregular
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="rec" value="lliure" class="radio-input">
+                        Ritme Lliure (Segons el text)
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="rec" value="tactus" class="radio-input">
+                        Tactus (Pulsació humana constant)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button class="save-btn" onclick="validate()">ACTIVAR ALARMA</button>
+    </div>
+
+    <script src="../../../js/rewards.js"></script> <!-- Link to Rewards -->
+    <script>
+        // --- DATABASE ---
+        const ALARM_LEVELS = [
+            {
+                era: "EDAT MITJANA",
+                time: "s. V - XV",
+                req: "La música és al servei de la paraula divina.",
+                correct: { freq: "monodia", rec: "lliure" },
+                hint: "Cant gregorià: una sola línia i sense compàs fix."
+            },
+            {
+                era: "RENAIXEMENT",
+                time: "s. XV - XVI",
+                req: "L'equilibri perfecte entre les veus humanes.",
+                correct: { freq: "polifonia", rec: "tactus" },
+                hint: "Les veus s'imiten unes a altres sobre un batec constant."
+            },
+            {
+                era: "BARROC",
+                time: "s. XVII - mid XVIII",
+                req: "Un motor rítmic que no s'atura mai.",
+                correct: { freq: "continu", rec: "mecanic" },
+                hint: "El clavicèmbal marca el baix mentre tot es mou mecànicament."
+            },
+            {
+                era: "CLASSICISME",
+                time: "mid XVIII - early XIX",
+                req: "Ordre, claredat i proporció.",
+                correct: { freq: "sonata", rec: "simetric" },
+                hint: "Frases quadrades de 8 compassos (4 pregunta + 4 resposta)."
+            },
+            {
+                era: "ROMANTICISME",
+                time: "s. XIX",
+                req: "L'emoció individual per sobre de la norma.",
+                correct: { freq: "poema", rec: "rubato" },
+                hint: "El tempo s'accelera o es frena segons el sentiment."
+            },
+            {
+                era: "SEGLE XX",
+                time: "s. XX",
+                req: "Trencar amb tota la tradició tonal.",
+                correct: { freq: "dodeca", rec: "poliritmia" },
+                hint: "Schönberg va inventar un sistema matemàtic de 12 notes."
+            }
+        ];
+
+        // --- STATE ---
+        let currentRound = 0;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // --- DOM ELEMENTS ---
+        const modalOverlay = document.getElementById('modal-overlay');
+        const instructionBox = document.getElementById('instruction-box');
+        const successBox = document.getElementById('success-box');
+        const errorBox = document.getElementById('error-box');
+        const victoryBox = document.getElementById('victory-final');
+        const errorMsg = document.getElementById('error-msg');
+        const clockDisplay = document.getElementById('clock-display');
+        const bgMusic = document.getElementById('bg-music');
+        bgMusic.volume = 0.3; // Lower volume for background
+
+        function init() {
+            startRound();
+            setInterval(updateClock, 1000); // Live clock effect
+            updateClock();
+        }
+
+        function toggleMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    document.querySelector('.control-btn').innerText = "🎵";
+                }).catch(e => console.log(e));
+            } else {
+                bgMusic.pause();
+                document.querySelector('.control-btn').innerText = "🔇";
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            clockDisplay.innerText = `${h}:${m}`;
+        }
+
+
+        function startRound() {
+            if (currentRound >= ALARM_LEVELS.length) {
+                showVictory();
+                return;
+            }
+
+            const level = ALARM_LEVELS[currentRound];
+
+            // UI Reset
+            modalOverlay.style.display = 'flex';
+            instructionBox.style.display = 'block';
+            successBox.style.display = 'none';
+            errorBox.style.display = 'none';
+            victoryBox.style.display = 'none';
+
+            document.getElementById('target-era-span').textContent = level.era;
+            document.getElementById('target-desc').textContent = level.req;
+
+            // HEADER UPDATE
+            document.getElementById('header-era').textContent = level.era;
+            document.getElementById('header-time').textContent = level.time;
+
+            // Clear inputs
+            document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+
+            // Scroll to top
+            document.querySelector('.content').scrollTop = 0;
+        }
+
+        function startGame() {
+            modalOverlay.style.display = 'none';
+            // Auto start music on first interaction
+            bgMusic.play().then(() => {
+                document.querySelector('.control-btn').innerText = "🎵";
+            }).catch(e => {
+                console.log("Autoplay prevented:", e)
+            });
+        }
+
+        function retry() {
+            modalOverlay.style.display = 'none';
+        }
+
+        function validate() {
+            const freqVal = document.querySelector('input[name="freq"]:checked')?.value;
+            const recVal = document.querySelector('input[name="rec"]:checked')?.value;
+
+            if (!freqVal || !recVal) {
+                // Shake effect or simple alert
+                alert("Selecciona una opció de cada grup!");
+                return;
+            }
+
+            const level = ALARM_LEVELS[currentRound];
+
+            if (freqVal === level.correct.freq && recVal === level.correct.rec) {
+                // SUCCESS
+                playTone('success');
+                setTimeout(() => showSuccess(), 500); // Wait for ding
+            } else {
+                // FAIL
+                playTone('error');
+                showError(level.hint);
+            }
+        }
+
+        function showSuccess() {
+            modalOverlay.style.display = 'flex';
+            successBox.style.display = 'block';
+            errorBox.style.display = 'none';
+            instructionBox.style.display = 'none';
+        }
+
+        function showError(hint) {
+            modalOverlay.style.display = 'flex';
+            errorBox.style.display = 'block';
+            successBox.style.display = 'none';
+            instructionBox.style.display = 'none';
+            errorMsg.innerText = `Incorrecte. \n💡 Pista: ${hint}`;
+        }
+
+        function nextLevel() {
+            currentRound++;
+            startRound();
+        }
+
+        function showVictory() {
+            modalOverlay.style.display = 'flex';
+            victoryBox.style.display = 'block';
+            instructionBox.style.display = 'none';
+
+            // UNLOCK REWARD
+            if (typeof Rewards !== 'undefined') {
+                Rewards.unlockCard(
+                    'alarm_master',
+                    'Cronometrador Oficial',
+                    'Has sincronitzat el temps a través de totes les èpoques musicals.',
+                    '../../img/card_placeholder.png' // Placeholder image
+                );
+            }
+        }
+
+        // --- AUDIO ENGINE ---
+        function playTone(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'success') {
+                // Happy Triad Arpeggio (Digital Ping)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now); // A5
+                osc.frequency.setValueAtTime(1108, now + 0.1); // C#6
+                osc.frequency.setValueAtTime(1318, now + 0.2); // E6
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else {
+                // Error Buzz
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

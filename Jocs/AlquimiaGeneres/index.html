@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alquímia de Gèneres ⚗️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-lab: #1a1a2e;
+            --bubble-base: #16213e;
+            --highlight: #0f3460;
+            --accent: #e94560;
+            --text: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comfortaa', cursive;
+            background-color: var(--bg-lab);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .stats {
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        .btn-enc {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        /* Game Area */
+        #lab-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #2a2a4e 0%, #1a1a2e 100%);
+        }
+
+        /* Sidebar / Inventory */
+        #inventory {
+            height: 140px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            padding: 0 1rem;
+            gap: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 20;
+        }
+
+        /* Bubbles */
+        .bubble {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            position: absolute;
+            /* For main area */
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-size: 0.8rem;
+            color: white;
+            padding: 5px;
+        }
+
+        .bubble:hover {
+            transform: scale(1.1);
+            border-color: var(--accent);
+            z-index: 100;
+        }
+
+        .bubble:active {
+            cursor: grabbing;
+        }
+
+        .bubble-icon {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+            pointer-events: none;
+        }
+
+        .bubble-name {
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        /* Inventory Items (Static relative to inventory) */
+        .inv-item {
+            position: relative;
+            flex-shrink: 0;
+            width: 70px;
+            height: 70px;
+            font-size: 0.7rem;
+        }
+
+        /* New Discovery Modal */
+        #discovery-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 200;
+            animation: fadeIn 0.5s;
+        }
+
+        /* Encyclopedia Modal */
+        #enc-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            z-index: 200;
+            padding: 2rem;
+        }
+
+        #enc-content {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .enc-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+        }
+
+        .enc-unknown {
+            opacity: 0.5;
+            border: 1px dashed #555;
+        }
+
+        .enc-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .enc-name {
+            font-size: 0.8rem;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .new-item-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .new-item-name {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .btn-continue {
+            background: white;
+            color: var(--bg-lab);
+            border: none;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Alquímia de Gèneres</h1>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <div class="stats">Descoberts: <span id="count">4</span>/<span id="total-count">20</span></div>
+            <button class="btn-enc" onclick="openEnc()">Enciclopèdia</button>
+        </div>
+    </header>
+
+    <div id="lab-area">
+        <!-- Active bubbles go here -->
+        <div
+            style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:rgba(255,255,255,0.2); pointer-events:none;">
+            Arrossega elements de l'inventari aquí per combinar-los
+        </div>
+    </div>
+
+    <div id="inventory">
+        <!-- Inventory items injected here -->
+    </div>
+
+    <div id="discovery-modal">
+        <div style="color:white; font-size:1.5rem; margin-bottom:1rem;">NOVA DESCOBERTA!</div>
+        <div class="new-item-icon" id="modal-icon">🎵</div>
+        <div class="new-item-name" id="modal-name">Nom</div>
+        <button class="btn-continue" onclick="closeModal()">Continuar</button>
+    </div>
+
+    <div id="enc-modal">
+        <button class="close-btn" onclick="closeEnc()">×</button>
+        <h2 style="text-align:center; color:var(--accent);">Enciclopèdia Musical</h2>
+        <div id="enc-content"></div>
+    </div>
+
+    </div>
+
+    <script src="../../../js/rewards.js"></script>
+    <script>
+        // --- DATA ---
+        const ELEMENTS = {
+            // --- BASE (4) ---
+            'teatre': { name: 'Teatre', icon: '🎭', type: 'base', era: 'General', desc: 'L\'art de la representació dramàtica.' },
+            'musica': { name: 'Música', icon: '🎵', type: 'base', era: 'General', desc: 'L\'art d\'organitzar els sons en el temps.' },
+            'esglesia': { name: 'Església', icon: '⛪', type: 'base', era: 'General', desc: 'Institució religiosa central en la història de la música.' },
+            'poble': { name: 'Poble', icon: '👨‍🌾', type: 'base', era: 'General', desc: 'La gent comuna, font de tradicions i folklore.' },
+
+            // --- EDAT MITJANA (20) ---
+            'cant_gregoria': { name: 'Cant Gregorià', icon: '📜', parents: ['esglesia', 'musica'], era: 'Edat Mitjana', desc: 'Cant monòdic litúrgic de l\'Església Catòlica.' },
+            'monestir': { name: 'Monestir', icon: '🏰', parents: ['esglesia', 'poble'], era: 'Edat Mitjana', desc: 'Centre de vida religiosa i preservació cultural.' },
+            'neumes': { name: 'Neumes', icon: '🖊️', parents: ['cant_gregoria', 'musica'], era: 'Edat Mitjana', desc: 'Primer sistema de notació musical occidental.' },
+            'trobador': { name: 'Trobador', icon: '🎸', parents: ['musica', 'poble'], era: 'Edat Mitjana', desc: 'Poeta i músic de la noblesa que cantava a l\'amor cortès.' },
+            'joglar': { name: 'Joglar', icon: '🤹', parents: ['trobador', 'poble'], era: 'Edat Mitjana', desc: 'Artista itinerant que entretenia el poble i la noblesa.' },
+            'organum': { name: 'Organum', icon: '🗣️', parents: ['cant_gregoria', 'cant_gregoria'], era: 'Edat Mitjana', desc: 'Primera forma de polifonia primitiva.' },
+            'motet_med': { name: 'Motet (Med)', icon: '🎼', parents: ['organum', 'musica'], era: 'Edat Mitjana', desc: 'Composició polifònica complexa de l\'Edat Mitjana.' },
+            'missa_med': { name: 'Missa (Med)', icon: '✝️', parents: ['cant_gregoria', 'esglesia'], era: 'Edat Mitjana', desc: 'Música per a la litúrgia de l\'eucaristia.' },
+            'ars_antiqua': { name: 'Ars Antiqua', icon: '🏛️', parents: ['organum', 'monestir'], era: 'Edat Mitjana', desc: 'Estil musical europeu de l\'Alta Edat Mitjana.' },
+            'ars_nova': { name: 'Ars Nova', icon: '🆕', parents: ['ars_antiqua', 'musica'], era: 'Edat Mitjana', desc: 'Revolució rítmica i musical del segle XIV.' },
+            'viola_roda': { name: 'Viola de Roda', icon: '🎻', parents: ['musica', 'joglar'], era: 'Edat Mitjana', desc: 'Instrument de corda fregada amb una roda.' },
+            'llaud_med': { name: 'Llaüt', icon: '🥑', parents: ['musica', 'trobador'], era: 'Edat Mitjana', desc: 'Instrument de corda polsada molt popular.' },
+            'flauta_bec': { name: 'Flauta de Bec', icon: '🥢', parents: ['musica', 'poble'], era: 'Edat Mitjana', desc: 'Instrument de vent fusta senzill i popular.' },
+            'sacabutx': { name: 'Sacabutx', icon: '🎺', parents: ['musica', 'teatre'], era: 'Edat Mitjana', desc: 'Avantpassat del trombó.' },
+            'dansa_macabra': { name: 'Dansa Macabra', icon: '💀', parents: ['dansa', 'esglesia'], era: 'Edat Mitjana', desc: 'Tema artístic sobre la universalitat de la mort.' },
+            'dansa': { name: 'Dansa', icon: '💃', parents: ['musica', 'poble'], era: 'General', desc: 'Moviment corporal rítmic, sovint amb música.' },
+            'cantiga': { name: 'Cantiga', icon: '🎶', parents: ['trobador', 'esglesia'], era: 'Edat Mitjana', desc: 'Cançó monòdica medieval, sovint a la Verge.' },
+            'misteri': { name: 'Misteri', icon: '🎭', parents: ['teatre', 'esglesia'], era: 'Edat Mitjana', desc: 'Teatre religiós medieval.' },
+            'guido': { name: 'Guido d\'Arezzo', icon: '✋', parents: ['neumes', 'monestir'], era: 'Edat Mitjana', desc: 'Monjo que va inventar el nom de les notes.' },
+            'hildegard': { name: 'Hildegard', icon: '🌿', parents: ['monestir', 'musica'], era: 'Edat Mitjana', desc: 'Abadessa i compositora mística.' },
+            'carmina_burana': { name: 'Carmina Burana', icon: '🍷', parents: ['monestir', 'poble'], era: 'Edat Mitjana', desc: 'Cants goliards sobre el vi, l\'amor i la fortuna.' },
+
+            // --- RENAIXEMENT (20) ---
+            'polifonia': { name: 'Polifonia', icon: '🎼', parents: ['cant_gregoria', 'musica'], era: 'Renaixement', desc: 'Música amb diverses veus independents simultànies.' },
+            'impremta': { name: 'Impremta', icon: '🖨️', parents: ['musica', 'teatre'], era: 'Renaixement', desc: 'Invenció que va permetre difondre partitures.' },
+            'madrigal': { name: 'Madrigal', icon: '💘', parents: ['polifonia', 'poble'], era: 'Renaixement', desc: 'Composició vocal profana sobre temes amorosos.' },
+            'chanson': { name: 'Chanson', icon: '🇫🇷', parents: ['polifonia', 'trobador'], era: 'Renaixement', desc: 'Cançó polifònica francesa.' },
+            'villancico': { name: 'Villancico', icon: '🎄', parents: ['polifonia', 'poble'], era: 'Renaixement', desc: 'Forma musical popular ibèrica, sovint religiosa.' },
+            'missa_ren': { name: 'Missa (Ren)', icon: '⛪', parents: ['polifonia', 'esglesia'], era: 'Renaixement', desc: 'La forma musical sacra més important del Renaixement.' },
+            'motet_ren': { name: 'Motet (Ren)', icon: '🎶', parents: ['polifonia', 'esglesia'], era: 'Renaixement', desc: 'Motet polifònic sacre d\'estil imitatiu.' },
+            'coral': { name: 'Coral', icon: '🗣️', parents: ['polifonia', 'poble'], era: 'Renaixement', desc: 'Himne litúrgic protestant.' },
+            'ensalada': { name: 'Ensalada', icon: '🥗', parents: ['madrigal', 'villancico'], era: 'Renaixement', desc: 'Mescla de gèneres, idiomes i ritmes.' },
+            'viola_gamba': { name: 'Viola da Gamba', icon: '🎻', parents: ['viola_roda', 'musica'], era: 'Renaixement', desc: 'Instrument de corda fregada, tocat entre les cames.' },
+            'virginal': { name: 'Virginal', icon: '🎹', parents: ['musica', 'teatre'], era: 'Renaixement', desc: 'Petit instrument de teclat de la família del clavecí.' },
+            'llaud_ren': { name: 'Llaüt (Ren)', icon: '🎸', parents: ['llaud_med', 'musica'], era: 'Renaixement', desc: 'El rei dels instruments al Renaixement.' },
+            'palestrina': { name: 'Palestrina', icon: '👼', parents: ['missa_ren', 'esglesia'], era: 'Renaixement', desc: 'Mestre de la polifonia sacra romana.' },
+            'monteverdi': { name: 'Monteverdi', icon: '🌋', parents: ['madrigal', 'opera'], era: 'Renaixement', desc: 'Figura clau en la transició al Barroc.' },
+            'escola_franco': { name: 'Escola Franco-Flamenca', icon: '🇧🇪', parents: ['polifonia', 'monestir'], era: 'Renaixement', desc: 'Estil dominant dels compositors del nord.' },
+            'escola_veneciana': { name: 'Escola Veneciana', icon: '🛶', parents: ['polifonia', 'esglesia'], era: 'Renaixement', desc: 'Estil policoral de la Basílica de Sant Marc.' },
+            'reforma': { name: 'Reforma', icon: '🔨', parents: ['esglesia', 'poble'], era: 'Renaixement', desc: 'Moviment religiós que va transformar la música sacra.' },
+            'contrareforma': { name: 'Contrareforma', icon: '🇻🇦', parents: ['reforma', 'esglesia'], era: 'Renaixement', desc: 'Resposta catòlica que buscava claredat en la polifonia.' },
+            'humanisme': { name: 'Humanisme', icon: '🧠', parents: ['teatre', 'poble'], era: 'Renaixement', desc: 'Moviment intel·lectual que posava l\'home al centre.' },
+            'mecenes': { name: 'Mecenes', icon: '💰', parents: ['poble', 'teatre'], era: 'Renaixement', desc: 'Protector ric de les arts i els músics.' },
+
+            // --- BARROC (20) ---
+            'opera': { name: 'Òpera', icon: '👸', parents: ['teatre', 'musica'], era: 'Barroc', desc: 'Drama musical totalment cantat.' },
+            'oratori': { name: 'Oratori', icon: '🙏', parents: ['opera', 'esglesia'], era: 'Barroc', desc: 'Drama musical religiós sense escenografia.' },
+            'cantata': { name: 'Cantata', icon: '📜', parents: ['musica', 'esglesia'], era: 'Barroc', desc: 'Obra vocal per a una o més veus amb acompanyament.' },
+            'passio': { name: 'Passió', icon: '✝️', parents: ['oratori', 'esglesia'], era: 'Barroc', desc: 'Oratori sobre la passió de Crist.' },
+            'concert_grosso': { name: 'Concert Grosso', icon: '🎻', parents: ['musica', 'musica'], era: 'Barroc', desc: 'Concert per a un grup de solistes i orquestra.' },
+            'concert_solista': { name: 'Concert Solista', icon: '👤', parents: ['concert_grosso', 'musica'], era: 'Barroc', desc: 'Concert per a un sol instrument i orquestra.' },
+            'suite': { name: 'Suite', icon: '💃', parents: ['dansa', 'musica'], era: 'Barroc', desc: 'Col·lecció de danses estilitzades.' },
+            'sonata_bar': { name: 'Sonata (Bar)', icon: '🎼', parents: ['musica', 'musica'], era: 'Barroc', desc: 'Obra instrumental per a un o pocs instruments.' },
+            'fuga': { name: 'Fuga', icon: '🌀', parents: ['polifonia', 'teatre'], era: 'Barroc', desc: 'Forma polifònica complexa basada en la imitació.' },
+            'claveci': { name: 'Clavecí', icon: '🎹', parents: ['virginal', 'musica'], era: 'Barroc', desc: 'Instrument de teclat de corda pinçada.' },
+            'orgue': { name: 'Orgue', icon: '🎹', parents: ['esglesia', 'musica'], era: 'Barroc', desc: 'El rei dels instruments, de vent i teclat.' },
+            'violi_strad': { name: 'Stradivarius', icon: '🎻', parents: ['viola_gamba', 'musica'], era: 'Barroc', desc: 'El violí perfecte, creat a Cremona.' },
+            'castrati': { name: 'Castrati', icon: '✂️', parents: ['opera', 'esglesia'], era: 'Barroc', desc: 'Cantants masculins amb veu aguda (per mitjans dràstics).' },
+            'bel_canto': { name: 'Bel Canto', icon: '🗣️', parents: ['opera', 'musica'], era: 'Barroc', desc: 'Estil vocal que busca la bellesa i el virtuosisme.' },
+            'baix_continu': { name: 'Baix Continu', icon: '📉', parents: ['claveci', 'musica'], era: 'Barroc', desc: 'Base harmònica improvisada típica del Barroc.' },
+            'recitatiu': { name: 'Recitatiu', icon: '💬', parents: ['opera', 'teatre'], era: 'Barroc', desc: 'Cant declamat per avançar l\'acció.' },
+            'aria': { name: 'Ària', icon: '🎤', parents: ['opera', 'musica'], era: 'Barroc', desc: 'Moment musical on el cantant expressa sentiments.' },
+            'da_capo': { name: 'Da Capo', icon: '🔁', parents: ['aria', 'musica'], era: 'Barroc', desc: 'Estructura A-B-A on es repeteix l\'inici.' },
+            'bach': { name: 'J.S. Bach', icon: '🎼', parents: ['fuga', 'esglesia'], era: 'Barroc', desc: 'El mestre absolut del contrapunt.' },
+            'vivaldi': { name: 'Vivaldi', icon: '🍂', parents: ['concert_solista', 'violi_strad'], era: 'Barroc', desc: 'El capellà roig, mestre del concert.' },
+
+            // --- CLASSICISME (20) ---
+            'simfonia': { name: 'Simfonia', icon: '🎻', parents: ['concert_grosso', 'musica'], era: 'Classicisme', desc: 'Gran obra per a orquestra en 4 moviments.' },
+            'quartet_corda': { name: 'Quartet de Corda', icon: '🎻', parents: ['violi_strad', 'musica'], era: 'Classicisme', desc: '2 violins, viola i violoncel. La conversa perfecta.' },
+            'sonata_piano': { name: 'Sonata Piano', icon: '🎹', parents: ['sonata_bar', 'piano'], era: 'Classicisme', desc: 'Obra per a piano sol en forma sonata.' },
+            'concert_piano': { name: 'Concert Piano', icon: '🎹', parents: ['concert_solista', 'piano'], era: 'Classicisme', desc: 'Diàleg entre piano i orquestra.' },
+            'opera_buffa': { name: 'Òpera Buffa', icon: '😂', parents: ['opera', 'poble'], era: 'Classicisme', desc: 'Òpera còmica amb personatges quotidians.' },
+            'singspiel': { name: 'Singspiel', icon: '🗣️', parents: ['opera', 'teatre'], era: 'Classicisme', desc: 'Òpera alemanya amb parts parlades.' },
+            'clarinet': { name: 'Clarinet', icon: '🎷', parents: ['flauta_bec', 'musica'], era: 'Classicisme', desc: 'Nou instrument de vent fusta de l\'orquestra.' },
+            'pianoforte': { name: 'Pianoforte', icon: '🎹', parents: ['claveci', 'musica'], era: 'Classicisme', desc: 'Avantpassat del piano, amb dinàmiques suaus i fortes.' },
+            'piano': { name: 'Piano', icon: '🎹', parents: ['pianoforte', 'musica'], era: 'Classicisme', desc: 'Instrument de teclat i corda percussiva.' },
+            'orquestra': { name: 'Orquestra', icon: '🎼', parents: ['simfonia', 'musica'], era: 'Classicisme', desc: 'Gran conjunt instrumental estandarditzat.' },
+            'forma_sonata': { name: 'Forma Sonata', icon: '📝', parents: ['sonata_bar', 'teatre'], era: 'Classicisme', desc: 'Estructura musical: Exposició, Desenvolupament, Reexposició.' },
+            'minuet': { name: 'Minuet', icon: '🕺', parents: ['dansa', 'teatre'], era: 'Classicisme', desc: 'Dansa aristocràtica en compàs ternari.' },
+            'rondo': { name: 'Rondo', icon: '🔄', parents: ['forma_sonata', 'musica'], era: 'Classicisme', desc: 'Forma musical on un tema principal es va repetint.' },
+            'tema_variacions': { name: 'Tema i Variacions', icon: '🔢', parents: ['musica', 'musica'], era: 'Classicisme', desc: 'Modificació constant d\'una melodia inicial.' },
+            'mannheim': { name: 'Escola Mannheim', icon: '🏫', parents: ['orquestra', 'simfonia'], era: 'Classicisme', desc: 'Orquestra famosa per la seva disciplina i efectes.' },
+            'estil_galant': { name: 'Estil Galant', icon: '🎀', parents: ['musica', 'teatre'], era: 'Classicisme', desc: 'Estil elegant, senzill i agradable.' },
+            'mozart': { name: 'Mozart', icon: '👶', parents: ['opera_buffa', 'simfonia'], era: 'Classicisme', desc: 'Geni precoç i universal.' },
+            'haydn': { name: 'Haydn', icon: '👨', parents: ['quartet_corda', 'simfonia'], era: 'Classicisme', desc: 'El pare de la simfonia i el quartet.' },
+            'beethoven_c': { name: 'Beethoven (Jove)', icon: '🦁', parents: ['simfonia', 'piano'], era: 'Classicisme', desc: 'El pont entre Classicisme i Romanticisme.' },
+            'director': { name: 'Director', icon: '🥢', parents: ['orquestra', 'teatre'], era: 'Classicisme', desc: 'Líder que unifica la interpretació de l\'orquestra.' },
+
+            // --- ROMANTICISME (20) ---
+            'lied': { name: 'Lied', icon: '💔', parents: ['piano', 'musica'], era: 'Romanticisme', desc: 'Cançó per a veu i piano sobre poemes.' },
+            'poema_simfonic': { name: 'Poema Simfònic', icon: '📖', parents: ['simfonia', 'teatre'], era: 'Romanticisme', desc: 'Música orquestral que narra una història.' },
+            'opera_wagner': { name: 'Òpera Wagneriana', icon: '🐉', parents: ['opera', 'teatre'], era: 'Romanticisme', desc: 'L\'obra d\'art total.' },
+            'leitmotiv': { name: 'Leitmotiv', icon: '💡', parents: ['opera_wagner', 'musica'], era: 'Romanticisme', desc: 'Tema musical associat a un personatge o idea.' },
+            'gran_opera': { name: 'Gran Òpera', icon: '🐘', parents: ['opera', 'poble'], era: 'Romanticisme', desc: 'Òpera espectacular amb grans cors i escenografia.' },
+            'opereta': { name: 'Opereta', icon: '🎭', parents: ['opera_buffa', 'teatre'], era: 'Romanticisme', desc: 'Òpera lleugera i còmica.' },
+            'vals': { name: 'Vals', icon: '💃', parents: ['dansa', 'musica'], era: 'Romanticisme', desc: 'Dansa de saló en 3/4 molt popular a Viena.' },
+            'nocturn': { name: 'Nocturn', icon: '🌙', parents: ['piano', 'musica'], era: 'Romanticisme', desc: 'Peça per a piano inspirada en la nit.' },
+            'estudi': { name: 'Estudi', icon: '📚', parents: ['piano', 'musica'], era: 'Romanticisme', desc: 'Peça tècnica per a practicar, elevada a art.' },
+            'balada': { name: 'Balada', icon: '🏰', parents: ['piano', 'teatre'], era: 'Romanticisme', desc: 'Peça narrativa per a piano.' },
+            'virtuosisme': { name: 'Virtuosisme', icon: '⚡', parents: ['concert_solista', 'musica'], era: 'Romanticisme', desc: 'Domini tècnic extrem de l\'instrument.' },
+            'piano_cua': { name: 'Piano de Cua', icon: '🎹', parents: ['piano', 'musica'], era: 'Romanticisme', desc: 'L\'instrument romàntic per excel·lència.' },
+            'saxofon': { name: 'Saxòfon', icon: '🎷', parents: ['clarinet', 'musica'], era: 'Romanticisme', desc: 'Instrument híbrid inventat per Adolphe Sax.' },
+            'nacionalisme': { name: 'Nacionalisme', icon: '🚩', parents: ['poble', 'musica'], era: 'Romanticisme', desc: 'Música inspirada en el folklore propi.' },
+            'beethoven_r': { name: 'Beethoven (Madur)', icon: '🌩️', parents: ['beethoven_c', 'musica'], era: 'Romanticisme', desc: 'El geni que va trencar totes les regles.' },
+            'chopin': { name: 'Chopin', icon: '🎹', parents: ['nocturn', 'piano'], era: 'Romanticisme', desc: 'El poeta del piano.' },
+            'verdi': { name: 'Verdi', icon: '🇮🇹', parents: ['opera', 'nacionalisme'], era: 'Romanticisme', desc: 'El rei de l\'òpera italiana.' },
+            'wagner': { name: 'Wagner', icon: '🇩🇪', parents: ['opera_wagner', 'teatre'], era: 'Romanticisme', desc: 'El visionari de l\'òpera alemanya.' },
+            'tchaikovsky': { name: 'Tchaikovsky', icon: '🩰', parents: ['ballet', 'simfonia'], era: 'Romanticisme', desc: 'Mestre de la melodia i el ballet.' },
+            'schubert': { name: 'Schubert', icon: '👓', parents: ['lied', 'simfonia'], era: 'Romanticisme', desc: 'El rei del Lied.' },
+
+            // --- SEGLE XX (20) ---
+            'impressionisme': { name: 'Impressionisme', icon: '🎨', parents: ['musica', 'teatre'], era: 'Segle XX', desc: 'Música que suggereix atmosferes i colors.' },
+            'dodecafonisme': { name: 'Dodecafonisme', icon: '1️⃣2️⃣', parents: ['musica', 'musica'], era: 'Segle XX', desc: 'Mètode de compondre amb les 12 notes.' },
+            'jazz': { name: 'Jazz', icon: '🎷', parents: ['saxofon', 'poble'], era: 'Segle XX', desc: 'Música afroamericana basada en la improvisació.' },
+            'blues': { name: 'Blues', icon: '😢', parents: ['poble', 'musica'], era: 'Segle XX', desc: 'L\'arrel de la música moderna, expressió de tristesa.' },
+            'rock': { name: 'Rock', icon: '🤘', parents: ['blues', 'guitarra_electrica'], era: 'Segle XX', desc: 'Revolució musical juvenil amb ritme fort.' },
+            'guitarra_electrica': { name: 'Guitarra Elèctrica', icon: '🎸', parents: ['llaud_ren', 'electronica'], era: 'Segle XX', desc: 'Icona del rock i la música moderna.' },
+            'electronica': { name: 'Electrònica', icon: '🤖', parents: ['musica', 'musica'], era: 'Segle XX', desc: 'Música produïda amb mitjans electrònics.' },
+            'pop': { name: 'Pop', icon: '🍭', parents: ['rock', 'poble'], era: 'Segle XX', desc: 'Música popular de masses.' },
+            'hiphop': { name: 'Hip Hop', icon: '🎤', parents: ['poble', 'poble'], era: 'Segle XX', desc: 'Cultura urbana basada en el rap i el ritme.' },
+            'banda_sonora': { name: 'Banda Sonora', icon: '🎥', parents: ['simfonia', 'teatre'], era: 'Segle XX', desc: 'Música per al cinema.' },
+            'musical': { name: 'Musical', icon: '🎬', parents: ['opera', 'dansa'], era: 'Segle XX', desc: 'Teatre musical modern, hereu de l\'òpera.' },
+            'videoclip': { name: 'Videoclip', icon: '📺', parents: ['pop', 'teatre'], era: 'Segle XX', desc: 'Fusió de música i imatge.' },
+            'minimalisme': { name: 'Minimalisme', icon: '➖', parents: ['musica', 'musica'], era: 'Segle XX', desc: 'Música basada en la repetició i petits canvis.' },
+            'aleatoria': { name: 'Aleatòria', icon: '🎲', parents: ['musica', 'teatre'], era: 'Segle XX', desc: 'Música on l\'atzar juga un paper important.' },
+            'neoclassicisme': { name: 'Neoclassicisme', icon: '🏛️', parents: ['classicisme', 'musica'], era: 'Segle XX', desc: 'Retorn a les formes clàssiques amb llenguatge modern.' },
+            'sintetitzador': { name: 'Sintetitzador', icon: '🎹', parents: ['piano', 'electronica'], era: 'Segle XX', desc: 'Instrument capaç de crear qualsevol so.' },
+            'bateria': { name: 'Bateria', icon: '🥁', parents: ['musica', 'poble'], era: 'Segle XX', desc: 'Conjunt de percussió clau en el jazz i el rock.' },
+            'dj': { name: 'DJ', icon: '🎧', parents: ['electronica', 'poble'], era: 'Segle XX', desc: 'Artista que crea música barrejant gravacions.' },
+            'stravinsky': { name: 'Stravinsky', icon: '🐦', parents: ['ballet', 'dodecafonisme'], era: 'Segle XX', desc: 'El camaleó de la música del segle XX.' },
+            'beatles': { name: 'The Beatles', icon: '🐞', parents: ['pop', 'rock'], era: 'Segle XX', desc: 'El grup que ho va canviar tot.' }
+        };
+
+        // --- STATE ---
+        let discovered = ['teatre', 'musica', 'esglesia', 'poble'];
+        let activeBubbles = [];
+        let idCounter = 0;
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'pop') {
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+            } else if (type === 'merge') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+            }
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        // --- LOGIC ---
+
+        function init() {
+            document.getElementById('total-count').textContent = Object.keys(ELEMENTS).length;
+            renderInventory();
+            updateStats();
+
+            // Add Nova Idea Button
+            const header = document.querySelector('header div');
+            const btn = document.createElement('button');
+            btn.className = 'btn-enc';
+            btn.innerText = 'Nova Idea 💡';
+            btn.style.marginLeft = '10px';
+            btn.style.background = '#ff9800';
+            btn.onclick = novaIdea;
+            header.appendChild(btn);
+        }
+
+        function novaIdea() {
+            // Find an undiscovered element that CAN be made
+            const possibleDiscoveries = [];
+
+            Object.keys(ELEMENTS).forEach(key => {
+                if (discovered.includes(key)) return; // Already have it
+
+                const data = ELEMENTS[key];
+                if (!data.parents) return; // Base element
+
+                const p1 = data.parents[0];
+                const p2 = data.parents[1];
+
+                if (discovered.includes(p1) && discovered.includes(p2)) {
+                    possibleDiscoveries.push({ key: key, era: data.era, parents: [p1, p2] });
+                }
+            });
+
+            if (possibleDiscoveries.length === 0) {
+                alert("Has descobert tot el que pots amb el que tens! Intenta combinar coses noves.");
+                return;
+            }
+
+            // Prioritize elements that are parents of OTHER undiscovered elements (unlockers)
+            // This helps the user "create new things" as requested
+            const unlockers = possibleDiscoveries.filter(pd => {
+                // Check if pd.key is a parent of any undiscovered element
+                return Object.values(ELEMENTS).some(el =>
+                    !discovered.includes(el) && el.parents && el.parents.includes(pd.key)
+                );
+            });
+
+            // If we have unlockers, pick one of them. Otherwise pick any possible discovery.
+            const pool = unlockers.length > 0 ? unlockers : possibleDiscoveries;
+            const target = pool[Math.floor(Math.random() * pool.length)];
+
+            // Give the element directly to the user
+            if (!discovered.includes(target.key)) {
+                discovered.push(target.key);
+                showDiscovery(target.key);
+                renderInventory();
+                updateStats();
+                spawnBubble(target.key); // Also spawn it so they can use it
+            }
+        }
+
+        function renderInventory() {
+            const inv = document.getElementById('inventory');
+            inv.innerHTML = '';
+            discovered.forEach(key => {
+                const data = ELEMENTS[key];
+                const el = document.createElement('div');
+                el.className = 'bubble inv-item';
+                el.innerHTML = `<div class="bubble-icon">${data.icon}</div><div class="bubble-name">${data.name}</div>`;
+                el.onclick = () => spawnBubble(key);
+                inv.appendChild(el);
+            });
+        }
+
+        function spawnBubble(key, x, y) {
+            const lab = document.getElementById('lab-area');
+            const data = ELEMENTS[key];
+
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.innerHTML = `<div class="bubble-icon">${data.icon}</div><div class="bubble-name">${data.name}</div>`;
+
+            if (!x) x = Math.random() * (lab.clientWidth - 100) + 50;
+            if (!y) y = Math.random() * (lab.clientHeight - 100) + 50;
+
+            b.style.left = x + 'px';
+            b.style.top = y + 'px';
+
+            const bubbleObj = {
+                id: idCounter++,
+                elementId: key,
+                el: b,
+                x: x,
+                y: y
+            };
+
+            activeBubbles.push(bubbleObj);
+            lab.appendChild(b);
+            playSound('pop');
+
+            makeDraggable(bubbleObj);
+        }
+
+        function makeDraggable(bubbleObj) {
+            const el = bubbleObj.el;
+            let isDragging = false;
+            let startX, startY;
+
+            const onDown = (e) => {
+                isDragging = true;
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                startX = clientX - bubbleObj.x;
+                startY = clientY - bubbleObj.y;
+                el.style.zIndex = 1000;
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+
+                bubbleObj.x = clientX - startX;
+                bubbleObj.y = clientY - startY;
+
+                el.style.left = bubbleObj.x + 'px';
+                el.style.top = bubbleObj.y + 'px';
+
+                checkCollisions(bubbleObj);
+            };
+
+            const onUp = () => {
+                isDragging = false;
+                el.style.zIndex = '';
+            };
+
+            el.addEventListener('mousedown', onDown);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+
+            el.addEventListener('touchstart', onDown);
+            window.addEventListener('touchmove', onMove, { passive: false });
+            window.addEventListener('touchend', onUp);
+        }
+
+        function checkCollisions(source) {
+            const threshold = 60;
+
+            for (let i = 0; i < activeBubbles.length; i++) {
+                const target = activeBubbles[i];
+                if (source.id === target.id) continue;
+
+                const dx = source.x - target.x;
+                const dy = source.y - target.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < threshold) {
+                    const result = getCombination(source.elementId, target.elementId);
+                    if (result) {
+                        mergeBubbles(source, target, result);
+                        break;
+                    }
+                }
+            }
+        }
+
+        function getCombination(a, b) {
+            for (const [key, data] of Object.entries(ELEMENTS)) {
+                if (data.parents) {
+                    if ((data.parents[0] === a && data.parents[1] === b) ||
+                        (data.parents[0] === b && data.parents[1] === a)) {
+                        return key;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function mergeBubbles(b1, b2, resultKey) {
+            b1.el.remove();
+            b2.el.remove();
+
+            activeBubbles = activeBubbles.filter(b => b.id !== b1.id && b.id !== b2.id);
+
+            const midX = (b1.x + b2.x) / 2;
+            const midY = (b1.y + b2.y) / 2;
+
+            spawnBubble(resultKey, midX, midY);
+            playSound('merge');
+
+            if (!discovered.includes(resultKey)) {
+                discovered.push(resultKey);
+                showDiscovery(resultKey);
+                renderInventory();
+                updateStats();
+
+                if (discovered.length === Object.keys(ELEMENTS).length) {
+                    if (typeof Rewards !== 'undefined') {
+                        Rewards.unlockCard(
+                            'alquimia_mix',
+                            'Mestre Alquimista',
+                            'Has descobert tots els elements musicals!',
+                            '../../img/card_alquimia.png'
+                        );
+                    }
+                }
+            }
+        }
+
+        function showDiscovery(key) {
+            const data = ELEMENTS[key];
+            document.getElementById('modal-icon').textContent = data.icon;
+            document.getElementById('modal-name').textContent = data.name;
+
+            // Fix: Append description to the modal container directly
+            const modal = document.getElementById('discovery-modal');
+            let descEl = document.getElementById('modal-desc');
+
+            if (!descEl) {
+                descEl = document.createElement('p');
+                descEl.id = 'modal-desc';
+                descEl.style.color = '#ccc';
+                descEl.style.marginTop = '10px';
+                descEl.style.textAlign = 'center';
+                descEl.style.padding = '0 20px';
+                // Insert before the button (last child)
+                modal.insertBefore(descEl, modal.lastElementChild);
+            }
+            descEl.textContent = data.desc || "Un nou descobriment fascinant!";
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('discovery-modal').style.display = 'none';
+        }
+
+        function updateStats() {
+            document.getElementById('count').textContent = discovered.length;
+        }
+
+        // --- ENCYCLOPEDIA ---
+        function openEnc() {
+            const modal = document.getElementById('enc-modal');
+            const content = document.getElementById('enc-content');
+            content.innerHTML = '';
+
+            // Group by Era
+            const eras = ['General', 'Edat Mitjana', 'Renaixement', 'Barroc', 'Classicisme', 'Romanticisme', 'Segle XX'];
+
+            eras.forEach(era => {
+                const section = document.createElement('div');
+                section.style.width = '100%';
+                section.style.marginBottom = '20px';
+
+                const title = document.createElement('h3');
+                title.innerText = era;
+                title.style.color = 'var(--accent)';
+                title.style.borderBottom = '1px solid rgba(255,255,255,0.2)';
+                title.style.paddingBottom = '5px';
+                section.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.style.display = 'grid';
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+                grid.style.gap = '1rem';
+
+                // Find elements in this era
+                const eraElements = Object.keys(ELEMENTS).filter(key => ELEMENTS[key].era === era);
+
+                eraElements.forEach(key => {
+                    const data = ELEMENTS[key];
+                    const isDiscovered = discovered.includes(key);
+
+                    const el = document.createElement('div');
+                    el.className = `enc-item ${isDiscovered ? '' : 'enc-unknown'}`;
+
+                    if (isDiscovered) {
+                        el.innerHTML = `<div class="enc-icon">${data.icon}</div><div class="enc-name">${data.name}</div>`;
+                        el.title = data.desc || "";
+                    } else {
+                        el.innerHTML = `<div class="enc-icon">❓</div><div class="enc-name">????</div>`;
+                    }
+                    grid.appendChild(el);
+                });
+
+                section.appendChild(grid);
+                content.appendChild(section);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function closeEnc() {
+            document.getElementById('enc-modal').style.display = 'none';
+        }
+
+        init();
+    </script>
+
+</body>
+
+</html>

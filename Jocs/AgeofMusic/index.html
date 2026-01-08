@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age of Music: El Repte dels 15 Minuts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            transition: background 1s ease;
+            background: #111827;
+            /* Default background */
+        }
+
+        /* Era-specific backgrounds */
+        body.era-edat-mitjana {
+            background: linear-gradient(135deg, #2c1810, #4a2c20, #3d2817);
+        }
+
+        body.era-renaixement {
+            background: linear-gradient(135deg, #8b4513, #cd853f, #daa520);
+        }
+
+        body.era-barroc {
+            background: linear-gradient(135deg, #4b0082, #8a2be2, #9932cc);
+        }
+
+        body.era-classicisme {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6, #60a5fa);
+        }
+
+        body.era-romanticisme {
+            background: linear-gradient(135deg, #7c2d12, #dc2626, #f87171);
+        }
+
+        body.era-segle-xx {
+            background: linear-gradient(135deg, #374151, #6b7280, #9ca3af);
+        }
+
+        body.era-era-del-pop-rock {
+            background: linear-gradient(135deg, #ec4899, #f472b6, #fbbf24);
+        }
+
+        body.era-era-digital {
+            background: linear-gradient(135deg, #065f46, #059669, #10b981);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Main Menu Styles */
+        #main-menu {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1f2937, #374151);
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+
+        #main-menu h1 {
+            font-size: 4em;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .menu-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 25px;
+            color: #333;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Modal Styles (Instructions & Highscores) */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 30, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            max-width: 600px;
+            width: 90%;
+            text-align: left;
+        }
+
+        .modal-content h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p,
+        .modal-content ul {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-content ul {
+            padding-left: 20px;
+        }
+
+        .modal-content strong {
+            color: #ffd700;
+        }
+
+        #highscores-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #highscores-table th,
+        #highscores-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #highscores-table th {
+            text-align: left;
+        }
+
+        .game-wrapper {
+            display: flex;
+            height: 100vh;
+        }
+
+        .game-container {
+            flex-grow: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            z-index: 100;
+        }
+
+        .title {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .current-era-display {
+            font-size: 1.4em;
+            font-weight: bold;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1em;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .energy {
+            color: #ffd700;
+        }
+
+        .influence {
+            color: #50c878;
+        }
+
+        .timer {
+            color: #fca5a5;
+        }
+
+        .stat.boost-active {
+            box-shadow: 0 0 15px #fca5a5;
+            transform: scale(1.1);
+        }
+
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tree-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .tech-tree {
+            position: relative;
+            width: 6400px;
+            height: 750px;
+            margin: 50px auto;
+        }
+
+        .era-section {
+            position: absolute;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.5s ease;
+        }
+
+        .era-section.current {
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .era-section.completed {
+            background: rgba(80, 200, 120, 0.2);
+            border-color: rgba(80, 200, 120, 0.6);
+        }
+
+        .era-section.locked {
+            background: rgba(128, 128, 128, 0.1);
+            border-color: rgba(128, 128, 128, 0.3);
+        }
+
+        .era-label {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .node {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid;
+            font-size: 0.7em;
+            text-align: center;
+            padding: 10px;
+            backdrop-filter: blur(5px);
+            font-weight: bold;
+            line-height: 1.1;
+        }
+
+        .node.blocked {
+            background: rgba(128, 128, 128, 0.3);
+            border-color: #666;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .node.available {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+            border-color: #fff;
+            color: #333;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        .node.researched {
+            background: linear-gradient(135deg, #50c878, #45b365);
+            border-color: #50c878;
+            color: white;
+            box-shadow: 0 0 20px rgba(80, 200, 120, 0.5);
+        }
+
+        .node.key-tech {
+            border-width: 4px;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 35px rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        .connection {
+            position: absolute;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform-origin: left center;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .connection.active {
+            opacity: 0.8;
+            background: linear-gradient(90deg, transparent, rgba(80, 200, 120, 0.8), transparent);
+            box-shadow: 0 0 10px rgba(80, 200, 120, 0.5);
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            max-width: 350px;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(15px);
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .tooltip h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .tooltip p {
+            margin-bottom: 8px;
+            line-height: 1.4;
+            font-size: 0.9em;
+        }
+
+        .tooltip .cost {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .tooltip .reward {
+            color: #50c878;
+            font-weight: bold;
+        }
+
+        .advance-era-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 350px;
+            /* Adjusted for the sidebar */
+            padding: 20px 40px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 30px;
+            color: #333;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .advance-era-btn.available {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .advance-era-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.9));
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+
+        .game-over-content {
+            text-align: center;
+            padding: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(15px);
+        }
+
+        .game-over h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        #name-input-container {
+            margin: 20px 0;
+        }
+
+        #player-name {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #fff;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 25px;
+            color: #333;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Store Sidebar Styles */
+        #store-sidebar {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            border-left: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 50;
+        }
+
+        .store-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .tab-content {
+            overflow-y: auto;
+        }
+
+        .upgrade-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .upgrade-item h4 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-item p {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #ffd700, #fca5a5);
+            border: none;
+            border-radius: 8px;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .buy-btn:hover:not(:disabled) {
+            box-shadow: 0 0 15px #ffd700;
+        }
+
+        .buy-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            color: #888;
+        }
+
+        .item-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .item-cost {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .item-level {
+            font-style: italic;
+            color: #aaa;
+        }
+
+        /* Volume Slider Styles */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+            transition: opacity .2s;
+        }
+
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Element d'àudio per a la música de fons -->
+    <audio id="background-music" loop></audio>
+
+    <!-- Main Menu -->
+    <div id="main-menu">
+        <h1>Age of Music</h1>
+        <button id="start-btn" class="menu-btn">Jugar</button>
+        <button id="instructions-btn" class="menu-btn">Instruccions</button>
+        <button id="highscores-btn" class="menu-btn">Puntuacions</button>
+    </div>
+
+    <!-- Game Wrapper -->
+    <div class="game-wrapper hidden">
+        <!-- Game Container -->
+        <div class="game-container">
+            <div class="header">
+                <div class="title">Age of Music</div>
+                <div class="current-era-display" id="current-era-display"></div>
+                <div class="stats">
+                    <div class="stat timer" id="timer-stat">⏰ <span id="timer">15:00</span></div>
+                    <div class="stat energy" id="energy-stat">⚡ <span id="energy"></span></div>
+                    <div class="stat influence" id="influence-stat">🌍 <span id="influence"></span></div>
+                    <div class="stat volume-control">
+                        <span>🔉</span>
+                        <input type="range" id="volume-slider" min="0" max="100" value="50">
+                    </div>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="tree-container">
+                    <div class="tech-tree" id="tech-tree"></div>
+                </div>
+                <div class="tooltip" id="tooltip">
+                    <!-- Aquest és el contenidor del tooltip que s'omplirà dinàmicament -->
+                </div>
+            </div>
+            <button class="advance-era-btn" id="advance-era-btn">Avançar a la següent era</button>
+        </div>
+        <!-- Store Sidebar -->
+        <aside id="store-sidebar">
+            <div class="store-tabs">
+                <button class="tab-btn active" data-tab="upgrades">Millores</button>
+                <button class="tab-btn" data-tab="consumables">Consumibles</button>
+            </div>
+            <div id="upgrades-content" class="tab-content"></div>
+            <div id="consumables-content" class="tab-content hidden"></div>
+        </aside>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="game-over hidden" id="game-over">
+        <div class="game-over-content">
+            <h2 id="game-over-title">Fi del Joc!</h2>
+            <p id="game-over-message"></p>
+            <p>Influència Cultural Final: <span id="final-influence"></span>🌍</p>
+            <div id="name-input-container">
+                <input type="text" id="player-name" placeholder="Escriu el teu nom...">
+                <button id="save-score-btn" class="menu-btn">Guardar Puntuació</button>
+            </div>
+            <button class="restart-btn hidden">Jugar de Nou</button>
+        </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Instruccions del Joc</h2>
+            <p><strong>Objectiu:</strong> Avançar a través de les eres de la música investigant tecnologies abans que
+                s'acabi el temps.</p>
+            <ul>
+                <li><strong>Energia (⚡):</strong> Es genera automàticament. La necessites per investigar i comprar a la
+                    botiga.</li>
+                <li><strong>Influència (🌍):</strong> És la teva puntuació final. S'obté investigant tecnologies.</li>
+                <li><strong>Botiga:</strong> Fes servir la barra lateral per comprar millores permanents i consumibles
+                    estratègics que t'ajudaran en el teu progrés.</li>
+            </ul>
+            <p><strong>Jugabilitat:</strong></p>
+            <ul>
+                <li>Fes clic en un node disponible (brillant) per investigar-lo.</li>
+                <li>Per avançar d'era, has d'investigar totes les <strong>tecnologies clau</strong> (vora més gruixuda).
+                </li>
+            </ul>
+            <p><strong>Repte:</strong> Tens 15 minuts per arribar el més lluny possible. La victòria final s'aconsegueix
+                investigant el "DAW Software". Bona sort!</p>
+            <button id="close-instructions-btn" class="menu-btn" style="margin-top: 20px;">Tancar</button>
+        </div>
+    </div>
+
+    <!-- Highscores Modal -->
+    <div id="highscores-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Millors Puntuacions</h2>
+            <table id="highscores-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nom</th>
+                        <th>Influència</th>
+                        <th>Era Aconseguida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Les puntuacions s'insertaran aquí -->
+                </tbody>
+            </table>
+            <button id="close-highscores-btn" class="menu-btn" style="margin-top: 20px;">Tancar</button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- DATA ---
+        const arbreTecnologic = [{ id: 1, era: "Edat Mitjana", nom: "Cant Gregorià", requisi: null, influ: 10, es_clau: true, cost: 10 }, { id: 2, era: "Edat Mitjana", nom: "Notació Musical", requisi: 1, influ: 20, es_clau: true, cost: 15 }, { id: 3, era: "Edat Mitjana", nom: "Lírica Trobadoresca", requisi: 1, influ: 30, es_clau: false, cost: 8 }, { id: 4, era: "Edat Mitjana", nom: "Polifonia Bàsica", requisi: 2, influ: 40, es_clau: true, cost: 20 }, { id: 5, era: "Edat Mitjana", nom: "Organum", requisi: 2, influ: 25, es_clau: false, cost: 12 }, { id: 6, era: "Edat Mitjana", nom: "Motete", requisi: 4, influ: 35, es_clau: false, cost: 18 }, { id: 7, era: "Edat Mitjana", nom: "Ars Nova", requisi: 4, influ: 45, es_clau: false, cost: 22 }, { id: 8, era: "Edat Mitjana", nom: "Balada", requisi: 3, influ: 20, es_clau: false, cost: 10 }, { id: 9, era: "Edat Mitjana", nom: "Virelai", requisi: 3, influ: 15, es_clau: false, cost: 9 }, { id: 10, era: "Edat Mitjana", nom: "Rondeau", requisi: 3, influ: 18, es_clau: false, cost: 9 }, { id: 11, era: "Edat Mitjana", nom: "Cant Ambrosià", requisi: 1, influ: 12, es_clau: false, cost: 5 }, { id: 12, era: "Edat Mitjana", nom: "Himnes Litúrgics", requisi: 1, influ: 15, es_clau: false, cost: 7 }, { id: 13, era: "Renaixement", nom: "Impremta Musical", requisi: 4, influ: 100, es_clau: true, cost: 50 }, { id: 14, era: "Renaixement", nom: "Madrigal", requisi: 13, influ: 50, es_clau: false, cost: 25 }, { id: 15, era: "Renaixement", nom: "Missa Polifònica", requisi: 13, influ: 70, es_clau: true, cost: 40 }, { id: 16, era: "Renaixement", nom: "Chanson", requisi: 13, influ: 40, es_clau: false, cost: 20 }, { id: 17, era: "Renaixement", nom: "Lied", requisi: 13, influ: 35, es_clau: false, cost: 18 }, { id: 18, era: "Renaixement", nom: "Villanella", requisi: 14, influ: 25, es_clau: false, cost: 12 }, { id: 19, era: "Renaixement", nom: "Frottola", requisi: 14, influ: 30, es_clau: false, cost: 15 }, { id: 20, era: "Renaixement", nom: "Ricercar", requisi: 15, influ: 45, es_clau: false, cost: 22 }, { id: 21, era: "Renaixement", nom: "Fantasia", requisi: 15, influ: 40, es_clau: false, cost: 20 }, { id: 22, era: "Renaixement", nom: "Dança Pavana", requisi: 13, influ: 25, es_clau: false, cost: 15 }, { id: 23, era: "Renaixement", nom: "Galiarda", requisi: 22, influ: 20, es_clau: false, cost: 10 }, { id: 24, era: "Renaixement", nom: "Toccata", requisi: 20, influ: 35, es_clau: false, cost: 18 }, { id: 25, era: "Barroc", nom: "Baix Continu", requisi: 15, influ: 80, es_clau: true, cost: 60 }, { id: 26, era: "Barroc", nom: "Naixement Òpera", requisi: 25, influ: 120, es_clau: false, cost: 50 }, { id: 27, era: "Barroc", nom: "Concert Solista", requisi: 25, influ: 100, es_clau: false, cost: 45 }, { id: 28, era: "Barroc", nom: "La Fuga", requisi: 25, influ: 150, es_clau: true, cost: 70 }, { id: 29, era: "Barroc", nom: "Oratori", requisi: 26, influ: 90, es_clau: false, cost: 40 }, { id: 30, era: "Barroc", nom: "Cantata", requisi: 25, influ: 70, es_clau: false, cost: 30 }, { id: 31, era: "Barroc", nom: "Suite de Danses", requisi: 25, influ: 60, es_clau: false, cost: 25 }, { id: 32, era: "Barroc", nom: "Passacaglia", requisi: 28, influ: 85, es_clau: false, cost: 35 }, { id: 33, era: "Barroc", nom: "Chacona", requisi: 28, influ: 80, es_clau: false, cost: 35 }, { id: 34, era: "Barroc", nom: "Concerto Grosso", requisi: 27, influ: 95, es_clau: false, cost: 40 }, { id: 35, era: "Barroc", nom: "Sonata da Chiesa", requisi: 27, influ: 75, es_clau: false, cost: 30 }, { id: 36, era: "Barroc", nom: "Sonata da Camera", requisi: 31, influ: 65, es_clau: false, cost: 28 }, { id: 37, era: "Barroc", nom: "Variacions", requisi: 28, influ: 70, es_clau: false, cost: 30 }, { id: 38, era: "Classicisme", nom: "Forma Sonata", requisi: 28, influ: 120, es_clau: true, cost: 80 }, { id: 39, era: "Classicisme", nom: "Invenció Piano", requisi: 28, influ: 200, es_clau: false, cost: 70 }, { id: 40, era: "Classicisme", nom: "Simfonia", requisi: 38, influ: 180, es_clau: true, cost: 100 }, { id: 41, era: "Classicisme", nom: "Quartet Corda", requisi: 38, influ: 100, es_clau: false, cost: 50 }, { id: 42, era: "Classicisme", nom: "Concert Clàssic", requisi: 40, influ: 150, es_clau: false, cost: 60 }, { id: 43, era: "Classicisme", nom: "Òpera Buffa", requisi: 38, influ: 110, es_clau: false, cost: 55 }, { id: 44, era: "Classicisme", nom: "Òpera Seria", requisi: 38, influ: 120, es_clau: false, cost: 60 }, { id: 45, era: "Classicisme", nom: "Sonata Piano", requisi: 39, influ: 140, es_clau: false, cost: 65 }, { id: 46, era: "Classicisme", nom: "Trio Piano", requisi: 41, influ: 90, es_clau: false, cost: 45 }, { id: 47, era: "Classicisme", nom: "Quintet Corda", requisi: 41, influ: 95, es_clau: false, cost: 48 }, { id: 48, era: "Classicisme", nom: "Simfonia Concertant", requisi: 42, influ: 130, es_clau: false, cost: 60 }, { id: 49, era: "Classicisme", nom: "Rondó", requisi: 38, influ: 80, es_clau: false, cost: 40 }, { id: 50, era: "Classicisme", nom: "Tema amb Variacions", requisi: 45, influ: 85, es_clau: false, cost: 42 }, { id: 51, era: "Romanticisme", nom: "Orquestra Expandida", requisi: 40, influ: 150, es_clau: true, cost: 120 }, { id: 52, era: "Romanticisme", nom: "Virtuosisme", requisi: 51, influ: 200, es_clau: false, cost: 90 }, { id: 53, era: "Romanticisme", nom: "Leitmotiv", requisi: 51, influ: 220, es_clau: true, cost: 150 }, { id: 54, era: "Romanticisme", nom: "Lied Romàntic", requisi: 51, influ: 120, es_clau: false, cost: 60 }, { id: 55, era: "Romanticisme", nom: "Simfonia Programàtica", requisi: 51, influ: 180, es_clau: false, cost: 80 }, { id: 56, era: "Romanticisme", nom: "Poema Simfònic", requisi: 55, influ: 160, es_clau: false, cost: 75 }, { id: 57, era: "Romanticisme", nom: "Etude Virtuós", requisi: 52, influ: 140, es_clau: false, cost: 70 }, { id: 58, era: "Romanticisme", nom: "Balada Piano", requisi: 52, influ: 110, es_clau: false, cost: 55 }, { id: 59, era: "Romanticisme", nom: "Nocturno", requisi: 52, influ: 100, es_clau: false, cost: 50 }, { id: 60, era: "Romanticisme", nom: "Vals Concert", requisi: 52, influ: 90, es_clau: false, cost: 45 }, { id: 61, era: "Romanticisme", nom: "Rapsodia", requisi: 55, influ: 130, es_clau: false, cost: 65 }, { id: 62, era: "Romanticisme", nom: "Obertura Concert", requisi: 55, influ: 120, es_clau: false, cost: 60 }, { id: 63, era: "Romanticisme", nom: "Concert Romàntic", requisi: 52, influ: 170, es_clau: false, cost: 85 }, { id: 64, era: "Segle XX", nom: "Impressionisme", requisi: 53, influ: 250, es_clau: false, cost: 100 }, { id: 65, era: "Segle XX", nom: "Dodecafonisme", requisi: 53, influ: 280, es_clau: true, cost: 180 }, { id: 66, era: "Segle XX", nom: "Música Concreta", requisi: 53, influ: 260, es_clau: true, cost: 160 }, { id: 67, era: "Segle XX", nom: "Expressionisme", requisi: 65, influ: 240, es_clau: false, cost: 110 }, { id: 68, era: "Segle XX", nom: "Neoclassicisme", requisi: 64, influ: 220, es_clau: false, cost: 90 }, { id: 69, era: "Segle XX", nom: "Serialisme", requisi: 65, influ: 300, es_clau: false, cost: 130 }, { id: 70, era: "Segle XX", nom: "Música Aleatòria", requisi: 66, influ: 270, es_clau: false, cost: 120 }, { id: 71, era: "Segle XX", nom: "Minimalisme", requisi: 66, influ: 290, es_clau: false, cost: 125 }, { id: 72, era: "Segle XX", nom: "Música Electroacústica", requisi: 66, influ: 320, es_clau: false, cost: 140 }, { id: 73, era: "Segle XX", nom: "Futurisme", requisi: 66, influ: 210, es_clau: false, cost: 80 }, { id: 74, era: "Segle XX", nom: "Dadaisme Musical", requisi: 70, influ: 180, es_clau: false, cost: 70 }, { id: 75, era: "Segle XX", nom: "Microtonalisme", requisi: 65, influ: 250, es_clau: false, cost: 115 }, { id: 76, era: "Segle XX", nom: "Música Espectral", requisi: 72, influ: 280, es_clau: false, cost: 135 }, { id: 77, era: "Era del Pop/Rock", nom: "Naixement Blues", requisi: 65, influ: 300, es_clau: true, cost: 200 }, { id: 78, era: "Era del Pop/Rock", nom: "Guitarra Elèctrica", requisi: 77, influ: 350, es_clau: true, cost: 250 }, { id: 79, era: "Era del Pop/Rock", nom: "Rock & Roll", requisi: 78, influ: 400, es_clau: false, cost: 150 }, { id: 80, era: "Era del Pop/Rock", nom: "Sintetitzador", requisi: 78, influ: 380, es_clau: true, cost: 280 }, { id: 81, era: "Era del Pop/Rock", nom: "Jazz", requisi: 77, influ: 320, es_clau: false, cost: 140 }, { id: 82, era: "Era del Pop/Rock", nom: "Country", requisi: 77, influ: 250, es_clau: false, cost: 100 }, { id: 83, era: "Era del Pop/Rock", nom: "Folk Revival", requisi: 77, influ: 200, es_clau: false, cost: 80 }, { id: 84, era: "Era del Pop/Rock", nom: "Rhythm & Blues", requisi: 77, influ: 280, es_clau: false, cost: 120 }, { id: 85, era: "Era del Pop/Rock", nom: "Soul", requisi: 84, influ: 300, es_clau: false, cost: 130 }, { id: 86, era: "Era del Pop/Rock", nom: "Funk", requisi: 85, influ: 320, es_clau: false, cost: 140 }, { id: 87, era: "Era del Pop/Rock", nom: "Reggae", requisi: 84, influ: 290, es_clau: false, cost: 125 }, { id: 88, era: "Era del Pop/Rock", nom: "Psychedelic Rock", requisi: 79, influ: 350, es_clau: false, cost: 160 }, { id: 89, era: "Era del Pop/Rock", nom: "Progressive Rock", requisi: 88, influ: 370, es_clau: false, cost: 180 }, { id: 90, era: "Era del Pop/Rock", nom: "Punk Rock", requisi: 79, influ: 330, es_clau: false, cost: 150 }, { id: 91, era: "Era del Pop/Rock", nom: "Heavy Metal", requisi: 78, influ: 360, es_clau: false, cost: 170 }, { id: 92, era: "Era del Pop/Rock", nom: "Disco", requisi: 86, influ: 310, es_clau: false, cost: 135 }, { id: 93, era: "Era Digital", nom: "Tecnologia MIDI", requisi: 80, influ: 450, es_clau: true, cost: 300 }, { id: 94, era: "Era Digital", nom: "Sampling", requisi: 93, influ: 500, es_clau: false, cost: 200 }, { id: 95, era: "Era Digital", nom: "DAW Software", requisi: 93, influ: 600, es_clau: true, cost: 400 }, { id: 96, era: "Era Digital", nom: "Música amb IA", requisi: 95, influ: 800, es_clau: false, cost: 350 }, { id: 97, era: "Era Digital", nom: "Hip Hop", requisi: 94, influ: 520, es_clau: false, cost: 220 }, { id: 98, era: "Era Digital", nom: "House Music", requisi: 94, influ: 480, es_clau: false, cost: 180 }, { id: 99, era: "Era Digital", nom: "Techno", requisi: 98, influ: 500, es_clau: false, cost: 190 }, { id: 100, era: "Era Digital", nom: "Ambient", requisi: 95, influ: 460, es_clau: false, cost: 150 }, { id: 101, era: "Era Digital", nom: "Drum & Bass", requisi: 97, influ: 490, es_clau: false, cost: 185 }, { id: 102, era: "Era Digital", nom: "Dubstep", requisi: 99, influ: 470, es_clau: false, cost: 180 }, { id: 103, era: "Era Digital", nom: "Trap", requisi: 97, influ: 450, es_clau: false, cost: 170 }, { id: 104, era: "Era Digital", nom: "EDM", requisi: 99, influ: 510, es_clau: false, cost: 200 }, { id: 105, era: "Era Digital", nom: "Auto-Tune", requisi: 95, influ: 430, es_clau: false, cost: 120 }, { id: 106, era: "Era Digital", nom: "Streaming", requisi: 95, influ: 550, es_clau: false, cost: 250 }, { id: 107, era: "Era Digital", nom: "Plataformes Digitals", requisi: 106, influ: 580, es_clau: false, cost: 280 }, { id: 108, era: "Era Digital", nom: "Realitat Virtual Musical", requisi: 96, influ: 650, es_clau: false, cost: 320 }, { id: 109, era: "Era Digital", nom: "Blockchain Music", requisi: 107, influ: 600, es_clau: false, cost: 300 }];
+        const descriptions = { 1: "El fonament de la música litúrgica cristiana medieval, caracteritzat per melodies monofòniques sagrades en llatí.", 2: "El primer sistema d'escriptura musical que va permetre preservar i transmetre les melodies amb precisió a través de les generacions.", 3: "La tradició poètica i musical dels trobadors provençals que va influir profundament la cultura europea amb les seves cançons d'amor cortès.", 4: "L'art revolucionari de combinar múltiples línies melòdiques independents en una sola composició harmoniosa i complexa.", 5: "Forma primitiva de polifonia on una veu acompanya el cant pla amb intervals paral·lels, creant les primeres harmonies.", 6: "Composició polifònica medieval amb text sagrat, que va evolucionar fins a convertir-se en una forma clau de la polifonia renaixentista.", 7: "Moviment musical del segle XIV que va introduir nous sistemes rítmics i notacionals, aportant una major complexitat a la música.", 8: "Forma poètica i musical d'origen francès que combinava narració amb melodia, molt popular a les corts.", 9: "Forma musical francesa amb estrofes i tornada, popular en la poesia cortesana i en la música dels trobadors.", 10: "Composició circular francesa amb repeticions que va influir la música profana i va establir estructures formals.", 11: "Sistema litúrgic milanès anterior al gregorià, conegut per les seves melodies més ornamentades i expressives.", 12: "Cants devocionals que van expandir el repertori litúrgic cristià, afegint noves melodies i textos a la pràctica religiosa.", 13: "La revolució tecnològica que va permetre la distribució massiva de partitures i l'estandardització de la pràctica musical a tot Europa.", 14: "Forma musical vocal profana que va florir durant el Renaixement italià, expressant emocions seculars amb gran detall.", 15: "L'apogeu de la música sacra renaixentista amb composicions d'una puresa i perfecció tècnica excepcionals.", 16: "Cançó polifònica francesa que va establir nous estàndards de sofisticació musical i va ser un model per a altres gèneres.", 17: "Cançó alemanya que va desenvolupar l'expressió musical vernacular al centre d'Europa, posant música a la poesia local.", 18: "Forma vocal italiana menys sofisticada que el madrigal, però molt popular pel seu caràcter lleuger i rústic.", 19: "Predecessor del madrigal, una forma musical italiana amb textos lleugers i melodies simples, sovint de caràcter humorístic.", 20: "Forma instrumental complexa basada en la imitació i el desenvolupament temàtic, precursora directa de la fuga.", 21: "Composició instrumental lliure que va explorar noves possibilitats expressives sense les restriccions de les formes vocals.", 22: "Dansa cortesana elegant i cerimonial que va definir el repertori renaixentista i es ballava a les corts més importants.", 23: "Dansa ràpida i vivace que complementava la pavana en les suites de dança, aportant un contrast rítmic.", 24: "Peça virtuosística per a teclat que va mostrar les capacitats tècniques dels intèrprets i la complexitat dels instruments.", 25: "Sistema harmònic fonamental del període barroc amb baix cifrat que sostenia tota l'estructura musical.", 26: "La creació revolucionària d'un nou gènere teatral que combina música, drama i espectacle visual en una sola obra.", 27: "El desenvolupament del concepte de solista virtuós dins l'orquestra, destacant la individualitat artística.", 28: "La forma contrapuntística més sofisticada i matemàticament perfecta, culminada per Johann Sebastian Bach.", 29: "Obra dramàtica musical sense escenificació, sovint de temàtica religiosa, que es representava en esglésies i sales de concert.", 30: "Composició vocal amb acompanyament instrumental, precursora de formes posteriors més complexes com l'oratori.", 31: "Col·lecció de danses estilitzades que va establir l'estructura de la música instrumental i va ser molt popular a les corts.", 32: "Forma basada en un baix ostinato amb variacions successives, tècnicament desafiant i molt expressiva.", 33: "Variacions sobre una progressió harmònica fixa, similar a la passacaglia, que permetia una gran creativitat.", 34: "Format orquestral que contrasta un grup petit de solistes amb l'orquestra completa, creant un diàleg musical.", 35: "Sonata per a ús litúrgic amb moviments contrapontístics seriosos, pensada per a ser interpretada a l'església.", 36: "Sonata per a entreteniment secular amb moviments de dansa, destinada a ser tocada en salons i cambres privades.", 37: "Tècnica compositiva que transforma un tema a través de múltiples variacions, mostrant la creativitat del compositor.", 38: "L'estructura musical fonamental del període clàssic que va definir la forma i organització de la música occidental.", 39: "L'instrument revolucionari que va transformar l'expressivitat musical amb dinàmiques variables i sensibilitat tàctil.", 40: "La forma orquestral per excel·lència del classicisme vienès, culminació de l'art simfònic amb compositors com Mozart i Haydn.", 41: "La música de cambra més refinada del període clàssic, una perfecta combinació d'intimitat i sofisticació.", 42: "Format que va establir el diàleg entre un solista virtuós i l'orquestra en el període clàssic.", 43: "Òpera còmica italiana que va democratitzar el teatre musical amb temes quotidians i personatges populars.", 44: "Òpera noble de temàtica heroica o mitològica, més formal i cerimonial que l'òpera buffa.", 45: "Desenvolupament de la forma sonata aplicada específicament al piano, explorant les seves capacitats expressives.", 46: "Combinació de piano, violí i violoncel que va crear un nou format de cambra molt popular.", 47: "Expansió del quartet de corda amb una veu addicional per a una major riquesa harmònica i textural.", 48: "Format simfònic amb múltiples solistes, un híbrid entre la simfonia i el concert.", 49: "Forma musical amb una tornada recurrent que s'alterna amb episodis contrastants, aportant varietat estructural.", 50: "Tècnica compositiva que explora transformacions temàtiques sistemàtiques, molt utilitzada en el classicisme.", 51: "L'expansió dramàtica de l'orquestra per aconseguir noves sonoritats i efectes emocionals intensos.", 52: "L'exaltació de la tècnica instrumental individual com a màxima expressió de l'emoció artística i la genialitat.", 53: "La innovadora tècnica compositiva wagneriana de temes musicals associats a personatges, idees o emocions.", 54: "Evolució de la cançó alemanya amb un acompanyament pianístic més sofisticat i expressiu.", 55: "Simfonia que narra una història o descriu escenes específiques a través de la música, anant més enllà de l'abstracció.", 56: "Forma orquestral inspirada en literatura o art que va expandir l'expressivitat musical en una sola peça contínua.", 57: "Composicions pianístiques que combinen el desenvolupament tècnic amb una gran bellesa artística.", 58: "Forma pianística narrativa que evoca històries o emocions intenses a través de la música, sense necessitat de paraules.", 59: "Peces pianístiques nocturnes d'ambient íntim i melancòlic, popularitzades per Chopin.", 60: "Adaptacions de concert del vals ballable amb un virtuosisme tècnic afegit, pensades per a ser escoltades.", 61: "Composicions de caràcter nacionalista que incorporen elements folklòrics i melodies populars d'una regió.", 62: "Peça orquestral independent que va substituir l'obertura d'òpera tradicional, sovint interpretada en concerts.", 63: "Evolució del concert clàssic amb una major expressivitat emocional i una tècnica virtuosística desbordant.", 64: "El moviment musical que va buscar suggerir i evocar atmosferes més que descriure explícitament la realitat.", 65: "El sistema compositiu revolucionari que va abandonar completament la tonalitat tradicional occidental.", 66: "La primera música creada amb sons gravats i manipulats, precursora directa de la música electrònica.", 67: "Moviment artístic que va prioritzar l'expressió emocional intensa per sobre de la bellesa tradicional.", 68: "Retorn als principis clàssics de claredat i equilibri com a reacció contra l'excés del Romanticisme.", 69: "Extensió del dodecafonisme que va aplicar la serialització a tots els paràmetres musicals, no només a les notes.", 70: "Música on alguns elements es deixen a l'atzar o a la decisió de l'intèrpret, creant obres úniques a cada concert.", 71: "Estil que utilitza materials musicals mínims amb repeticions graduals i canvis subtils per crear un efecte hipnòtic.", 72: "Fusió de sons acústics i electrònics en composicions d'avantguarda, explorant noves textures sonores.", 73: "Moviment que va celebrar la modernitat industrial i va incorporar sorolls urbans i de màquines a la música.", 74: "Aplicació dels principis dadaistes d'absurditat i antiart a la música, qüestionant la pròpia definició de composició.", 75: "Sistema que utilitza intervals més petits que el semitò tradicional, expandint les possibilitats melòdiques i harmòniques.", 76: "Música basada en l'anàlisi i síntesi dels components espectrals del so, creant harmonies complexes i riques.", 77: "L'origen profund de la música popular moderna amb arrels africano-americanes i una forta expressió de lluita social.", 78: "L'instrument que va transformar radicalment el panorama sonor popular del segle XX i la cultura juvenil.", 79: "La fusió musical explosiva que va crear la primera música juvenil verdaderament global i transgeneracional.", 80: "L'instrument electrònic pioner que va obrir noves dimensions sonores impossibles amb instruments tradicionals.", 81: "Gènere musical americà que va combinar la improvisació amb una sofisticació harmònica i rítmica sense precedents.", 82: "Música folklòrica americana que va influir profundament la cultura popular occidental amb les seves històries i melodies.", 83: "Moviment que va revitalitzar la música tradicional amb una nova consciència social i política.", 84: "Evolució del blues que va incorporar elements de gospel i jazz, donant lloc a un so més urbà i ballable.", 85: "Gènere que va combinar la intensitat del R&B amb l'espiritualitat del gospel per crear una nova expressivitat vocal.", 86: "Música de ball afroamericana amb ritmes sincopats i línies de baix prominents que va definir una època.", 87: "Gènere jamaicà que va globalitzar els ritmes caribenys i la consciència social a través de la seva música.", 88: "Rock experimental que va incorporar efectes sonors, lletres introspectives i conceptes psicodèlics.", 89: "Evolució del rock que va integrar elements de la música clàssica i el jazz, creant composicions llargues i complexes.", 90: "Moviment musical minimalista i agressiu que va reaccionar contra l'excessiva sofisticació del rock progressiu.", 91: "Gènere que va amplificar la potència i l'agressivitat del rock tradicional, amb guitarres distorsionades i ritmes contundents.", 92: "Música de ball que va dominar les discoteques i va influir la cultura nocturna amb els seus ritmes enganxosos.", 93: "El protocol tecnològic que va estandarditzar la comunicació entre instruments electrònics i ordinadors.", 94: "La tècnica revolucionària de reutilitzar i transformar fragments d'àudio gravats en noves composicions creatives.", 95: "El software que va democratitzar completament la producció musical professional i va transformar la indústria.", 96: "La nova frontera de la creació musical, utilitzant intel·ligència artificial per generar composicions originals.", 97: "Cultura musical urbana que va combinar rap, DJing, breaking i grafiti en un moviment cultural global.", 98: "Gènere de música electrònica de ball que va originar la cultura de club moderna a les ciutats de Chicago i Nova York.", 99: "Música electrònica de Detroit que va fusionar el funk, l'electro i un so futurista industrial.", 100: "Música atmosfèrica que prioritza la textura i l'ambient per sobre de la melodia tradicional, creant paisatges sonors.", 101: "Subgènere electrònic caracteritzat per ritmes trencats molt ràpids i línies de baix potents i profundes.", 102: "Gènere electrònic que va revolucionar la música de ball amb els seus 'drops' i 'wobbles' característics.", 103: "Evolució del hip hop amb hi-hats ràpids, 808s prominents i un so més fosc i atmosfèric.", 104: "Música electrònica de ball comercial que va dominar festivals i ràdios a nivell mundial amb melodies èpiques.", 105: "Tecnologia que va transformar la correcció de to en un efecte creatiu distintiu, definint el so del pop modern.", 106: "La revolució en la distribució musical que va canviar completament la indústria i la manera de consumir música.", 107: "Ecosistemes digitals que van redefinir com es descobreix, comparteix i consumeix música a l'era d'internet.", 108: "Tecnologia immersiva que va crear noves formes d'experiència musical, combinant so i imatges virtuals.", 109: "Aplicació de la tecnologia blockchain per a una distribució i monetització més justa i transparent de la música." };
+
+        const musicMap = {
+            "Edat Mitjana": "../../assets/audio_shared/Trobador anònim-Fi d'amor.m4a",
+            "Renaixement": "../../assets/audio_shared/Ànonim-Greensleeves.m4a",
+            "Barroc": "../../assets/audio_shared/Bach-Toccata & Fugue D Minor, BWV 565.m4a",
+            "Classicisme": "../../assets/audio_shared/Mozart-Pequeña Serenata Nocturna.m4a",
+            "Romanticisme": "../../assets/audio_shared/Beethoven- 5a Simfonia.m4a",
+            "Segle XX": "../../assets/audio_shared/Schoemberg-Tres piezas para piano.m4a",
+            "Era del Pop/Rock": "../../assets/audio_shared/Standars de Jazz-Standards Medley (Fly Me To The Moon, Autumn Leaves, Misty, L.O.V.E. & More).m4a",
+            "Era Digital": "../../assets/audio_shared/Jellybean Fenderson-Oscilloscope Music.m4a"
+        };
+
+        const storeItems = {
+            upgrades: [
+                { id: 'cost_reduction', name: 'Evolució Teòrica', description: 'Redueix el cost de les innovacions. El descompte augmenta amb cada nivell fins a un màxim del 10%.', baseCost: 100, level: 0 },
+                { id: 'influence_boost', name: 'Llegat dels Mestres', description: 'El teu treball es basa en gegants, augmentant la teva influència cultural un 10% per nivell.', baseCost: 150, level: 0 }
+            ],
+            consumables: [
+                { id: 'festival', name: 'Festival de Música', description: 'Durant 30 segons, la generació d\'energia i influència es dispara (Energia x5, Influència x2).', cost: 250 },
+                { id: 'manuscript', name: 'Manuscrit Perdut', description: 'Investiga a l\'instant una tecnologia aleatòria disponible (no clau) sense cost.', cost: 180 },
+                { id: 'divine_inspiration', name: 'Inspiració Divina', description: 'Una musa et concedeix més temps. Afegeix 60 segons al rellotge.', cost: 400 }
+            ]
+        };
+
+        // --- GAME STATE & CONSTANTS ---
+        let gameState;
+        let gameInterval;
+        let currentAudio;
+        let fadeInterval;
+        const eras = ["Edat Mitjana", "Renaixement", "Barroc", "Classicisme", "Romanticisme", "Segle XX", "Era del Pop/Rock", "Era Digital"];
+        const eraPositions = { "Edat Mitjana": { x: 50, y: 100, width: 600, height: 580 }, "Renaixement": { x: 700, y: 150, width: 650, height: 450 }, "Barroc": { x: 1400, y: 100, width: 700, height: 500 }, "Classicisme": { x: 2150, y: 100, width: 750, height: 550 }, "Romanticisme": { x: 2950, y: 100, width: 700, height: 450 }, "Segle XX": { x: 3700, y: 100, width: 800, height: 500 }, "Era del Pop/Rock": { x: 4550, y: 50, width: 850, height: 600 }, "Era Digital": { x: 5450, y: 100, width: 900, height: 550 } };
+
+        // --- DOM ELEMENTS ---
+        const mainMenu = document.getElementById('main-menu');
+        const startBtn = document.getElementById('start-btn');
+        const instructionsBtn = document.getElementById('instructions-btn');
+        const highscoresBtn = document.getElementById('highscores-btn');
+        const instructionsModal = document.getElementById('instructions-modal');
+        const highscoresModal = document.getElementById('highscores-modal');
+        const closeInstructionsBtn = document.getElementById('close-instructions-btn');
+        const closeHighscoresBtn = document.getElementById('close-highscores-btn');
+        const gameWrapper = document.querySelector('.game-wrapper');
+        const gameOverScreen = document.getElementById('game-over');
+        const restartBtn = gameOverScreen.querySelector('.restart-btn');
+        const saveScoreBtn = document.getElementById('save-score-btn');
+        const playerNameInput = document.getElementById('player-name');
+        const nameInputContainer = document.getElementById('name-input-container');
+        const storeTabs = document.querySelectorAll('.tab-btn');
+        const upgradesContent = document.getElementById('upgrades-content');
+        const consumablesContent = document.getElementById('consumables-content');
+        const timerStat = document.getElementById('timer-stat');
+        const energyStat = document.getElementById('energy-stat');
+        const influenceStat = document.getElementById('influence-stat');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // --- GAME FLOW LOGIC ---
+        function showMainMenu() {
+            mainMenu.classList.remove('hidden');
+            gameWrapper.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            document.body.className = '';
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+        }
+
+        function startGame() {
+            mainMenu.classList.add('hidden');
+            gameWrapper.classList.remove('hidden');
+            initGame();
+
+            // Start music
+            currentAudio = document.getElementById('background-music');
+            currentAudio.src = musicMap[gameState.currentEra];
+            currentAudio.volume = volumeSlider.value / 100;
+            currentAudio.play().catch(e => console.error("Error en reproduir l'àudio:", e));
+        }
+
+        function initGame() {
+            storeItems.upgrades.forEach(u => u.level = 0);
+
+            gameState = {
+                energy: 100,
+                influence: 0,
+                currentEra: "Edat Mitjana",
+                researchedNodes: new Set(),
+                gameRunning: true,
+                timeRemaining: 900,
+                upgrades: {
+                    energyPerSecond: 3, // REBALANCED: Increased base energy generation
+                    influenceMultiplier: 1,
+                    costReductionPercent: 0,
+                    isFestivalActive: false
+                }
+            };
+
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 1000);
+
+            updateBodyClass();
+            renderTechTree();
+            renderStore();
+            updateUI();
+        }
+
+        function gameLoop() {
+            if (!gameState.gameRunning) return;
+            gameState.timeRemaining--;
+
+            const energyGain = gameState.upgrades.isFestivalActive ? gameState.upgrades.energyPerSecond * 5 : gameState.upgrades.energyPerSecond;
+            gameState.energy += energyGain;
+
+            updateUI();
+            if (gameState.timeRemaining <= 0) {
+                endGame(false, "S'ha acabat el temps! La història de la música s'ha aturat abans d'hora.");
+            }
+        }
+
+        function endGame(victory, message) {
+            if (!gameState.gameRunning) return;
+            gameState.gameRunning = false;
+            clearInterval(gameInterval);
+            gameWrapper.classList.add('hidden');
+            gameOverScreen.classList.remove('hidden');
+
+            document.getElementById('game-over-title').textContent = victory ? "Victòria! 🏆" : "Derrota 💔";
+            document.getElementById('game-over-message').textContent = message;
+            document.getElementById('final-influence').textContent = gameState.influence;
+
+            nameInputContainer.classList.remove('hidden');
+            restartBtn.classList.add('hidden');
+        }
+
+        function saveScore() {
+            const playerName = playerNameInput.value.trim();
+            if (playerName === "") {
+                alert("Si us plau, introdueix un nom.");
+                return;
+            }
+
+            const scores = JSON.parse(localStorage.getItem('ageOfMusicScores')) || [];
+
+            const newScore = {
+                name: playerName,
+                score: gameState.influence,
+                era: gameState.currentEra
+            };
+
+            scores.push(newScore);
+            scores.sort((a, b) => b.score - a.score); // Ordenar de major a menor
+
+            localStorage.setItem('ageOfMusicScores', JSON.stringify(scores));
+
+            nameInputContainer.classList.add('hidden');
+            restartBtn.classList.remove('hidden');
+        }
+
+        function showHighscores() {
+            const scores = JSON.parse(localStorage.getItem('ageOfMusicScores')) || [];
+            const tableBody = document.querySelector("#highscores-table tbody");
+            tableBody.innerHTML = ''; // Netejar la taula
+
+            if (scores.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4">Encara no hi ha puntuacions. Sigues el primer!</td></tr>';
+            } else {
+                scores.slice(0, 10).forEach((score, index) => { // Mostrar només el top 10
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${score.name}</td>
+                            <td>${score.score} 🌍</td>
+                            <td>${score.era}</td>
+                        </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            }
+            highscoresModal.classList.remove('hidden');
+        }
+
+        // --- MUSIC LOGIC ---
+        function switchTrack(newEra) {
+            if (!currentAudio) return;
+
+            clearInterval(fadeInterval);
+            const fadeDuration = 1500; // 1.5 seconds
+            const fadeSteps = 30;
+            const startVolume = currentAudio.volume;
+            const volumeStep = startVolume / fadeSteps;
+
+            // Fade Out
+            fadeInterval = setInterval(() => {
+                const newVolume = currentAudio.volume - volumeStep;
+                if (newVolume > 0) {
+                    currentAudio.volume = newVolume;
+                } else {
+                    clearInterval(fadeInterval);
+                    currentAudio.pause();
+                    currentAudio.volume = 0;
+                    currentAudio.src = musicMap[newEra];
+                    currentAudio.play().catch(e => console.error("Error en reproduir l'àudio:", e));
+
+                    // Fade In
+                    const finalVolume = volumeSlider.value / 100;
+                    const fadeInVolumeStep = finalVolume / fadeSteps;
+                    fadeInterval = setInterval(() => {
+                        const newFadeInVolume = currentAudio.volume + fadeInVolumeStep;
+                        if (newFadeInVolume < finalVolume) {
+                            currentAudio.volume = newFadeInVolume;
+                        } else {
+                            clearInterval(fadeInterval);
+                            currentAudio.volume = finalVolume;
+                        }
+                    }, fadeDuration / fadeSteps);
+                }
+            }, fadeDuration / fadeSteps);
+        }
+
+        // --- RENDERING & UI ---
+        function updateBodyClass() {
+            const className = `era-${gameState.currentEra.toLowerCase().replace(/[/ ]/g, '-')}`;
+            document.body.className = className;
+        }
+
+        function renderTechTree() {
+            const treeContainer = document.getElementById('tech-tree');
+            treeContainer.innerHTML = '';
+            const nodePositions = autoLayoutNodes();
+            Object.entries(eraPositions).forEach(([era, pos]) => {
+                const section = document.createElement('div');
+                section.className = 'era-section';
+                section.style.left = `${pos.x}px`; section.style.top = `${pos.y}px`;
+                section.style.width = `${pos.width}px`; section.style.height = `${pos.height}px`;
+                const label = document.createElement('div');
+                label.className = 'era-label'; label.textContent = era;
+                section.appendChild(label);
+                if (era === gameState.currentEra) section.classList.add('current');
+                else if (eras.indexOf(era) < eras.indexOf(gameState.currentEra)) section.classList.add('completed');
+                else section.classList.add('locked');
+                treeContainer.appendChild(section);
+            });
+            arbreTecnologic.forEach(node => {
+                if (node.requisi) {
+                    const connection = createConnection(node.requisi, node.id, nodePositions);
+                    if (connection) treeContainer.appendChild(connection);
+                }
+            });
+            arbreTecnologic.forEach(node => {
+                const nodeElement = createNode(node, nodePositions);
+                treeContainer.appendChild(nodeElement);
+            });
+            updateNodeStates();
+        }
+
+        function createConnection(fromId, toId, nodePositions) {
+            const fromPos = nodePositions[fromId]; const toPos = nodePositions[toId];
+            if (!fromPos || !toPos) return null;
+            const connection = document.createElement('div');
+            connection.className = `connection connection-from-${fromId} connection-to-${toId}`;
+            const dx = toPos.x - fromPos.x; const dy = toPos.y - fromPos.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            connection.style.left = `${fromPos.x + 60}px`; connection.style.top = `${fromPos.y + 59}px`;
+            connection.style.width = `${length}px`; connection.style.transform = `rotate(${angle}deg)`;
+            return connection;
+        }
+
+        function createNode(nodeData, nodePositions) {
+            const node = document.createElement('div');
+            node.className = `node ${nodeData.es_clau ? 'key-tech' : ''}`;
+            node.id = `node-${nodeData.id}`;
+            const pos = nodePositions[nodeData.id];
+            node.style.left = `${pos.x}px`; node.style.top = `${pos.y}px`;
+            node.textContent = nodeData.nom;
+            node.addEventListener('click', () => researchNode(nodeData.id));
+            node.addEventListener('mousemove', (e) => showTooltip(e, nodeData));
+            node.addEventListener('mouseleave', hideTooltip);
+            return node;
+        }
+
+        function updateNodeStates() {
+            arbreTecnologic.forEach(nodeData => {
+                const nodeElement = document.getElementById(`node-${nodeData.id}`);
+                if (!nodeElement) return;
+                const isResearched = gameState.researchedNodes.has(nodeData.id);
+                const prerequisiteResearched = nodeData.requisi === null || gameState.researchedNodes.has(nodeData.requisi);
+                const isAvailable = !isResearched && prerequisiteResearched;
+                const isEraUnlocked = eras.indexOf(nodeData.era) <= eras.indexOf(gameState.currentEra);
+                nodeElement.className = `node ${nodeData.es_clau ? 'key-tech' : ''}`;
+                if (isResearched) {
+                    nodeElement.classList.add('researched');
+                    document.querySelectorAll(`.connection-from-${nodeData.id}`).forEach(conn => conn.classList.add('active'));
+                } else if (isAvailable && isEraUnlocked) {
+                    nodeElement.classList.add('available');
+                } else {
+                    nodeElement.classList.add('blocked');
+                }
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('current-era-display').textContent = gameState.currentEra;
+            document.getElementById('energy').textContent = Math.floor(gameState.energy);
+            document.getElementById('influence').textContent = gameState.influence;
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            updateStoreButtons();
+        }
+
+        function showTooltip(event, nodeData) {
+            const tooltip = document.getElementById('tooltip');
+            const discountMultiplier = 1 - (gameState.upgrades.costReductionPercent / 100);
+            const finalCost = Math.ceil(nodeData.cost * discountMultiplier);
+            tooltip.innerHTML = `
+                <h3>${nodeData.nom}</h3>
+                <p>${descriptions[nodeData.id] || "Una innovació musical important."}</p>
+                <p class="cost">Cost: ${finalCost} ⚡</p>
+                <p class="reward">Recompensa: +${nodeData.influ} 🌍</p>
+            `;
+            tooltip.style.left = `${event.clientX + 15}px`; tooltip.style.top = `${event.clientY + 15}px`;
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() { document.getElementById('tooltip').classList.remove('show'); }
+
+        // --- STORE LOGIC ---
+        function renderStore() {
+            upgradesContent.innerHTML = '';
+            storeItems.upgrades.forEach(item => {
+                const cost = Math.ceil(item.baseCost * Math.pow(1.8, item.level));
+                upgradesContent.innerHTML += `
+                    <div class="upgrade-item">
+                        <h4>${item.name}</h4>
+                        <p>${item.description}</p>
+                        <button class="buy-btn" id="buy-${item.id}" onclick="buyUpgrade('${item.id}')">Comprar</button>
+                        <div class="item-info">
+                            <span class="item-cost">Cost: ${cost} ⚡</span>
+                            <span class="item-level">Nivell: ${item.level}</span>
+                        </div>
+                    </div>`;
+            });
+
+            consumablesContent.innerHTML = '';
+            storeItems.consumables.forEach(item => {
+                consumablesContent.innerHTML += `
+                    <div class="upgrade-item">
+                        <h4>${item.name}</h4>
+                        <p>${item.description}</p>
+                        <button class="buy-btn" id="buy-${item.id}" onclick="buyConsumable('${item.id}')">Comprar</button>
+                         <div class="item-info">
+                            <span class="item-cost">Cost: ${item.cost} ⚡</span>
+                        </div>
+                    </div>`;
+            });
+            updateStoreButtons();
+        }
+
+        function updateStoreButtons() {
+            storeItems.upgrades.forEach(item => {
+                const cost = Math.ceil(item.baseCost * Math.pow(1.8, item.level));
+                const btn = document.getElementById(`buy-${item.id}`);
+                if (btn) btn.disabled = gameState.energy < cost;
+            });
+            storeItems.consumables.forEach(item => {
+                const btn = document.getElementById(`buy-${item.id}`);
+                if (btn) {
+                    let disable = gameState.energy < item.cost;
+                    if (item.id === 'festival' && gameState.upgrades.isFestivalActive) {
+                        disable = true;
+                    }
+                    btn.disabled = disable;
+                }
+            });
+        }
+
+        function buyUpgrade(itemId) {
+            const item = storeItems.upgrades.find(u => u.id === itemId);
+            if (!item) return;
+            const cost = Math.ceil(item.baseCost * Math.pow(1.8, item.level));
+
+            if (gameState.energy >= cost) {
+                gameState.energy -= cost;
+                item.level++;
+                if (item.id === 'cost_reduction') {
+                    // REBALANCED: New progressive discount logic
+                    const discountLevels = [0, 5, 6, 7, 8, 9, 10];
+                    gameState.upgrades.costReductionPercent = discountLevels[item.level] || 10;
+                } else if (item.id === 'influence_boost') {
+                    gameState.upgrades.influenceMultiplier += 0.1;
+                }
+                renderStore();
+                updateUI();
+            }
+        }
+
+        function buyConsumable(itemId) {
+            const item = storeItems.consumables.find(c => c.id === itemId);
+            if (!item || gameState.energy < item.cost) return;
+
+            gameState.energy -= item.cost;
+
+            if (item.id === 'festival') {
+                if (gameState.upgrades.isFestivalActive) return;
+                gameState.upgrades.isFestivalActive = true;
+                energyStat.classList.add('boost-active');
+                influenceStat.classList.add('boost-active');
+                setTimeout(() => {
+                    gameState.upgrades.isFestivalActive = false;
+                    energyStat.classList.remove('boost-active');
+                    influenceStat.classList.remove('boost-active');
+                    updateStoreButtons();
+                }, 30000);
+            }
+            else if (item.id === 'manuscript') {
+                const availableNodes = arbreTecnologic.filter(node => {
+                    const isResearched = gameState.researchedNodes.has(node.id);
+                    const prerequisiteResearched = node.requisi === null || gameState.researchedNodes.has(node.requisi);
+                    const isEraUnlocked = eras.indexOf(node.era) <= eras.indexOf(gameState.currentEra);
+                    return !isResearched && prerequisiteResearched && isEraUnlocked && !node.es_clau;
+                });
+                if (availableNodes.length > 0) {
+                    const randomNode = availableNodes[Math.floor(Math.random() * availableNodes.length)];
+                    // Research node without cost
+                    gameState.influence += Math.ceil(randomNode.influ * gameState.upgrades.influenceMultiplier);
+                    gameState.researchedNodes.add(randomNode.id);
+                    updateNodeStates();
+                }
+            }
+            else if (item.id === 'divine_inspiration') {
+                gameState.timeRemaining += 60;
+            }
+
+            updateUI();
+        }
+
+        // --- PLAYER ACTIONS ---
+        function researchNode(nodeId) {
+            if (!gameState.gameRunning) return;
+            const nodeData = arbreTecnologic.find(n => n.id === nodeId);
+            const discountMultiplier = 1 - (gameState.upgrades.costReductionPercent / 100);
+            const finalCost = Math.ceil(nodeData.cost * discountMultiplier);
+
+            const isResearched = gameState.researchedNodes.has(nodeId);
+            const prerequisiteResearched = nodeData.requisi === null || gameState.researchedNodes.has(nodeData.requisi);
+            const isEraUnlocked = eras.indexOf(nodeData.era) <= eras.indexOf(gameState.currentEra);
+            if (isResearched || !prerequisiteResearched || !isEraUnlocked || gameState.energy < finalCost) return;
+
+            gameState.energy -= finalCost;
+            const influenceGain = gameState.upgrades.isFestivalActive ? nodeData.influ * 2 : nodeData.influ;
+            gameState.influence += Math.ceil(influenceGain * gameState.upgrades.influenceMultiplier);
+            gameState.researchedNodes.add(nodeId);
+
+            updateNodeStates();
+            updateUI();
+            checkAdvanceEra();
+            if (nodeId === 95) {
+                endGame(true, "Felicitats! Has desenvolupat el software DAW i has canviat la producció musical per sempre.");
+            }
+        }
+
+        function checkAdvanceEra() {
+            const currentEraNodes = arbreTecnologic.filter(n => n.era === gameState.currentEra);
+            const keyNodes = currentEraNodes.filter(n => n.es_clau);
+            const researchedKeyNodes = keyNodes.filter(n => gameState.researchedNodes.has(n.id));
+            const advanceBtn = document.getElementById('advance-era-btn');
+            if (keyNodes.length > 0 && researchedKeyNodes.length === keyNodes.length && gameState.currentEra !== "Era Digital") {
+                advanceBtn.classList.add('available');
+                advanceBtn.onclick = advanceEra;
+            } else {
+                advanceBtn.classList.remove('available');
+            }
+        }
+
+        function advanceEra() {
+            const currentIndex = eras.indexOf(gameState.currentEra);
+            if (currentIndex < eras.length - 1) {
+                const newEra = eras[currentIndex + 1];
+                gameState.currentEra = newEra;
+                switchTrack(newEra); // Canvia la música a la nova era
+                updateBodyClass();
+                renderTechTree();
+                checkAdvanceEra();
+            }
+        }
+
+        function autoLayoutNodes() {
+            const nodePositions = {};
+            const nodesByEra = {};
+            arbreTecnologic.forEach(node => {
+                if (!nodesByEra[node.era]) { nodesByEra[node.era] = []; }
+                nodesByEra[node.era].push(node);
+            });
+            Object.keys(eraPositions).forEach(era => {
+                const eraBox = eraPositions[era];
+                const nodes = nodesByEra[era];
+
+                // Aleatoritzar l'ordre dels nodes per a un disseny més orgànic
+                for (let i = nodes.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [nodes[i], nodes[j]] = [nodes[j], nodes[i]];
+                }
+
+                const numNodes = nodes.length;
+                const cols = Math.ceil(Math.sqrt(numNodes * (eraBox.width / eraBox.height)));
+                const rows = Math.ceil(numNodes / cols);
+                const xSpacing = eraBox.width / (cols + 1);
+                const ySpacing = eraBox.height / (rows + 1);
+                nodes.forEach((node, index) => {
+                    const col = index % cols;
+                    const row = Math.floor(index / cols);
+                    nodePositions[node.id] = {
+                        x: eraBox.x + (col + 1) * xSpacing - 60,
+                        y: eraBox.y + (row + 1) * ySpacing - 60,
+                    };
+                });
+            });
+            return nodePositions;
+        }
+
+        // --- EVENT LISTENERS ---
+        startBtn.addEventListener('click', startGame);
+        instructionsBtn.addEventListener('click', () => instructionsModal.classList.remove('hidden'));
+        highscoresBtn.addEventListener('click', showHighscores);
+        closeInstructionsBtn.addEventListener('click', () => instructionsModal.classList.add('hidden'));
+        closeHighscoresBtn.addEventListener('click', () => highscoresModal.classList.add('hidden'));
+        restartBtn.addEventListener('click', showMainMenu);
+        saveScoreBtn.addEventListener('click', saveScore);
+        storeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                storeTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const tabName = tab.dataset.tab;
+                upgradesContent.classList.toggle('hidden', tabName !== 'upgrades');
+                consumablesContent.classList.toggle('hidden', tabName !== 'consumables');
+            });
+        });
+        volumeSlider.addEventListener('input', (e) => {
+            if (currentAudio) {
+                currentAudio.volume = e.target.value / 100;
+            }
+        });
+
+    </script>
+</body>
+
+</html>
