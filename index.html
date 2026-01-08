@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ChronOS</title>
+    <style>
+        /* CSS Variables & Reset */
+        :root {
+            --app-size: 68px;
+            /* Slightly larger icons */
+            --gap: 20px;
+            --dock-height: 95px;
+            --text-color: #ffffff;
+            --text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            --bg-blur: blur(20px);
+            --icon-radius: 16px;
+        }
+
+        /* Dark Text Mode (for Light Backgrounds) */
+        body.dark-text-mode {
+            --text-color: #000000;
+            --text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #000 url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            /* Updated to variable */
+            transition: color 0.3s;
+            /* Smooth transition */
+        }
+
+        /* ... existing styles ... */
+
+        .nav-arrow {
+            /* ... props ... */
+            color: var(--text-color);
+        }
+
+        .search-input {
+            /* ... props ... */
+            color: var(--text-color);
+        }
+
+        /* Update Icon Label Color */
+        .app-name {
+            margin-top: 6px;
+            font-size: 12px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: var(--app-size);
+            text-shadow: var(--text-shadow);
+            /* Updated */
+            font-weight: 500;
+            color: var(--text-color);
+            /* Explicitly set */
+        }
+
+        /* Phone Container (Desktop View) */
+        #phone {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.3s;
+        }
+
+        @media (min-width: 768px) {
+            #phone {
+                /* iPhone Pro Max Width for more space */
+                width: 428px;
+                height: 880px;
+                border: 16px solid #222;
+                border-radius: 50px;
+                box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+            }
+
+            body {
+                background-color: #1a1a1a;
+            }
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            font-size: 15px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        /* Search Widget */
+        .search-widget {
+            margin: 10px 25px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-widget i {
+            font-size: 20px;
+            opacity: 0.8;
+            margin-right: 12px;
+        }
+
+        .search-widget span {
+            opacity: 0.7;
+            font-size: 17px;
+        }
+
+        /* App Grid / Slider */
+        .slider-container {
+            flex: 1;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            display: flex;
+            scrollbar-width: none;
+        }
+
+        .slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .screen {
+            min-width: 100%;
+            scroll-snap-align: center;
+            padding: 10px 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, min-content);
+            grid-gap: var(--gap);
+            align-content: start;
+        }
+
+        /* App Icon */
+        .app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .app:active {
+            transform: scale(0.9);
+        }
+
+        .app:hover .icon {
+            transform: scale(1.05);
+        }
+
+        .icon {
+            width: var(--app-size);
+            height: var(--app-size);
+            border-radius: var(--icon-radius);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #FF9966, #FF5E62);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .icon.folder-icon {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            padding: 13px;
+            align-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mini-dot {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .app-name {
+            margin-top: 6px;
+            font-size: 12px;
+            /* Slightly bigger font */
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: var(--app-size);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            font-weight: 500;
+        }
+
+        /* Dock */
+        .dock {
+            height: var(--dock-height);
+            margin: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 40px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dock .app-name {
+            display: none;
+        }
+
+        .dock .icon {
+            width: 55px;
+            height: 55px;
+            font-size: 24px;
+            box-shadow: none;
+        }
+
+        /* Pagination Dots */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            z-index: 50;
+            /* Above screen */
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            user-select: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Positioning arrows on the edges */
+        .nav-arrow.left {
+            left: 15px;
+        }
+
+        .nav-arrow.right {
+            right: 15px;
+        }
+
+        /* Hide arrows on real touch devices to avoid clutter */
+        @media (pointer: coarse) {
+            .nav-arrow {
+                display: none;
+            }
+        }
+
+        /* Overlays (Search, Folder) */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(25px);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+
+        .overlay.active {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .overlay-header {
+            padding: 30px 25px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-input {
+            margin: 0 25px 25px;
+            padding: 15px;
+            border-radius: 18px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 18px;
+            outline: none;
+        }
+
+        .results-grid {
+            padding: 0 25px 40px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            /* Hide scrollbar for mobile feel */
+            scrollbar-width: none;
+            overflow-x: hidden;
+        }
+
+        .results-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Home Indicator (iPhone style) */
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        /* Widgets */
+        .widget-container {
+            grid-column: span 4;
+            /* Takes full width of grid */
+            height: 100px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .widget-title {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .widget-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .widget-actions button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="phone">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+
+        <!-- Widgets -->
+        <div class="search-widget" onclick="openSearch()">
+            <i>🔍</i> <span>Cerca a ChronOS...</span>
+        </div>
+
+        <!-- Navigation Arrows -->
+        <div class="nav-arrow left" onclick="scrollScreen(-1)">‹</div>
+        <div class="nav-arrow right" onclick="scrollScreen(1)">›</div>
+
+        <!-- Main Screens Slider -->
+        <div class="slider-container" id="slider" onscroll="updatePagination()">
+            <!-- Screens will be injected here -->
+        </div>
+
+        <!-- Pagination Dots -->
+        <div class="pagination" id="pagination"></div>
+
+        <!-- Dock -->
+        <div class="dock">
+            <!-- Settings Folder -->
+            <div class="app" onclick="openFolder('Opcions', systemApps.settings)">
+                <div class="icon folder-icon" style="background: rgba(80,80,80,0.5)">
+                    <div class="mini-dot" style="background:#bbb"></div>
+                    <div class="mini-dot" style="background:#bbb"></div>
+                    <div class="mini-dot" style="background:#bbb"></div>
+                </div>
+                <!-- No label in dock -->
+            </div>
+
+            <!-- Maps -->
+            <div class="app" onclick="launchGame('musimaps')">
+                <div class="icon" style="background: linear-gradient(to bottom, #4facfe, #00f2fe);">
+                    🗺️
+                </div>
+            </div>
+
+            <!-- Mail Folder -->
+            <div class="app" onclick="openFolder('Mail', systemApps.mail)">
+                <div class="icon folder-icon" style="background: rgba(0,122,255,0.5)">
+                    <div class="mini-dot" style="background:#fff"></div>
+                    <div class="mini-dot" style="background:#fff"></div>
+                </div>
+            </div>
+
+            <!-- Instagram -->
+            <div class="app" onclick="launchGame('InstagramMusical')">
+                <div class="icon"
+                    style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
+                    📷
+                </div>
+            </div>
+
+            <!-- WhatsApp -->
+            <div class="app" onclick="openFolder('Comunicació', systemApps.social)">
+                <div class="icon" style="background: #25D366;">
+                    📞
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Search / App Library Overlay -->
+        <div id="searchOverlay" class="overlay">
+            <div class="overlay-header">
+                <div style="width:32px"></div> <!-- Spacer -->
+                <span>Biblioteca de Apps</span>
+                <div class="close-btn" onclick="closeOverlay('searchOverlay')">✕</div>
+            </div>
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar app..."
+                onkeyup="filterSearch()">
+            <div class="results-grid" id="searchResults"></div>
+        </div>
+
+        <!-- Folder Overlay -->
+        <div id="folderOverlay" class="overlay" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(40px);">
+            <div class="overlay-header">
+                <div style="width:32px"></div>
+                <span id="folderTitle" style="font-size:24px">Carpeta</span>
+                <div class="close-btn" onclick="closeOverlay('folderOverlay')">✕</div>
+            </div>
+            <div class="results-grid" id="folderContent" style="padding-top:20px;"></div>
+        </div>
+
+        <!-- WELCOME / ONBOARDING OVERLAY -->
+        <div id="welcomeOverlay" class="overlay"
+            style="display:flex; z-index: 9999; background: rgba(0,0,0,0.92); backdrop-filter: blur(30px); padding: 40px 25px;">
+            <div
+                style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 400px;">
+
+                <!-- Logo / Title -->
+                <div style="margin-bottom: 40px; text-align: center; animation: slideDown 0.8s ease-out;">
+                    <div style="font-size: 60px; margin-bottom: 10px;">⏳</div>
+                    <h1
+                        style="font-size: 42px; font-weight: 800; letter-spacing: -2px; 
+                        background: linear-gradient(to right, #4facfe, #00f2fe); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                        ChronOS</h1>
+                    <div style="font-size: 14px; letter-spacing: 4px; opacity: 0.7; font-weight: 600;">SISTEMA v1.0
+                    </div>
+                    <div
+                        style="margin-top: 10px; font-size: 18px; font-style: italic; color: #fff; text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);">
+                        La història de la música com mai l'has jugat</div>
+                </div>
+
+                <!-- Features Grid -->
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; margin-bottom: 40px;">
+                    <!-- Feature 1 -->
+                    <div
+                        style="background: rgba(255,255,255,0.08); padding: 15px; border-radius: 16px; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.05); animation: fadeInMove 0.5s ease-out 0.2s backwards;">
+                        <span style="font-size: 24px;">🔍</span>
+                        <div>
+                            <div style="font-weight: 700; font-size: 16px;">Cercador Global</div>
+                            <div style="font-size: 13px; opacity: 0.7;">Troba qualsevol joc o fitxer a l'instant.</div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div
+                        style="background: rgba(255,255,255,0.08); padding: 15px; border-radius: 16px; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.05); animation: fadeInMove 0.5s ease-out 0.4s backwards;">
+                        <span style="font-size: 24px;">🎮</span>
+                        <div>
+                            <div style="font-weight: 700; font-size: 16px;">Zones de Joc</div>
+                            <div style="font-size: 13px; opacity: 0.7;">Practica una època concreta o juga amb tot
+                                barrejat a l'Arcade.</div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div
+                        style="background: rgba(255,255,255,0.08); padding: 15px; border-radius: 16px; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.05); animation: fadeInMove 0.5s ease-out 0.6s backwards;">
+                        <span style="font-size: 24px;">📚</span>
+                        <div>
+                            <div style="font-weight: 700; font-size: 16px;">Arxiu de Teoria</div>
+                            <div style="font-size: 13px; opacity: 0.7;">Accés directe al coneixement musical.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hype & Button -->
+                <div style="text-align: center; width: 100%; animation: slideUp 0.8s ease-out 0.8s backwards;">
+                    <p style="font-size: 16px; margin-bottom: 25px; line-height: 1.5; color: #ddd;">
+                        Estàs a punt d'entrar a la xarxa.<br>
+                        <span style="color: #4facfe; font-weight: bold;">La història t'espera.</span>
+                    </p>
+
+                    <button onclick="closeWelcome()" style="
+                        width: 100%; padding: 18px; border-radius: 20px; border: none;
+                        background: linear-gradient(135deg, #FF9966, #FF5E62);
+                        color: white; font-size: 18px; font-weight: 800; letter-spacing: 1px;
+                        box-shadow: 0 0 20px rgba(255, 94, 98, 0.4);
+                        cursor: pointer; transition: transform 0.1s; text-transform: uppercase;">
+                        INICIAR SISTEMA
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <style>
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-30px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeInMove {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        </style>
+
+        <!-- Hidden Wallapaper Input -->
+        <input type="file" id="wallpaperInput" accept="image/*" style="display:none"
+            onchange="handleWallpaperChange(this)">
+
+        <!-- Home Indicator -->
+        <div class="home-indicator"></div>
+
+    </div>
+
+    <script>
+        // --- CLOCK & NAVIGATION ---
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            // iOS Status bar time format (e.g. 10:24)
+            const timeString = `${hours}:${minutes}`;
+
+            // Safety check just in case
+            const timeEl = document.querySelector('.status-bar span:first-child');
+            if (timeEl) timeEl.innerText = timeString;
+        }
+        setInterval(updateTime, 1000);
+        setTimeout(updateTime, 0); // Initial call
+
+        function scrollScreen(direction) {
+            const slider = document.getElementById('slider');
+            const width = slider.offsetWidth;
+            slider.scrollBy({ left: direction * width, behavior: 'smooth' });
+        }
+
+        // --- DATA SOURCE ---
+        // Generated from directory structure + classifications
+        const data = {
+            "selector": [
+                "Agencia_Temporal", "ClubTemps", "DJHistoric", "HistorIA", "L_Art_de_Carrer_Historic",
+                "LiniaTemps", "MusicTok_X", "Projecte_Genesis", "QuiesquiCompositors", "Refugi_Protocol",
+                "SalaProfessors", "Scrabble", "Simulator_Professor", "Tren_Progres", "Vidirera_trencada",
+                "Wikipedia", "banda_tribut", "crossfit_musical", "cuina_fantasma", "expres_orient",
+                "farmacia_historica", "fira_musica", "fontaneria_musical", "hort_temps", "ink_master",
+                "lliga_ritme", "metro_music", "moodboard_musical", "pesca_anecs", "pica_paret",
+                "primer_contacte", "servei_neteja", "tops_musicals", "torre_control", "urgencies_musicals",
+                "var_historic", "vident_temps"
+            ],
+            "mixed": [
+                "13RueCompositors", "AgeofMusic", "AlquimiaGeneres", "AlquimistaArts", "AncestryMusic",
+                "Arquer_Melodic", "Arquitecte_Sonor", "Ascens_Olimp", "Assassins_Harmony", "Banksy",
+                "BartenderMusical", "BeatSaber", "Bibliotecari", "Bomba", "Bombolles", "BotigaDiscos",
+                "Botiga_Antiguitats", "Bushido", "Camerino", "CasMusicologic", "ChronoCraft", "Cinema",
+                "CityTycoon", "ClahsofMusic", "CopyrightStrike", "CriticImplacable", "DNI", "Das_Boot",
+                "Derby", "DialHistoria", "DiariCompositor", "DiariSecret", "Diferencies", "Duel_Espasa",
+                "EnBuscaICaptura", "EndevinaImatge", "EscanerMusical", "Escape_Room_Codi", "Escape_Room_Nau",
+                "Escape_Room_Temple", "Escriba", "EvoPet", "FashionHistory", "FestivalTycoon", "FinalNote",
+                "FroggerHistoric", "FronteraMusical", "GiraEuropea", "GramofonEncantat", "GymCronologic",
+                "HarmonyHunter", "Historify", "HistoryRunner", "HistoryWars", "History_Kombat", "HogwartsHistoria",
+                "ImpremtaTemps", "Infern_Musical", "InmobilariaMusicalGlobal", "Invasio_Anacronismes",
+                "JornadaElectoral", "Judici_Osiris", "KitManager", "L_Ascensorista_Historic", "La_Destructora",
+                "LaboratoriMusical", "Laboratori_Quimeres", "LinkeMusic", "LladreGuantBlanc", "LuchaDeTitanes",
+                "MangakaMusical", "MascaraAnima", "Memory", "MenuXef", "MeteoMusic", "MotoGP_Historic",
+                "MusiDex_GO", "MusicDevTycoon", "NBA_Draft_Historic", "Netflix", "NeveraMusicalGlobal",
+                "NutriScoreMusical", "Odisea_7_Mares", "Operacio_Zero_Absolut", "OperationX", "PCBuilder",
+                "PentagramaRunner", "Periodic", "Pixar_Artist", "PixelArtHistoric", "Qui_Vol_Ser_Music_Milionari",
+                "RadarTransit", "RadioCronos", "Radiografia_Historica", "Ragnarok", "RapBattle",
+                "RevistaHistoria", "Sabotejador", "SabtejadorCort", "Skate_Park_Simfonic", "Skyrim_Armory",
+                "Sneakerhead", "SpeedMusical", "StandUp", "StorageWars", "Subasta", "Supermercat",
+                "TallerLuthier", "TerminalHistoria", "TerminalMusical", "Timbalers", "Tomorrow_History",
+                "TowerOfHistory_X", "TreballsFinals", "Tribunal", "TruthMachine", "Twitter", "Unboxing",
+                "VagaMusical", "Vault_33", "VendingMachine", "ViatgesCompas", "Vinyl_Vault", "WordleMusical",
+                "XatTemps", "Zatoichi", "amazon_musical", "botiga_funkos", "bugaderia_temps", "cadires_musicals",
+                "cafe_temps", "candlelight", "central_comandes", "code_composer", "consultor_musical",
+                "contrabandista_temps", "eco_historia", "excel_database", "expedicio_temps", "gabinet_curiositats",
+                "gran_hotel", "history_dates", "mister_musical", "mod_xat", "musikit", "night_shift", "oficina_postal",
+                "pedra_rosetta", "podcast historia", "rider_temps", "skald_stone", "symphony_clicker_X",
+                "taquilla_express", "tombola_musical", "uber_composer", "venue_finder", "wall_street_musical"
+            ]
+        };
+
+        // --- SYSTEM APP DEFINITIONS (Dock Mappings) ---
+        const systemApps = {
+            settings: ["Fondos", "Backups", "Energy", "gestor_arxius", "OSInstallation", "PatternLock", "ReCaptcha", "Alarmes"],
+            mail: ["inbox_zero", "spam_vs_historia"],
+            social: ["Whatsapp", "WhatsappHistoric"],
+            maps: ["musimaps"],
+            instagram: ["InstagramMusical"]
+        };
+
+        // Flatten list for search
+        const allGames = [...data.selector, ...data.mixed, ...systemApps.settings, ...systemApps.mail, ...systemApps.social, ...systemApps.maps, ...systemApps.instagram].sort();
+
+        // --- LOGIC ---
+
+        // 1. Generate Colors
+        function stringToColor(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+            return '#' + '00000'.substring(0, 6 - c.length) + c;
+        }
+
+        // 2. Render Icon HTML
+        function createIcon(name) {
+            const el = document.createElement('div');
+            el.className = 'app';
+            el.title = name;
+            el.onclick = (e) => launchGame(name, e.currentTarget);
+
+            // Icon
+            const icon = document.createElement('div');
+            icon.className = 'icon';
+            // Create a pleasant gradient
+            const col1 = stringToColor(name);
+            const col2 = stringToColor(name.split('').reverse().join(''));
+            icon.style.background = `linear-gradient(135deg, ${col1}, ${col2})`;
+
+            // Smart Initials: Take first two chars or acronyms
+            let initials = name.substring(0, 2).toUpperCase();
+            if (name.includes('_')) {
+                initials = name.split('_').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            }
+
+            icon.innerText = initials;
+
+            // Label using user friendly name
+            const label = document.createElement('div');
+            label.className = 'app-name';
+            label.innerText = name.replace(/_/g, ' ');
+
+            el.appendChild(icon);
+            el.appendChild(label);
+            return el;
+        }
+
+        // 3. Render Screens
+        function render() {
+            const slider = document.getElementById('slider');
+            const pagination = document.getElementById('pagination');
+            slider.innerHTML = '';
+            pagination.innerHTML = '';
+
+            const APPS_PER_SCREEN = 20;
+            const selectorChunks = [];
+            const mixedChunks = [];
+
+            // Helper
+            const chunkArray = (arr, size, target) => {
+                for (let i = 0; i < arr.length; i += size) target.push(arr.slice(i, i + size));
+            };
+
+            chunkArray(data.selector, APPS_PER_SCREEN, selectorChunks);
+            chunkArray(data.mixed, APPS_PER_SCREEN, mixedChunks);
+
+            // --- SCREEN 0: DASHBOARD ---
+            const dashboard = document.createElement('div');
+            dashboard.className = 'screen dashboard-screen';
+            dashboard.style.display = 'flex';
+            dashboard.style.flexDirection = 'column';
+            dashboard.style.alignItems = 'center';
+            dashboard.style.justifyContent = 'flex-start'; // Changed to start to allow scrolling if needed
+            dashboard.style.paddingTop = '30px';
+
+            dashboard.innerHTML = `
+                <div style="text-align:center; margin-bottom: 15px;">
+                    <h1 style="font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 5px; 
+                        background: linear-gradient(to right, #fff, #aaa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                        ChronOS
+                    </h1>
+                    <p style="font-size: 13px; opacity: 0.6; font-weight: 500; letter-spacing: 0.5px;">
+                        Disseny per Javier Mateo García
+                    </p>
+                </div>
+
+                <!-- Wallpaper Widget -->
+                <div class="widget-container" style="width: 100%; margin-bottom: 25px;">
+                    <div class="widget-title">Disseny</div>
+                    <div class="widget-actions">
+                        <button onclick="document.getElementById('wallpaperInput').click()">📷 Foto</button>
+                        <button onclick="toggleTextMode()">🌗 Text</button>
+                        <button onclick="resetWallpaper()">↺ Reset</button>
+                    </div>
+                </div>
+
+                <!-- Navigation Hubs -->
+                <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div onclick="scrollToPage(1)" style="
+                        background: linear-gradient(135deg, #FF9966, #FF5E62);
+                        border-radius: 22px; padding: 20px; height: 140px;
+                        display: flex; flex-direction: column; justify-content: space-between;
+                        box-shadow: 0 10px 20px rgba(255, 94, 98, 0.3); cursor: pointer; transition: transform 0.1s;">
+                        <span style="font-size: 32px;">⏳</span>
+                        <span style="font-size: 16px; font-weight: 700; line-height: 1.2;">Jocs<br>per Època</span>
+                    </div>
+
+                    <div onclick="scrollToPage(${1 + selectorChunks.length})" style="
+                        background: linear-gradient(135deg, #4facfe, #00f2fe);
+                        border-radius: 22px; padding: 20px; height: 140px;
+                        display: flex; flex-direction: column; justify-content: space-between;
+                        box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3); cursor: pointer; transition: transform 0.1s;">
+                        <span style="font-size: 32px;">🌍</span>
+                        <span style="font-size: 16px; font-weight: 700; line-height: 1.2;">Arcade<br>& Mix</span>
+                    </div>
+                </div>
+
+                <!-- Theory Archive Widget -->
+                <div onclick="window.location.href='./biblioteca_historia_musica-main/index.html'" style="
+                    width: 100%; margin-top: 15px; margin-bottom: 25px;
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    border-radius: 20px; padding: 15px 20px;
+                    display: flex; align-items: center; justify-content: space-between;
+                    box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); cursor: pointer;
+                    border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 28px; background: rgba(255,255,255,0.2); width: 50px; height: 50px; 
+                            display: flex; align-items: center; justify-content: center; border-radius: 12px;">📚</span>
+                        <div>
+                            <div style="font-size: 16px; font-weight: 700;">Arxiu de Teoria</div>
+                            <div style="font-size: 13px; opacity: 0.8;">Biblioteca d'Història Musical</div>
+                        </div>
+                    </div>
+                    <span style="font-size: 20px; opacity: 0.7;">›</span>
+                </div>
+            `;
+            slider.appendChild(dashboard);
+            pagination.appendChild(createDot(0));
+
+            // --- RENDER APP SCREENS ---
+            let globalIndex = 1;
+
+            // Selector Screens
+            selectorChunks.forEach(chunk => {
+                const screen = document.createElement('div');
+                screen.className = 'screen';
+                chunk.forEach(name => screen.appendChild(createIcon(name)));
+
+                slider.appendChild(screen);
+                pagination.appendChild(createDot(globalIndex));
+                globalIndex++;
+            });
+
+            // Mixed Screens
+            mixedChunks.forEach(chunk => {
+                const screen = document.createElement('div');
+                screen.className = 'screen';
+                chunk.forEach(name => screen.appendChild(createIcon(name)));
+
+                slider.appendChild(screen);
+                pagination.appendChild(createDot(globalIndex));
+                globalIndex++;
+            });
+        }
+
+        function createDot(index) {
+            const dot = document.createElement('div');
+            dot.className = index === 0 ? 'dot active' : 'dot';
+            return dot;
+        }
+
+        function scrollToPage(index) {
+            const slider = document.getElementById('slider');
+            const width = slider.offsetWidth;
+            slider.scrollTo({ left: index * width, behavior: 'smooth' });
+        }
+
+        // 4. Pagination Update
+        function updatePagination() {
+            const slider = document.getElementById('slider');
+            const dots = document.querySelectorAll('.dot');
+            const scrollPos = slider.scrollLeft;
+            const width = slider.offsetWidth;
+            // Debounce or simple round
+            const index = Math.round(scrollPos / width);
+
+            dots.forEach(d => d.classList.remove('active'));
+            if (dots[index]) dots[index].classList.add('active');
+        }
+
+        // 5. Launch Game
+        function launchGame(name, element) {
+            // Handle Wallpaper App
+            if (name === "Fondos") {
+                document.getElementById('wallpaperInput').click();
+                return;
+            }
+
+            // Animation Effect
+            if (element) {
+                const icon = element.querySelector('.icon');
+                if (icon) {
+                    icon.style.transition = "transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s";
+                    icon.style.transform = "scale(5)";
+                    icon.style.opacity = "0";
+                    icon.style.zIndex = "1000";
+                }
+            }
+
+            setTimeout(() => {
+                if (name.startsWith("http")) window.location.href = name;
+                else window.location.href = `./Jocs/${name}/index.html`;
+            }, 300); // Wait for animation start
+        }
+
+        // Reset animations when returning to the page (handling bfcache)
+        window.addEventListener('pageshow', () => {
+            const icons = document.querySelectorAll('.app .icon');
+            icons.forEach(icon => {
+                icon.style.transition = 'none'; // Disable transition for instant reset
+                icon.style.transform = '';
+                icon.style.opacity = '';
+                icon.style.zIndex = '';
+
+                // Force reflow
+                void icon.offsetWidth;
+
+                icon.style.transition = ''; // Re-enable default CSS transition
+            });
+        });
+
+        // --- WALLPAPER LOGIC ---
+        function handleWallpaperChange(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const bgUrl = e.target.result;
+                    localStorage.setItem('chronosDetailsWrapper', bgUrl);
+                    applyWallpaper(bgUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function applyWallpaper(url) {
+            if (!url) return;
+            const phone = document.getElementById('phone');
+            phone.style.backgroundImage = `url('${url}')`;
+            phone.style.backgroundSize = 'cover';
+            phone.style.backgroundPosition = 'center';
+        }
+
+        function resetWallpaper() {
+            localStorage.removeItem('chronosDetailsWrapper');
+            const phone = document.getElementById('phone');
+            phone.style.backgroundImage = ''; // Clear inline style
+            // Revert to CSS default (handled by removing the style)
+        }
+
+        // Load saved wallpaper
+        const savedBg = localStorage.getItem('chronosDetailsWrapper');
+        if (savedBg) applyWallpaper(savedBg);
+
+        // 6. Overlays
+        // Overlay Management
+        function closeWelcome() {
+            const overlay = document.getElementById('welcomeOverlay');
+            overlay.style.transition = 'opacity 0.5s ease';
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+        }
+
+        function openSearch() {
+            document.getElementById('searchOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('searchInput').focus(), 100);
+            filterSearch();
+        }
+
+        function toggleTextMode() {
+            document.body.classList.toggle('dark-text-mode');
+            const isDarkText = document.body.classList.contains('dark-text-mode');
+            localStorage.setItem('chronosFromTextMode', isDarkText ? 'dark' : 'light');
+        }
+
+        // Apply saved text mode on load
+        if (localStorage.getItem('chronosFromTextMode') === 'dark') {
+            document.body.classList.add('dark-text-mode');
+        }
+
+        function openFolder(title, apps) {
+            document.getElementById('folderTitle').innerText = title;
+            const content = document.getElementById('folderContent');
+            content.innerHTML = '';
+            apps.forEach(app => {
+                content.appendChild(createIcon(app));
+            });
+            document.getElementById('folderOverlay').classList.add('active');
+        }
+
+        function closeOverlay(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function filterSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const container = document.getElementById('searchResults');
+            container.innerHTML = '';
+
+            const filtered = allGames.filter(g => g.toLowerCase().includes(query));
+
+            if (query === '') {
+                filtered.slice(0, 24).forEach(app => container.appendChild(createIcon(app)));
+            } else {
+                filtered.forEach(app => container.appendChild(createIcon(app)));
+            }
+        }
+
+        render(); // Start
+
+    </script>
+</body>
+
+</html>
