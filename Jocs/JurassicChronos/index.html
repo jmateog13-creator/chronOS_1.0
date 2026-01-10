@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JURASSIC CHRONOS: L'ADN PERDUT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #000;
+            color: #00ff00;
+            /* Classic Terminal Green */
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        /* CRT Effects */
+        .crt-overlay {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+                    rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg,
+                    rgba(255, 0, 0, 0.06),
+                    rgba(0, 255, 0, 0.02),
+                    rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 50;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 255, 0, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% {
+                bottom: 100%;
+            }
+
+            100% {
+                bottom: -100px;
+            }
+        }
+
+        .text-glow {
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .text-glow-amber {
+            color: #ffb300;
+            text-shadow: 0 0 5px #ffb300;
+        }
+
+        .box-glow {
+            box-shadow: 0 0 10px #00ff00, inset 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .box-glow-amber {
+            box-shadow: 0 0 10px #ffb300, inset 0 0 20px rgba(255, 179, 0, 0.2);
+        }
+
+        /* Animations */
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .animate-blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes typing {
+            from {
+                width: 0
+            }
+
+            to {
+                width: 100%
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-5px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(5px);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-full">
+    <div id="root" class="h-full w-full"></div>
+
+    <!-- CRT Overlay Global -->
+    <div class="fixed inset-0 crt-overlay z-[100]"></div>
+    <div class="scanline"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        const DNA_DATA = {
+            "Edat Mitjana": [
+                { seq: ["Monestir", "______", "Cant Gregorià"], correct: "Monjos", opts: ["Monjos", "Trobadors", "Soldats"] },
+                { seq: ["Cant Pla", "______", "Neumes"], correct: "Monodia", opts: ["Monodia", "Polifonia", "Orquestra"] },
+                { seq: ["Guido d'Arezzo", "Notes", "______"], correct: "Tetragrama", opts: ["Tetragrama", "Pentagrama", "Tabulatura"] },
+                { seq: ["Poble", "Llengua Vulgar", "______"], correct: "Trobador", opts: ["Trobador", "Monjo", "Bisbe"] },
+                { seq: ["Llaüt", "______", "Viola de Roda"], correct: "Viola", opts: ["Viola", "Piano", "Sintetitzador"] }
+            ],
+            "Renaixement": [
+                { seq: ["Edat Mitjana", "______", "Barroc"], correct: "Renaixement", opts: ["Renaixement", "Classicisme", "Romanticisme"] },
+                { seq: ["Teocentrisme", "______", "Raó"], correct: "Humanisme", opts: ["Humanisme", "Absolutisme", "Feudalisme"] },
+                { seq: ["Monodia", "______", "Homofonia"], correct: "Polifonia", opts: ["Polifonia", "Silenci", "Soroll"] },
+                { seq: ["Missa", "______", "Motet"], correct: "Coral", opts: ["Coral", "Òpera", "Sonata"] },
+                { seq: ["Viola de mà", "______", "Llaüt"], correct: "Vihuela", opts: ["Vihuela", "Violí", "Piano"] }
+            ],
+            "Barroc": [
+                { seq: ["Renaixement", "______", "Classicisme"], correct: "Barroc", opts: ["Barroc", "Edat Mitjana", "Segle XX"] },
+                { seq: ["Clavecí", "______", "Violí"], correct: "Baix Continu", opts: ["Baix Continu", "Piano", "Flauta"] },
+                { seq: ["Itàlia", "______", "Vivaldi"], correct: "Òpera", opts: ["Òpera", "Missa", "Lied"] },
+                { seq: ["Bach", "______", "Händel"], correct: "Alemanya", opts: ["Alemanya", "França", "Espanya"] },
+                { seq: ["Equilibri", "Contrast", "______"], correct: "Ornamentació", opts: ["Ornamentació", "Senzillesa", "Minimalisme"] }
+            ],
+            "Classicisme": [
+                { seq: ["Clavecí", "______", "Piano Modern"], correct: "Piano-Forte", opts: ["Piano-Forte", "Orgue", "Sintetitzador"] },
+                { seq: ["Exposició", "Desenvolupament", "______"], correct: "Reexposició", opts: ["Reexposició", "Final", "Coda"] },
+                { seq: ["Haydn", "Mozart", "______"], correct: "Beethoven", opts: ["Beethoven", "Bach", "Wagner"] },
+                { seq: ["Orquestra", "______", "Director"], correct: "Simfonia", opts: ["Simfonia", "Solo", "Trio"] },
+                { seq: ["Barroc", "______", "Romanticisme"], correct: "Classicisme", opts: ["Classicisme", "Renaixement", "Segle XX"] }
+            ],
+            "Romanticisme": [
+                { seq: ["Raó", "______", "Realitat"], correct: "Sentiment", opts: ["Sentiment", "Ciència", "Matemàtica"] },
+                { seq: ["Piano", "______", "Veu"], correct: "Lied", opts: ["Lied", "Sonata", "Simfonia"] },
+                { seq: ["Itàlia", "______", "Puccini"], correct: "Verdi", opts: ["Verdi", "Mozart", "Bach"] },
+                { seq: ["Virtuós", "______", "Piano"], correct: "Chopin", opts: ["Chopin", "Palestrina", "Vivaldi"] },
+                { seq: ["Òpera", "______", "Leitmotiv"], correct: "Wagner", opts: ["Wagner", "Rossini", "Bellini"] }
+            ],
+            "Segle XX": [
+                { seq: ["Tonalitat", "______", "Dodecafonisme"], correct: "Atonalisme", opts: ["Atonalisme", "Modalitat", "Consonància"] },
+                { seq: ["Debussy", "______", "Stravinsky"], correct: "Impressionisme", opts: ["Impressionisme", "Barroc", "Romanticisme"] },
+                { seq: ["Sintetitzador", "______", "Ordinador"], correct: "Electrònica", opts: ["Electrònica", "Acústica", "Coral"] },
+                { seq: ["Blues", "______", "Rock"], correct: "Jazz", opts: ["Jazz", "Òpera", "Gregorià"] },
+                { seq: ["Soroll", "______", "4'33"], correct: "John Cage", opts: ["John Cage", "Mozart", "Bach"] }
+            ]
+        };
+
+        const ERAS = Object.keys(DNA_DATA);
+
+        const AudioPlayer = () => {
+            const [volume, setVolume] = useState(0.5);
+            const audioRef = useRef(null);
+
+            useEffect(() => {
+                if (audioRef.current) {
+                    audioRef.current.volume = volume;
+                    audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+                }
+            }, [volume]);
+
+            return (
+                <div className="fixed top-4 right-4 z-[150] flex items-center gap-2 bg-black/80 border border-green-700 p-2 rounded box-glow">
+                    <span className="text-xl text-green-500">🔊</span>
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={volume}
+                        onChange={(e) => setVolume(parseFloat(e.target.value))}
+                        className="w-24 accent-green-500 bg-gray-800 h-2 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <audio ref={audioRef} loop src="./audio/Cathedral%20of%20Code.mp3" />
+                </div>
+            );
+        };
+
+        const IntroScreen = ({ onStart, completedEras = [] }) => (
+            <div className="h-full w-full flex flex-col items-center justify-center bg-black p-8 relative">
+                {/* Header Logo Area */}
+                <div className="mb-12 text-center z-10 flex flex-col items-center">
+                    <div className="relative mb-6 group">
+                        <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full animate-pulse"></div>
+                        <img
+                            src="./img/dinoinicial.jpg"
+                            alt="Dino DNA"
+                            className="relative w-48 h-48 md:w-64 md:h-64 object-contain rounded-full border-4 border-[#ffb300] box-glow-amber bg-black"
+                            onError={(e) => e.target.style.display = 'none'}
+                        />
+                    </div>
+                    <h1 className="text-6xl md:text-8xl font-bold text-[#ffb300] tracking-widest text-glow-amber mb-2" style={{ fontFamily: 'Impact, sans-serif' }}>
+                        CHRONOS PARK
+                    </h1>
+                    <div className="text-[#ffb300] text-xl tracking-[0.5em] uppercase border-t border-b border-[#ffb300] py-2 inline-block">
+                        System Security: Active
+                    </div>
+                </div>
+
+                {/* Terminal / Era Selection */}
+                <div className="w-full max-w-6xl grid grid-cols-2 lg:grid-cols-3 gap-6 z-10">
+                    {ERAS.map((era, index) => {
+                        const isCompleted = completedEras.includes(era);
+                        return (
+                            <button
+                                key={era}
+                                onClick={() => onStart(era)}
+                                className={`group relative h-32 border-2 transition-all duration-300 overflow-hidden text-left p-4 
+                                    ${isCompleted
+                                        ? 'border-green-500 bg-green-900/30'
+                                        : 'border-green-700 bg-black/50 hover:bg-green-900/20 hover:border-green-400'}`}
+                            >
+                                <div className={`absolute top-2 right-2 text-xs group-hover:text-green-400 ${isCompleted ? 'text-green-400 font-bold' : 'text-green-700'}`}>
+                                    {isCompleted ? 'STATUS: SECURE' : `SECTOR 0${index + 1}`}
+                                </div>
+                                <div className="text-sm text-green-600 mb-1 font-mono">
+                                    {isCompleted ? '> DNA SEQUENCE COMPLETE' : '> ACCESSING DNA DATABASE...'}
+                                </div>
+                                <div className={`text-2xl md:text-3xl font-bold group-hover:text-white group-hover:text-glow transition-colors mt-2 ${isCompleted ? 'text-green-400 text-glow' : 'text-green-500'}`}>
+                                    {era}
+                                </div>
+                                {/* Loading bar decoration */}
+                                <div className="absolute bottom-0 left-0 h-1 bg-green-900 w-full">
+                                    <div className={`h-full bg-green-500 transition-all duration-500 ${isCompleted ? 'w-full' : 'w-1/3 group-hover:w-full'}`}></div>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="absolute bottom-8 text-green-800 text-xs font-mono">
+                    CHRONOS SYSTEMS v4.0.2 | (C) 1993 INGEN CORPORATION
+                </div>
+            </div>
+        );
+
+        const GameScreen = ({ era, onGameOver, onWin, onBack }) => {
+            const [round, setRound] = useState(0);
+            const maxRounds = 5;
+            const [timeLeft, setTimeLeft] = useState(20);
+
+            const levelData = useMemo(() => {
+                return [...DNA_DATA[era]].sort(() => 0.5 - Math.random()).slice(0, 5);
+            }, [era]);
+
+            const currentQ = levelData[round] || levelData[0]; // Fallback
+
+            // Timer
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            onGameOver('time');
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [round]);
+
+            useEffect(() => {
+                setTimeLeft(20); // Reset time on new round
+            }, [round]);
+
+            const [feedback, setFeedback] = useState(null); // 'correct', 'error', null
+
+            const handleChoice = (opt) => {
+                if (feedback) return; // Prevent double clicks
+
+                if (opt === currentQ.correct) {
+                    setFeedback('correct');
+                    setTimeout(() => {
+                        setFeedback(null);
+                        if (round < maxRounds - 1) {
+                            setRound(prev => prev + 1);
+                        } else {
+                            onWin();
+                        }
+                    }, 800);
+                } else {
+                    setFeedback('error');
+                    setTimeout(() => {
+                        onGameOver('error');
+                    }, 800);
+                }
+            };
+
+            const missingIndex = currentQ.seq.indexOf("______") !== -1 ? currentQ.seq.indexOf("______") : 1;
+
+            return (
+                <div className={`h-full w-full flex flex-col bg-black relative p-6 overflow-hidden transition-colors duration-200 ${feedback === 'error' ? 'bg-red-900/20' : ''} ${feedback === 'correct' ? 'bg-green-900/20' : ''}`}>
+                    {/* Background Image */}
+                    <div className="absolute inset-0 z-0 pointer-events-none">
+                        <img
+                            src="./img/fonslaboratori.jpg"
+                            className="w-full h-full object-cover opacity-50 blur-sm"
+                            alt="Lab Background"
+                            onError={(e) => e.target.style.display = 'none'}
+                        />
+                        <div className="absolute inset-0 bg-black/40"></div>
+                    </div>
+
+                    {/* Top Bar HUD */}
+                    <div className="relative z-10 flex justify-between items-end border-b-2 border-green-800 pb-4 mb-8">
+                        <div>
+                            <div className="text-green-700 text-xs mb-1">PROJECT CODE: {era.toUpperCase()}</div>
+                            <div className="text-3xl text-green-500 font-bold">RECREATING DNA SEQUENCE</div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-green-700 text-xs mb-1">FAILSAFE TIMER</div>
+                            <div className={`text-4xl font-bold ${timeLeft < 5 ? 'text-red-500 animate-pulse' : 'text-green-500'}`}>
+                                00:{timeLeft.toString().padStart(2, '0')}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Workspace */}
+                    <div className={`flex-grow flex flex-col items-center justify-center relative ${feedback === 'error' ? 'animate-shake' : ''}`}>
+
+                        {/* The Sequence Display */}
+                        <div className="w-full max-w-5xl mb-12 relative">
+                            {/* DNA strand decorations */}
+                            <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-green-900 text-6xl opacity-30 select-none hidden xl:block">
+                                🧬
+                            </div>
+                            <div className="absolute -right-12 top-1/2 -translate-y-1/2 text-green-900 text-6xl opacity-30 select-none hidden xl:block">
+                                🧬
+                            </div>
+
+                            <div className="flex items-center justify-center gap-2 md:gap-4">
+                                {currentQ.seq.map((item, idx) => {
+                                    if (idx === missingIndex) {
+                                        // Render the MISSING BOX
+                                        return (
+                                            <React.Fragment key={idx}>
+                                                <div className={`flex-1 bg-black border-4 border-dashed p-6 md:p-8 rounded text-center relative overflow-hidden transaction-all duration-300
+                                                    ${feedback === 'correct' ? 'border-green-500 !bg-green-500/20 scale-105' : 'border-[#ffb300]'}
+                                                    ${feedback === 'error' ? 'border-red-500 !bg-red-500/20' : ''}
+                                                    ${!feedback ? 'animate-pulse' : ''}
+                                                `}>
+                                                    <div className="absolute inset-0 bg-[#ffb300]/10"></div>
+                                                    <div className={`text-xs mb-2 ${feedback === 'correct' ? 'text-green-400' : 'text-[#ffb300]'}`}>
+                                                        {feedback === 'correct' ? 'SEQUENCE MATCHED' : 'MISSING FRAGMENT'}
+                                                    </div>
+                                                    <div className={`text-xl md:text-3xl font-bold ${feedback === 'correct' ? 'text-green-400' : 'text-[#ffb300]'}`}>
+                                                        {feedback === 'correct' ? currentQ.correct : 'NO DATA'}
+                                                    </div>
+                                                </div>
+                                                {idx < 2 && <div className="text-green-600 text-2xl">►</div>}
+                                            </React.Fragment>
+                                        );
+                                    } else {
+                                        // Render Normal Box
+                                        return (
+                                            <React.Fragment key={idx}>
+                                                <div className="flex-1 bg-green-900/20 border border-green-700 p-6 md:p-8 rounded text-center">
+                                                    <div className="text-green-800 text-xs mb-2">FRAGMENT {String.fromCharCode(65 + idx)}</div>
+                                                    <div className="text-xl md:text-3xl text-green-400 font-bold">{item}</div>
+                                                </div>
+                                                {idx < 2 && <div className="text-green-600 text-2xl">►</div>}
+                                            </React.Fragment>
+                                        );
+                                    }
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Options */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+                            {currentQ.opts.map((opt, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleChoice(opt)}
+                                    className="h-32 bg-green-900/10 border-2 border-green-800 hover:bg-green-900/40 hover:border-green-400 hover:text-white hover:shadow-[0_0_15px_rgba(0,255,0,0.5)] transition-all flex flex-col justify-center items-center group rounded"
+                                >
+                                    <div className="text-green-700 text-xs mb-2 group-hover:text-green-400">SAMPLE {idx + 1}</div>
+                                    <div className="text-2xl font-bold text-green-500 group-hover:text-white">{opt}</div>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Progress */}
+                        <div className="mt-12 w-full max-w-xl">
+                            <div className="flex justify-between text-green-800 text-xs mb-2">
+                                <span>COMPLETION STATUS</span>
+                                <span>{Math.round(((round) / maxRounds) * 100)}%</span>
+                            </div>
+                            <div className="h-4 bg-green-900/30 border border-green-900 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-green-600 transition-all duration-500 ease-out"
+                                    style={{ width: `${((round) / maxRounds) * 100}%` }}
+                                ></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        };
+
+        const EndScreen = ({ type, reason, onRestart }) => (
+            <div className="h-full w-full flex flex-col items-center justify-center bg-black p-8 text-center relative overflow-hidden">
+                {/* Background alert pulses */}
+                {type === 'gameover' && (
+                    <div className="absolute inset-0 bg-red-900/20 animate-pulse pointer-events-none"></div>
+                )}
+
+                {/* Win Background Image */}
+                {type === 'win' && (
+                    <div className="absolute inset-0 z-0">
+                        <img
+                            src="./img/dinofinalbien.jpg"
+                            className="w-full h-full object-cover opacity-40 blur-[2px]"
+                            alt="Success"
+                            onError={(e) => e.target.style.display = 'none'}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"></div>
+                    </div>
+                )}
+
+                <div className="relative z-10 max-w-2xl bg-black/90 border-4 border-double p-12 shadow-2xl backdrop-blur-sm"
+                    style={{ borderColor: type === 'gameover' ? 'red' : '#00ff00' }}>
+
+                    <div className="text-8xl mb-6">
+                        {type === 'gameover' ? '🚫' : ''}
+                    </div>
+
+                    <h1 className={`text-6xl font-bold mb-4 ${type === 'gameover' ? 'text-red-500' : 'text-green-500'} tracking-tighter`}>
+                        {type === 'gameover' ? 'ERRADA DEL SISTEMA' : 'LA VIDA OBRE CAMÍ'}
+                    </h1>
+
+                    <p className={`text-xl font-mono mb-8 ${type === 'gameover' ? 'text-red-800' : 'text-green-800'}`}>
+                        {type === 'gameover'
+                            ? (reason === 'time' ? "TEMPS EXHAURIT: MOSTRA D'ADN DEGRADADA." : "CONTAMINACIÓ DETECTADA. SEQÜÈNCIA FALLIDA.")
+                            : "SEQÜÈNCIA D'ADN RECONSTRUÏDA AMB ÈXIT. ACTIU PREPARAT PER A LA INCUBACIÓ."}
+                    </p>
+
+                    <button
+                        onClick={onRestart}
+                        className={`px-8 py-4 text-xl font-bold uppercase tracking-widest transition-all
+                            ${type === 'gameover'
+                                ? 'bg-red-900/20 border-2 border-red-600 text-red-500 hover:bg-red-600 hover:text-black'
+                                : 'bg-green-900/20 border-2 border-green-600 text-green-500 hover:bg-green-600 hover:text-black'}`}
+                    >
+                        {type === 'gameover' ? 'REINICIAR SISTEMA' : 'PROCESSAR NOVA MOSTRA'}
+                    </button>
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            const [gameState, setGameState] = useState('intro');
+            const [selectedEra, setSelectedEra] = useState(null);
+            const [deathReason, setDeathReason] = useState(null);
+            const [completedEras, setCompletedEras] = useState([]);
+
+            const startGame = (era) => {
+                setSelectedEra(era);
+                setGameState('playing');
+                // Could play a start sound here
+            };
+
+            const reset = () => {
+                setGameState('intro');
+                setSelectedEra(null);
+                setDeathReason(null);
+            };
+
+            const handleGameOver = (reason) => {
+                setDeathReason(reason);
+                setGameState('gameover');
+            };
+
+            return (
+                <div className="h-full w-full">
+                    <AudioPlayer />
+                    {gameState === 'intro' && <IntroScreen onStart={startGame} completedEras={completedEras} />}
+                    {gameState === 'playing' && (
+                        <GameScreen
+                            era={selectedEra}
+                            onGameOver={handleGameOver}
+                            onWin={() => {
+                                setCompletedEras(prev => [...new Set([...prev, selectedEra])]);
+                                setGameState('win');
+                            }}
+                            onBack={reset}
+                        />
+                    )}
+                    {(gameState === 'gameover' || gameState === 'win') && (
+                        <EndScreen type={gameState} reason={deathReason} onRestart={reset} />
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

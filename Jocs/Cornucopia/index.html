@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORNUCOPIA: GAME OF CHRONOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: #0a0a0a;
+            color: #d4af37;
+        }
+
+        .font-decorative {
+            font-family: 'Cinzel Decorative', cursive;
+        }
+
+        .got-gradient {
+            background: linear-gradient(to bottom, #1a1a1a, #000000);
+        }
+
+        .gold-text {
+            color: #d4af37;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(212, 175, 55, 0.3);
+            background: linear-gradient(to bottom, #fbf5b7 0%, #bf953f 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Fallback for text-fill-color support */
+        @supports not (-webkit-background-clip: text) {
+            .gold-text {
+                background: none;
+                color: #d4af37;
+            }
+        }
+
+        .iron-border {
+            border: 2px solid #4a4a4a;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.5);
+            background: #1a1a1a;
+        }
+
+        .gold-border {
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(1deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+
+        @keyframes pulse-tension {
+            0% {
+                transform: scale(1);
+                color: #ff3333;
+                text-shadow: 0 0 10px red;
+            }
+
+            50% {
+                transform: scale(1.3);
+                color: #ff0000;
+                text-shadow: 0 0 30px red;
+            }
+
+            100% {
+                transform: scale(1);
+                color: #ff3333;
+                text-shadow: 0 0 10px red;
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-tension {
+            animation: pulse-tension 0.8s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                color: white;
+                text-shadow: 0 0 5px red;
+            }
+
+            50% {
+                color: #ff3333;
+                text-shadow: 0 0 20px red;
+            }
+
+            100% {
+                color: white;
+                text-shadow: 0 0 5px red;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-pulse-red {
+            animation: pulse-red 1s infinite;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out;
+        }
+
+        .item-pop-in {
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Custom Scrollbar for premium feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border: 1px solid #d4af37;
+        }
+    </style>
+</head>
+
+<body
+    class="h-screen overflow-hidden select-none bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')]">
+    <div id="root" class="w-full h-full"></div>
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useMemo } = React;
+
+        const CORNUCOPIA_DATA = {
+            "Edat Mitjana": {
+                "bg": "./img/fons.jpg",
+                "valid": ["Cant Gregorià", "Trobador", "Monjo", "Llaüt", "Neumes", "Monodia", "Guido d'Arezzo", "Llatí", "Viola de Roda", "Ars Nova"],
+                "poison": ["Piano", "Òpera", "Orquestra", "Jazz", "Bach", "Mozart", "Sintetitzador", "Polifonia Complexa"]
+            },
+            "Renaixement": {
+                "bg": "./img/fons.jpg",
+                "valid": ["Polifonia", "Madrigal", "Impremta", "Palestrina", "Josquin", "Viola de mà", "Humanisme", "Cor A Cappella", "Motet", "Tomás L. Victoria"],
+                "poison": ["Monodia", "Cant Gregorià", "Piano", "Wagner", "Rock", "Simfonia", "Baix Continu", "Atonalisme"]
+            },
+            "Barroc": {
+                "bg": "./img/fons.jpg",
+                "valid": ["Clavecí", "J.S. Bach", "Vivaldi", "Baix Continu", "Òpera", "Castrati", "Händel", "Contrast", "Fuga", "Oratori"],
+                "poison": ["Piano", "Gregorià", "Jazz", "Clarinet", "Mozart", "Beethoven", "Guitarra Elèctrica", "Minimalisme"]
+            },
+            "Classicisme": {
+                "bg": "./img/fons.jpg",
+                "valid": ["Mozart", "Haydn", "Beethoven", "Clarinet", "Piano-Forte", "Simfonia", "Quartet de Corda", "Equilibri", "Forma Sonata", "Viena"],
+                "poison": ["Clavecí", "Baix Continu", "Wagner", "Sintetitzador", "Gregorià", "Llaüt", "Soroll", "Polifonia Complexa"]
+            },
+            "Romanticisme": {
+                "bg": "./img/fons.jpg",
+                "valid": ["Chopin", "Sentiment", "Piano Romàntic", "Wagner", "Verdi", "Lied", "Virtuosisme", "Nacionalisme", "Poema Simfònic", "Gran Orquestra"],
+                "poison": ["Clavecí", "Equilibri", "Mozart", "Bach", "Jazz", "Atonalisme", "Viola de mà", "Gregorià"]
+            },
+            "Segle XX": {
+                "bg": "./img/fons.jpg",
+                "valid": ["Stravinsky", "Jazz", "Sintetitzador", "Dodecafonisme", "Cinema", "Guitarra Elèctrica", "John Cage", "Rock & Roll", "Atonalisme", "Schönberg"],
+                "poison": ["Mozart", "Clavecí", "Llaüt", "Castrati", "Baix Continu", "Forma Sonata", "Cant Gregorià", "Trobador"]
+            }
+        };
+
+        const ERAS = Object.keys(CORNUCOPIA_DATA);
+
+        const AudioPlayer = () => {
+            const [volume, setVolume] = useState(0.5);
+            const audioRef = React.useRef(null);
+
+            React.useEffect(() => {
+                if (audioRef.current) {
+                    audioRef.current.volume = volume;
+                    // Attempt autoplay
+                    audioRef.current.play().catch(e => console.log("Audio autoplay failed:", e));
+                }
+            }, [volume]);
+
+            return (
+                <div className="absolute top-4 right-4 z-[60] flex items-center gap-2 bg-black/80 p-2 rounded border border-[#d4af37]">
+                    <span className="text-[#d4af37] text-xs">♫</span>
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={volume}
+                        onChange={(e) => setVolume(parseFloat(e.target.value))}
+                        className="w-20 accent-[#d4af37]"
+                    />
+                    <audio ref={audioRef} loop src="./audio/Throne of the Hourglass.mp3" />
+                </div>
+            );
+        };
+
+        const IntroScreen = ({ onStart, completedEras }) => (
+            <div class="h-full flex flex-col items-center justify-center relative p-8">
+                {/* Background Video / Image Placeholder */}
+                <div class="absolute inset-0 bg-[#0a0a0a] z-0">
+                    <img src="./img/menu_bg.jpg" class="w-full h-full object-cover opacity-40 blur-sm" alt="Background" onError={(e) => e.target.style.display = 'none'} />
+                </div>
+                <div class="absolute inset-0 bg-gradient-radial from-transparent to-black z-0 pointer-events-none"></div>
+
+                <div class="z-10 flex flex-col items-center animate-fade-in w-full max-w-6xl">
+                    <div class="mb-4">
+                        <span class="text-6xl md:text-8xl block text-center mb-2 drop-shadow-2xl">⚔️</span>
+                    </div>
+
+                    <h1 class="text-6xl md:text-9xl font-decorative mb-2 gold-text text-center tracking-tighter drop-shadow-xl">
+                        CORNUCOPIA
+                    </h1>
+                    <h2 class="text-xl md:text-3xl text-gray-400 font-serif tracking-[0.5em] mb-12 uppercase text-center border-b border-[#d4af37] pb-4 px-12">
+                        Game of Chronos
+                    </h2>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                        {ERAS.map((era, idx) => {
+                            const isCompleted = completedEras.includes(era);
+                            return (
+                                <button
+                                    key={era}
+                                    onClick={() => onStart(era)}
+                                    style={{ animationDelay: `${idx * 100}ms` }}
+                                    class={`item-pop-in relative group overflow-hidden h-32 iron-border transition-all duration-300 hover:scale-105 hover:border-[#d4af37] ${isCompleted ? 'border-green-600 shadow-[0_0_15px_rgba(0,255,0,0.2)]' : ''}`}
+                                >
+                                    <div class="absolute inset-0 bg-black/80 group-hover:bg-black/60 transition-colors"></div>
+                                    <div class="relative z-10 flex flex-col items-center justify-center h-full p-4">
+                                        <span class={`text-2xl md:text-3xl font-decorative transition-colors ${isCompleted ? 'text-green-500' : 'text-gray-300 group-hover:text-[#d4af37]'}`}>{era}</span>
+                                        <span class={`text-xs uppercase tracking-widest mt-2 transition-colors ${isCompleted ? 'text-green-700' : 'text-gray-600 group-hover:text-white'}`}>
+                                            {isCompleted ? 'CONQUERIT' : `Districte ${idx + 1}`}
+                                        </span>
+                                    </div>
+                                    <div class={`absolute bottom-0 left-0 w-full h-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ${isCompleted ? 'bg-green-600' : 'bg-[#d4af37]'}`}></div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <p class="mt-12 text-[#d4af37] opacity-60 text-xs font-serif uppercase tracking-[0.3em]">
+                        En el joc de la Cornucopia, o encertes o mors
+                    </p>
+                </div>
+            </div>
+        );
+
+        const GameScreen = ({ era, onGameOver, onWin, onBack }) => {
+            const [items, setItems] = useState([]);
+            const [timeLeft, setTimeLeft] = useState(15);
+            const [score, setScore] = useState(0);
+
+            useEffect(() => {
+                const data = CORNUCOPIA_DATA[era];
+                const valids = [...data.valid].sort(() => 0.5 - Math.random()).slice(0, 5);
+                const poisons = [...data.poison].sort(() => 0.5 - Math.random()).slice(0, 8); // Added one more poison for difficulty
+
+                const tempItems = [...valids.map(t => ({ text: t, type: 'valid' })), ...poisons.map(t => ({ text: t, type: 'poison' }))]
+                    .sort(() => 0.5 - Math.random());
+
+                // Generate non-overlapping positions
+                const placedItems = [];
+                const MAX_ATTEMPTS = 50;
+
+                tempItems.forEach((item, id) => {
+                    let bestX = 50, bestY = 50;
+                    let validPosition = false;
+
+                    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+                        const x = Math.random() * 80 + 10;
+                        const y = Math.random() * 70 + 15;
+
+                        // Check collision with existing items
+                        const collision = placedItems.some(placed => {
+                            const dx = placed.x - x;
+                            const dy = placed.y - y;
+                            return Math.sqrt(dx * dx + dy * dy) < 12; // Min distance threshold (approx)
+                        });
+
+                        if (!collision) {
+                            bestX = x;
+                            bestY = y;
+                            validPosition = true;
+                            break;
+                        }
+                    }
+
+                    placedItems.push({
+                        ...item,
+                        id,
+                        x: bestX,
+                        y: bestY,
+                        rot: Math.random() * 20 - 10,
+                        delay: Math.random() * 0.5
+                    });
+                });
+
+                setItems(placedItems);
+            }, [era]);
+
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            onGameOver('time');
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, []);
+
+            const handleItemClick = (item) => {
+                if (item.type === 'valid') {
+                    setItems(prev => prev.filter(i => i.id !== item.id));
+                    setScore(prev => {
+                        const newScore = prev + 1;
+                        if (newScore >= 5) setTimeout(() => onWin(), 300);
+                        return newScore;
+                    });
+                } else {
+                    onGameOver('poison');
+                }
+            };
+
+            return (
+                <div class="h-full relative overflow-hidden bg-[#0a0a0a]">
+                    {/* Map Background */}
+                    <div class="absolute inset-0 z-0">
+                        <img src={CORNUCOPIA_DATA[era].bg} class="w-full h-full object-cover opacity-40 blur-[2px] grayscale hover:grayscale-0 transition-all duration-1000" alt="Background" onError={(e) => e.target.style.display = 'none'} />
+                        <div class="absolute inset-0 bg-black/40"></div>
+                    </div>
+
+                    {/* HUD */}
+                    <div class="absolute top-0 w-full p-6 flex justify-between items-start z-50 pointer-events-none">
+                        <div class="iron-border px-6 py-3 bg-black/90">
+                            <span class="text-[#d4af37] font-bold text-xl uppercase tracking-widest">{era}</span>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-2">
+                            <div class={`text-7xl font-decorative font-black drop-shadow-2xl transition-all duration-300 ${timeLeft <= 5 ? 'animate-tension' : 'text-white'}`}>
+                                {timeLeft}
+                            </div>
+
+                            <div class="iron-border px-6 py-2 bg-black/90 flex gap-2 items-center min-w-[200px] justify-center">
+                                <span class="text-gray-400 uppercase text-xs tracking-widest">Objectius</span>
+                                <span class="text-[#d4af37] font-bold text-xl">{score} / 5</span>
+                            </div>
+                        </div>
+
+                        {/* Spacer for symmetry/layout balance, or empty div to keep Flex spacing working if needed, 
+                            but since we want the center to be truly centered, 'justify-between' might pull Era left and nothing right.
+                            Let's add an empty div of similar width or just let flex handle it. 
+                            Actually, to prevent the center from shifting, we might want a dummy div or just absolute position the Era.
+                            But sticking to flex for now. We leave the right side empty for the Volume slider. 
+                        */}
+                        <div class="w-24"></div>
+                    </div>
+
+                    {/* ITEMS */}
+                    <div class="absolute inset-0 z-40">
+                        {items.map(item => (
+                            <div
+                                key={item.id}
+                                style={{
+                                    left: `${item.x}%`,
+                                    top: `${item.y}%`,
+                                    transform: `rotate(${item.rot}deg)`,
+                                    animationDelay: `${item.delay}s`
+                                }}
+                                class="absolute item-pop-in"
+                            >
+                                <button
+                                    onClick={() => handleItemClick(item)}
+                                    class="relative group bg-[#1a1a1a] border-2 border-[#4a4a4a] text-gray-200 px-6 py-4 shadow-2xl hover:border-[#d4af37] hover:text-[#d4af37] hover:scale-110 hover:z-50 transition-all duration-300 clip-path-shield"
+                                >
+                                    <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <span class="font-bold font-serif text-lg whitespace-nowrap drop-shadow-md">{item.text}</span>
+                                    {/* Shield Point Decoration */}
+                                    <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-[#4a4a4a] rotate-45 group-hover:bg-[#d4af37] transition-colors"></div>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const EndScreen = ({ type, reason, onRestart }) => (
+            <div class="h-full flex flex-col items-center justify-center p-8 bg-black/95 z-50 animate-fade-in text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-20 animate-float"></div>
+
+                <div class="relative z-10 flex flex-col items-center w-full">
+                    <h1 class={`text-6xl md:text-9xl font-decorative font-black mb-6 gold-text tracking-tighter ${type === 'win' ? '' : 'text-red-900 grayscale'}`}>
+                        {type === 'win' ? 'VICTÒRIA' : 'VALAR MORGHULIS'}
+                    </h1>
+
+                    <div class="my-8 relative">
+                        {/* Replaced emoji with image */}
+                        <img
+                            src="./img/escut.png"
+                            alt="Escut"
+                            className={`w-48 h-48 object-contain mx-auto ${type === 'win' ? '' : 'filter grayscale brightness-150 opacity-80'}`}
+                        />
+                    </div>
+
+                    <p class="text-2xl md:text-3xl text-gray-400 mb-12 font-serif max-w-2xl leading-relaxed">
+                        {reason === 'poison' && "Has begut de la copa equivocada. El verí ha estat ràpid."}
+                        {reason === 'time' && "L'hivern ha arribat abans que poguessis reunir provisions."}
+                        {type === 'win' && "Has demostrat la teva vàlua. El Tron de Cronos et reconeix."}
+                    </p>
+
+                    <button
+                        onClick={onRestart}
+                        class="px-12 py-5 bg-transparent border-2 border-[#d4af37] text-[#d4af37] text-xl font-bold uppercase tracking-[0.2em] hover:bg-[#d4af37] hover:text-black transition-all duration-300 cursor-pointer pointer-events-auto"
+                    >
+                        {type === 'win' ? 'Continuar el Regnat' : 'Intentar reviure'}
+                    </button>
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            const [gameState, setGameState] = useState('intro');
+            const [selectedEra, setSelectedEra] = useState(null);
+            const [deathReason, setDeathReason] = useState(null);
+            const [completedEras, setCompletedEras] = useState([]);
+
+            const startGame = (era) => {
+                setSelectedEra(era);
+                setGameState('playing');
+            };
+
+            const reset = () => {
+                setGameState('intro');
+                setSelectedEra(null);
+                setDeathReason(null);
+            };
+
+            const handleGameOver = (reason) => {
+                setDeathReason(reason);
+                setGameState('gameover');
+            };
+
+            return (
+                <div class="h-full w-full">
+                    <AudioPlayer />
+                    {gameState === 'intro' && <IntroScreen onStart={startGame} completedEras={completedEras} />}
+                    {gameState === 'playing' && (
+                        <GameScreen
+                            era={selectedEra}
+                            onGameOver={handleGameOver}
+                            onWin={() => {
+                                setCompletedEras(prev => [...new Set([...prev, selectedEra])]);
+                                setGameState('win');
+                            }}
+                            onBack={reset}
+                        />
+                    )}
+                    {(gameState === 'gameover' || gameState === 'win') && (
+                        <EndScreen type={gameState} reason={deathReason} onRestart={reset} />
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dossier de Recerca - ChronOS</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c15;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-glow: 0 0 20px rgba(59, 130, 246, 0.4);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 25%);
+            min-height: 100vh;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 0;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        /* Header Premium */
+        header {
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0));
+            padding: 50px;
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stamp {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--accent-color);
+            padding: 5px 15px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.7rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2.subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        /* Content Area */
+        .content-body {
+            padding: 50px;
+        }
+
+        /* Instructions Box */
+        .instructions-box {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-left: 4px solid var(--accent-color);
+            padding: 20px;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            color: #bfdbfe;
+        }
+
+        .form-header {
+            margin-bottom: 40px !important;
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+            color: var(--text-muted) !important;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-number {
+            background: var(--accent-color);
+            color: white;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-weight: bold;
+            font-family: 'Space Mono', monospace;
+            margin-right: 20px;
+            box-shadow: var(--accent-glow);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        /* Questions */
+        .question-list {
+            list-style: none;
+            display: grid;
+            gap: 15px;
+        }
+
+        .question-item {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .question-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .question-item:hover::before {
+            opacity: 1;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            font-weight: 400;
+            color: #f1f5f9;
+        }
+
+        /* Copy Button */
+        .copy-btn {
+            align-self: flex-start;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            font-size: 0.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: var(--accent-glow);
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Library Fab */
+        .library-fab {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 100px;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .library-fab:hover {
+            transform: translateY(-5px);
+            background: var(--accent-color);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.5);
+            border-color: var(--accent-color);
+        }
+
+        @media print {
+
+            .library-fab,
+            .copy-btn {
+                display: none;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+
+            .container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                width: 100%;
+                background: white;
+            }
+
+            .section-number {
+                background: black;
+                color: white;
+                box-shadow: none;
+            }
+
+            h1 {
+                background: none;
+                -webkit-text-fill-color: black;
+                color: black;
+            }
+
+            .question-item {
+                border: 1px solid #ddd;
+                background: none;
+                color: black;
+            }
+
+            .question-text {
+                color: black;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="stamp">CLASSIFIED</div>
+
+        <header>
+            <h1>Dossier de Recerca: Viatgers del Temps Musical</h1>
+            <h2 class="subtitle">Guia oficial per a la recollida de dades històriques</h2>
+        </header>
+
+        <div class="content-body">
+            <div class="instructions-box">
+                <p><strong>INSTRUCCIONS:</strong> Aquest document serveix només com a <strong>GUIA</strong>. <br>
+                    Copia les preguntes utilitzant el botó "Copiar" i enganxa-les al teu document de Google Docs/Word
+                    compartit amb el grup. Utilitza la Biblioteca per trobar les respostes.</p>
+            </div>
+
+            <div class="form-header"
+                style="margin-bottom: 30px; font-family: 'Space Mono'; color: #64748b; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                <p><strong>Nom del Grup:</strong> <span
+                        style="display:inline-block; width: 300px; border-bottom: 1px solid #cbd5e1;"></span></p>
+                <p style="margin-top: 15px;"><strong>Missió: Explorar l'Era del</strong> <span
+                        style="display:inline-block; width: 200px; border-bottom: 1px solid #cbd5e1;"></span></p>
+            </div>
+
+            <!-- Section 1 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <div class="section-title">Connexió amb el Món (El Context)</div>
+                </div>
+                <ul class="question-list">
+                    <li class="question-item">
+                        <span class="question-text">Per a entendre millor l'època, busca i anomena:</span>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">a) Un esdeveniment històric important que passés durant aquest
+                            període.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Un esdeveniment històric important que passés durant aquest període.')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">b) Un artista (pintor, arquitecte, escriptor...) famós de la mateixa
+                            època.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Un artista (pintor, arquitecte, escriptor...) famós de la mateixa època.')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">c) Un invent o descobriment científic rellevant d'aquells
+                            anys.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Un invent o descobriment científic rellevant d\'aquells anys.')">Copiar</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <div class="section-title">Les Característiques Musicals (El "So" de l'Època)</div>
+                </div>
+                <ul class="question-list">
+                    <li class="question-item">
+                        <span class="question-text">a) Com era la "textura" de la música? (Ex: una sola melodia,
+                            diverses
+                            melodies entrellaçades...).</span>
+                        <button class="copy-btn" onclick="copyText('Com era la textura de la música?')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">b) Quin era l'objectiu principal de la música en aquesta època? (Ex:
+                            alabar a Déu, entretenir...).</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Quin era l\'objectiu principal de la música en aquesta època?')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">c) Tria 3 adjectius que, segons el teu grup, defineixin el "mood"
+                            general d'aquest període.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Tria 3 adjectius que defineixin el mood general d\'aquest període.')">Copiar</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <div class="section-title">Els Instruments Típics</div>
+                </div>
+                <ul class="question-list">
+                    <li class="question-item">
+                        <span class="question-text">a) Anomena 3 instruments característics d'aquest període.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Anomena 3 instruments característics d\'aquest període.')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">b) Busca una imatge de cadascun d'aquests instruments i guarda-les
+                            per a la presentació.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Busca una imatge de cadascun d\'aquests instruments.')">Copiar</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">4</div>
+                    <div class="section-title">Formes Musicals</div>
+                </div>
+                <ul class="question-list">
+                    <li class="question-item">
+                        <span class="question-text">a) Quines eren les formes més importants de l'època?</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Quines eren les formes més importants de l\'època?')">Copiar</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">5</div>
+                    <div class="section-title">El Compositor Principal</div>
+                </div>
+                <ul class="question-list">
+                    <li class="question-item">
+                        <span class="question-text">a) Qui va ser el compositor més representatiu?</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Qui va ser el compositor més representatiu?')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">b) Explica en una frase per què és tan important.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Explica en una frase per què és tan important.')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">c) Aporta una dada biogràfica o anècdota curiosa sobre la seva
+                            vida.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Aporta una dada biogràfica o anècdota curiosa sobre la seva vida.')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">d) Trieu una de les seves obres més famoses.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Trieu una de les seves obres més famoses.')">Copiar</button>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">e) Busca un enllaç a YouTube d'una bona interpretació d'aquesta obra
+                            i guarda'l.</span>
+                        <button class="copy-btn"
+                            onclick="copyText('Busca un enllaç a YouTube d\'una bona interpretació d\'aquesta obra.')">Copiar</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 6: Missió Final (Added based on user request) -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">6</div>
+                    <div class="section-title">Missió Final: Compartir el Coneixement</div>
+                </div>
+                <div class="instructions-box"
+                    style="border-left-color: #10b981; background-color: rgba(16, 185, 129, 0.1); color: #a7f3d0;">
+                    <p><strong>OBJECTIU CLAU:</strong> Per a que tota la classe pugui superar els reptes de ChronOS, heu
+                        de
+                        compartir el que heu descobert.</p>
+                </div>
+                <ul class="question-list">
+                    <li class="question-item">
+                        <span class="question-text">a) <strong>Presentació:</strong> Prepareu una breu exposició per
+                            explicar la vostra època a la resta de viatgers.
+                            <br><em style="color:#6366f1; font-size: 0.9em;">(Consell: Utilitzeu les imatges i els
+                                àudios que heu trobat per fer-la més atractiva!)</em>
+                        </span>
+                    </li>
+                    <li class="question-item">
+                        <span class="question-text">b) <strong>Mapa Mental:</strong> Creeu un esquema visual (digital o
+                            en
+                            paper) que resumeixi els punts clau. Aquest mapa s'entregarà a la resta de companys perquè
+                            tinguin la informació necessària per als jocs.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating Action Button for Library -->
+    <a href="biblioteca_historia_musica-main/index.html" class="library-fab" target="_blank">
+        📖 <span>Obrir Biblioteca</span>
+    </a>
+
+    <script>
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Find all buttons
+                const buttons = document.querySelectorAll('.copy-btn');
+                // Find the specific button clicked (using event target is better usually, but here I'll just use a simple visually hack if needed, 
+                // but actually for simplicity I'll relies on the event object passing logic if I could, but let's just show a global toast or change THIS button)
+
+                // Since I passed the string directly, I cannot reference 'this' easily in the inline call without passing it.
+                // Let's rely on the user seeing the generic feedback or IMPROVE IT:
+            });
+
+            // Allow "this" context access by changing the onclick slightly in DOM or just finding the active element
+            const btn = document.activeElement;
+            if (btn.classList.contains('copy-btn')) {
+                const originalText = btn.innerHTML; // Should be just innerHTML content logic
+                btn.classList.add('copied');
+                btn.innerText = 'COPIAT!';
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerText = 'Copiar';
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+
+</html>

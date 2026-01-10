@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELEGRAMA 20</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Courier Prime', monospace;
+        }
+
+        .crt::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 255, 0, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% {
+                bottom: 100%;
+            }
+
+            100% {
+                bottom: -100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-black text-[#00ff00] h-screen overflow-hidden crt selection:bg-[#00ff00] selection:text-black">
+    <div id="root"></div>
+    <div class="scanline"></div>
+    <script type="text/babel" data-type="module">
+        import { motion, AnimatePresence } from 'https://esm.sh/framer-motion@10.16.4';
+        const { useState, useEffect, useRef } = React;
+
+        const GAME_DATA = {
+            "Edat Mitjana": {
+                "Nivell 1": [
+                    { "id": "em_l1_1", "answer": "Monjos", "clues": ["Resaven", "Monestir", "Silenci", "Copistes", "Ora et Labora"], "options": ["Monjos", "Trobadors", "Reis", "Pagesos"] },
+                    { "id": "em_l1_2", "answer": "Castell", "clues": ["Pedra", "Fortalesa", "Muralla", "Rei", "Torre"], "options": ["Castell", "Església", "Cabana", "Vaixell"] },
+                    { "id": "em_l1_3", "answer": "Gregorià", "clues": ["Antic", "Llatí", "Església", "Cant", "Monodia"], "options": ["Gregorià", "Rock", "Òpera", "Rap"] },
+                    { "id": "em_l1_4", "answer": "Llatí", "clues": ["Roma", "Llengua", "Antiga", "Missa", "Idioma oficial"], "options": ["Llatí", "Anglès", "Francès", "Alemany"] },
+                    { "id": "em_l1_5", "answer": "Veu", "clues": ["Cos", "Humà", "Aire", "Cantar", "Instrument natural"], "options": ["Veu", "Flauta", "Violí", "Tambor"] }
+                ],
+                "Nivell 2": [
+                    { "id": "em_l2_1", "answer": "Trobador", "clues": ["Viatger", "Poeta", "Amor Cortès", "Llengua vulgar", "Músic profà"], "options": ["Trobador", "Monjo", "Bisbe", "Guerrer"] },
+                    { "id": "em_l2_2", "answer": "Neumes", "clues": ["Escriptura", "Signes", "Notes", "Quadrats", "Partitura antiga"], "options": ["Neumes", "Tabs", "Lletres", "Jeroglífics"] },
+                    { "id": "em_l2_3", "answer": "Monodia", "clues": ["Textura", "Una", "Sola", "Línia", "Melodia"], "options": ["Monodia", "Polifonia", "Orquestra", "Cor"] },
+                    { "id": "em_l2_4", "answer": "Cantigas", "clues": ["Galícia", "Alfons X", "Rei", "Verge Maria", "Cançons"], "options": ["Cantigas", "Madrigals", "Simfonies", "Sonates"] },
+                    { "id": "em_l2_5", "answer": "Llaüt", "clues": ["Fusta", "Cordes", "Pinçat", "Instrument", "Medieval"], "options": ["Llaüt", "Piano", "Trompeta", "Clarinet"] }
+                ],
+                "Nivell 3": [
+                    { "id": "em_l3_1", "answer": "Guido d'Arezzo", "clues": ["Monjo", "Mestre", "Mà", "Nom de les notes", "Tetragrama"], "options": ["Guido d'Arezzo", "Beethoven", "Mozart", "Bach"] },
+                    { "id": "em_l3_2", "answer": "Ars Nova", "clues": ["Nou", "Art", "Ritme", "Segle XIV", "Polifonia complexa"], "options": ["Ars Nova", "Ars Antiqua", "Renaixement", "Barroc"] },
+                    { "id": "em_l3_3", "answer": "Tetragrama", "clues": ["Línies", "Quatre", "Pauta", "Escriptura", "Abans del pentagrama"], "options": ["Tetragrama", "Pentagrama", "Tabulatura", "Partitura"] },
+                    { "id": "em_l3_4", "answer": "Perotin", "clues": ["Escola", "Notre Dame", "París", "Organum", "Polifonista"], "options": ["Perotin", "Vivaldi", "Elvis", "Chopin"] },
+                    { "id": "em_l3_5", "answer": "Viola de Roda", "clues": ["Corda", "Fregada", "Maneta", "Bordó", "Zanfona"], "options": ["Viola de Roda", "Guitarra", "Arpa", "Lira"] }
+                ]
+            },
+            "Renaixement": {
+                "Nivell 1": [
+                    { "id": "ren_l1_1", "answer": "Impremta", "clues": ["Màquina", "Llibres", "Paper", "Còpies", "Gutenberg"], "options": ["Impremta", "Ordinador", "Ràdio", "Televisió"] },
+                    { "id": "ren_l1_2", "answer": "Cor", "clues": ["Grup", "Persones", "Veus", "Cantar", "Junts"], "options": ["Cor", "Solo", "Duo", "Banda"] },
+                    { "id": "ren_l1_3", "answer": "Leonardo", "clues": ["Pintor", "Inventor", "Itàlia", "Mona Lisa", "Da Vinci"], "options": ["Leonardo", "Picasso", "Dalí", "Van Gogh"] },
+                    { "id": "ren_l1_4", "answer": "Església", "clues": ["Edifici", "Resar", "Capella", "Missa", "Sagrat"], "options": ["Església", "Discoteca", "Estadi", "Cinema"] },
+                    { "id": "ren_l1_5", "answer": "Flauta", "clues": ["Tub", "Vent", "Fusta", "Bufar", "Forats"], "options": ["Flauta", "Violí", "Tambor", "Piano"] }
+                ],
+                "Nivell 2": [
+                    { "id": "ren_l2_1", "answer": "Polifonia", "clues": ["Teixit", "Moltes", "Veus", "Simultànies", "Independents"], "options": ["Polifonia", "Monodia", "Soroll", "Silenci"] },
+                    { "id": "ren_l2_2", "answer": "Madrigal", "clues": ["Profà", "Itàlia", "Amor", "Llengua materna", "Veus"], "options": ["Madrigal", "Missa", "Gregorià", "Òpera"] },
+                    { "id": "ren_l2_3", "answer": "Humanisme", "clues": ["Filosofia", "Home", "Centre", "Raó", "Grècia antiga"], "options": ["Humanisme", "Teocentrisme", "Feudalisme", "Ateisme"] },
+                    { "id": "ren_l2_4", "answer": "Palestrina", "clues": ["Compositor", "Itàlia", "Papa", "Missa", "Polifonia"], "options": ["Palestrina", "Elvis", "Beatles", "Mozart"] },
+                    { "id": "ren_l2_5", "answer": "Dansa", "clues": ["Moviment", "Cos", "Pavana", "Gallarda", "Ballar"], "options": ["Dansa", "Concert", "Sermó", "Lectura"] }
+                ],
+                "Nivell 3": [
+                    { "id": "ren_l3_1", "answer": "Josquin", "clues": ["Mestre", "Des Prez", "Francès", "Flandes", "Motet"], "options": ["Josquin", "Bach", "Wagner", "Verdi"] },
+                    { "id": "ren_l3_2", "answer": "Viola de mà", "clues": ["Corda", "Espanya", "Guitarra", "Vihuela", "Pinçada"], "options": ["Viola de mà", "Violí", "Contrabaix", "Piano"] },
+                    { "id": "ren_l3_3", "answer": "Tomás L. Victoria", "clues": ["Espanyol", "Místic", "Capellà", "Rèquiem", "Abila"], "options": ["Tomás L. Victoria", "Vivaldi", "Lully", "Purcell"] },
+                    { "id": "ren_l3_4", "answer": "Motet", "clues": ["Religiós", "Llatí", "Breu", "Polifonia", "Cant"], "options": ["Motet", "Madrigal", "Villancico", "Sonata"] },
+                    { "id": "ren_l3_5", "answer": "Luter", "clues": ["Reforma", "Protestant", "Alemany", "Coral", "Martí"], "options": ["Luter", "El Papa", "Enric VIII", "Calví"] }
+                ]
+            },
+            "Barroc": {
+                "Nivell 1": [
+                    { "id": "bar_l1_1", "answer": "Perruca", "clues": ["Cabell", "Fals", "Blanc", "Rínxols", "Moda"], "options": ["Perruca", "Barret", "Casc", "Mocador"] },
+                    { "id": "bar_l1_2", "answer": "Violí", "clues": ["Corda", "Arc", "Fusta", "Agut", "Stradivarius"], "options": ["Violí", "Trompeta", "Tambor", "Flauta"] },
+                    { "id": "bar_l1_3", "answer": "Rei", "clues": ["Corona", "Palau", "Poder", "Monarquia", "Absolutisme"], "options": ["Rei", "President", "Alcalde", "Ciutadà"] },
+                    { "id": "bar_l1_4", "answer": "Or", "clues": ["Metall", "Brillant", "Groc", "Riquesa", "Decoració"], "options": ["Or", "Plàstic", "Fusta", "Pedra"] },
+                    { "id": "bar_l1_5", "answer": "Vivaldi", "clues": ["Compositor", "Itàlia", "Violí", "Primavera", "Estacions"], "options": ["Vivaldi", "Mozart", "Beethoven", "Chopin"] }
+                ],
+                "Nivell 2": [
+                    { "id": "bar_l2_1", "answer": "J.S. Bach", "clues": ["Alemany", "Pare", "Orgue", "Perruca", "Johann Sebastian"], "options": ["J.S. Bach", "Elvis", "Verdi", "Wagner"] },
+                    { "id": "bar_l2_2", "answer": "Òpera", "clues": ["Teatre", "Cantar", "Escenari", "Història", "Drama"], "options": ["Òpera", "Missa", "Simfonia", "Sonata"] },
+                    { "id": "bar_l2_3", "answer": "Clavecí", "clues": ["Teclat", "Corda", "Pinçada", "Antic", "No té dinàmica"], "options": ["Clavecí", "Piano", "Sintetitzador", "Orgue"] },
+                    { "id": "bar_l2_4", "answer": "Castrati", "clues": ["Cantant", "Home", "Operació", "Veu aguda", "Farinelli"], "options": ["Castrati", "Tenor", "Baix", "Soprano"] },
+                    { "id": "bar_l2_5", "answer": "Händel", "clues": ["Alemany", "Anglaterra", "Messies", "Al·leluia", "Reials Focs"], "options": ["Händel", "Vivaldi", "Lully", "Purcell"] }
+                ],
+                "Nivell 3": [
+                    { "id": "bar_l3_1", "answer": "Baix Continu", "clues": ["Acompanyament", "Base", "Xifrat", "Improvisat", "Clavecí i Violoncel"], "options": ["Baix Continu", "Solo", "Melodia", "Silenci"] },
+                    { "id": "bar_l3_2", "answer": "Contrast", "clues": ["Diferència", "Fort-Fluix", "Llum-Ombra", "Clarobscur", "Dinàmica"], "options": ["Contrast", "Igualtat", "Monotonia", "Equilibri"] },
+                    { "id": "bar_l3_3", "answer": "Fuga", "clues": ["Forma", "Complexa", "Polifonia", "Subjecte", "Persecució"], "options": ["Fuga", "Cançó", "Dansa", "Marxa"] },
+                    { "id": "bar_l3_4", "answer": "Toccata", "clues": ["Teclat", "Virtuosisme", "Ràpid", "Orgue", "Preludi"], "options": ["Toccata", "Adagio", "Minuet", "Scherzo"] },
+                    { "id": "bar_l3_5", "answer": "Monteverdi", "clues": ["Pioner", "Orfeo", "Primera", "Òpera", "Claudio"], "options": ["Monteverdi", "Verdi", "Puccini", "Rossini"] }
+                ]
+            },
+            "Classicisme": {
+                "Nivell 1": [
+                    { "id": "cla_l1_1", "answer": "Mozart", "clues": ["Nen", "Prodigi", "Salzburg", "Amadeus", "Wolfgang"], "options": ["Mozart", "Bach", "Vivaldi", "Wagner"] },
+                    { "id": "cla_l1_2", "answer": "Piano", "clues": ["Tecles", "Blanc i Negre", "Corda Percudida", "Fort i Fluix", "Instrument"], "options": ["Piano", "Clavecí", "Orgue", "Arpa"] },
+                    { "id": "cla_l1_3", "answer": "Director", "clues": ["Batuta", "Líder", "Esquena", "Guia", "Mestre"], "options": ["Director", "Públic", "Tècnic", "Ballarí"] },
+                    { "id": "cla_l1_4", "answer": "Clarinet", "clues": ["Vent", "Fusta", "Negre", "Canya simple", "Mozart l'estimava"], "options": ["Clarinet", "Trompeta", "Violí", "Timbal"] },
+                    { "id": "cla_l1_5", "answer": "Elegància", "clues": ["Estil", "Refinat", "Senzill", "Bonic", "Sense excessos"], "options": ["Elegància", "Caos", "Soroll", "Lletjor"] }
+                ],
+                "Nivell 2": [
+                    { "id": "cla_l2_1", "answer": "Beethoven", "clues": ["Sord", "Alemany", "Mal caràcter", "Perruca despentinada", "Cinquena"], "options": ["Beethoven", "Mozart", "Haydn", "Schubert"] },
+                    { "id": "cla_l2_2", "answer": "Simfonia", "clues": ["Orquestra", "Gran", "Quatre parts", "Auditori", "Haydn"], "options": ["Simfonia", "Solo", "Duo", "Cançó"] },
+                    { "id": "cla_l2_3", "answer": "Haydn", "clues": ["Papà", "Mestre", "Simfonia", "Londres", "Sorpresa"], "options": ["Haydn", "Mozart", "Salieri", "Gluck"] },
+                    { "id": "cla_l2_4", "answer": "Orquestra", "clues": ["Grup", "Músics", "Simfònica", "Cordes i Vents", "Escenari"], "options": ["Orquestra", "Banda", "Solista", "Trio"] },
+                    { "id": "cla_l2_5", "answer": "Viena", "clues": ["Ciutat", "Àustria", "Capital", "Música", "Danubi"], "options": ["Viena", "París", "Londres", "Roma"] }
+                ],
+                "Nivell 3": [
+                    { "id": "cla_l3_1", "answer": "Forma Sonata", "clues": ["Estructura", "Exposició", "Desenvolupament", "Reexposició", "Primer moviment"], "options": ["Forma Sonata", "Rondó", "Minuet", "Fuga"] },
+                    { "id": "cla_l3_2", "answer": "Quartet", "clues": ["Corda", "Quatre", "Dos violins", "Viola", "Violoncel"], "options": ["Quartet", "Simfonia", "Concert", "Solo"] },
+                    { "id": "cla_l3_3", "answer": "Il·lustració", "clues": ["Segle XVIII", "Llums", "Raó", "Ciència", "Filosofia"], "options": ["Il·lustració", "Barroc", "Edat Mitjana", "Romanticisme"] },
+                    { "id": "cla_l3_4", "answer": "Grau Tònica", "clues": ["Nota", "Primera", "Base", "Acord", "Final"], "options": ["Tònica", "Dominant", "Subdominant", "Sensible"] },
+                    { "id": "cla_l3_5", "answer": "Melodia", "clues": ["Acompanyada", "Principal", "Protagonista", "Cantable", "Senzilla"], "options": ["Melodia", "Contrapunt", "Fuga", "Baix"] }
+                ]
+            },
+            "Romanticisme": {
+                "Nivell 1": [
+                    { "id": "rom_l1_1", "answer": "Amor", "clues": ["Cor", "Sentiment", "Passió", "Tràgic", "Tema principal"], "options": ["Amor", "Matemàtiques", "Raó", "Fredor"] },
+                    { "id": "rom_l1_2", "answer": "Ballet", "clues": ["Dansa", "Puntes", "Tutu", "Txaikovski", "Llac dels Cignes"], "options": ["Ballet", "Sardana", "Rock", "Tango"] },
+                    { "id": "rom_l1_3", "answer": "Sentiment", "clues": ["Emoció", "Plorar", "Riure", "Expressar", "Interior"], "options": ["Sentiment", "Lògica", "Càlcul", "Indiferència"] },
+                    { "id": "rom_l1_4", "answer": "Wagner", "clues": ["Alemany", "Òpera", "Valkíries", "Èpic", "Richard"], "options": ["Wagner", "Mozart", "Vivaldi", "Bach"] },
+                    { "id": "rom_l1_5", "answer": "Saxòfon", "clues": ["Invent", "Adolphe", "Metall", "Canya", "No és Jazz encara"], "options": ["Saxòfon", "Violí", "Piano", "Flauta"] }
+                ],
+                "Nivell 2": [
+                    { "id": "rom_l2_1", "answer": "Chopin", "clues": ["Polònia", "Piano", "Romàntic", "Poeta", "Nocturns"], "options": ["Chopin", "Liszt", "Schumann", "Brahms"] },
+                    { "id": "rom_l2_2", "answer": "Virtuós", "clues": ["Crac", "Ràpid", "Difícil", "Tècnica", "Paganini"], "options": ["Virtuós", "Principiant", "Aficionat", "Lent"] },
+                    { "id": "rom_l2_3", "answer": "Lied", "clues": ["Cançó", "Alemany", "Veu", "Piano", "Schubert"], "options": ["Lied", "Òpera", "Simfonia", "Missa"] },
+                    { "id": "rom_l2_4", "answer": "Verdi", "clues": ["Itàlia", "Òpera", "Nabucco", "Visca", "Giuseppe"], "options": ["Verdi", "Wagner", "Puccini", "Rossini"] },
+                    { "id": "rom_l2_5", "answer": "Nacionalisme", "clues": ["País", "Arrels", "Folklore", "Pàtria", "Himne"], "options": ["Nacionalisme", "Internacional", "Global", "Universal"] }
+                ],
+                "Nivell 3": [
+                    { "id": "rom_l3_1", "answer": "Poema Simfònic", "clues": ["Orquestra", "Música", "Programa", "Narra", "Història"], "options": ["Poema Simfònic", "Simfonia", "Concert", "Sonata"] },
+                    { "id": "rom_l3_2", "answer": "Leitmotiv", "clues": ["Idea", "Melodia", "Personatge", "Repetició", "Wagner"], "options": ["Leitmotiv", "Tema", "Motiu", "Frase"] },
+                    { "id": "rom_l3_3", "answer": "Llibertat", "clues": ["Trencar", "Normes", "Creativitat", "Sense regles", "Artista"], "options": ["Llibertat", "Norma", "Llei", "Presó"] },
+                    { "id": "rom_l3_4", "answer": "Puccini", "clues": ["Itàlia", "Verisme", "Realitat", "Boheme", "Turandot"], "options": ["Puccini", "Verdi", "Rossini", "Bellini"] },
+                    { "id": "rom_l3_5", "answer": "Liszt", "clues": ["Hongria", "Piano", "Rockstar", "Rapsòdia", "Franz"], "options": ["Liszt", "Chopin", "Schumann", "Mendelssohn"] }
+                ]
+            },
+            "Segle XX": {
+                "Nivell 1": [
+                    { "id": "s20_l1_1", "answer": "Cinema", "clues": ["Pantalla", "Pel·lícula", "Banda Sonora", "Williams", "Star Wars"], "options": ["Cinema", "Teatre", "Llibre", "Ràdio"] },
+                    { "id": "s20_l1_2", "answer": "Guitarra", "clues": ["Elèctrica", "Rock", "Endoll", "Pua", "Distorsió"], "options": ["Guitarra", "Violí", "Arpa", "Llaüt"] },
+                    { "id": "s20_l1_3", "answer": "Jazz", "clues": ["Amèrica", "Negre", "Swing", "Trompeta", "Improvisació"], "options": ["Jazz", "Clàssica", "Pop", "Tecno"] },
+                    { "id": "s20_l1_4", "answer": "Disc", "clues": ["Rodó", "Vinil", "Gravació", "Música", "Tocadiscos"], "options": ["Disc", "Partitura", "Concert", "Mp3"] },
+                    { "id": "s20_l1_5", "answer": "Micro", "clues": ["Aparell", "Amplificar", "Veu", "Cantant", "Cable"], "options": ["Micro", "Altaveu", "Auricular", "Ràdio"] }
+                ],
+                "Nivell 2": [
+                    { "id": "s20_l2_1", "answer": "Stravinsky", "clues": ["Rus", "Ballet", "Consagració", "Polèmica", "Ritme"], "options": ["Stravinsky", "Txaikovski", "Korsakov", "Prokófiev"] },
+                    { "id": "s20_l2_2", "answer": "Sintetitzador", "clues": ["Màquina", "Teclat", "Sons", "Artificial", "Electrònica"], "options": ["Sintetitzador", "Piano", "Orgue", "Acordió"] },
+                    { "id": "s20_l2_3", "answer": "Rock", "clues": ["Estil", "Rebel", "Elvis", "Beatles", "Guitarra"], "options": ["Rock", "Jazz", "Blues", "Pop"] },
+                    { "id": "s20_l2_4", "answer": "Musical", "clues": ["Broadway", "Nova York", "Teatre", "Cantar", "Ballar"], "options": ["Musical", "Òpera", "Sarsuela", "Oratori"] },
+                    { "id": "s20_l2_5", "answer": "Minimalisme", "clues": ["Poc", "Repetició", "Senzill", "Bucle", "Hipnòtic"], "options": ["Minimalisme", "Maximalisme", "Sorollisme", "Serialisme"] }
+                ],
+                "Nivell 3": [
+                    { "id": "s20_l3_1", "answer": "Dodecafonisme", "clues": ["Dotze", "Notes", "Sèrie", "Schönberg", "Ordre"], "options": ["Dodecafonisme", "Tonalitat", "Modalitat", "Blues"] },
+                    { "id": "s20_l3_2", "answer": "Atonalisme", "clues": ["Sense", "Toni", "Dissonància", "Tensió", "Caos aparent"], "options": ["Atonalisme", "Consonància", "Harmonia", "Melodia"] },
+                    { "id": "s20_l3_3", "answer": "John Cage", "clues": ["Americà", "Silenci", "4'33", "Piano preparat", "Soroll"], "options": ["John Cage", "Glass", "Reich", "Boulez"] },
+                    { "id": "s20_l3_4", "answer": "Aleatòria", "clues": ["Atzar", "Sort", "Daus", "Imprevist", "Llibertat"], "options": ["Aleatòria", "Fixa", "Escrita", "Gravada"] },
+                    { "id": "s20_l3_5", "answer": "Impressionisme", "clues": ["Pintura", "França", "Debussy", "Color", "Atmòsfera"], "options": ["Impressionisme", "Expressionisme", "Cubisme", "Realisme"] }
+                ]
+            }
+        };
+
+        const ERAS = Object.keys(GAME_DATA);
+        const MAX_WORDS = 20;
+
+        const IntroScreen = ({ onStart }) => (
+            <div class="h-full flex flex-col items-center justify-center relative p-8">
+                <h1 class="text-6xl text-[#00ff00] font-bold mb-4 glow-text text-center glitch" data-text="TELEGRAMA 20">TELEGRAMA 20</h1>
+                <p class="mb-8 text-xl text-[#00dd00]">CENTRE DE DESENCRIPTACIÓ</p>
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl">
+                    {ERAS.map(era => (
+                        <div key={era} class="flex flex-col gap-2 p-4 border border-[#004400] hover:border-[#00ff00] transition-colors bg-black/50">
+                            <h3 class="text-xl font-bold uppercase mb-2">{era}</h3>
+                            <div class="flex gap-2">
+                                {[1, 2, 3].map(lvl => (
+                                    <button
+                                        key={lvl}
+                                        onClick={() => onStart(era, `Nivell ${lvl}`)}
+                                        class="flex-1 bg-[#002200] hover:bg-[#005500] text-sm py-2 border border-[#004400]"
+                                    >
+                                        NIVELL {lvl}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const GameScreen = ({ era, level, onGameOver, onWin, onBack }) => {
+            const [wordsLeft, setWordsLeft] = useState(MAX_WORDS);
+            const [currentRound, setCurrentRound] = useState(0); // 0 to 4
+            const [clueIndex, setClueIndex] = useState(0);
+            const [inputValue, setInputValue] = useState("");
+            const [showOptions, setShowOptions] = useState(false);
+            const [msg, setMsg] = useState(null);
+
+            const levelData = useMemo(() => GAME_DATA[era][level], [era, level]);
+            const currentQuestion = levelData[currentRound];
+
+            useEffect(() => {
+                // Cost for starting round (first clue)
+                if (wordsLeft > 0) {
+                    setWordsLeft(prev => Math.max(0, prev - 1));
+                }
+            }, [currentRound]);
+
+            useEffect(() => {
+                if (wordsLeft <= 0) {
+                    onGameOver();
+                }
+            }, [wordsLeft]);
+
+            const normalize = (str) => {
+                return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!inputValue.trim()) return;
+
+                const userAns = normalize(inputValue.trim());
+                const correctAns = normalize(currentQuestion.answer);
+
+                if (userAns === correctAns) {
+                    handleCorrect();
+                } else {
+                    handleWrong();
+                }
+            };
+
+            const handleOptionClick = (opt) => {
+                const userAns = normalize(opt);
+                const correctAns = normalize(currentQuestion.answer);
+                if (userAns === correctAns) {
+                    handleCorrect();
+                } else {
+                    handleWrong();
+                }
+            };
+
+            const handleCorrect = () => {
+                setMsg({ text: "ACCÉS CONCEDIT", color: "text-[#00ff00]" });
+                setTimeout(() => {
+                    setMsg(null);
+                    setInputValue("");
+                    setShowOptions(false);
+                    setClueIndex(0);
+                    if (currentRound < 4) {
+                        setCurrentRound(prev => prev + 1);
+                    } else {
+                        onWin();
+                    }
+                }, 1000);
+            };
+
+            const handleWrong = () => {
+                setMsg({ text: "ERROR DE CODI", color: "text-red-500" });
+                setInputValue("");
+
+                // Show next clue automatically and deduct word
+                if (clueIndex < currentQuestion.clues.length - 1) {
+                    setClueIndex(prev => prev + 1);
+                    setWordsLeft(prev => Math.max(0, prev - 1));
+                } else {
+                    // No more clues, just deduct word
+                    setWordsLeft(prev => Math.max(0, prev - 1));
+                }
+
+                setTimeout(() => setMsg(null), 1000);
+            };
+
+            const handleDecript = () => {
+                if (wordsLeft <= 3) return; // Can't afford
+                setWordsLeft(prev => prev - 3);
+                setShowOptions(true);
+            };
+
+            return (
+                <div class="h-full max-w-4xl mx-auto p-4 flex flex-col pt-12">
+                    <div class="flex justify-between items-end border-b-2 border-[#00ff00] pb-2 mb-8">
+                        <div>
+                            <h2 class="text-2xl">{era} :: {level}</h2>
+                            <div class="text-sm opacity-70">RONDA {currentRound + 1}/5</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-4xl font-bold">{wordsLeft}</div>
+                            <div class="text-xs">PARAULES RESTANTS</div>
+                        </div>
+                    </div>
+
+                    {/* MAIN CONSOLE */}
+                    <div class="flex-grow flex flex-col justify-center items-center relative">
+                        <div class="w-full max-w-2xl border border-[#004400] bg-black p-8 min-h-[300px] flex flex-col shadow-[0_0_20px_rgba(0,255,0,0.1)]">
+
+                            {/* MESSAGE FEEDBACK */}
+                            {msg && (
+                                <div class={`absolute top-0 left-0 w-full text-center text-4xl font-bold bg-black border-y border-[#00ff00] py-4 z-50 ${msg.color}`}>
+                                    {msg.text}
+                                </div>
+                            )}
+
+                            {/* CLUES */}
+                            <div class="mb-8 space-y-2 font-mono text-lg">
+                                {currentQuestion.clues.slice(0, clueIndex + 1).map((clue, i) => (
+                                    <div key={i} class="flex items-center">
+                                        <span class="mr-4 text-[#005500]">&gt;</span>
+                                        <span class="typing-effect">{clue}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* INPUT AREA */}
+                            <div class="mt-auto">
+                                {!showOptions ? (
+                                    <form onSubmit={handleSubmit} class="flex gap-4">
+                                        <span class="text-2xl animate-pulse">&gt;</span>
+                                        <input
+                                            autoFocus
+                                            type="text"
+                                            value={inputValue}
+                                            onChange={(e) => setInputValue(e.target.value)}
+                                            class="bg-transparent border-b-2 border-[#00ff00] text-[#00ff00] text-2xl outline-none flex-grow uppercase font-mono"
+                                            placeholder="..."
+                                        />
+                                    </form>
+                                ) : (
+                                    <div class="grid grid-cols-2 gap-4">
+                                        {currentQuestion.options.map(opt => (
+                                            <button
+                                                key={opt}
+                                                onClick={() => handleOptionClick(opt)}
+                                                class="border border-[#00ff00] hover:bg-[#00ff00] hover:text-black p-4 text-xl transition-all"
+                                            >
+                                                {opt}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* PANIC BUTTON */}
+                    <div class="mt-8 flex justify-center">
+                        {!showOptions && (
+                            <button
+                                onClick={handleDecript}
+                                disabled={wordsLeft < 3}
+                                class="border border-red-500 text-red-500 px-8 py-4 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-900/40 transition-colors uppercase tracking-widest"
+                            >
+                                [ DESENCRIPTAR OPCIONS (-3) ]
+                            </button>
+                        )}
+                    </div>
+
+                    <button onClick={onBack} class="absolute top-4 right-4 text-xs underline opacity-50 hover:opacity-100">ABORTAR</button>
+                </div>
+            );
+        };
+
+        const EndScreen = ({ type, onRestart }) => (
+            <div class="h-full flex flex-col items-center justify-center p-8 text-center">
+                <h1 class={`text-6xl md:text-8xl mb-4 ${type === 'win' ? 'text-green-500' : 'text-red-500'}`}>
+                    {type === 'win' ? 'MISSIÓ COMPLERTA' : 'ERROR FATAL'}
+                </h1>
+                <p class="text-xl opacity-70 mb-8 font-mono">
+                    {type === 'win' ? 'Arxius recuperats amb èxit.' : 'Connexió perduda. Tancant sistema.'}
+                </p>
+                <button
+                    onClick={onRestart}
+                    class="border border-[#00ff00] text-[#00ff00] px-8 py-3 hover:bg-[#00ff00] hover:text-black transition-colors"
+                >
+                    REINICIAR SISTEMA
+                </button>
+            </div>
+        );
+
+        const App = () => {
+            const [gameState, setGameState] = useState('intro');
+            const [selection, setSelection] = useState({ era: null, level: null });
+
+            const startGame = (era, level) => {
+                setSelection({ era, level });
+                setGameState('playing');
+            };
+
+            const reset = () => {
+                setGameState('intro');
+                setSelection({ era: null, level: null });
+            };
+
+            return (
+                <div class="h-full w-full bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
+                    {gameState === 'intro' && <IntroScreen onStart={startGame} />}
+                    {gameState === 'playing' && (
+                        <GameScreen
+                            era={selection.era}
+                            level={selection.level}
+                            onGameOver={() => setGameState('gameover')}
+                            onWin={() => setGameState('win')}
+                            onBack={reset}
+                        />
+                    )}
+                    {(gameState === 'gameover' || gameState === 'win') && (
+                        <EndScreen type={gameState} onRestart={reset} />
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

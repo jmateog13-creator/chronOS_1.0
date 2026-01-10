@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRANGER CHRONOS: THE SPLIT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ITC+Benguiat&display=swap');
+        /* Como ITC Benguiat no es gratis en Google Fonts, usaremos una similar para el ejemplo o serif */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+        .font-stranger {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Fallback vibe */
+        .font-tech {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .upside-down-bg {
+            background: linear-gradient(180deg, #111 0%, #200 100%);
+        }
+
+        .real-world-bg {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        .rift {
+            box-shadow: 0 0 20px 5px rgba(255, 0, 50, 0.7);
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white h-screen overflow-hidden select-none">
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+        import { motion, AnimatePresence } from 'https://esm.sh/framer-motion@10.16.4';
+        const { useState, useEffect, useMemo } = React;
+
+        const CONCEPTOS_MUSICALS = {
+            "Edat Mitjana": [
+                "Cant Gregorià", "Monjos", "Neumes", "Trobador", "Llatí",
+                "Monodia", "Guido d'Arezzo", "Cantigas", "Llaüt Medieval", "Ars Nova",
+                "Perotin", "Leonin", "Cant Pla", "Viola de roda", "Ad Honorem"
+            ],
+            "Renaixement": [
+                "Polifonia", "Madrigal", "Palestrina", "Coral", "Viola de mà",
+                "Impremta Musical", "Humanisme", "Tomás L. de Victoria", "Josquin des Prez", "Llaüt",
+                "Motet", "Música Profana", "Antropocentrisme", "Equilibri", "Gutenberg"
+            ],
+            "Barroc": [
+                "J.S. Bach", "Vivaldi", "Händel", "Clavecí", "Baix Continu",
+                "Òpera", "Concert", "Oratori", "Contrast", "Ornamentació",
+                "Castrati", "Stradivarius", "Monteverdi", "Toccata", "Fuga"
+            ],
+            "Classicisme": [
+                "Mozart", "Haydn", "Beethoven", "Clarinet", "Piano-Forte",
+                "Sonata", "Simfonia", "Equilibri", "Orquestra Simfònica", "Quartet de corda",
+                "Il·lustració", "Forma Sonata", "Grau Tònica", "Melodia Acompanyada", "Elegància"
+            ],
+            "Romanticisme": [
+                "Chopin", "Wagner", "Verdi", "Sentiment", "Lied",
+                "Poema Simfònic", "Virtuosisme", "Nacionalisme", "Gran Orquestra", "Piano Romàntic",
+                "Schubert", "Liszt", "Òpera Dramàtica", "Llibertat Creativa", "Passió"
+            ],
+            "Segle XX": [
+                "Stravinsky", "Schönberg", "Jazz", "Dodecafonisme", "Atonalisme",
+                "Música Electrònica", "Guitarra Elèctrica", "Minimalisme", "Banda Sonora", "Impressionisme",
+                "Debussy", "John Cage", "Música Aleatòria", "Rock & Roll", "Sintetitzador"
+            ]
+        };
+
+        const ERAS = Object.keys(CONCEPTOS_MUSICALS);
+
+        const IntroScreen = ({ onStart }) => (
+            <div class="h-full flex flex-col items-center justify-center bg-black relative p-6">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+                <h1 class="font-stranger text-6xl md:text-8xl text-red-600 mb-8 text-center drop-shadow-[0_0_15px_rgba(255,0,0,0.8)] border-b-4 border-red-600 pb-4">
+                    STRANGER CHRONOS
+                    <span class="block text-2xl md:text-4xl text-white mt-2 font-tech tracking-widest">THE SPLIT</span>
+                </h1>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 z-10">
+                    {ERAS.map(era => (
+                        <button
+                            key={era}
+                            onClick={() => onStart(era)}
+                            class="px-6 py-4 border border-red-500 hover:bg-red-900/40 text-red-100 font-tech uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_0_10px_#f00]"
+                        >
+                            {era}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const GameScreen = ({ era, onGameOver, onWin, onBack }) => {
+            const [cards, setCards] = useState([]);
+            const [score, setScore] = useState(0);
+            const [lives, setLives] = useState(3);
+            const [message, setMessage] = useState(null);
+
+            useEffect(() => {
+                // Generar nivel
+                const correctPool = [...CONCEPTOS_MUSICALS[era]];
+                const otherEras = ERAS.filter(e => e !== era);
+                let distractorPool = [];
+                otherEras.forEach(e => {
+                    distractorPool.push(...CONCEPTOS_MUSICALS[e]);
+                });
+
+                // 10 correctos
+                const selectedCorrect = correctPool.sort(() => 0.5 - Math.random()).slice(0, 10).map(t => ({ text: t, type: 'correct', id: Math.random() }));
+                // 20 incorrectos
+                const selectedDistractors = distractorPool.sort(() => 0.5 - Math.random()).slice(0, 20).map(t => ({ text: t, type: 'wrong', id: Math.random() }));
+
+                const allCards = [...selectedCorrect, ...selectedDistractors].sort(() => 0.5 - Math.random()).map(c => ({
+                    ...c,
+                    x: Math.random() * 60 + 20, // Random X %
+                    y: Math.random() * 40 + 40, // Random Y % (start in lower half mostly)
+                    rotation: Math.random() * 20 - 10
+                }));
+
+                setCards(allCards);
+            }, [era]);
+
+            const handleDragEnd = (card, info) => {
+                // Check drop zone (Upper Half = Y < window.innerHeight / 2)
+                // info.point.y is screen coordinate
+                const dropY = info.point.y;
+                const threshold = window.innerHeight / 2;
+
+                if (dropY < threshold) {
+                    // Dropped in Top Zone (Real World)
+                    if (card.type === 'correct') {
+                        // Correct!
+                        setScore(prev => {
+                            const newScore = prev + 1;
+                            if (newScore >= 10) setTimeout(onWin, 500);
+                            return newScore;
+                        });
+                        // Remove card visually correctly
+                        setCards(prev => prev.filter(c => c.id !== card.id));
+                        setMessage({ text: "CORRECTE", color: "text-green-400" });
+                    } else {
+                        // Wrong! Distractor in Real World
+                        handleError();
+                        // Card bounces back handled by framer motion naturally if we don't remove it? 
+                        // Actually to enforce penalty we should probably remove it or shake. 
+                        // Let's remove it to clean board but penalize life.
+                        setCards(prev => prev.filter(c => c.id !== card.id));
+                    }
+                } else {
+                    // Dropped back in bottom (Upside Down) - Do nothing basically
+                }
+
+                setTimeout(() => setMessage(null), 1000);
+            };
+
+            const handleError = () => {
+                setLives(prev => {
+                    const newLives = prev - 1;
+                    if (newLives <= 0) setTimeout(onGameOver, 500);
+                    return newLives;
+                });
+                setMessage({ text: "ERROR -1 VIDA", color: "text-red-500" });
+
+                // Screen flash effect could be added here via CSS classes on body
+                document.body.classList.add('bg-red-900');
+                setTimeout(() => document.body.classList.remove('bg-red-900'), 200);
+            };
+
+            return (
+                <div class="h-full flex flex-col relative w-full font-tech overflow-hidden">
+                    {/* TOP HALF: REAL WORLD */}
+                    <div class="h-1/2 w-full real-world-bg relative border-b-4 border-red-600 flex flex-col items-center justify-start p-4 rift z-0">
+                        <div class="flex justify-between w-full max-w-6xl z-20">
+                            <div>
+                                <h2 class="text-2xl text-blue-300 font-bold uppercase tracking-widest">Món Real: {era}</h2>
+                                <button onClick={onBack} class="text-xs text-gray-400 hover:text-white mt-1 underline">SORTIR</button>
+                            </div>
+                            <div class="flex gap-8 text-xl">
+                                <span class="text-green-400">REST: {score}/10</span>
+                                <span class="text-red-400">VIDES: {"❤️".repeat(lives)}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 opacity-30 text-center pointer-events-none">
+                            <p class="text-4xl font-bold tracking-[0.2em] text-blue-200">DROP ZONE</p>
+                        </div>
+
+                        {message && (
+                            <div class={`text-4xl font-bold mt-4 animate-bounce ${message.color}`}>
+                                {message.text}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* BOTTOM HALF: UPSIDE DOWN */}
+                    <div class="h-1/2 w-full upside-down-bg relative z-10 overflow-hidden">
+                        <div class="absolute bottom-2 right-2 text-red-900 opacity-50 text-6xl font-stranger pointer-events-none">UPSIDE DOWN</div>
+
+                        {/* CARDS */}
+                        {cards.map(card => (
+                            <motion.div
+                                key={card.id}
+                                drag
+                                dragConstraints={{ top: -window.innerHeight / 2, left: -50, right: 300, bottom: 200 }}
+                                dragElastic={0.1}
+                                dragMomentum={false}
+                                onDragEnd={(e, info) => handleDragEnd(card, info)}
+                                initial={{ x: Math.random() * (window.innerWidth - 200), y: Math.random() * (window.innerHeight / 3), rotate: card.rotation }}
+                                className="absolute cursor-grab active:cursor-grabbing w-32 h-24 md:w-40 md:h-28 bg-black border border-red-500/50 shadow-[0_0_15px_rgba(0,0,0,0.8)] flex items-center justify-center p-2 text-center text-sm md:text-base font-bold text-gray-200 hover:border-red-400 hover:z-50 hover:scale-110 transition-colors backdrop-blur-sm"
+                                style={{
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                }}
+                            >
+                                {card.text}
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* RIFT GLOW OVERLAY */}
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-red-600 shadow-[0_0_20px_5px_rgba(255,0,0,0.6)] z-20 pointer-events-none"></div>
+                </div>
+            );
+        };
+
+        const GameOver = ({ onRestart }) => (
+            <div class="h-full flex flex-col items-center justify-center bg-black text-red-600 font-stranger z-50">
+                <h1 class="text-6xl md:text-8xl mb-4 text-center">L'UPSIDE DOWN T'HA ATRAPAT</h1>
+                <p class="text-xl font-tech text-gray-400 mb-8">Has perdut la connexió amb la realitat.</p>
+                <button onClick={onRestart} class="px-8 py-3 bg-red-700 text-white font-tech rounded hover:bg-red-600 transition">TORNAR</button>
+            </div>
+        );
+
+        const WinScreen = ({ onRestart }) => (
+            <div class="h-full flex flex-col items-center justify-center bg-black text-blue-400 font-stranger z-50">
+                <h1 class="text-6xl md:text-8xl mb-4 text-center text-blue-300 shadow-blue-500">LÍNIA TEMPORAL RESTAURADA</h1>
+                <p class="text-xl font-tech text-gray-400 mb-8">Has tancat l'esquerda.</p>
+                <button onClick={onRestart} class="px-8 py-3 bg-blue-700 text-white font-tech rounded hover:bg-blue-600 transition">TORNAR</button>
+            </div>
+        );
+
+        const App = () => {
+            const [gameState, setGameState] = useState('intro'); // intro, playing, gameover, win
+            const [selectedEra, setSelectedEra] = useState(null);
+
+            const startGame = (era) => {
+                setSelectedEra(era);
+                setGameState('playing');
+            };
+
+            const backToIntro = () => {
+                setGameState('intro');
+                setSelectedEra(null);
+            };
+
+            return (
+                <div class="h-full w-full">
+                    {gameState === 'intro' && <IntroScreen onStart={startGame} />}
+                    {gameState === 'playing' && (
+                        <GameScreen
+                            era={selectedEra}
+                            onGameOver={() => setGameState('gameover')}
+                            onWin={() => setGameState('win')}
+                            onBack={backToIntro}
+                        />
+                    )}
+                    {gameState === 'gameover' && <GameOver onRestart={backToIntro} />}
+                    {gameState === 'win' && <WinScreen onRestart={backToIntro} />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
