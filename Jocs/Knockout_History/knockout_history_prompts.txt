@@ -1,0 +1,73 @@
+
+================================================================================
+GAME: KNOCKOUT HISTORY: ROAD TO GLORY
+THEME: Boxing, History, Cinematic, Realistic, Epic Sports
+================================================================================
+
+--- IMAGE PROMPTS (MIDJOURNEY / DALL-E) ---
+
+[STYLE NOTE]: All images should be photorealistic, cinematic lighting, 8k resolution, sports photography style, sweat, dramatic shadows, boxing atmosphere.
+
+--- BACKGROUNDS ---
+[FILENAME: ring_bg.jpg]
+PROMPT: A wide shot of a professional boxing arena at night, view from the corner of the ring looking across to the center. Crowd in the background is blurred (bokeh effect), bright spotlights illuminating the dusty air, ropes in the foreground out of focus. Dark cinematic atmosphere, blue and gold lighting. No text. 16:9 aspect ratio.
+
+[FILENAME: ring_floor.png]
+PROMPT: Texture of a boxing ring floor, canvas texture with some blood stains and sweat marks, top-down view, neutral color.
+
+--- UI ASSETS ---
+[FILENAME: glove_red.png]
+PROMPT: A professional red boxing glove, leather texture, shiny, isolated on white background, realistic.
+[FILENAME: glove_blue.png]
+PROMPT: A professional blue boxing glove, leather texture, shiny, isolated on white background, realistic.
+[FILENAME: bell.png]
+PROMPT: A shiny brass boxing ring bell, metallic reflection, isolated on white background.
+[FILENAME: belt_champion.png]
+PROMPT: A golden championship belt, large and ornate, jewelled, isolated on white background.
+
+--- CHARACTERS (OPPONENTS - 6 EPOCHS) ---
+[NOTE]: All characters should look like TOUGH BOXERS but retaining their historical features. Muscular, wearing boxing shorts (themed to their era), gloves on, fighting stance. Full body or 3/4 view.
+
+[ROUND 1: EDAT MITJANA (MEDIEVAL)]
+[FILENAME: boxer_medieval.png]
+PROMPT: A medieval knight as a boxer, very muscular, wearing chainmail-texture boxing shorts, iron-colored gloves, scars on chest, grime and sweat, dark gritty atmosphere, intensity of a crusader.
+
+[ROUND 2: RENAIXEMENT (RENAISSANCE)]
+[FILENAME: boxer_renaissance.png]
+PROMPT: Leonardo da Vinci as a fierce boxer, older but extremely fit and muscular (bodybuilder physique), wearing thick velvet boxing shorts, intense intelligent eyes, beard, holding a technical sparring position, cinematic lighting.
+
+[ROUND 3: BARROC (BAROQUE)]
+[FILENAME: boxer_baroque.png]
+PROMPT: Louis XIV (The Sun King) as a boxer, wearing extravagant silk boxing shorts with gold lace, wig tied back, arrogant expression, holding golden gloves, muscular but aristocratic.
+
+[ROUND 4: CLASSICISME (CLASSICAL)]
+[FILENAME: boxer_classicisme.png]
+PROMPT: Napoleon Bonaparte as a boxer, short but extremely stocky and muscular, determined geometric fighting stance, wearing white and blue imperial boxing shorts, intense gaze, strategic look.
+
+[ROUND 5: ROMANTICISME (ROMANTIC)]
+[FILENAME: boxer_romanticisme.png]
+PROMPT: A Victorian bare-knuckle style boxer (with gloves), Beethoven-esque wild hair, intense emotional expression, mutton chops beard, suspenders over bare muscular chest, stormy atmosphere background.
+
+[ROUND 6: SEGLE XX (20TH CENTURY)]
+[FILENAME: boxer_segleXX.png]
+PROMPT: An 80s Cyberpunk/Synthwave boxer, neon pink and green boxing shorts, protective goggles, mullet hairstyle, sweatband, futuristic athletic lighting, high energy.
+
+--- AUDIO PROMPTS (SUNO / UDIO) ---
+
+[FILENAME: Intro_Theme.mp3]
+PROMPT: Epic orchestral sports intro, Rocky style, brass section, energetic drums, building tension, "Eye of the Tiger" vibe but orchestral, heroic, 140 BPM.
+
+[FILENAME: Round_Start.mp3]
+PROMPT: Sound of a boxing ring bell, one loud ding, clear and resonant.
+
+[FILENAME: Crowd_Cheer.mp3]
+PROMPT: Large stadium crowd cheering, roaring excitement, applause.
+
+[FILENAME: Punch_Heavy.mp3]
+PROMPT: Heavy impact punch sound, meat hitting meat, powerful thud.
+
+[FILENAME: Knockout_Count.mp3]
+PROMPT: Referee counting down "One! Two! Three!..." with stadium echo.
+
+[FILENAME: Game_Over_Theme.mp3]
+PROMPT: Sad dramatic orchestral finale, slow strings, defeat, "The end of a warrior", cinematic, emotional.

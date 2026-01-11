@@ -3,46 +3,106 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>STRANGER CHRONOS: THE SPLIT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Roboto+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=ITC+Benguiat&display=swap');
-        /* Como ITC Benguiat no es gratis en Google Fonts, usaremos una similar para el ejemplo o serif */
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: white;
+            font-family: 'Share Tech Mono', monospace;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #root {
+            width: 100%;
+            height: 100%;
+        }
 
         .font-stranger {
-            font-family: 'Cinzel', serif;
+            font-family: 'Creepster', cursive;
+            letter-spacing: 0.1em;
         }
 
-        /* Fallback vibe */
-        .font-tech {
-            font-family: 'Share Tech Mono', monospace;
+        /* Scanlines Effect */
+        .scanlines {
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0) 50%,
+                    rgba(0, 0, 0, 0.2) 50%,
+                    rgba(0, 0, 0, 0.2));
+            background-size: 100% 4px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 50;
         }
 
-        .upside-down-bg {
-            background: linear-gradient(180deg, #111 0%, #200 100%);
+        /* Upside Down Particles Animation */
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-100px) translateX(20px);
+                opacity: 0;
+            }
         }
 
-        .real-world-bg {
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        .spore {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 4s infinite linear;
         }
 
-        .rift {
-            box-shadow: 0 0 20px 5px rgba(255, 0, 50, 0.7);
+        /* Glow Text */
+        .neon-red {
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000;
+        }
+
+        .neon-blue {
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+        }
+
+        .paint-order-stroke {
+            paint-order: stroke fill;
         }
     </style>
 </head>
 
-<body class="bg-black text-white h-screen overflow-hidden select-none">
+<body>
     <div id="root"></div>
-    <script type="text/babel" data-type="module">
-        import { motion, AnimatePresence } from 'https://esm.sh/framer-motion@10.16.4';
-        const { useState, useEffect, useMemo } = React;
 
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- GAME DATA ---
         const CONCEPTOS_MUSICALS = {
             "Edat Mitjana": [
                 "Cant Gregorià", "Monjos", "Neumes", "Trobador", "Llatí",
@@ -78,203 +138,451 @@
 
         const ERAS = Object.keys(CONCEPTOS_MUSICALS);
 
-        const IntroScreen = ({ onStart }) => (
-            <div class="h-full flex flex-col items-center justify-center bg-black relative p-6">
-                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-                <h1 class="font-stranger text-6xl md:text-8xl text-red-600 mb-8 text-center drop-shadow-[0_0_15px_rgba(255,0,0,0.8)] border-b-4 border-red-600 pb-4">
-                    STRANGER CHRONOS
-                    <span class="block text-2xl md:text-4xl text-white mt-2 font-tech tracking-widest">THE SPLIT</span>
-                </h1>
+        // --- COMPONENTS ---
 
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 z-10">
+        const TitleScreen = ({ onNext }) => (
+            <div className="h-full w-full flex flex-col items-center justify-center relative bg-black p-6 z-10 overflow-hidden text-center">
+                <div className="absolute inset-0 bg-gradient-to-b from-black via-red-900/20 to-black z-0"></div>
+                {/* Spores */}
+                {Array.from({ length: 30 }).map((_, i) => (
+                    <div key={i} className="spore" style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 4}s`
+                    }}></div>
+                ))}
+
+                <h1 className="font-stranger text-6xl md:text-9xl text-red-600 mb-2 neon-red z-10 text-center leading-none animate-pulse">
+                    STRANGER<br />CHRONOS
+                </h1>
+                <h2 className="text-xl md:text-3xl text-blue-300 font-bold mb-8 tracking-[0.5em] z-10 neon-blue uppercase text-center">
+                    THE SPLIT
+                </h2>
+
+                <div className="z-10 max-w-lg bg-black/60 p-6 rounded-lg border border-red-500/30 backdrop-blur-sm mb-10">
+                    <p className="text-white text-lg md:text-xl font-mono mb-4 leading-relaxed">
+                        Alguna cosa no va bé a la línia temporal... <br />
+                        Intrusos del Món del Revés s'estan barrejant amb la nostra realitat.
+                    </p>
+                    <p className="text-red-400 text-lg md:text-xl font-bold font-mono">
+                        LLISCA <span className="text-blue-400">AMUNT</span> PER L'ÈPOCA ESCOLLIDA.<br />
+                        LLISCA <span className="text-red-500">AVALL</span> PER EXPULSAR INTRUSOS.
+                    </p>
+                </div>
+
+                <button
+                    onClick={onNext}
+                    className="z-10 bg-red-600/20 border-2 border-red-500 text-red-100 py-4 px-12 rounded hover:bg-red-600 hover:text-white hover:scale-105 transition-all uppercase tracking-[0.2em] font-bold shadow-[0_0_20px_rgba(255,0,0,0.5)] text-2xl font-stranger"
+                >
+                    ENTRAR AL BUIT
+                </button>
+            </div>
+        );
+
+        const EraSelectScreen = ({ onSelectEra }) => (
+            <div className="h-full w-full flex flex-col items-center justify-center relative bg-black p-6 z-10 overflow-y-auto">
+                <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-gray-900 to-black z-0"></div>
+                <div className="scanlines"></div>
+
+                <h2 className="text-3xl md:text-5xl text-blue-300 font-bold mb-12 tracking-widest z-10 neon-blue uppercase text-center font-stranger mt-10">
+                    TRIA EL TEU DESTÍ
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl z-10 mb-8 pb-10">
                     {ERAS.map(era => (
                         <button
                             key={era}
-                            onClick={() => onStart(era)}
-                            class="px-6 py-4 border border-red-500 hover:bg-red-900/40 text-red-100 font-tech uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_0_10px_#f00]"
+                            onClick={() => onSelectEra(era)}
+                            className="bg-gray-900/90 border border-blue-500/50 text-blue-100 py-6 px-6 rounded-lg hover:bg-blue-900 hover:border-blue-400 hover:scale-105 transition-all uppercase tracking-widest font-bold shadow-lg flex flex-col items-center justify-center group"
                         >
-                            {era}
+                            <span className="text-xl md:text-2xl group-hover:text-white transition-colors">{era}</span>
+                            <span className="text-xs text-blue-500/50 mt-2 font-mono group-hover:text-blue-300">INICIALITZAR SIMULACIÓ</span>
                         </button>
                     ))}
                 </div>
             </div>
         );
 
-        const GameScreen = ({ era, onGameOver, onWin, onBack }) => {
-            const [cards, setCards] = useState([]);
-            const [score, setScore] = useState(0);
-            const [lives, setLives] = useState(3);
-            const [message, setMessage] = useState(null);
+        const CardStack = ({ nextCard, onSwipe }) => {
+            const [position, setPosition] = useState({ x: 0, y: 0 });
+            const [isDragging, setIsDragging] = useState(false);
+            const startPos = useRef({ x: 0, y: 0 });
+            const cardRef = useRef(null);
 
-            useEffect(() => {
-                // Generar nivel
-                const correctPool = [...CONCEPTOS_MUSICALS[era]];
-                const otherEras = ERAS.filter(e => e !== era);
-                let distractorPool = [];
-                otherEras.forEach(e => {
-                    distractorPool.push(...CONCEPTOS_MUSICALS[e]);
-                });
+            const handleStart = (clientX, clientY) => {
+                setIsDragging(true);
+                startPos.current = { x: clientX, y: clientY };
+            };
 
-                // 10 correctos
-                const selectedCorrect = correctPool.sort(() => 0.5 - Math.random()).slice(0, 10).map(t => ({ text: t, type: 'correct', id: Math.random() }));
-                // 20 incorrectos
-                const selectedDistractors = distractorPool.sort(() => 0.5 - Math.random()).slice(0, 20).map(t => ({ text: t, type: 'wrong', id: Math.random() }));
+            const handleMove = (clientX, clientY) => {
+                if (!isDragging) return;
+                const deltaX = clientX - startPos.current.x;
+                const deltaY = clientY - startPos.current.y;
+                setPosition({ x: deltaX, y: deltaY });
+            };
 
-                const allCards = [...selectedCorrect, ...selectedDistractors].sort(() => 0.5 - Math.random()).map(c => ({
-                    ...c,
-                    x: Math.random() * 60 + 20, // Random X %
-                    y: Math.random() * 40 + 40, // Random Y % (start in lower half mostly)
-                    rotation: Math.random() * 20 - 10
-                }));
+            const handleEnd = () => {
+                if (!isDragging) return;
+                setIsDragging(false);
+                const threshold = 150; // Pixels to trigger swipe
 
-                setCards(allCards);
-            }, [era]);
-
-            const handleDragEnd = (card, info) => {
-                // Check drop zone (Upper Half = Y < window.innerHeight / 2)
-                // info.point.y is screen coordinate
-                const dropY = info.point.y;
-                const threshold = window.innerHeight / 2;
-
-                if (dropY < threshold) {
-                    // Dropped in Top Zone (Real World)
-                    if (card.type === 'correct') {
-                        // Correct!
-                        setScore(prev => {
-                            const newScore = prev + 1;
-                            if (newScore >= 10) setTimeout(onWin, 500);
-                            return newScore;
-                        });
-                        // Remove card visually correctly
-                        setCards(prev => prev.filter(c => c.id !== card.id));
-                        setMessage({ text: "CORRECTE", color: "text-green-400" });
-                    } else {
-                        // Wrong! Distractor in Real World
-                        handleError();
-                        // Card bounces back handled by framer motion naturally if we don't remove it? 
-                        // Actually to enforce penalty we should probably remove it or shake. 
-                        // Let's remove it to clean board but penalize life.
-                        setCards(prev => prev.filter(c => c.id !== card.id));
-                    }
+                if (position.y < -threshold) {
+                    onSwipe('UP'); // Real World
+                    setPosition({ x: 0, y: -1000 }); // Animate out
+                } else if (position.y > threshold) {
+                    onSwipe('DOWN'); // Upside Down
+                    setPosition({ x: 0, y: 1000 }); // Animate out
                 } else {
-                    // Dropped back in bottom (Upside Down) - Do nothing basically
+                    setPosition({ x: 0, y: 0 }); // Reset
                 }
-
-                setTimeout(() => setMessage(null), 1000);
             };
 
-            const handleError = () => {
-                setLives(prev => {
-                    const newLives = prev - 1;
-                    if (newLives <= 0) setTimeout(onGameOver, 500);
-                    return newLives;
-                });
-                setMessage({ text: "ERROR -1 VIDA", color: "text-red-500" });
+            // Mouse Events
+            const onMouseDown = (e) => handleStart(e.clientX, e.clientY);
+            const onMouseMove = (e) => handleMove(e.clientX, e.clientY);
+            const onMouseUp = () => handleEnd();
 
-                // Screen flash effect could be added here via CSS classes on body
-                document.body.classList.add('bg-red-900');
-                setTimeout(() => document.body.classList.remove('bg-red-900'), 200);
-            };
+            // Touch Events
+            const onTouchStart = (e) => handleStart(e.touches[0].clientX, e.touches[0].clientY);
+            const onTouchMove = (e) => handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            const onTouchEnd = () => handleEnd();
+
+            // Rotation based on X movement
+            const rotation = position.x * 0.1;
+            const opacity = Math.max(0, 1 - Math.abs(position.y) / 800);
+
+            // Dynamic Shadow Color
+            let shadowColor = 'shadow-[0_0_50px_rgba(0,0,0,0.8)]';
+
+            if (position.y < -50) { // Moving UP (Blue/Safe)
+                shadowColor = 'shadow-[0_0_50px_rgba(0,100,255,0.8)]';
+            } else if (position.y > 50) { // Moving DOWN (Red/Danger)
+                shadowColor = 'shadow-[0_0_50px_rgba(255,0,0,0.8)]';
+            }
 
             return (
-                <div class="h-full flex flex-col relative w-full font-tech overflow-hidden">
-                    {/* TOP HALF: REAL WORLD */}
-                    <div class="h-1/2 w-full real-world-bg relative border-b-4 border-red-600 flex flex-col items-center justify-start p-4 rift z-0">
-                        <div class="flex justify-between w-full max-w-6xl z-20">
-                            <div>
-                                <h2 class="text-2xl text-blue-300 font-bold uppercase tracking-widest">Món Real: {era}</h2>
-                                <button onClick={onBack} class="text-xs text-gray-400 hover:text-white mt-1 underline">SORTIR</button>
-                            </div>
-                            <div class="flex gap-8 text-xl">
-                                <span class="text-green-400">REST: {score}/10</span>
-                                <span class="text-red-400">VIDES: {"❤️".repeat(lives)}</span>
-                            </div>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+                    <div
+                        ref={cardRef}
+                        className={`w-72 h-48 md:w-96 md:h-64 transition-transform pointer-events-auto cursor-grab active:cursor-grabbing relative flex items-center justify-center ${shadowColor}`}
+                        style={{
+                            transform: `translate(${position.x}px, ${position.y}px) rotate(${rotation}deg)`,
+                            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                            opacity: opacity,
+                        }}
+                        onMouseDown={onMouseDown}
+                        onMouseMove={onMouseMove}
+                        onMouseUp={onMouseUp}
+                        onMouseLeave={onMouseUp}
+                        onTouchStart={onTouchStart}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
+                    >
+                        {/* VHS IMAGE AS CARD BODY */}
+                        <img
+                            src="./img/vhs.png"
+                            alt="VHS"
+                            className="w-full h-full object-contain drop-shadow-2xl rounded-sm"
+                            draggable="false"
+                        />
+
+                        {/* MASKING TAPE LABEL FOR TEXT */}
+                        {/* Designed to look like a strip of masking tape stuck on the VHS */}
+                        <div className="absolute top-[55%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 bg-[#f0e6c8] py-2 px-4 shadow-md rotate-[-1deg] flex items-center justify-center"
+                            style={{
+                                clipPath: 'polygon(1% 0%, 99% 1%, 100% 98%, 2% 100%)', // Rough cut
+                                boxShadow: '1px 1px 4px rgba(0,0,0,0.6)'
+                            }}
+                        >
+                            <h3 className="text-xl md:text-3xl font-black text-black uppercase tracking-tighter truncate w-full text-center"
+                                style={{ fontFamily: "'Share Tech Mono', monospace" }}>
+                                {nextCard.text}
+                            </h3>
                         </div>
 
-                        <div class="mt-8 opacity-30 text-center pointer-events-none">
-                            <p class="text-4xl font-bold tracking-[0.2em] text-blue-200">DROP ZONE</p>
-                        </div>
+                        {/* DYNAMIC FEEDBACK OVERLAY */}
+                        <div className={`absolute inset-0 rounded-lg pointer-events-none transition-colors duration-300 ${position.y < -50 ? 'bg-blue-500/20' : position.y > 50 ? 'bg-red-500/20' : 'bg-transparent'}`}></div>
 
-                        {message && (
-                            <div class={`text-4xl font-bold mt-4 animate-bounce ${message.color}`}>
-                                {message.text}
+                        {/* Direction Hints (Visible only when dragging) */}
+                        {(position.y < -50 || position.y > 50) && (
+                            <div className={`absolute top-[-60px] left-1/2 transform -translate-x-1/2 text-xl font-bold uppercase tracking-widest px-4 py-2 rounded border-2 shadow-lg backdrop-blur-md z-50 whitespace-nowrap ${position.y < -50 ? 'text-blue-100 bg-blue-900/80 border-blue-400' : 'text-red-100 bg-red-900/80 border-red-500'}`}>
+                                {position.y < -50 ? "MÓN REAL" : "MÓN DEL REVÉS"}
                             </div>
                         )}
                     </div>
-
-                    {/* BOTTOM HALF: UPSIDE DOWN */}
-                    <div class="h-1/2 w-full upside-down-bg relative z-10 overflow-hidden">
-                        <div class="absolute bottom-2 right-2 text-red-900 opacity-50 text-6xl font-stranger pointer-events-none">UPSIDE DOWN</div>
-
-                        {/* CARDS */}
-                        {cards.map(card => (
-                            <motion.div
-                                key={card.id}
-                                drag
-                                dragConstraints={{ top: -window.innerHeight / 2, left: -50, right: 300, bottom: 200 }}
-                                dragElastic={0.1}
-                                dragMomentum={false}
-                                onDragEnd={(e, info) => handleDragEnd(card, info)}
-                                initial={{ x: Math.random() * (window.innerWidth - 200), y: Math.random() * (window.innerHeight / 3), rotate: card.rotation }}
-                                className="absolute cursor-grab active:cursor-grabbing w-32 h-24 md:w-40 md:h-28 bg-black border border-red-500/50 shadow-[0_0_15px_rgba(0,0,0,0.8)] flex items-center justify-center p-2 text-center text-sm md:text-base font-bold text-gray-200 hover:border-red-400 hover:z-50 hover:scale-110 transition-colors backdrop-blur-sm"
-                                style={{
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                                }}
-                            >
-                                {card.text}
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* RIFT GLOW OVERLAY */}
-                    <div class="absolute top-1/2 left-0 w-full h-1 bg-red-600 shadow-[0_0_20px_5px_rgba(255,0,0,0.6)] z-20 pointer-events-none"></div>
                 </div>
             );
         };
 
-        const GameOver = ({ onRestart }) => (
-            <div class="h-full flex flex-col items-center justify-center bg-black text-red-600 font-stranger z-50">
-                <h1 class="text-6xl md:text-8xl mb-4 text-center">L'UPSIDE DOWN T'HA ATRAPAT</h1>
-                <p class="text-xl font-tech text-gray-400 mb-8">Has perdut la connexió amb la realitat.</p>
-                <button onClick={onRestart} class="px-8 py-3 bg-red-700 text-white font-tech rounded hover:bg-red-600 transition">TORNAR</button>
-            </div>
-        );
+        const GameScreen = ({ era, onGameOver, onWin, onBack, volume, setVolume }) => {
+            const [deck, setDeck] = useState(null); // Null initially to show loading
+            const [currentCard, setCurrentCard] = useState(null);
+            const [score, setScore] = useState(0);
+            const [lives, setLives] = useState(3);
+            const [feedback, setFeedback] = useState(null);
 
-        const WinScreen = ({ onRestart }) => (
-            <div class="h-full flex flex-col items-center justify-center bg-black text-blue-400 font-stranger z-50">
-                <h1 class="text-6xl md:text-8xl mb-4 text-center text-blue-300 shadow-blue-500">LÍNIA TEMPORAL RESTAURADA</h1>
-                <p class="text-xl font-tech text-gray-400 mb-8">Has tancat l'esquerda.</p>
-                <button onClick={onRestart} class="px-8 py-3 bg-blue-700 text-white font-tech rounded hover:bg-blue-600 transition">TORNAR</button>
+            // INITIALIZE GAME
+            useEffect(() => {
+                if (!era) return;
+
+                // Safe check for data
+                if (!CONCEPTOS_MUSICALS[era]) {
+                    console.error("Invalid Era:", era);
+                    return;
+                }
+
+                const correctPool = CONCEPTOS_MUSICALS[era].map(text => ({ text, type: 'correct' }));
+
+                let distractorPool = [];
+                ERAS.filter(e => e !== era).forEach(e => {
+                    distractorPool.push(...CONCEPTOS_MUSICALS[e].map(text => ({ text, type: 'wrong' })));
+                });
+
+                // Pick 10 Correct + 10 Wrong
+                const selectedCorrect = correctPool.sort(() => 0.5 - Math.random()).slice(0, 10);
+                const selectedWrong = distractorPool.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+                const finalDeck = [...selectedCorrect, ...selectedWrong].sort(() => 0.5 - Math.random());
+
+                setDeck(finalDeck);
+                setCurrentCard(finalDeck[0]);
+            }, [era]);
+
+            const handleSwipe = (direction) => {
+                const isCorrect = currentCard.type === 'correct';
+                let success = false;
+
+                if (direction === 'UP') {
+                    if (isCorrect) success = true;
+                } else if (direction === 'DOWN') {
+                    if (!isCorrect) success = true;
+                }
+
+                if (success) {
+                    setScore(prev => prev + 1);
+                    setFeedback({ text: "CORRECTE", color: "text-green-400" });
+                } else {
+                    setLives(prev => {
+                        const newLives = prev - 1;
+                        if (newLives <= 0) setTimeout(onGameOver, 500);
+                        return newLives;
+                    });
+                    setFeedback({ text: "ERROR", color: "text-red-500" });
+                }
+
+                // Prepare next card
+                setTimeout(() => {
+                    if (!deck) return;
+                    const remainingDeck = deck.slice(1);
+                    setDeck(remainingDeck);
+
+                    if (remainingDeck.length > 0) {
+                        setCurrentCard(remainingDeck[0]);
+                    } else {
+                        // Win if deck is empty and still alive
+                        setTimeout(onWin, 500);
+                    }
+                }, 300); // Slight delay for swipe animation to finish visual
+
+                setTimeout(() => setFeedback(null), 800);
+            };
+
+            if (!deck) return <div className="text-white text-center p-10 font-mono">CARREGANT...</div>;
+
+            return (
+                <div className="h-full w-full flex flex-col relative overflow-hidden">
+
+                    {/* TOP ZONE: REAL WORLD */}
+                    <div className="absolute top-0 left-0 w-full h-1/2 bg-slate-900 border-b-4 border-red-600 flex flex-col items-center justify-start py-6 z-0"
+                        style={{ backgroundImage: 'url(./img/fonsmonreal.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+
+                        {/* Overlay for readability */}
+                        <div className="absolute inset-0 bg-blue-900/40 z-0"></div>
+
+                        {/* LEFT: LIVES & SCORE & EXIT (Moved from Right/Left mix) */}
+                        <div className="absolute top-4 left-4 flex flex-col items-start z-50">
+                            <button onClick={onBack} className="text-white/60 hover:text-white underline text-xs mb-2 pointer-events-auto bg-black/40 px-2 rounded">SORTIR</button>
+
+                            <div className="flex gap-1 mb-1">
+                                {Array.from({ length: lives }).map((_, i) => (
+                                    <div key={i} className="w-8 h-8 flex items-center justify-center relative">
+                                        <img src="./img/cor.png" alt="<3" className="w-full h-full object-contain filter drop-shadow-[0_0_5px_#ff0000]" onError={(e) => e.target.style.display = 'none'} />
+                                        <span className="absolute text-red-600 text-2xl animate-pulse -z-10">❤️</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="text-green-400 font-bold drop-shadow-md text-sm bg-black/40 px-2 rounded">PUNTS: {score}</div>
+                        </div>
+
+
+                        {/* CENTER: TITLE */}
+                        <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-40 text-center w-full pointer-events-none">
+                            <h2 className="text-3xl font-stranger text-blue-400 z-10 neon-blue drop-shadow-[0_4px_4px_rgba(0,0,0,1)] paint-order-stroke"
+                                style={{ WebkitTextStroke: '2px black', textShadow: '0 0 20px rgba(0,0,255,0.8)' }}>
+                                {era}
+                            </h2>
+                            <div className="inline-block text-blue-100 text-sm tracking-widest mt-1 z-10 font-bold bg-black/60 px-4 py-1 rounded border border-blue-500/30">MÓN REAL</div>
+                        </div>
+
+                        {/* RIGHT: VOLUME SLIDER (New) */}
+                        <div className="absolute top-4 right-4 z-50 flex flex-col items-end gap-1 pointer-events-auto">
+                            <div className="flex items-center gap-2 bg-black/60 p-2 rounded-full border border-blue-500/30 backdrop-blur-sm shadow-lg">
+                                <span className="text-xs text-blue-300 font-bold">VOL</span>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.1"
+                                    value={volume}
+                                    onChange={(e) => setVolume(parseFloat(e.target.value))}
+                                    className="w-24 h-2 bg-blue-900 rounded-lg appearance-none cursor-pointer accent-blue-400"
+                                />
+                            </div>
+                        </div>
+
+
+                        <div className="absolute bottom-10 animate-bounce text-blue-400 text-4xl drop-shadow-[0_0_10px_rgba(0,0,255,0.8)] z-10">▲</div>
+                    </div>
+
+                    {/* BOTTOM ZONE: UPSIDE DOWN */}
+                    <div className="absolute bottom-0 left-0 w-full h-1/2 bg-black flex flex-col items-center justify-end py-6 z-0 overflow-hidden"
+                        style={{ backgroundImage: 'url(./img/fonsupsidedown.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+
+                        {/* Overlay for atmosphere */}
+                        <div className="absolute inset-0 bg-red-900/30 z-0 mix-blend-multiply"></div>
+
+                        {Array.from({ length: 15 }).map((_, i) => (
+                            <div key={i} className="spore" style={{
+                                left: `${Math.random() * 100}%`,
+                                bottom: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 5}s`
+                            }}></div>
+                        ))}
+
+                        <div className="text-red-400 text-sm tracking-widest mb-2 z-10 rotate-180 font-bold bg-black/60 px-4 py-1 rounded border border-red-500/30">MÓN DEL REVÉS</div>
+                        <h2 className="text-4xl font-stranger text-red-600 z-10 neon-red rotate-180 drop-shadow-[0_4px_4px_rgba(0,0,0,1)] paint-order-stroke"
+                            style={{ WebkitTextStroke: '2px black', textShadow: '0 0 20px rgba(255,0,0,0.8)' }}>
+                            INTRÚS
+                        </h2>
+
+                        <div className="absolute top-10 animate-bounce text-red-600 text-4xl drop-shadow-[0_0_10px_rgba(255,0,0,0.8)] z-10">▼</div>
+                    </div>
+
+                    {/* FEEDBACK OVERLAY */}
+                    {feedback && (
+                        <div className={`absolute inset-0 flex items-center justify-center z-50 pointer-events-none`}>
+                            <h1 className={`text-6xl font-black ${feedback.color} uppercase tracking-tighter scale-150 transition-transform drop-shadow-[0_0_20px_rgba(0,0,0,1)]`}>
+                                {feedback.text}
+                            </h1>
+                        </div>
+                    )}
+
+                    {/* CARD STACK */}
+                    {currentCard && deck.length > 0 && (
+                        <CardStack
+                            key={currentCard.text} /* Key change forces re-render if needed, but smooth transition better */
+                            nextCard={currentCard}
+                            onSwipe={handleSwipe}
+                        />
+                    )}
+
+                    <div className="scanlines"></div>
+                </div>
+            );
+        };
+
+        const EndScreen = ({ type, onRestart }) => (
+            <div className={`h-full w-full flex flex-col items-center justify-center p-8 z-50 relative ${type === 'win' ? 'bg-blue-900/20' : 'bg-red-900/20'}`}>
+                <div className="absolute inset-0 bg-black z-0"></div>
+                <div className="absolute inset-0 opacity-40 z-0" style={{ backgroundImage: type === 'win' ? 'url(./img/fonsmonreal.jpg)' : 'url(./img/fonsupsidedown.jpg)', backgroundSize: 'cover' }}></div>
+                <div className="scanlines"></div>
+
+                <h1 className={`font-stranger text-6xl md:text-8xl mb-8 text-center z-10 ${type === 'win' ? 'text-blue-400 neon-blue' : 'text-red-500 neon-red'}`}>
+                    {type === 'win' ? 'LÍNIA RESTAURADA' : 'MENT CONSUMIDA'}
+                </h1>
+
+                <p className="text-xl md:text-2xl text-white/80 font-mono mb-12 text-center max-w-md z-10 bg-black/50 p-4 rounded backdrop-blur-sm">
+                    {type === 'win'
+                        ? "Has separat les realitats amb èxit."
+                        : "El Món del Revés t'ha consumit."}
+                </p>
+
+                <button
+                    onClick={onRestart}
+                    className={`px-10 py-4 text-xl font-bold uppercase tracking-widest border-2 z-10 pointer-events-auto transition-all hover:scale-105 ${type === 'win' ? 'border-blue-500 text-blue-100 hover:bg-blue-900' : 'border-red-600 text-red-100 hover:bg-red-900'}`}
+                >
+                    TORNA-HO A PROVAR
+                </button>
             </div>
         );
 
         const App = () => {
-            const [gameState, setGameState] = useState('intro'); // intro, playing, gameover, win
+            const [gameState, setGameState] = useState('title'); // title, era_select, playing, gameover, win
             const [selectedEra, setSelectedEra] = useState(null);
+            const [volume, setVolume] = useState(0.5);
+            const audioRef = useRef(null);
+
+            // AUDIO LOGIC
+            useEffect(() => {
+                const audio = new Audio('./audio/Neon Pulse in C Minor.mp3');
+                audio.loop = true;
+                audio.volume = volume;
+                audioRef.current = audio;
+
+                return () => {
+                    audio.pause();
+                    audio.src = "";
+                };
+            }, []);
+
+            useEffect(() => {
+                if (audioRef.current) {
+                    audioRef.current.volume = volume;
+                    // Play on first interaction if not playing
+                    if (audioRef.current.paused && volume > 0 && gameState !== 'title') {
+                        audioRef.current.play().catch(e => console.log("Audio autoplay blocked:", e));
+                    }
+                }
+            }, [volume, gameState]);
+
+            // Attempt play on start
+            const goToEraSelect = () => {
+                if (audioRef.current) audioRef.current.play().catch(e => console.log("Audio start:", e));
+                setGameState('era_select');
+            };
 
             const startGame = (era) => {
                 setSelectedEra(era);
                 setGameState('playing');
             };
 
-            const backToIntro = () => {
-                setGameState('intro');
+            const reset = () => {
+                setGameState('title');
                 setSelectedEra(null);
             };
 
+            const backToEraSelect = () => {
+                setGameState('era_select');
+                setSelectedEra(null);
+            }
+
             return (
-                <div class="h-full w-full">
-                    {gameState === 'intro' && <IntroScreen onStart={startGame} />}
+                <div className="w-full h-full bg-black">
+                    {gameState === 'title' && <TitleScreen onNext={goToEraSelect} />}
+                    {gameState === 'era_select' && <EraSelectScreen onSelectEra={startGame} />}
                     {gameState === 'playing' && (
                         <GameScreen
                             era={selectedEra}
                             onGameOver={() => setGameState('gameover')}
                             onWin={() => setGameState('win')}
-                            onBack={backToIntro}
+                            onBack={backToEraSelect}
+                            volume={volume}
+                            setVolume={setVolume}
                         />
                     )}
-                    {gameState === 'gameover' && <GameOver onRestart={backToIntro} />}
-                    {gameState === 'win' && <WinScreen onRestart={backToIntro} />}
+                    {(gameState === 'gameover' || gameState === 'win') && (
+                        <EndScreen type={gameState} onRestart={reset} />
+                    )}
                 </div>
             );
         };

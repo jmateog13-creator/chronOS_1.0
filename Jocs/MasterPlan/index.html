@@ -121,6 +121,8 @@
         const HEIST_DATA = {
             "Edat Mitjana": {
                 name: "BANC DEL MONESTIR",
+                bg: "./img/fonsmitjana.jpg",
+                music: "./audio/Calm Before The Uprising.mp3",
                 briefing: "Professor, ens infiltrem al Monestir. És un lloc tancat, fosc i ple de monjos. La seguretat és la 'Por a Déu'. Necessitem un pla perfecte.",
                 phases: [
                     {
@@ -140,8 +142,8 @@
                         intro: "Som a dins. El passadís és estret. Hem de moure'ns amb coordinació. Quin tipus de formació o 'textura' utilitzem?",
                         q: "Tàctica de moviment:",
                         opts: [
-                            { t: "Monodia (Tots a l'una, una sola veu)", ok: true },
-                            { t: "Polifonia (Cadascú al seu aire)", ok: false },
+                            { t: "Monodia", ok: true },
+                            { t: "Polifonia", ok: false },
                             { t: "Formació Orquestral Simfònica", ok: false }
                         ],
                         reaction_success: "Bé. Caminem com un sol home. La unitat ens fa invisibles.",
@@ -164,7 +166,7 @@
                         intro: "Som davant la porta del tresor. El teclat és... estrany. Són lletres antigues. Quin idioma parla aquesta caixa forta?",
                         q: "Llenguatge del codi:",
                         opts: [
-                            { t: "Llatí (Cant Gregorià)", ok: true },
+                            { t: "Llatí", ok: true },
                             { t: "Anglès Modern", ok: false },
                             { t: "Italià", ok: false }
                         ],
@@ -176,9 +178,9 @@
                         intro: "Ens han vist! L'Abat ens apunta amb el dit. Quina és la nostra millor defensa ideològica?",
                         q: "Argument de defensa:",
                         opts: [
-                            { t: "Déu és el centre de tot (Teocentrisme)", ok: true },
-                            { t: "La Raó humana és superior (Racionalisme)", ok: false },
-                            { t: "El sentiment individual (Romanticisme)", ok: false }
+                            { t: "Déu és el centre de tot", ok: true },
+                            { t: "La Raó humana és superior", ok: false },
+                            { t: "El sentiment individual", ok: false }
                         ],
                         reaction_success: "L'Abat dubta... creu que som enviats divins. Hem guanyat temps.",
                         reaction_fail: "Heretgia! Ens han condemnat a la foguera!"
@@ -199,6 +201,8 @@
             },
             "Renaixement": {
                 name: "BANC DE FLORENCIA",
+                bg: "./img/fonsrenaixement.jpg",
+                music: "./audio/Calm Before The Uprising.mp3",
                 briefing: "Benvingut a Florència, Professor. Bressol de l'art i els diners. L'objectiu és el palau dels Mèdici. Elegància i Humanisme.",
                 phases: [
                     {
@@ -218,9 +222,9 @@
                         intro: "La sala principal té sensors de so complexos. Una sola veu no n'hi ha prou. Què fem?",
                         q: "Tàctica sonora:",
                         opts: [
-                            { t: "Polifonia (Veus independents i creuades)", ok: true },
-                            { t: "Monodia (Una sola línia)", ok: false },
-                            { t: "Silenci absolut (4'33)", ok: false }
+                            { t: "Polifonia", ok: true },
+                            { t: "Monodia", ok: false },
+                            { t: "Silenci absolut", ok: false }
                         ],
                         reaction_success: "El sistema es satura amb la complexitat de les veus. Estem a dins.",
                         reaction_fail: "Massa simple. L'alarma ha saltat."
@@ -230,7 +234,7 @@
                         intro: "Professor, necessito una eina per forçar el pany. Tinc aquests instruments a mà...",
                         q: "Eina:",
                         opts: [
-                            { t: "Una Viola de mà (Vihuela)", ok: true },
+                            { t: "Una Viola de mà", ok: true },
                             { t: "Un Saxòfon Tenor", ok: false },
                             { t: "Un Sintetitzador Moog", ok: false }
                         ],
@@ -242,7 +246,7 @@
                         intro: "Un noble ens pregunta la contrasenya cantada. Ha de ser en la llengua del poble, no en llatí.",
                         q: "Gènere:",
                         opts: [
-                            { t: "Un Madrigal (Llengua vulgar)", ok: true },
+                            { t: "Un Madrigal", ok: true },
                             { t: "Una Missa en Llatí", ok: false },
                             { t: "Un Cant Gregorià", ok: false }
                         ],
@@ -254,8 +258,8 @@
                         intro: "El Duc ens barra el pas. Ens pregunta qui és el centre de l'Univers. Compte amb la resposta.",
                         q: "Filosofia:",
                         opts: [
-                            { t: "L'Home és la mesura de tot (Humanisme)", ok: true },
-                            { t: "Déu és l'únic centre (Teocentrisme)", ok: false },
+                            { t: "L'Home és la mesura de tot", ok: true },
+                            { t: "Déu és l'únic centre", ok: false },
                             { t: "Els diners són el centre", ok: false }
                         ],
                         reaction_success: "El Duc somriu. És un humanista convençut. Ens deixa passar.",
@@ -277,6 +281,8 @@
             },
             "Barroc": {
                 name: "BANC REIAL VERSALLES",
+                bg: "./img/fonsbarroc.jpg",
+                music: "./audio/Calm Before The Uprising.mp3",
                 briefing: "Barroc. Exageració, contrast i or. Som a Versalles. Aquí tot és espectacle, Professor. No podem fallar en l'etiqueta.",
                 phases: [
                     {
@@ -296,8 +302,8 @@
                         intro: "El sistema de seguretat segueix un ritme constant, com una màquina de cosir. Com ens movem?",
                         q: "Ritme:",
                         opts: [
-                            { t: "Ritme Mecànic (Motor constant)", ok: true },
-                            { t: "Rubato (Ara ràpid, ara lent)", ok: false },
+                            { t: "Ritme Mecànic", ok: true },
+                            { t: "Rubato", ok: false },
                             { t: "Caòtic i sense pols", ok: false }
                         ],
                         reaction_success: "Tic-tac. Perfectament sincronitzats amb la maquinària.",
@@ -332,7 +338,7 @@
                         intro: "Hem arribat a la cambra reial. Està buida i això és sospitós. Al Barroc tenen por al buit. Què fem?",
                         q: "Acció:",
                         opts: [
-                            { t: "Omplir-ho tot d'ornaments (Horror Vacui)", ok: true },
+                            { t: "Omplir-ho tot d'ornaments", ok: true },
                             { t: "Deixar-ho minimalista", ok: false },
                             { t: "Trencar les parets", ok: false }
                         ],
@@ -344,7 +350,7 @@
                         intro: "La guàrdia reial ens persegueix! Necessitem una estructura complexa per despistar-los.",
                         q: "Forma musical:",
                         opts: [
-                            { t: "Una FUGA (Veus que es persegueixen)", ok: true },
+                            { t: "Una FUGA", ok: true },
                             { t: "Una cançó pop", ok: false },
                             { t: "Un minuet tranquil", ok: false }
                         ],
@@ -355,6 +361,8 @@
             },
             "Classicisme": {
                 name: "BANC DE VIENA",
+                bg: "./img/fonsclassic.jpg",
+                music: "./audio/Calm Before The Uprising.mp3",
                 briefing: "Viena. La ciutat de la música. Tot aquí és ordre, simetria i raó. Res d'exageracions, Professor. Sigueu elegants.",
                 phases: [
                     {
@@ -386,7 +394,7 @@
                         intro: "Els guàrdies tenen un nou sistema de detecció. Nosaltres tenim un instrument nou per contrarestar-lo.",
                         q: "Instrument:",
                         opts: [
-                            { t: "El Clarinet (o el Piano-Forte)", ok: true },
+                            { t: "El Clarinet", ok: true },
                             { t: "El Saxòfon", ok: false },
                             { t: "La Flauta de bec", ok: false }
                         ],
@@ -433,6 +441,8 @@
             },
             "Romanticisme": {
                 name: "BANC DE PARIS",
+                bg: "./img/fonsromantic.jpg",
+                music: "./audio/Calm Before The Uprising.mp3",
                 briefing: "París, segle XIX. Passió, revolució i sentiment. Aquí la raó no serveix de res, Professor. Hem de jugar amb les emocions.",
                 phases: [
                     {
@@ -452,8 +462,8 @@
                         intro: "El rellotge del banc no és exacte. Es retrau i s'accelera amb l'emoció.",
                         q: "Concepte:",
                         opts: [
-                            { t: "Rubato (Temps flexible)", ok: true },
-                            { t: "Tempo Giusto (Mecànic)", ok: false },
+                            { t: "Rubato", ok: true },
+                            { t: "Tempo Giusto", ok: false },
                             { t: "Metrònom estricte", ok: false }
                         ],
                         reaction_success: "Fluïm amb el temps. Ningú pot atrapar-nos.",
@@ -476,7 +486,7 @@
                         intro: "Professor, cada vegada que apareix el Director del banc, sona una melodia específica. Com es diu això?",
                         q: "Tècnica:",
                         opts: [
-                            { t: "Leitmotiv (Idea fixa)", ok: true },
+                            { t: "Leitmotiv", ok: true },
                             { t: "Baix Continu", ok: false },
                             { t: "Improvisació", ok: false }
                         ],
@@ -500,7 +510,7 @@
                         intro: "Però... per què hem fet aquest atracament? No és pels diners.",
                         q: "Motiu:",
                         opts: [
-                            { t: "Per la Llibertat i la Nació (Nacionalisme)", ok: true },
+                            { t: "Per la Llibertat i la Nació", ok: true },
                             { t: "Per l'equilibri universal", ok: false },
                             { t: "Per ordre del Papa", ok: false }
                         ],
@@ -511,6 +521,8 @@
             },
             "Segle XX": {
                 name: "BANC GLOBAL",
+                bg: "./img/fonssegleXX.jpg",
+                music: "./audio/Calm Before The Uprising.mp3",
                 briefing: "Segle XX. El món ha canviat, Professor. Guerres, tecnologia i trencament. Aquí no hi ha regles. Tot val.",
                 phases: [
                     {
@@ -530,7 +542,7 @@
                         intro: "El sistema de seguretat no té un 'centre' tonal. És una xarxa dispersa. Com hi naveguem?",
                         q: "Tècnica:",
                         opts: [
-                            { t: "Atonalisme (Sense tònica)", ok: true },
+                            { t: "Atonalisme", ok: true },
                             { t: "Tonalitat Clàssica", ok: false },
                             { t: "Modes Grecs", ok: false }
                         ],
@@ -554,9 +566,9 @@
                         intro: "El codi és una sèrie numèrica estricta. No es pot repetir cap nota fins que hagin sonat totes.",
                         q: "Mètode:",
                         opts: [
-                            { t: "Dodecafonisme (12 tons)", ok: true },
-                            { t: "Pentatònica (5 tons)", ok: false },
-                            { t: "Escala Major (7 tons)", ok: false }
+                            { t: "Dodecafonisme", ok: true },
+                            { t: "Pentatònica", ok: false },
+                            { t: "Escala Major", ok: false }
                         ],
                         reaction_success: "12/12. Matriu completada. Schönberg estaria orgullós.",
                         reaction_fail: "Has repetit una nota! L'algoritme t'ha caçat!"
@@ -578,7 +590,7 @@
                         intro: "Com acabem aquest pla mestre? Amb el so més radical de tots.",
                         q: "Final:",
                         opts: [
-                            { t: "Silenci Absolut (4'33'' de John Cage)", ok: true },
+                            { t: "Silenci Absolut", ok: true },
                             { t: "Un acord final fortíssim", ok: false },
                             { t: "Un fos a negre", ok: false }
                         ],
@@ -592,6 +604,11 @@
         const NarrativeText = ({ text, onComplete }) => {
             const [display, setDisplay] = useState('');
             const [index, setIndex] = useState(0);
+
+            useEffect(() => {
+                setDisplay('');
+                setIndex(0);
+            }, [text]);
 
             useEffect(() => {
                 if (index < text.length) {
@@ -609,10 +626,10 @@
         };
 
         const Avatar = ({ mood = 'neutral' }) => (
-            <div className="relative w-32 h-32 md:w-48 md:h-48 flex-shrink-0 border-2 border-red-600 bg-black overflow-hidden shadow-[0_0_20px_rgba(255,0,0,0.3)]">
+            <div className="relative w-40 h-40 md:w-64 md:h-64 flex-shrink-0 border-4 border-red-600 bg-black overflow-hidden shadow-[0_0_30px_rgba(255,0,0,0.4)]">
                 {/* Placeholder for the Avatar Image - Using a generic image or the one from prompts */}
                 <div className="absolute inset-0 bg-red-900/20 z-10"></div>
-                <img src="./img/avatar_barcelona.jpg" alt="Barcelona" className="w-full h-full object-cover" onError={(e) => {
+                <img src="./img/barcelona.jpg" alt="Barcelona" className="w-full h-full object-cover" onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = 'https://ui-avatars.com/api/?name=Barcelona&background=990000&color=fff&size=200';
                 }} />
@@ -624,8 +641,11 @@
             </div>
         );
 
-        const IntroScreen = ({ onStart }) => (
-            <div className="h-full flex flex-col items-center justify-center p-8 bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] relative overflow-hidden">
+        const IntroScreen = ({ onStart, completedEras }) => (
+            <div className="h-full flex flex-col items-center justify-center p-8 relative overflow-hidden">
+                {/* Main Menu Background - FIXED */}
+                <div className="fixed inset-0 bg-cover bg-center z-0" style={{ backgroundImage: "url('./img/fonscinici.jpg')" }}></div>
+                <div className="absolute inset-0 bg-black/60 z-0"></div> {/* Dark overlay */}
                 <div className="absolute inset-0 bg-red-900/10 pointer-events-none"></div>
                 <div className="text-6xl mb-4 animate-bounce">👓</div>
                 <h1 className="text-6xl md:text-9xl font-impact text-white tracking-widest mb-2 z-10 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
@@ -636,24 +656,30 @@
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl z-10 px-4">
-                    {Object.keys(HEIST_DATA).map(era => (
-                        <button
-                            key={era}
-                            onClick={() => onStart(era)}
-                            className="group relative bg-[#1a1a1a] border border-gray-800 hover:border-red-600 p-6 h-40 flex flex-col justify-between transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(220,38,38,0.3)] overflow-hidden"
-                        >
-                            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
-                                <span className="text-4xl">🏦</span>
-                            </div>
-                            <span className="text-red-500 text-xs font-bold tracking-widest uppercase">Target Lock</span>
-                            <span className="text-2xl font-bold text-white group-hover:text-red-500 transition-colors uppercase font-impact tracking-wide">
-                                {era}
-                            </span>
-                            <span className="text-gray-400 text-sm font-mono text-left w-full border-t border-gray-800 pt-2 mt-2 group-hover:border-red-900">
-                                {HEIST_DATA[era].name}
-                            </span>
-                        </button>
-                    ))}
+                    {Object.keys(HEIST_DATA).map(era => {
+                        const isCompleted = completedEras.includes(era);
+                        return (
+                            <button
+                                key={era}
+                                onClick={() => onStart(era)}
+                                className={`group relative border border-gray-800 p-6 h-40 flex flex-col justify-between transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-[0_10px_20px_rgba(220,38,38,0.3)] overflow-hidden ${isCompleted ? 'bg-green-900/40 border-green-600' : 'bg-[#1a1a1a] hover:border-red-600'
+                                    }`}
+                            >
+                                <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-4xl">{isCompleted ? '✅' : '🏦'}</span>
+                                </div>
+                                <span className={`${isCompleted ? 'text-green-500' : 'text-red-500'} text-xs font-bold tracking-widest uppercase`}>
+                                    {isCompleted ? 'MISSION ACCOMPLISHED' : 'TARGET LOCK'}
+                                </span>
+                                <span className={`text-2xl font-bold group-hover:text-red-500 transition-colors uppercase font-impact tracking-wide ${isCompleted ? 'text-green-400' : 'text-white'}`}>
+                                    {era}
+                                </span>
+                                <span className="text-gray-400 text-sm font-mono text-left w-full border-t border-gray-800 pt-2 mt-2 group-hover:border-red-900">
+                                    {HEIST_DATA[era].name}
+                                </span>
+                            </button>
+                        )
+                    })}
                 </div>
             </div>
         );
@@ -664,6 +690,7 @@
             const [phase, setPhase] = useState(0);
             const [shake, setShake] = useState(false);
             const [allowInput, setAllowInput] = useState(false);
+            const [volume, setVolume] = useState(0.5); // Volume state
 
             const bankData = useMemo(() => HEIST_DATA[era], [era]);
             const currentPhase = bankData.phases[phase];
@@ -671,6 +698,14 @@
             const phaseIntro = currentPhase?.intro || "";
             const [currentDialogue, setCurrentDialogue] = useState("");
             const [reactionType, setReactionType] = useState('neutral'); // neutral, happy, angry
+
+            // Audio handling
+            useEffect(() => {
+                const audio = document.getElementById('bgMusic');
+                if (audio) {
+                    audio.volume = volume;
+                }
+            }, [volume]);
 
             // Briefing handling
             useEffect(() => {
@@ -727,8 +762,15 @@
             return (
                 <div className={`h-full flex flex-col relative transition-colors duration-100 font-mono ${shake ? 'bg-red-900' : 'bg-[#1a1a1a]'} overflow-hidden`}>
 
-                    {/* Background Pattern */}
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] opacity-50 z-0"></div>
+                    {/* Background Image per Era - FIXED to cover entire screen */}
+                    <div className="fixed inset-0 bg-cover bg-center z-0 transition-all duration-1000"
+                        style={{ backgroundImage: `url('${bankData.bg}')` }}>
+                    </div>
+                    {/* Overlay for readability */}
+                    <div className="absolute inset-0 bg-black/70 z-0"></div>
+
+                    {/* Audio Player */}
+                    <audio id="bgMusic" autoPlay loop src={bankData.music} />
 
                     {/* Top Bar */}
                     <div className="relative z-10 bg-black/80 border-b border-red-800 p-2 flex justify-between items-center text-xs uppercase tracking-widest text-red-500">
@@ -736,16 +778,30 @@
                             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                             LIVE FEED // {bankData.name}
                         </div>
-                        <div>
-                            PHASE {phase + 1} / {bankData.phases.length}
+                        <div className="flex items-center gap-4">
+                            {/* Volume Slider */}
+                            <div className="flex items-center gap-2">
+                                <span>🔈</span>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.1"
+                                    value={volume}
+                                    onChange={(e) => setVolume(parseFloat(e.target.value))}
+                                    className="w-20 accent-red-600 cursor-pointer"
+                                />
+                                <span>🔊</span>
+                            </div>
+                            <span>PHASE {phase + 1} / {bankData.phases.length}</span>
                         </div>
                     </div>
 
                     {/* Main Content Area */}
                     <div className="flex-grow flex flex-col relative z-10 p-4 md:p-8 overflow-y-auto">
 
-                        {/* Center Stage - Visuals or Choice - ANCHORED BOTTOM */}
-                        <div className="flex-grow flex md:flex-row flex-col items-end justify-center md:justify-center gap-6 md:gap-12 pb-8 mt-auto">
+                        {/* Center Stage - Visuals or Choice - CENTERED IN SCREEN */}
+                        <div className="flex-grow flex md:flex-row flex-col items-center justify-center gap-6 md:gap-12 w-full max-w-7xl mx-auto">
 
                             {/* Avatar (Left) */}
                             <motion.div
@@ -763,7 +819,7 @@
                                 {['briefing', 'narrative', 'reaction'].includes(gameState) && (
                                     <div
                                         onClick={handleNext}
-                                        className="bg-black/90 border-2 border-white p-6 md:p-8 cursor-pointer hover:bg-gray-900 transition-colors relative shadow-2xl min-h-[150px]"
+                                        className="bg-black/90 border-4 border-white p-8 md:p-12 cursor-pointer hover:bg-gray-900 transition-colors relative shadow-2xl min-h-[200px]"
                                     >
                                         <div className="absolute -top-3 left-4 bg-red-600 text-white text-xs px-2 py-1 font-bold uppercase tracking-widest">
                                             BARCELONA
@@ -782,7 +838,7 @@
                                 {gameState === 'choice' && (
                                     <div className="w-full">
                                         {/* Question/Prompt from Avatar */}
-                                        <div className="bg-red-900/20 border-l-4 border-red-600 p-4 mb-6 text-red-400 font-bold uppercase tracking-widest">
+                                        <div className="bg-red-900/80 border-l-4 border-red-500 p-5 mb-6 text-red-200 font-bold uppercase tracking-widest text-lg shadow-lg">
                                             {currentPhase.q}
                                         </div>
 
@@ -794,9 +850,9 @@
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ delay: idx * 0.1 }}
                                                     onClick={() => handleChoice(opt.ok)}
-                                                    className="w-full text-left bg-white text-black p-4 md:p-5 font-bold text-lg md:text-xl hover:bg-red-600 hover:text-white transition-all transform hover:-translate-x-1 border-l-8 border-gray-400 hover:border-black shadow-lg"
+                                                    className="w-full text-left bg-white text-black p-5 md:p-6 font-bold text-lg md:text-2xl hover:bg-red-600 hover:text-white transition-all transform hover:-translate-x-2 active:scale-95 border-l-8 border-gray-400 hover:border-black shadow-xl group"
                                                 >
-                                                    <span className="mr-4 opacity-50 font-mono text-sm">0{idx + 1} //</span>
+                                                    <span className="mr-4 opacity-50 font-mono text-sm md:text-base group-hover:text-white/70">0{idx + 1} //</span>
                                                     {opt.t}
                                                 </motion.button>
                                             ))}
@@ -812,66 +868,94 @@
             );
         };
 
-        const EndScreen = ({ type, onRestart }) => (
-            <div className={`h-full flex flex-col items-center justify-center p-8 text-center relative overflow-hidden ${type === 'gameover' ? 'bg-black' : 'bg-red-700'}`}>
-                {/* Overlay Textures */}
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-linen.png')] opacity-30 z-0"></div>
+        const GameOverScreen = ({ onRestart, onMenu }) => (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+                <div className="fixed inset-0 bg-black z-0"></div>
+                <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/50 via-black to-black z-0 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-red-900/10 animate-pulse pointer-events-none z-0"></div>
 
-                <div className="relative z-10 max-w-4xl border-8 border-white p-12 bg-black/50 backdrop-blur-sm">
-                    <h1 className="text-6xl md:text-9xl font-impact text-white mb-2 tracking-tighter uppercase leading-none">
-                        {type === 'gameover' ? 'BUSTED' : 'SUCCESS'}
-                    </h1>
-                    <div className={`h-2 w-full mb-8 ${type === 'gameover' ? 'bg-red-600' : 'bg-white'}`}></div>
+                <h2 className="text-7xl md:text-9xl font-impact text-red-600 mb-6 z-10 tracking-widest drop-shadow-[0_0_15px_rgba(255,0,0,0.8)]">GAME OVER</h2>
+                <div className="max-w-2xl bg-black/80 border-l-8 border-red-600 p-8 mb-12 transform rotate-1 z-10">
+                    <p className="text-2xl md:text-3xl text-white font-light">La missió ha fracassat, Professor. Ens veiem a la presó.</p>
+                </div>
 
-                    <p className="text-xl md:text-3xl font-mono text-white mb-8">
-                        {type === 'gameover'
-                            ? '"Professor, the plan has failed. They have us in custody."'
-                            : '"We did it! The history books are ours. Bella Ciao!"'}
-                    </p>
-
-                    <button
-                        onClick={onRestart}
-                        className={`px-12 py-6 font-bold text-2xl uppercase tracking-[0.2em] shadow-xl transition-transform hover:scale-105
-                            ${type === 'gameover' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-white text-red-600 hover:bg-gray-100'}`}
-                    >
-                        {type === 'gameover' ? 'RETRY PLAN' : 'NEW HEIST'}
+                <div className="flex flex-col md:flex-row gap-6 z-10">
+                    <button onClick={onRestart} className="px-10 py-5 bg-white text-black font-bold text-xl hover:bg-red-600 hover:text-white transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)] uppercase tracking-widest">
+                        RETRY MISSION
                     </button>
+                    <button onClick={onMenu} className="px-10 py-5 border-2 border-white text-white font-bold text-xl hover:bg-white hover:text-black transition-all transform hover:scale-105 uppercase tracking-widest">
+                        ABORT
+                    </button>
+                </div>
+            </div>
+        );
 
+        const WinScreen = ({ onMenu }) => (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+                <div className="fixed inset-0 bg-black z-0"></div>
+                <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-green-900/40 via-black to-black z-0 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 z-0 pointer-events-none"></div>
+
+                <h2 className="text-7xl md:text-9xl font-impact text-green-500 mb-6 z-10 tracking-widest drop-shadow-[0_0_15px_rgba(0,255,0,0.6)]">MISSION COMPLETE</h2>
+                <div className="max-w-3xl bg-black/80 border-r-8 border-green-500 p-8 mb-12 transform -rotate-1 z-10">
+                    <p className="text-2xl md:text-3xl text-white font-light">Professor, tenim el botí. La història de la música és nostra. <span className="text-green-400 font-bold italic">Bella Ciao!</span></p>
+                </div>
+
+                <button onClick={onMenu} className="px-12 py-6 bg-green-600 text-white font-bold text-2xl hover:bg-green-500 transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(0,255,0,0.4)] uppercase tracking-widest z-10">
+                    RETURN TO HQ
+                </button>
+
+                {/* Confetti effect (simple squares) */}
+                <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-20">
+                    {[...Array(20)].map((_, i) => (
+                        <div key={i} className="absolute bg-green-500 w-2 h-2 animate-pulse" style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            opacity: Math.random(),
+                            animationDuration: `${Math.random() * 2 + 1}s`
+                        }}></div>
+                    ))}
                 </div>
             </div>
         );
 
         const App = () => {
-            const [gameState, setGameState] = useState('intro');
-            const [selectedEra, setSelectedEra] = useState(null);
+            const [view, setView] = useState('intro'); // intro, game, gameover, win
+            const [era, setEra] = useState(null);
+            const [completedEras, setCompletedEras] = useState([]);
 
-            const startGame = (era) => {
-                setSelectedEra(era);
-                setGameState('playing');
+            const handleStart = (selectedEra) => {
+                setEra(selectedEra);
+                setView('game');
             };
 
-            const reset = () => {
-                setGameState('intro');
-                setSelectedEra(null);
+            const handleGameOver = () => {
+                setView('gameover');
+            };
+
+            const handleWin = () => {
+                if (!completedEras.includes(era)) {
+                    setCompletedEras([...completedEras, era]);
+                }
+                setView('win');
+            };
+
+            const handleBackToMenu = () => {
+                setEra(null);
+                setView('intro');
+            };
+
+            const handleRestart = () => {
+                setView('game');
             };
 
             return (
-                <div className="h-full w-full">
-                    <AnimatePresence>
-                        {gameState === 'intro' && <IntroScreen onStart={startGame} />}
-                        {gameState === 'playing' && (
-                            <GameScreen
-                                era={selectedEra}
-                                onGameOver={() => setGameState('gameover')}
-                                onWin={() => setGameState('win')}
-                                onBack={reset}
-                            />
-                        )}
-                        {(gameState === 'gameover' || gameState === 'win') && (
-                            <EndScreen type={gameState} onRestart={reset} />
-                        )}
-                    </AnimatePresence>
-                </div>
+                <AnimatePresence>
+                    {view === 'intro' && <IntroScreen onStart={handleStart} completedEras={completedEras} />}
+                    {view === 'game' && <GameScreen era={era} onGameOver={handleGameOver} onWin={handleWin} onBack={handleBackToMenu} />}
+                    {view === 'gameover' && <GameOverScreen onRestart={handleRestart} onMenu={handleBackToMenu} />}
+                    {view === 'win' && <WinScreen onMenu={handleBackToMenu} />}
+                </AnimatePresence>
             );
         };
 

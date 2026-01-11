@@ -1,15 +1,36 @@
 GAME: MASTER PLAN (La Casa de Papel RPG)
-STYLE: Cinematic, Dark, High Contrast, Red/Black/White Palette.
+STYLE: Cinematic, Dark, High Contrast, Red/Black/White Palette. Realistic with a "Heist Movie" filter (grain, vignetting).
 
-1. AVATAR: "BARCELONA" (Field Leader)
-PROMPT: A charismatic heist leader, code name "Barcelona", communicating via video link. Wearing the iconic red jumpsuit, zipper slightly open. Intense expression, looking directly at the camera. He/She has a headset/earpiece. Background is a dark bank interior or a chaotic heist scene. Realistic or high-quality anime style (keeping consistency with other games). Maybe holding a Dali mask in one hand but face visible.
-Format: Square or Portrait.
+1. MAIN MENU BACKGROUND: "THE TEMPORAL HQ"
+PROMPT: A high-tech but dark planning room ("The Professor's Lair"). Walls covered in maps of different historical eras, connected by red strings. A large tactical table in the center with blueprints. Dim warm lighting, dust motes dancing in the light. Atmospheric and detailed. No people in the shot, just the environment ready for planning.
+Filename: masterplan_bg_main.jpg
 
-2. BACKGROUND: HEIST BLUEPRINT
-PROMPT: Detailed architectural blueprint of a classical bank or museum. White lines on dark blue or black background. Tactical markers, red circles, path lines. Digital overlay aesthetics. "Plan Valencia" or similar text visible.
+2. AVATAR: "BARCELONA" (Field Leader)
+PROMPT: [EXISTING - KEEP] A charismatic heist leader, code name "Barcelona", communicating via video link. Wearing the iconic red jumpsuit, zipper slightly open. Intense expression, looking directly at the camera. He/She has a headset/earpiece. Realistic style.
+Filename: masterplan_avatar.jpg
 
-3. BACKGROUND: THE VAULT
-PROMPT: Massive steel vault door, complex gears and locking mechanisms. Dim lighting, golden reflections. Sense of impenetrability.
+--- ERA SPECIFIC BANK BACKGROUNDS ---
 
-4. UI ELEMENTS
-PROMPT: "Money Heist" style font (stencil). Red paint elements. Paper textures.
+3. EDAT MITJANA: "BANC DEL MONESTIR"
+PROMPT: Interior of a medieval monastery crypto/vault. Stone walls, torchlight, shadows. In the center, a heavy iron-bound wooden chest or a primitive metal gate. Gregorian chant atmosphere visually represented by mist and darkness.
+Filename: masterplan_bg_medieval.jpg
+
+4. RENAIXEMENT: "BANC DE FLORENCIA" (PALAU MEDICI)
+PROMPT: A lavish Renaissance palace room turned into a bank. Frescoes on the walls, marble floors, velvet curtains. A secure door made of bronze with artistic reliefs. Warm golden lighting, feeling of wealth and art.
+Filename: masterplan_bg_renaissance.jpg
+
+5. BARROC: "BANC REIAL VERSALLES"
+PROMPT: The Hall of Mirrors in Versailles but adapted as a high-security vault. Excessive gold ornamentation, crystal chandeliers, mirrors reflecting the heist team. The vault door is hidden behind a heavy golden tapestry or is a massive gilded gate.
+Filename: masterplan_bg_baroque.jpg
+
+6. CLASSICISME: "BANC DE VIENA"
+PROMPT: Neoclassical architecture. Clean lines, white marble columns, symmetry. A very orderly and rational bank interior. The vault door is a perfect circle of polished steel or silver. Bright, cold, and imposing.
+Filename: masterplan_bg_classical.jpg
+
+7. ROMANTICISME: "BANC DE PARIS"
+PROMPT: A dramatic, stormy setting inside a 19th-century bank. Gothic revival elements, dark wood, heavy red drapes. Dramatic lighting (chiaroscuro). The vault looks like a fortress. Essential "Les Misérables" revolution vibe.
+Filename: masterplan_bg_romantic.jpg
+
+8. SEGLE XX: "BANC GLOBAL"
+PROMPT: A frantic stock exchange floor or a brutalist concrete bank vault. 1920s Art Deco or Cold War bunker style. Tickers with numbers, fluorescent lights, steel bars. Modern sensation of anxiety and speed.
+Filename: masterplan_bg_20th.jpg

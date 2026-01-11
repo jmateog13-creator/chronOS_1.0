@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CINEMA CHRONOS: L'ESTRENA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Limelight&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+
+        .font-cinema {
+            font-family: 'Limelight', cursive;
+        }
+
+        .popcorn-pattern {
+            background-image: radial-gradient(#eab308 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px #f87171, 0 0 20px #f87171;
+        }
+    </style>
+</head>
+
+<body class="h-screen overflow-hidden flex flex-col items-center justify-center relative bg-black">
+    <div id="root" class="w-full h-full relative z-10 flex flex-col"></div>
+
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useMemo, useRef } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        const CINEMA_DATA = {
+            "Edat Mitjana": {
+                "movieTitle": "EL MISTERI DEL MONESTIR",
+                "valid": [
+                    { name: "Família Monjos", img: "./img/monjo_family.png" },
+                    { name: "Copista", img: "./img/copista.png" },
+                    { name: "Trobador", img: "./img/trobador.png" },
+                    { name: "Dama Medieval", img: "./img/dama_medieval.png" },
+                    { name: "Bessons Neumes", img: "./img/bessons_neumes.png" },
+                    { name: "Joglar", img: "./img/joglar.png" },
+                    { name: "Rei Feudal", img: "./img/rei_feudal.png" }
+                ]
+            },
+            "Renaixement": {
+                "movieTitle": "L'RENAIXEMENT D'OR",
+                "valid": [
+                    { name: "Impresor", img: "./img/impresor.png" },
+                    { name: "Mecenes", img: "./img/mecenes.png" },
+                    { name: "Cor Cantants", img: "./img/cor_cantants.png" },
+                    { name: "Home Vitruvi", img: "./img/home_vitruvi.png" },
+                    { name: "Músic Viola", img: "./img/music_viola.png" },
+                    { name: "Palestrina", img: "./img/palestrina.png" }
+                ]
+            },
+            "Barroc": {
+                "movieTitle": "LA FUGA REIAL",
+                "valid": [
+                    { name: "Bach", img: "./img/bach.png" },
+                    { name: "Castrati", img: "./img/castrati.png" },
+                    { name: "Rei Sol", img: "./img/rei_sol.png" },
+                    { name: "Clavecí", img: "./img/claveci.png" },
+                    { name: "Dama Perruca", img: "./img/dama_perruca.png" },
+                    { name: "Vivaldi", img: "./img/vivaldi.png" }
+                ]
+            },
+            "Classicisme": {
+                "movieTitle": "SIMFONIA A VIENA",
+                "valid": [
+                    { name: "Nen Mozart", img: "./img/nen_mozart.png" },
+                    { name: "Director", img: "./img/director_classic.png" },
+                    { name: "Quartet", img: "./img/quartet.png" },
+                    { name: "Haydn", img: "./img/haydn.png" },
+                    { name: "Clarinet", img: "./img/clarinet.png" }
+                ]
+            },
+            "Romanticisme": {
+                "movieTitle": "PASSIÓ NOCTURNA",
+                "valid": [
+                    { name: "Pianista Boig", img: "./img/pianista_boig.png" },
+                    { name: "Ballarina", img: "./img/ballarina.png" },
+                    { name: "Poeta", img: "./img/poeta.png" },
+                    { name: "Director Gegant", img: "./img/director_gegant.png" },
+                    { name: "Violinista Diabòlic", img: "./img/violinista.png" }
+                ]
+            },
+            "Segle XX": {
+                "movieTitle": "REVOLUCIÓ SONORA",
+                "valid": [
+                    { name: "Jazz Trumpet", img: "./img/jazz_trumpet.png" },
+                    { name: "Rocker", img: "./img/rocker.png" },
+                    { name: "Cage", img: "./img/cage.png" },
+                    { name: "Abstract Artist", img: "./img/abstract_artist.png" },
+                    { name: "Tape Recorder", img: "./img/tape_recorder.png" }
+                ]
+            }
+        };
+
+        const App = () => {
+            const [gameStage, setGameStage] = useState('menu'); // menu, playing, gameover, win
+            const [selectedEra, setSelectedEra] = useState(null);
+            const [queue, setQueue] = useState([]);
+            const [currentPersonIndex, setCurrentPersonIndex] = useState(0);
+            const [score, setScore] = useState(0);
+            const [lives, setLives] = useState(3);
+            const [feedback, setFeedback] = useState(null);
+            const [volume, setVolume] = useState(0.5);
+            const [completedEras, setCompletedEras] = useState([]);
+
+            const bgMusicRef = useRef(new Audio('audio/Living Room Screening.mp3'));
+
+            useEffect(() => {
+                const audio = bgMusicRef.current;
+                audio.loop = true;
+                audio.volume = volume;
+                // Try to play immediately, might be blocked by browser policy until interaction
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Auto-play prevented: waiting for interaction");
+                    });
+                }
+                return () => {
+                    audio.pause();
+                };
+            }, []);
+
+            useEffect(() => {
+                if (bgMusicRef.current) {
+                    bgMusicRef.current.volume = volume;
+                }
+            }, [volume]);
+
+            const sounds = useMemo(() => ({
+                correct: new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'),
+                wrong: new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3'),
+                win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
+                gameover: new Audio('https://assets.mixkit.co/active_storage/sfx/290/290-preview.mp3')
+            }), []);
+
+            const startGame = (era) => {
+                // Ensure music is playing on user interaction
+                if (bgMusicRef.current.paused) {
+                    bgMusicRef.current.play();
+                }
+
+                setSelectedEra(era);
+
+                // Get all eras except current one
+                const otherEras = Object.keys(CINEMA_DATA).filter(e => e !== era);
+
+                // Collect invalid characters from other eras
+                let possibleInvalid = [];
+                otherEras.forEach(e => {
+                    possibleInvalid = [...possibleInvalid, ...CINEMA_DATA[e].valid];
+                });
+
+                const data = CINEMA_DATA[era];
+                const allValid = [...data.valid];
+                const allInvalid = [...possibleInvalid];
+
+                // Generate 15 items randomly
+                const newQueue = [];
+                for (let i = 0; i < 15; i++) {
+                    const isTrap = Math.random() > 0.5; // 50% chance of trap
+                    if (isTrap && allInvalid.length > 0) {
+                        const idx = Math.floor(Math.random() * allInvalid.length);
+                        newQueue.push({ ...allInvalid[idx], isValid: false });
+                    } else {
+                        const idx = Math.floor(Math.random() * allValid.length);
+                        newQueue.push({ ...allValid[idx], isValid: true });
+                    }
+                }
+
+                setQueue(newQueue);
+                setGameStage('playing');
+                setCurrentPersonIndex(0);
+                setScore(0);
+                setLives(3);
+                setFeedback(null);
+            };
+
+            const handleDecision = (decision) => {
+                const person = queue[currentPersonIndex];
+                let isCorrect = false;
+
+                if (decision === 'admit') {
+                    isCorrect = person.isValid;
+                } else {
+                    isCorrect = !person.isValid;
+                }
+
+                if (isCorrect) {
+                    sounds.correct.currentTime = 0;
+                    sounds.correct.play();
+                    setScore(s => s + 1);
+                    setFeedback({ type: 'success', text: decision === 'admit' ? "Benvingut/da!" : "Fora d'aquí!" });
+                } else {
+                    sounds.wrong.currentTime = 0;
+                    sounds.wrong.play();
+                    setLives(l => l - 1);
+                    setFeedback({ type: 'error', text: "Boo!! Error!" });
+                }
+
+                setTimeout(() => {
+                    setFeedback(null);
+                    if (currentPersonIndex < queue.length - 1) {
+                        if (!isCorrect && lives <= 1) {
+                            setGameStage('gameover');
+                        } else if (score + (isCorrect ? 1 : 0) >= 10) {
+                            setGameStage('win');
+                            if (!completedEras.includes(selectedEra)) {
+                                setCompletedEras(prev => [...prev, selectedEra]);
+                            }
+                        } else {
+                            setCurrentPersonIndex(i => i + 1);
+                        }
+                    } else {
+                        if (score + (isCorrect ? 1 : 0) >= 10) {
+                            setGameStage('win');
+                            if (!completedEras.includes(selectedEra)) {
+                                setCompletedEras(prev => [...prev, selectedEra]);
+                            }
+                        } else {
+                            setGameStage('gameover');
+                        }
+                    }
+                }, 1000);
+            };
+
+            return (
+                <div className="w-full h-full font-sans text-white select-none relative">
+
+                    {/* VOLUME SLIDER */}
+                    <div className="absolute top-4 left-4 z-50 flex items-center space-x-2 bg-black/50 p-2 rounded-lg backdrop-blur-sm">
+                        <span className="text-xl">🎵</span>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={volume}
+                            onChange={(e) => setVolume(parseFloat(e.target.value))}
+                            className="w-24 accent-red-500 cursor-pointer"
+                        />
+                    </div>
+
+                    {/* MENU */}
+                    {gameStage === 'menu' && (
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                            className="h-full flex flex-col items-center justify-center p-6 text-center space-y-8 bg-[url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center"
+                        >
+                            <div className="absolute inset-0 bg-black/80"></div>
+                            <div className="relative z-10 space-y-4">
+                                <h1 className="text-5xl md:text-7xl font-cinema text-red-500 neon-text mb-4">
+                                    CINEMA CHRONOS
+                                </h1>
+                                <p className="text-xl text-yellow-200 uppercase tracking-widest border-y border-yellow-500 py-2">
+                                    L'Estrena del Segle
+                                </p>
+                                <p className="text-gray-300 max-w-lg mx-auto">
+                                    Ets l'acomodador. Admet als que pertanyin a l'època i expulsa als impostors.
+                                </p>
+                            </div>
+
+                            <div className="relative z-10 grid grid-cols-2 gap-4 w-full max-w-lg overflow-y-auto max-h-[50vh] px-2 py-4 no-scrollbar">
+                                {Object.keys(CINEMA_DATA).map(era => {
+                                    const isCompleted = completedEras.includes(era);
+                                    return (
+                                        <motion.button
+                                            key={era}
+                                            whileHover={{ scale: 1.05, backgroundColor: isCompleted ? "#166534" : "#b91c1c" }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => startGame(era)}
+                                            className={`p-4 border-2 rounded-lg shadow-lg transition-all ${isCompleted
+                                                ? "bg-green-900/80 border-green-500/50 hover:shadow-green-500/20"
+                                                : "bg-red-900/80 border-yellow-500/50 hover:shadow-yellow-500/20"
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className="font-bold text-lg">{era}</div>
+                                                {isCompleted && <span className="text-green-400">✓</span>}
+                                            </div>
+                                            <div className={`text-xs italic mt-1 ${isCompleted ? "text-green-200/70" : "text-yellow-200/70"}`}>
+                                                {CINEMA_DATA[era].movieTitle}
+                                            </div>
+                                        </motion.button>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* PLAYING */}
+                    {gameStage === 'playing' && (
+                        <div className="h-full flex flex-col relative bg-gray-900">
+                            {/* Header */}
+                            <div className="bg-red-900 p-4 shadow-lg z-20 flex justify-between items-center border-b-4 border-yellow-500 pl-16 relative">
+                                <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-full">
+                                    <div className="hidden md:block text-xs text-yellow-300 uppercase tracking-widest">Sala 1</div>
+                                    <div className="font-cinema text-xl md:text-3xl leading-none whitespace-nowrap drop-shadow-lg">{selectedEra}</div>
+                                </div>
+
+                                <div className="ml-auto flex flex-col items-end z-30">
+                                    <div className="flex gap-1 text-2xl">
+                                        {[...Array(3)].map((_, i) => (
+                                            <span key={i} className={i < lives ? "opacity-100" : "opacity-20 grayscale"}>🍿</span>
+                                        ))}
+                                    </div>
+                                    <div className="text-xs font-bold mt-1">
+                                        Entrades: {score} / 10
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Main Scene */}
+                            <div className="flex-1 relative flex flex-col items-center justify-center p-4 overflow-hidden">
+                                {/* Background ambience */}
+                                <div className="absolute inset-0 opacity-40 bg-[url('./img/fons.jpg')] bg-cover bg-center"></div>
+
+                                <AnimatePresence mode="wait">
+                                    {queue[currentPersonIndex] && (
+                                        <motion.div
+                                            key={currentPersonIndex}
+                                            initial={{ x: 300, opacity: 0, rotate: 10 }}
+                                            animate={{ x: 0, opacity: 1, rotate: 0 }}
+                                            exit={{ x: -300, opacity: 0, rotate: -10 }}
+                                            className="relative z-10 bg-white text-black p-8 rounded-xl shadow-2xl w-full max-w-sm border-8 border-double border-yellow-600 text-center transform rotate-1"
+                                        >
+                                            <div className="w-64 h-64 mx-auto mb-6 flex items-center justify-center">
+                                                <img
+                                                    src={queue[currentPersonIndex].img}
+                                                    className="max-w-full max-h-full object-contain filter drop-shadow-md"
+                                                    alt={queue[currentPersonIndex].name}
+                                                    onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '<div class="text-6xl">👤</div>' }}
+                                                />
+                                            </div>
+                                            <div className="text-sm uppercase text-gray-500 font-bold tracking-widest mb-2">Sol·licitant Entrada</div>
+                                            <h2 className="text-2xl md:text-3xl font-bold font-serif mb-6 text-red-900">
+                                                {queue[currentPersonIndex].name}
+                                            </h2>
+
+                                            <div className="flex justify-center gap-4 mt-4">
+                                                <div className="bg-gray-100 px-3 py-1 rounded text-xs font-mono text-gray-500">Ticket #392{currentPersonIndex}</div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* Feedback Overlay */}
+                                <AnimatePresence>
+                                    {feedback && (
+                                        <motion.div
+                                            initial={{ scale: 0, opacity: 0 }}
+                                            animate={{ scale: 1.2, opacity: 1 }}
+                                            exit={{ scale: 0, opacity: 0 }}
+                                            className={`absolute inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm`}
+                                        >
+                                            <div className={`text-center p-8 rounded-full border-4 ${feedback.type === 'success' ? 'bg-green-500 border-white text-white' : 'bg-red-500 border-white text-white'
+                                                } shadow-[0_0_50px_rgba(0,0,0,0.5)] transform -rotate-12`}>
+                                                <div className="text-6xl mb-2">
+                                                    {feedback.type === 'success' ? '🎟️' : '🚫'}
+                                                </div>
+                                                <div className="text-3xl font-bold font-cinema uppercase border-b-2 border-white pb-1 inline-block">
+                                                    {feedback.text}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Controls */}
+                            <div className="p-6 bg-black z-20 flex gap-4">
+                                <button
+                                    onClick={() => !feedback && handleDecision('expel')}
+                                    disabled={!!feedback}
+                                    className="flex-1 bg-gray-800 hover:bg-red-700 text-white py-4 rounded-lg font-bold text-lg transition-colors border-2 border-gray-600 hover:border-red-500 flex flex-col items-center"
+                                >
+                                    <img src="./img/forbidden.png" className="w-12 h-12 mb-1 object-contain" alt="Expulsar" />
+                                    EXPULSAR
+                                </button>
+                                <button
+                                    onClick={() => !feedback && handleDecision('admit')}
+                                    disabled={!!feedback}
+                                    className="flex-1 bg-yellow-600 hover:bg-green-600 text-white py-4 rounded-lg font-bold text-lg transition-colors border-2 border-yellow-400 hover:border-green-400 flex flex-col items-center shadow-[0_0_20px_rgba(234,179,8,0.3)]"
+                                >
+                                    <img src="./img/ticket.png" className="w-12 h-12 mb-1 object-contain" alt="Admetre" />
+                                    ADMETRE
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* WIN / GAME OVER */}
+                    {(gameStage === 'win' || gameStage === 'gameover') && (
+                        <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center text-center p-6 space-y-6">
+                            {gameStage === 'win' && (
+                                <div className="text-8xl animate-bounce">🏆</div>
+                            )}
+                            <h2 className={`text-5xl font-cinema ${gameStage === 'win' ? 'text-yellow-400' : 'text-red-600'}`}>
+                                {gameStage === 'win' ? 'SALA PLENA!' : 'GAME OVER'}
+                            </h2>
+                            <p className="text-xl text-gray-300">
+                                {gameStage === 'win'
+                                    ? "L'estrena ha estat un èxit absolut! El públic està encantat."
+                                    : "T'han acomiadat degut als errors i ja està."}
+                            </p>
+                            <div className="text-2xl font-bold border-2 border-white/20 p-4 rounded-lg bg-white/5">
+                                Puntuació Final: {score} / 10
+                            </div>
+                            <button
+                                onClick={() => setGameStage('menu')}
+                                className="px-8 py-3 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform"
+                            >
+                                TORNA AL MENÚ
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

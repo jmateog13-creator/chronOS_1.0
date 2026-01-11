@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CÀMERA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .font-hud {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .scanline {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2));
+            background-size: 100% 4px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .flash {
+            animation: flashAnim 0.2s ease-out;
+        }
+
+        @keyframes flashAnim {
+            0% {
+                opacity: 1;
+                background: white;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="h-screen overflow-hidden flex flex-col items-center justify-center relative bg-black">
+    <div id="root" class="w-full h-full max-w-4xl mx-auto relative z-10 flex flex-col"></div>
+
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useMemo, useRef } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        const LOCATIONS = [
+            { name: "a la Platja", img: "img/platja.jpg" },
+            { name: "al Supermercat", img: "img/supermercat.jpg" },
+            { name: "a la Lluna", img: "img/lluna.jpg" },
+            { name: "al Gimnàs", img: "img/gimnas.jpg" },
+            { name: "a la Discoteca", img: "img/discoteca.jpg" },
+            { name: "a l'Escola", img: "img/escola.jpg" },
+            { name: "al W.C.", img: "img/wc.jpg" },
+            { name: "a la Piscina", img: "img/piscina.jpg" },
+            { name: "al Desert", img: "img/desert.jpg" },
+            { name: "al Cim de l'Everest", img: "img/everest.jpg" }
+        ];
+
+        const EPOCH_ITEMS = {
+            "Edat Mitjana": [
+                { name: "Monjo Gregorià", icon: "🙏", img: "img/monjo.png" },
+                { name: "Pergamí Neumes", icon: "📜", img: "img/neumes.png" },
+                { name: "Trobador", icon: "🎸", img: "img/trobador.png" },
+                { name: "Castell Feudal", icon: "🏰", img: "img/castell.png" },
+                { name: "Guido d'Arezzo", icon: "✍️", img: "img/guido.png" },
+                { name: "Llaüt Medieval", icon: "🎻", img: "img/llaut.png" },
+                { name: "Rei Alfons X", icon: "👑", img: "img/alfonsX.png" }
+            ],
+            "Renaixement": [
+                { name: "Màquina Impremta", icon: "🖨️", img: "img/impremta.png" },
+                { name: "Palestrina", icon: "👴", img: "img/palestrina.png" },
+                { name: "Viola de mà", icon: "🎸", img: "img/violadema.png" },
+                { name: "Madrigalista", icon: "🗣️", img: "img/madrigalista.png" },
+                { name: "L'Home de Vitruvi", icon: "🧍", img: "img/homedevitruvi.png" },
+                { name: "Mecenes", icon: "💰", img: "img/mecenes.png" },
+                { name: "Cor A Cappella", icon: "🎶", img: "img/coracapella.png" }
+            ],
+            "Barroc": [
+                { name: "J.S. Bach", icon: "🎹", img: "img/bach.png" },
+                { name: "Perruca Blanca", icon: "🦱", img: "img/perruca.png" },
+                { name: "Clavecí", icon: "🎹", img: "img/clave.png" },
+                { name: "Vivaldi", icon: "🎻", img: "img/vivaldi.png" },
+                { name: "Castrati", icon: "🎤", img: "img/castratti.png" },
+                { name: "Orgue Gegant", icon: "⛪", img: "img/orguegegant.png" },
+                { name: "Rei Sol", icon: "🌞", img: "img/reisol.png" }
+            ],
+            "Classicisme": [
+                { name: "Mozart", icon: "🎼", img: "img/mozart.png" },
+                { name: "Clarinet", icon: "🎷", img: "img/clarient.png" },
+                { name: "Haydn", icon: "👴", img: "img/haydn.png" },
+                { name: "Piano-Forte", icon: "🎹", img: "img/piano.forte.png" },
+                { name: "Director d'Orquestra", icon: "🥢", img: "img/directororquesta.png" },
+                { name: "Quartet de Corda", icon: "🎻", img: "img/quartetdecorda.png" },
+                { name: "Palau de Viena", icon: "🏛️", img: "img/palaudeviena.png" }
+            ],
+            "Romanticisme": [
+                { name: "Beethoven", icon: "😠", img: "img/beethoven.png" },
+                { name: "Piano de Cua", icon: "🎹", img: "img/pianodecua.png" },
+                { name: "Wagner", icon: "ip", img: "img/wagner.png" },
+                { name: "Ballarina Ballet", icon: "💃", img: "img/ballarinaballet.png" },
+                { name: "Violí Virtuós", icon: "🎻", img: "img/violivirtuos.png" },
+                { name: "Chopin", icon: "💔", img: "img/chopin.png" },
+                { name: "Òpera Tràgica", icon: "🎭", img: "img/operatragica.png" }
+            ],
+            "Segle XX": [
+                { name: "Sintetitzador", icon: "🎛️", img: "img/sintetitzador.png" },
+                { name: "Guitarra Elèctrica", icon: "🎸", img: "img/guitarraelectrica.png" },
+                { name: "John Cage", icon: "🤫", img: "img/cage.png" },
+                { name: "Disc de Vinil", icon: "💿", img: "img/vinil.png" },
+                { name: "Saxòfon Jazz", icon: "🎷", img: "img/saxofon.png" },
+                { name: "Altaveu Rock", icon: "🔊", img: "img/altaveu.png" },
+                { name: "Stravinsky", icon: "👓", img: "img/stravinsky.png" }
+            ]
+        };
+
+        const App = () => {
+            const [gameStage, setGameStage] = useState('menu'); // menu, playing, gallery
+            const [targetEra, setTargetEra] = useState(null);
+            const [reel, setReel] = useState([]);
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [photos, setPhotos] = useState([]); // Array of captured valid items
+            const [score, setScore] = useState(0);
+            const [flash, setFlash] = useState(false);
+            const [feedback, setFeedback] = useState(null); // 'missed', 'wrong'
+
+            // Audio Refs (using generic sounds or placeholders)
+            const shutterSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+            const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3');
+
+            const startGame = (era) => {
+                setTargetEra(era);
+
+                // GENERATE REEL of 15 items
+                // Mix of Target Era items (approx 50%) and Distractors from other eras
+                const allEras = Object.keys(EPOCH_ITEMS);
+                const targetItems = EPOCH_ITEMS[era];
+                const distractorEras = allEras.filter(e => e !== era);
+
+                const newReel = [];
+                for (let i = 0; i < 15; i++) {
+                    const isTarget = Math.random() > 0.5;
+                    let item;
+                    if (isTarget) {
+                        item = targetItems[Math.floor(Math.random() * targetItems.length)];
+                        item = { ...item, isTarget: true, era: era };
+                    } else {
+                        const randomEra = distractorEras[Math.floor(Math.random() * distractorEras.length)];
+                        const randomPool = EPOCH_ITEMS[randomEra];
+                        item = randomPool[Math.floor(Math.random() * randomPool.length)];
+                        item = { ...item, isTarget: false, era: randomEra };
+                    }
+
+                    const location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+                    newReel.push({ ...item, location });
+                }
+
+                setReel(newReel);
+                setPhotos([]);
+                setScore(0);
+                setCurrentIndex(0);
+                setGameStage('playing');
+                setFeedback(null);
+            };
+
+            const handlePhoto = () => {
+                if (feedback) return;
+
+                const currentItem = reel[currentIndex];
+                setFlash(true);
+                setTimeout(() => setFlash(false), 200);
+                shutterSound.currentTime = 0;
+                shutterSound.play();
+
+                if (currentItem.isTarget) {
+                    // Success
+                    setScore(s => s + 100);
+                    setPhotos(prev => [...prev, currentItem]);
+                    setFeedback('success');
+                } else {
+                    // Fail
+                    setScore(s => Math.max(0, s - 50));
+                    setFeedback('wrong');
+                    errorSound.play();
+                }
+
+                // Auto advance after short delay
+                setTimeout(nextSlide, 800);
+            };
+
+            const handlePass = () => {
+                if (feedback) return;
+
+                const currentItem = reel[currentIndex];
+                if (currentItem.isTarget) {
+                    // Missed opportunity
+                    setFeedback('missed');
+                } else {
+                    // Correct skip
+                    setScore(s => s + 10);
+                }
+                setTimeout(nextSlide, 500);
+            };
+
+            const nextSlide = () => {
+                setFeedback(null);
+                if (currentIndex < reel.length - 1) {
+                    setCurrentIndex(prev => prev + 1);
+                } else {
+                    setGameStage('gallery');
+                }
+            };
+
+            return (
+                <div className="w-full h-full font-sans select-none relative overflow-hidden">
+                    <div className="scanline"></div>
+
+                    {flash && <div className="absolute inset-0 bg-white z-50 flash pointer-events-none"></div>}
+
+                    {/* MENU */}
+                    {gameStage === 'menu' && (
+                        <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-6 bg-gray-900">
+                            <div className="text-6xl mb-4">📸</div>
+                            <h1 className="text-4xl font-hud text-green-400 tracking-widest uppercase border-b border-green-500/50 pb-2">
+                                CÀMERA
+                            </h1>
+                            <p className="text-gray-400 max-w-xs mx-auto text-sm font-mono">
+                                Tria un FILTRE D'ÈPOCA i caça els conceptes correctes.
+                            </p>
+                            <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
+                                {Object.keys(EPOCH_ITEMS).map(era => (
+                                    <button
+                                        key={era}
+                                        onClick={() => startGame(era)}
+                                        className="p-3 bg-gray-800 border border-gray-600 hover:border-green-400 hover:bg-gray-700 text-green-300 font-hud text-sm rounded shadow-lg transition-all uppercase"
+                                    >
+                                        {era}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* PLAYING - CAMERA UI */}
+                    {gameStage === 'playing' && (
+                        <div className="h-full flex flex-col relative bg-gray-900">
+                            {/* HUD Top */}
+                            <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-start z-20 font-hud text-green-400 text-xs md:text-sm pointer-events-none">
+                                <div>
+                                    <div className="animate-pulse">● REC</div>
+                                    <div className="mt-1">ISO 800</div>
+                                </div>
+                                <div className="text-center bg-black/50 px-3 py-1 rounded border border-green-500/30">
+                                    <div className="text-[10px] text-gray-400">FILTRE ACTIU</div>
+                                    <div className="text-lg font-bold uppercase">{targetEra}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div>IMGS: {currentIndex + 1}/15</div>
+                                    <div>PTS: {score}</div>
+                                </div>
+                            </div>
+
+                            {/* Viewfinder */}
+                            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+                                {/* Corners */}
+                                <div className="absolute top-10 left-10 w-16 h-16 border-t-2 border-l-2 border-white/50 rounded-tl-lg pointer-events-none z-10"></div>
+                                <div className="absolute top-10 right-10 w-16 h-16 border-t-2 border-r-2 border-white/50 rounded-tr-lg pointer-events-none z-10"></div>
+                                <div className="absolute bottom-20 left-10 w-16 h-16 border-b-2 border-l-2 border-white/50 rounded-bl-lg pointer-events-none z-10"></div>
+                                <div className="absolute bottom-20 right-10 w-16 h-16 border-b-2 border-r-2 border-white/50 rounded-br-lg pointer-events-none z-10"></div>
+                                <div className="absolute center w-4 h-4 bg-white/50 rounded-full z-10 pointer-events-none opacity-50"></div>
+
+                                {/* Content */}
+                                <AnimatePresence mode="wait">
+                                    {reel[currentIndex] && (
+                                        <motion.div
+                                            key={currentIndex}
+                                            initial={{ scale: 1.2, opacity: 0, filter: 'blur(10px)' }}
+                                            animate={{
+                                                scale: [1, 1.05, 1],
+                                                y: [0, -10, 0],
+                                                rotate: [0, 2, -2, 0],
+                                                opacity: 1,
+                                                filter: 'blur(0px)'
+                                            }}
+                                            exit={{ opacity: 0, x: -50 }}
+                                            transition={{
+                                                scale: { duration: 2, repeat: Infinity },
+                                                y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+                                                rotate: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                                                opacity: { duration: 0.4 },
+                                                filter: { duration: 0.4 }
+                                            }}
+                                            className="relative flex flex-col items-center justify-center space-y-4 w-full h-full"
+                                        >
+                                            {/* Background Image of Location */}
+                                            <div className="absolute inset-0 z-0">
+                                                <img
+                                                    src={reel[currentIndex].location.img}
+                                                    alt="background"
+                                                    className="w-full h-full object-cover opacity-80"
+                                                />
+                                            </div>
+
+                                            {/* Character/Item */}
+                                            <div className="z-10 flex flex-col items-center">
+                                                {reel[currentIndex].img ? (
+                                                    <img
+                                                        src={reel[currentIndex].img}
+                                                        alt={reel[currentIndex].name}
+                                                        className="w-80 h-80 md:w-[600px] md:h-[600px] object-contain drop-shadow-2xl filter brightness-110"
+                                                    />
+                                                ) : (
+                                                    <div className="text-9xl drop-shadow-2xl filter brightness-110">
+                                                        {reel[currentIndex].icon}
+                                                    </div>
+                                                )}
+
+                                                <div className="mt-4 bg-black/60 px-4 py-2 rounded text-white font-bold backdrop-blur-md border border-white/20">
+                                                    {reel[currentIndex].name}
+                                                </div>
+                                                <div className="mt-1 text-sm text-gray-300 bg-black/40 px-2 py-1 rounded">
+                                                    {reel[currentIndex].location.name}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* Feedback Overlay in Viewfinder */}
+                                {feedback === 'success' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-30 bg-green-500/20">
+                                        <div className="text-green-400 font-hud text-4xl border-4 border-green-400 p-4 rounded uppercase -rotate-12 bg-black/80">
+                                            SAVED
+                                        </div>
+                                    </div>
+                                )}
+                                {feedback === 'wrong' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-30 bg-red-500/20">
+                                        <div className="text-red-500 font-hud text-4xl border-4 border-red-500 p-4 rounded uppercase rotate-12 bg-black/80">
+                                            ERROR
+                                        </div>
+                                    </div>
+                                )}
+                                {feedback === 'missed' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-30 bg-yellow-500/10">
+                                        <div className="text-yellow-500 font-hud text-2xl border-2 border-yellow-500 p-2 rounded uppercase bg-black/80">
+                                            MISSED!
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Controls Bottom */}
+                            <div className="bg-black p-6 pb-8 flex justify-between items-center z-30">
+                                {/* Pass Button */}
+                                <button
+                                    onClick={() => !feedback && handlePass()}
+                                    className="flex flex-col items-center group active:scale-95 transition-transform"
+                                >
+                                    <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center bg-gray-800 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                                        <div className="w-16 h-16 bg-gray-500 rounded-full border-2 border-black flex items-center justify-center hover:bg-gray-400 transition-colors">
+                                            <span className="text-2xl grayscale">⏭️</span>
+                                        </div>
+                                    </div>
+                                    <span className="text-[10px] text-gray-500 font-hud mt-2 uppercase">Passar</span>
+                                </button>
+
+                                {/* Shutter Button */}
+                                <button
+                                    onClick={() => !feedback && handlePhoto()}
+                                    className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)] bg-gray-800"
+                                >
+                                    <div className="w-16 h-16 bg-red-600 rounded-full border-2 border-black hover:bg-red-500 transition-colors"></div>
+                                </button>
+
+                                {/* Gallery / Dummy */}
+                                <div className="w-12 h-12 rounded bg-gray-800 border border-gray-600 flex items-center justify-center relative opacity-50 overflow-hidden">
+                                    {photos.length > 0 ? (
+                                        photos[photos.length - 1].img ? (
+                                            <img src={photos[photos.length - 1].img} className="w-full h-full object-cover" />
+                                        ) : (
+                                            photos[photos.length - 1].icon
+                                        )
+                                    ) : '🖼️'}
+                                    <div className="absolute -top-2 -right-2 bg-green-500 text-black text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center z-10">
+                                        {photos.length}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                    }
+
+                    {/* GALLERY / END */}
+                    {
+                        gameStage === 'gallery' && (
+                            <div className="h-full flex flex-col p-6 bg-gray-900 overflow-y-auto">
+                                <h2 className="text-center font-hud text-3xl text-green-400 mb-6 uppercase border-b border-gray-700 pb-4 w-full">
+                                    Galeria de Resultats
+                                </h2>
+
+                                <div className="flex-1 w-full max-w-lg mx-auto mb-8">
+                                    <div className="text-center mb-6">
+                                        <div className="text-6xl font-bold text-white">{score}</div>
+                                        <div className="text-gray-500 text-sm uppercase">Punts Totals</div>
+                                    </div>
+
+                                    <h3 className="text-gray-400 font-hud text-sm mb-2 uppercase">Fotos Capturades ({photos.length})</h3>
+                                    {photos.length === 0 ? (
+                                        <div className="text-center py-10 text-gray-600 italic">No has fet cap foto bona...</div>
+                                    ) : (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {photos.map((item, idx) => (
+                                                <div key={idx} className="aspect-square bg-black border border-gray-700 flex flex-col items-center justify-center p-2 rounded relative overflow-hidden group">
+                                                    {item.img ? (
+                                                        <img src={item.img} alt={item.name} className="w-full h-full object-contain" />
+                                                    ) : (
+                                                        <div className="text-3xl">{item.icon}</div>
+                                                    )}
+
+                                                    <div className="absolute bottom-0 w-full bg-black/70 text-[10px] text-center text-gray-300 py-1 leading-none truncate px-1">
+                                                        {item.name}
+                                                    </div>
+                                                    <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={() => setGameStage('menu')}
+                                    className="w-full max-w-xs mx-auto py-3 bg-green-600 hover:bg-green-500 text-black font-bold font-hud rounded uppercase transition-colors"
+                                >
+                                    Tornar a Caçar
+                                </button>
+                            </div>
+                        )
+                    }
+                </div >
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

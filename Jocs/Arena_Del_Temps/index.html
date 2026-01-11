@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena del Temps</title>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- Google Fonts: Trajan style matches -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: #0f0f0f;
+            color: #f5f5f5;
+            cursor: url('img/espasa.png'), auto;
+            /* Custom Cursor */
+        }
+
+        .roman-text {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1c1917;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #b45309;
+            border-radius: 4px;
+        }
+
+        .roman-text {
+            font-family: 'Cinzel', serif;
+        }
+    </style>
+</head>
+
+<body class="bg-stone-900 text-stone-100 h-screen w-screen overflow-hidden selection:bg-red-900 selection:text-white">
+    <div id="root" class="h-full"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // --- DATA ---
+        const GLADIATOR_DATA = [
+            {
+                epoch: "Edat Mitjana",
+                mentor: "Escolta, esclau. El primer rival és 'Benedictus'. És un fanàtic religiós. Diu que la seva força ve de Déu i del llatí. No facis moviments complexos, sigues simple i humil.",
+                boss: {
+                    name: "BENEDICTUS EL FANÀTIC",
+                    image: "img/bossmitjana.png",
+                    desc: "Un gegant amb túnica de monjo i una gran maça de ferro.",
+                    intro: "Déu és el meu escut. El llatí és la meva espasa.",
+                    taunts: ["Pregueu, pecadors!", "Només hi ha una veritat!", "El teu esperit és feble!"],
+                    hit: ["Argh! Blasfèmia!", "La fe trontolla...", "Maleït pagà!"],
+                    miss: ["Hahaha! Resa més fort!", "No entens el pla diví?", "Pobre ignorant."]
+                },
+                pool: [
+                    { q: "Quina textura utilitza el Cant Gregorià?", opts: ["Monodia", "Polifonia", "Atonalisme"], ok: "Monodia" },
+                    { q: "Qui cantava als castells l'amor cortès?", opts: ["Els Trobadors", "Els Monjos", "Els Beatles"], ok: "Els Trobadors" },
+                    { q: "Com s'escrivia la música abans del pentagrama?", opts: ["Amb Neumes", "Amb Tablets", "De memòria"], ok: "Amb Neumes" },
+                    { q: "Quin idioma és obligatori a l'Església?", opts: ["Llatí", "Anglès", "Català"], ok: "Llatí" },
+                    { q: "Quin instrument és típic d'aquesta època?", opts: ["Llaüt", "Piano", "Sintetitzador"], ok: "Llaüt" },
+                    { q: "Qui va inventar el nom de les notes?", opts: ["Guido d'Arezzo", "Mozart", "El Papa"], ok: "Guido d'Arezzo" },
+                    { q: "El ritme del Gregorià és...", opts: ["Lliure", "Mecànic", "Molt ràpid"], ok: "Lliure" },
+                    { q: "La música religiosa medieval és...", opts: ["Vocal", "Instrumental", "Electrònica"], ok: "Vocal" },
+                    { q: "Com es deien els músics de carrer?", opts: ["Joglars", "Trobadors", "DJs"], ok: "Joglars" },
+                    { q: "La visió del món era...", opts: ["Teocèntrica", "Humanista", "Atea"], ok: "Teocèntrica" }
+                ]
+            },
+            {
+                epoch: "Renaixement",
+                mentor: "Aquest és 'Renatus'. Un lluitador tècnic que imita els antics grecs. Busca la perfecció i la proporció humana. No és bruteza, és intel·ligència.",
+                boss: {
+                    name: "RENATUS EL GREC",
+                    image: "img/bossrenaixement.png",
+                    desc: "Àgil, lluita amb xarxa i trident. Sembla una estàtua grega.",
+                    intro: "L'home és la mesura de totes les coses. També del dolor.",
+                    taunts: ["Ets un bàrbar sense cultura.", "On és la teva proporció?", "Massa imperfecte."],
+                    hit: ["M'has desequilibrat!", "Un cop mestre...", "Aah! Manca d'harmonia!"],
+                    miss: ["Que ignorant...", "Llegeix els clàssics!", "No tens tècnica."]
+                },
+                pool: [
+                    { q: "Quin invent va canviar la difusió de la música?", opts: ["La Impremta", "Internet", "El CD"], ok: "La Impremta" },
+                    { q: "Quina textura domina el Renaixement?", opts: ["Polifonia", "Monodia", "Soroll"], ok: "Polifonia" },
+                    { q: "Què és un Madrigal?", opts: ["Cançó profana", "Cant religiós", "Una dansa"], ok: "Cançó profana" },
+                    { q: "Quin és el pensament principal?", opts: ["Humanisme", "Teocentrisme", "Pessimisme"], ok: "Humanisme" },
+                    { q: "Autor espanyol més famós de religiosa?", opts: ["Tomás L. de Victoria", "Mozart", "Bach"], ok: "Tomás L. de Victoria" },
+                    { q: "Com es diu el cor sense instruments?", opts: ["A Cappella", "A banda", "A solo"], ok: "A Cappella" },
+                    { q: "Instrument de corda semblant a la guitarra...", opts: ["Viola de mà", "Violí elèctric", "Piano"], ok: "Viola de mà" },
+                    { q: "Qui finançava als artistes?", opts: ["Els Mecenes", "Els Bancs", "Ningú"], ok: "Els Mecenes" },
+                    { q: "El gran mestre de la polifonia italiana és...", opts: ["Palestrina", "Vivaldi", "Verdi"], ok: "Palestrina" },
+                    { q: "Martí Luter va crear el...", opts: ["Coral Protestant", "Cant Gregorià", "Òpera"], ok: "Coral Protestant" }
+                ]
+            },
+            {
+                epoch: "Barroc",
+                mentor: "Compte amb 'Aureus'. És ric, arrogant i porta una armadura d'or tan decorada que fa mal als ulls. Li agrada complicar les coses i fer ostentació.",
+                boss: {
+                    name: "AUREUS EL MAGNÍFIC",
+                    image: "img/bossbarroc.png",
+                    desc: "Armadura daurada recarregada, capa de vellut i actitud arrogant.",
+                    intro: "La meva armadura val més que la teva vida, esclau.",
+                    taunts: ["Més or! Més detalls!", "Ets massa simple per mi.", "Admira la meva grandesa!"],
+                    hit: ["Has ratllat el meu or!", "Aah! El meu ornament!", "Brut plebeu!"],
+                    miss: ["Desafinat!", "Et falta classe.", "Això no és art, és escombraria."]
+                },
+                pool: [
+                    { q: "Quin és l'instrument rei del teclat?", opts: ["El Clavecí", "El Piano", "L'Orgue Hammond"], ok: "El Clavecí" },
+                    { q: "Qui és el gran geni del Barroc?", opts: ["J.S. Bach", "Mozart", "Beethoven"], ok: "J.S. Bach" },
+                    { q: "Què és el Baix Continu?", opts: ["Base harmònica", "Un solo de baix", "Una dansa"], ok: "Base harmònica" },
+                    { q: "Com es diu l'obra teatral cantada que neix ara?", opts: ["Òpera", "Musical", "Videoclip"], ok: "Òpera" },
+                    { q: "Quina forma musical és la més complexa?", opts: ["La Fuga", "La Cançó", "El Vals"], ok: "La Fuga" },
+                    { q: "Qui eren els cantants estrella (homes aguts)?", opts: ["Els Castrati", "Els Tenors", "Els Beatles"], ok: "Els Castrati" },
+                    { q: "Quina estètica defineix el Barroc?", opts: ["Excés i Contrast", "La Senzillesa", "El Caos"], ok: "Excés i Contrast" },
+                    { q: "Vivaldi va compondre...", opts: ["Les Quatre Estacions", "La Cinquena Simfonia", "El Cant dels Ocells"], ok: "Les Quatre Estacions" },
+                    { q: "El ritme barroc sol ser...", opts: ["Mecànic i constant", "Flexible", "Lliure"], ok: "Mecànic i constant" },
+                    { q: "La dansa de la cort per excel·lència és...", opts: ["El Minuet", "La Sardana", "El Tango"], ok: "El Minuet" }
+                ]
+            },
+            {
+                epoch: "Classicisme",
+                mentor: "Ara ve 'Perfectus'. És un Centurió. Mai trenca una fila, mai fa un pas en fals. Tot en ell és equilibri, ordre i disciplina. No esperis sorpreses.",
+                boss: {
+                    name: "CENTURIÓ PERFECTUS",
+                    image: "img/bossclassicisme.png",
+                    desc: "Un militar romà impecable. Escut quadrat, moviments robòtics.",
+                    intro: "La disciplina venç la força. L'ordre és la victòria.",
+                    taunts: ["Mantén la formació!", "On és la teva simetria?", "Equilibri, soldat!"],
+                    hit: ["Has trencat la meva formació!", "Aah, lògica pura!", "Un cop precís..."],
+                    miss: ["Caòtic!", "Això no té forma!", "Desordre total!"]
+                },
+                pool: [
+                    { q: "Quina ciutat és la capital de la música?", opts: ["Viena", "París", "Londres"], ok: "Viena" },
+                    { q: "Quina estructura tenen les Simfonies?", opts: ["Sonata", "Lliure", "Caòtica"], ok: "Sonata" },
+                    { q: "Quin instrument substitueix el Clavecí?", opts: ["El Piano-Forte", "El Sintetitzador", "L'Orgue"], ok: "El Piano-Forte" },
+                    { q: "Quin instrument de vent s'incorpora a l'orquestra?", opts: ["El Clarinet", "El Saxòfon", "La Tuba"], ok: "El Clarinet" },
+                    { q: "Qui és el nen prodigi d'aquesta època?", opts: ["Mozart", "Bach", "Chopin"], ok: "Mozart" },
+                    { q: "Què busquen els clàssics?", opts: ["Bellesa i Equilibri", "Exageració", "Lletjor"], ok: "Bellesa i Equilibri" },
+                    { q: "Quants músics té un Quartet de Corda?", opts: ["4", "10", "2"], ok: "4" },
+                    { q: "Haydn és considerat...", opts: ["Pare de la Simfonia", "Rei del Rock", "Un mal músic"], ok: "Pare de la Simfonia" },
+                    { q: "La melodia clàssica és...", opts: ["Senzilla i clara", "Interminable", "Molt complexa"], ok: "Senzilla i clara" },
+                    { q: "Beethoven va fer el pont cap al...", opts: ["Romanticisme", "Barroc", "Renaixement"], ok: "Romanticisme" }
+                ]
+            },
+            {
+                epoch: "Romanticisme",
+                mentor: "Aquest em fa por. 'Bàrbar Passionis'. És un salvatge del nord. No pensa, només ataca amb ràbia i dolor. És imprevisible i dramàtic.",
+                boss: {
+                    name: "BÀRBAR PASSIONIS",
+                    image: "img/bossromanticisme.png",
+                    desc: "Un gegant amb pells d'animal, ulls vermells i pintura de guerra.",
+                    intro: "Sento un foc al pit! Moriré matant!",
+                    taunts: ["No tens cor!", "Més sang! Més dolor!", "Aaaaarrgh!"],
+                    hit: ["Aah! Quina tragèdia!", "Em moro d'amor!", "Quin sentiment!"],
+                    miss: ["Fred com el marbre!", "Ets un covard!", "On és la ràbia?", "Els teus sentiments són buits!", "Això és música sense ànima!"]
+                },
+                pool: [
+                    { q: "Què és més important en aquesta època?", opts: ["El Sentiment", "La Raó", "La Religió"], ok: "El Sentiment" },
+                    { q: "Quin instrument és el protagonista absolut?", opts: ["El Piano", "El Clavecí", "La Flauta"], ok: "El Piano" },
+                    { q: "Què és el Rubato?", opts: ["Modificar el ritme", "Tocar molt fort", "Tocar en silenci"], ok: "Modificar el ritme" },
+                    { q: "Quin compositor va revolucionar l'òpera?", opts: ["Wagner", "Mozart", "Palestrina"], ok: "Wagner" },
+                    { q: "Com són les orquestres romàntiques?", opts: ["Gegants", "Petites", "Inexistents"], ok: "Gegants" },
+                    { q: "Com es diu la cançó per a veu i piano?", opts: ["Lied", "Sonata", "Simfonia"], ok: "Lied" },
+                    { q: "El compositor del piano per excel·lència és...", opts: ["Chopin", "Bach", "Stravinsky"], ok: "Chopin" },
+                    { q: "Què és el Nacionalisme musical?", opts: ["Inspirar-se en el folklore", "Copiar altres països", "Odiar la música"], ok: "Inspirar-se en el folklore" },
+                    { q: "El virtuosisme busca...", opts: ["Demostrar habilitat tècnica", "Tocar fàcil", "Avorrir al públic"], ok: "Demostrar habilitat tècnica" },
+                    { q: "L'obra d'art total (Gesamtkunstwerk) és de...", opts: ["Wagner", "Verdi", "Beethoven"], ok: "Wagner" }
+                ]
+            },
+            {
+                epoch: "Segle XX",
+                mentor: "L'últim guardià. 'Fractus'. És un enginyer boig. Utilitza foc grec i miralls estranys. Trenca les regles de l'arena. Amb ell, res té sentit.",
+                boss: {
+                    name: "FRACTUS L'INNOVADOR",
+                    image: "img/bosssegleXX.png",
+                    desc: "Porta ulleres estranyes, artefactes mecànics i ampolles explosives.",
+                    intro: "Les velles normes han mort. Crearem el nou ordre.",
+                    taunts: ["La teva espasa és obsoleta.", "Dissonància!", "Soroll és poder!"],
+                    hit: ["Error de càlcul!", "M'has trencat l'invent!", "Aah! El futur!"],
+                    miss: ["Massa previsible.", "Avorrit.", "Desactualitzat."]
+                },
+                pool: [
+                    { q: "Què passa amb la tonalitat?", opts: ["Es trenca", "Es manté igual", "Torna als monjos"], ok: "Es trenca" },
+                    { q: "Quin aparell canvia la música per sempre?", opts: ["Electrònica", "La Impremta", "El Piano"], ok: "Electrònica" },
+                    { q: "Què va fer John Cage?", opts: ["Silenci (4'33)", "Una simfonia de 2 hores", "Un solo de guitarra"], ok: "Silenci (4'33)" },
+                    { q: "Quin estil neix als EUA amb ritme swing?", opts: ["Jazz", "Vals", "Gregorià"], ok: "Jazz" },
+                    { q: "Què és el Dodecafonisme?", opts: ["Sèries de 12 notes", "Música amb 2 notes", "Soroll pur"], ok: "Sèries de 12 notes" },
+                    { q: "Stravinsky va causar un escàndol amb...", opts: ["La Consagració de la Primavera", "Les Quatre Estacions", "La Petita Serenata"], ok: "La Consagració de la Primavera" },
+                    { q: "Com s'anomena la música feta amb cintes?", opts: ["Música Concreta", "Música Abstracta", "Música Líquida"], ok: "Música Concreta" },
+                    { q: "Quin instrument elèctric domina el Rock?", opts: ["La Guitarra Elèctrica", "El Violí", "La Tuba"], ok: "La Guitarra Elèctrica" },
+                    { q: "El Minimalisme es basa en...", opts: ["La repetició constant", "El caos total", "El silenci"], ok: "La repetició constant" },
+                    { q: "La música aleatòria depèn de...", opts: ["L'atzar", "Les normes", "El director"], ok: "L'atzar" }
+                ]
+            }
+        ];
+
+        // --- COMPONENTS ---
+
+        const StartScreen = ({ onStart }) => (
+            <div className="flex flex-col items-center justify-center h-full bg-[url('img/fons.jpg')] bg-cover bg-center relative">
+                <div className="absolute inset-0 bg-black/60 z-0"></div>
+
+
+
+                <div className="z-10 text-center max-w-2xl px-6 py-12 border-4 border-yellow-700 bg-stone-900/90 rounded-sm shadow-2xl">
+                    <h1 className="text-6xl text-yellow-500 font-bold mb-4 drop-shadow-md">ARENA DEL TEMPS</h1>
+                    <div className="w-full h-1 bg-gradient-to-r from-transparent via-yellow-700 to-transparent my-6"></div>
+                    <p className="text-xl text-stone-300 mb-8 leading-relaxed">
+                        Benvingut, esclau. Només guanyant 6 combats aconseguiràs la teva llibertat.
+                        Demostra els teus coneixements d'història de la música per sobreviure a la sorra.
+                    </p>
+                    <ul className="text-left text-stone-400 mb-8 space-y-2 inline-block">
+                        <li>⚔️ <span className="text-yellow-500 font-bold">Encertar:</span> Colpeges al rival.</li>
+                        <li>🛡️ <span className="text-red-500 font-bold">Fallar:</span> Rebras un cop.</li>
+                        <li>🏆 <span className="text-white font-bold">5 Encerts:</span> Victòria (K.O).</li>
+                        <li>☠️ <span className="text-white font-bold">3 Fallades:</span> Mort.</li>
+                    </ul>
+                    <br />
+                    <button
+                        onClick={onStart}
+                        className="px-12 py-4 bg-red-800 hover:bg-red-700 border-2 border-yellow-600 text-yellow-100 text-2xl font-bold tracking-widest uppercase transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(220,38,38,0.5)]"
+                    >
+                        ENTRA A L'ARENA
+                    </button>
+                </div>
+            </div>
+        );
+
+        const GladiatorHUD = ({ playerLives, enemyLives, enemyMaxLives, enemyName }) => (
+            <div className="w-full flex justify-between items-start px-8 py-6 absolute top-0 z-20">
+                {/* Player HUD */}
+                <div className="flex flex-col items-start bg-black/40 p-4 border-l-4 border-yellow-600 backdrop-blur-sm">
+                    <span className="text-yellow-500 text-xl font-bold tracking-widest mb-2">HEROI</span>
+                    <div className="flex gap-2">
+                        {[...Array(3)].map((_, i) => (
+                            <motion.img
+                                key={i}
+                                src="img/iconvidajugador.png"
+                                alt="Life"
+                                animate={{ opacity: i < playerLives ? 1 : 0.2, scale: i < playerLives ? 1 : 0.8 }}
+                                className="w-12 h-12 filter drop-shadow-lg"
+                            />
+                        ))}
+                    </div>
+                </div>
+
+
+
+                {/* Enemy HUD */}
+                <div className="flex flex-col items-end bg-black/40 p-4 border-r-4 border-red-700 backdrop-blur-sm">
+                    <span className="text-red-500 text-xl font-bold tracking-widest mb-2 text-right uppercase">{enemyName}</span>
+                    <div className="flex gap-2">
+                        {[...Array(enemyMaxLives)].map((_, i) => (
+                            <motion.img
+                                key={i}
+                                src="img/iconvidaboss.png"
+                                alt="Shield"
+                                animate={{ opacity: i < enemyLives ? 1 : 0.2, scale: i < enemyLives ? 1 : 0.8, filter: i < enemyLives ? "grayscale(0%)" : "grayscale(100%)" }}
+                                className="w-12 h-12 filter drop-shadow-lg transition-all"
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const MentorScreen = ({ mentorText, onReady }) => (
+            <div className="mobile-bg h-full flex flex-col items-center justify-center p-8 bg-stone-900 text-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('img/fons.jpg')] bg-cover bg-center opacity-20"></div>
+                <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="z-10 max-w-xl bg-black/80 p-8 border border-stone-600 shadow-2xl flex flex-col items-center"
+                >
+                    <img src="img/titus.png" alt="Titus" className="w-32 h-32 rounded-full border-2 border-stone-500 mb-4 object-cover" />
+                    <h2 className="text-3xl text-yellow-600 mb-6 uppercase tracking-widest">El Lanista t'aconsella</h2>
+                    <p className="text-xl italic text-stone-300 mb-10 leading-relaxed">"{mentorText}"</p>
+                    <button
+                        onClick={onReady}
+                        className="px-8 py-3 bg-stone-700 hover:bg-stone-600 text-white font-bold tracking-wider border border-stone-500"
+                    >
+                        PREPARAT
+                    </button>
+                </motion.div>
+            </div>
+        );
+
+        const VictoryScreen = ({ onNext }) => (
+            <div className="h-full flex flex-col items-center justify-center bg-green-900/90 text-center">
+                <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="p-12 border-4 border-yellow-500 bg-black/50 backdrop-blur"
+                >
+                    <h1 className="text-6xl text-yellow-400 font-bold mb-4">VICTÒRIA!</h1>
+                    <p className="text-2xl text-white mb-8">El rival ha caigut. La multitud t'aclama!</p>
+                    <button
+                        onClick={onNext}
+                        className="px-10 py-4 bg-yellow-600 hover:bg-yellow-500 text-black font-bold text-xl uppercase"
+                    >
+                        Següent Combat
+                    </button>
+                </motion.div>
+            </div>
+        );
+
+        const BossIntroScreen = ({ boss, onFight }) => (
+            <div className="h-full flex flex-col items-center justify-center bg-black/90 text-center relative overflow-hidden p-8">
+                {/* Background Image Placeholder */}
+                <div className="absolute inset-0 bg-stone-900 opacity-50 z-0"></div>
+
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 100 }}
+                    className="z-10 flex flex-col items-center max-w-4xl"
+                >
+                    <div className="w-64 h-64 bg-stone-800 rounded-full border-4 border-red-600 flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.6)] mb-8 overflow-hidden">
+                        <img src={boss.image} alt={boss.name} className="w-full h-full object-cover" />
+                    </div>
+
+                    <h2 className="text-5xl text-red-600 font-extrabold mb-2 uppercase tracking-tighter drop-shadow-md">{boss.name}</h2>
+                    <p className="text-xl text-stone-400 mb-8 italic">{boss.desc}</p>
+
+                    <div className="bg-stone-800/80 p-6 rounded-lg border-l-4 border-red-600 mb-10 max-w-2xl">
+                        <p className="text-3xl text-white font-serif leading-relaxed">"{boss.intro}"</p>
+                    </div>
+
+                    <button
+                        onClick={onFight}
+                        className="px-16 py-6 bg-red-700 hover:bg-red-600 text-white text-4xl font-black uppercase tracking-widest shadow-2xl transition-transform hover:scale-105"
+                    >
+                        LUITÀ!
+                    </button>
+                </motion.div>
+            </div>
+        );
+
+        const GameOverScreen = ({ onRetry }) => (
+            <div className="h-full flex flex-col items-center justify-center bg-red-950/90 text-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('img/fons.jpg')] bg-cover bg-center opacity-30 grayscale blur-sm"></div>
+                <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="z-10 p-12 border-4 border-red-700 bg-black/80 backdrop-blur-md shadow-[0_0_50px_rgba(220,38,38,0.5)]"
+                >
+                    <h1 className="text-8xl text-red-600 font-black mb-4 tracking-tighter drop-shadow-lg">MORT</h1>
+                    <div className="w-full h-1 bg-red-700 my-6"></div>
+                    <p className="text-2xl text-stone-300 mb-10 font-serif">La història t'ha oblidat.</p>
+                    <button
+                        onClick={onRetry}
+                        className="px-12 py-4 bg-stone-800 hover:bg-stone-700 text-red-500 font-bold text-2xl uppercase border-2 border-red-800 transition-all hover:scale-105"
+                    >
+                        Tornar a jugar
+                    </button>
+                </motion.div>
+            </div>
+        );
+
+        const FinalVictoryScreen = () => (
+            <div className="h-full flex flex-col items-center justify-center bg-yellow-900/90 text-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1533038590840-1cde6e668a91?q=80&w=1974&auto=format&fit=crop')] bg-cover bg-center opacity-30"></div>
+                <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className="z-10 p-16 border-8 border-double border-yellow-400 bg-black/80 max-w-4xl"
+                >
+                    <h1 className="text-7xl text-yellow-400 font-bold mb-6 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">LLIBERTAT ACONSEGUIDA!</h1>
+                    <p className="text-3xl text-stone-200 mb-10">Has guanyat la Rudis (Espada de Fusta). Ja no ets un esclau, ets un Ciutadà Lliure.</p>
+                    <div className="text-6xl animate-bounce">🗡️</div>
+                </motion.div>
+            </div>
+        );
+
+        // --- GAME ENGINE ---
+
+        function App() {
+            const [gameState, setGameState] = useState('START'); // START, MENTOR, BOSS_INTRO, COMBAT, VICTORY, GAMEOVER, FINAL
+            const [currentEpochIndex, setCurrentEpochIndex] = useState(0);
+
+            // Player stats
+            const [playerLives, setPlayerLives] = useState(3);
+
+            // Enemy stats (reset each epoch)
+            const [enemyLives, setEnemyLives] = useState(5);
+
+            // Question Logic
+            const [currentQuestion, setCurrentQuestion] = useState(null);
+            const [shuffledOptions, setShuffledOptions] = useState([]);
+            const [feedback, setFeedback] = useState(null); // 'HIT' or 'MISS' or null
+
+            // Load current level data
+            const levelData = GLADIATOR_DATA[currentEpochIndex];
+
+            // Setup new question
+            const pickQuestion = () => {
+                const pool = levelData.pool;
+                const q = pool[Math.floor(Math.random() * pool.length)];
+
+                // Shuffle options
+                const sentOptions = [...q.opts];
+                for (let i = sentOptions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [sentOptions[i], sentOptions[j]] = [sentOptions[j], sentOptions[i]];
+                }
+
+                setCurrentQuestion(q);
+                setShuffledOptions(sentOptions);
+                setFeedback(null);
+            };
+
+            const startGame = () => {
+                const audio = document.getElementById('bg-music');
+                if (audio) {
+                    audio.play().catch(e => console.error("Audio failed to auto-play:", e));
+                }
+                setGameState('MENTOR');
+            };
+
+            const goToBossIntro = () => {
+                setGameState('BOSS_INTRO');
+            };
+
+            const startCombat = () => {
+                setPlayerLives(3);
+                setEnemyLives(5);
+                pickQuestion();
+                setGameState('COMBAT');
+            };
+
+            const handleAnswer = (selected) => {
+                if (feedback) return; // Prevent double clicks
+
+                if (selected === currentQuestion.ok) {
+                    // HIT
+                    setFeedback('HIT');
+                    setTimeout(() => {
+                        const newEnemyLives = enemyLives - 1;
+                        setEnemyLives(newEnemyLives);
+                        if (newEnemyLives <= 0) {
+                            handleWin();
+                        } else {
+                            pickQuestion();
+                        }
+                    }, 1500);
+                } else {
+                    // MISS
+                    setFeedback('MISS');
+                    setTimeout(() => {
+                        const newPlayerLives = playerLives - 1;
+                        setPlayerLives(newPlayerLives);
+                        if (newPlayerLives <= 0) {
+                            setGameState('GAMEOVER');
+                        } else {
+                            pickQuestion();
+                        }
+                    }, 1500);
+                }
+            };
+
+            const handleWin = () => {
+                if (currentEpochIndex >= GLADIATOR_DATA.length - 1) {
+                    setGameState('FINAL');
+                } else {
+                    setGameState('VICTORY');
+                }
+            };
+
+            const nextLevel = () => {
+                setCurrentEpochIndex(prev => prev + 1);
+                setGameState('MENTOR');
+            };
+
+            const retry = () => {
+                setCurrentEpochIndex(0);
+                setPlayerLives(3);
+                setEnemyLives(5);
+                setGameState('START');
+            };
+
+            // Renders
+            return (
+                <div className="w-full h-full font-serif relative">
+                    {/* Persistent Audio Player */}
+                    <audio id="bg-music" loop>
+                        <source src="audio/music.mp3" type="audio/mpeg" />
+                    </audio>
+
+                    {/* Persistent Audio Control (Bottom Left) */}
+                    <div className="absolute bottom-4 left-4 z-[100] flex items-center bg-black/50 p-2 rounded-lg gap-2 border border-stone-600">
+                        <span className="text-xl">🔊</span>
+                        <input type="range" min="0" max="1" step="0.1" defaultValue="0.5"
+                            onChange={(e) => {
+                                const audio = document.getElementById('bg-music');
+                                if (audio) {
+                                    audio.volume = e.target.value;
+                                    if (audio.paused) audio.play();
+                                }
+                            }}
+                            className="w-24 accent-yellow-500 cursor-pointer"
+                        />
+                    </div>
+
+                    <AnimatePresence>
+                        {gameState === 'START' && (
+                            <motion.div key="start" className="absolute inset-0" exit={{ opacity: 0 }}>
+                                <StartScreen onStart={startGame} />
+                            </motion.div>
+                        )}
+
+                        {gameState === 'MENTOR' && (
+                            <motion.div key="mentor" className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                <MentorScreen mentorText={levelData.mentor} onReady={goToBossIntro} />
+                            </motion.div>
+                        )}
+
+                        {gameState === 'BOSS_INTRO' && (
+                            <motion.div key="boss_intro" className="absolute inset-0 z-40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                <BossIntroScreen boss={levelData.boss} onFight={startCombat} />
+                            </motion.div>
+                        )}
+
+                        {gameState === 'COMBAT' && (
+                            <motion.div key="combat" className="absolute inset-0 flex flex-col bg-stone-900 overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                {/* Background based on epoch (all use fons.jpg as requested) */}
+                                <div className="absolute inset-0 bg-[url('img/fons.jpg')] bg-cover bg-center opacity-40"></div>
+
+                                <GladiatorHUD
+                                    playerLives={playerLives}
+                                    enemyLives={enemyLives}
+                                    enemyMaxLives={5}
+                                    enemyName={levelData.boss.name}
+                                />
+
+                                {/* Main Combat Area */}
+                                <div className="flex-1 z-20 flex flex-col items-center justify-end pb-8 px-4 w-full max-w-5xl mx-auto relative">
+
+                                    {/* Boss Figure (Absolute) */}
+                                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-auto h-[90vh] z-0 flex items-end justify-center pointer-events-none">
+                                        <img
+                                            src={levelData.boss.image}
+                                            alt="Boss"
+                                            className="max-h-full w-auto object-contain drop-shadow-2xl"
+                                        />
+                                    </div>
+
+                                    {/* Status Message / Taunt (Floating above boss) */}
+                                    <div className="absolute top-20 left-0 right-0 z-10 flex justify-center pointer-events-none">
+                                        <AnimatePresence mode="wait">
+                                            {feedback === 'HIT' ? (
+                                                <motion.div
+                                                    key="hit"
+                                                    initial={{ scale: 0.5, opacity: 0, y: 20 }}
+                                                    animate={{ scale: 1.5, opacity: 1, y: 0 }}
+                                                    exit={{ scale: 0.5, opacity: 0 }}
+                                                    className="text-red-500 font-extrabold text-5xl bg-black/50 px-8 py-4 rounded-xl border-4 border-red-600 backdrop-blur-md shadow-[0_0_30px_rgba(220,38,38,0.8)]"
+                                                >
+                                                    HIT!
+                                                </motion.div>
+                                            ) : feedback === 'MISS' ? (
+                                                <motion.div
+                                                    key="miss"
+                                                    initial={{ scale: 0.5, opacity: 0, y: 20 }}
+                                                    animate={{ scale: 1.5, opacity: 1, y: 0 }}
+                                                    exit={{ scale: 0.5, opacity: 0 }}
+                                                    className="text-stone-300 font-extrabold text-5xl bg-black/50 px-8 py-4 rounded-xl border-4 border-stone-500 backdrop-blur-md"
+                                                >
+                                                    MISS!
+                                                </motion.div>
+                                            ) : (
+                                                <div className="bg-black/60 text-white p-4 rounded-lg backdrop-blur-sm max-w-md text-center border border-stone-600">
+                                                    <p className="text-xl italic">"{levelData.boss.intro}"</p>
+                                                </div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {/* Question Box */}
+                                    <div className="w-full bg-stone-900/95 border-2 border-yellow-700 p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-20 relative rounded-xl backdrop-blur-xl">
+                                        <h3 className="text-xl md:text-2xl text-center text-yellow-100 font-bold mb-6 min-h-[4rem] flex items-center justify-center">
+                                            {currentQuestion?.q}
+                                        </h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {shuffledOptions.map((opt, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => handleAnswer(opt)}
+                                                    disabled={!!feedback}
+                                                    className={`
+                                                        py-4 px-6 text-lg font-bold border-2 transition-all transform
+                                                        ${feedback
+                                                            ? (opt === currentQuestion.ok
+                                                                ? "bg-green-800 border-green-500 text-green-100 scale-105"
+                                                                : (feedback === 'MISS' && opt !== currentQuestion.ok ? "bg-red-900/50 border-red-800 text-stone-500" : "bg-stone-700 border-stone-600 opacity-50"))
+                                                            : "bg-stone-800 border-stone-600 hover:bg-stone-700 hover:border-yellow-600 hover:text-yellow-100 hover:scale-[1.02]"
+                                                        }
+                                                    `}
+                                                >
+                                                    {opt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {gameState === 'VICTORY' && (
+                            <motion.div key="victory" className="absolute inset-0 z-50">
+                                <VictoryScreen onNext={nextLevel} />
+                            </motion.div>
+                        )}
+
+                        {gameState === 'GAMEOVER' && (
+                            <motion.div key="gameover" className="absolute inset-0 z-50">
+                                <GameOverScreen onRetry={retry} />
+                            </motion.div>
+                        )}
+
+                        {gameState === 'FINAL' && (
+                            <motion.div key="final" className="absolute inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1, duration: 2 }}>
+                                <FinalVictoryScreen />
+                            </motion.div>
+                        )}
+
+                    </AnimatePresence>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

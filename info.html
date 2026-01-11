@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronOS: MISSION BRIEFING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/framer-motion/10.12.16/framer-motion.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: black;
+            color: white;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            pointer-events: none;
+            padding: 2rem;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .bg-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: -1;
+            filter: blur(3px) brightness(0.6);
+            transition: transform 10s ease;
+        }
+
+        .slide.active .bg-img {
+            transform: scale(1.1);
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .highlight-orange {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .highlight-red {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .glass-box {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 1000px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-next {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            color: black;
+            font-weight: 800;
+            padding: 15px 40px;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 100;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-next:hover {
+            transform: scale(1.1);
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: left;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-prev {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: white;
+            color: black;
+            font-weight: 800;
+            padding: 15px 40px;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 100;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-prev:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. EL GANXO: Adéu al Llibre -->
+    <div class="slide active" id="slide1">
+        <div class="bg-img" style="background-image: url('img/fonsintro.jpg'); opacity:0.3"></div>
+        <div class="glass-box">
+            <h1 class="text-6xl font-black mb-6 tracking-tighter">OBLIDEU EL <span class="highlight-red">LLIBRE</span>
+            </h1>
+            <p class="text-2xl text-gray-300 font-light mb-8 max-w-2xl mx-auto">
+                Estudiar Història de la Música amb un PDF el 2026 és com mirar una pel·lícula en una calculadora.
+            </p>
+            <div class="text-4xl font-bold text-white border-l-4 border-red-500 pl-6 text-left inline-block mt-4">
+                Aquest trimestre,<br>hem llençat el llibre a la brossa.
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. LA REVELACIÓ: ChronOS -->
+    <div class="slide" id="slide2">
+        <div class="bg-img" style="background-image: url('img/fonsintro.jpg'); opacity:0.3"></div>
+        <div class="glass-box">
+            <h2 class="text-2xl font-bold text-gray-400 mb-2">BENVINGUTS A</h2>
+            <h1 class="text-8xl font-black mb-6 tracking-tighter highlight">ChronOS</h1>
+
+            <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                No és una web d'exercicis. No és un Kahoot. <br>És un <strong>SISTEMA OPERATIU COMPLET</strong>
+                amb...
+            </p>
+
+            <div class="text-7xl font-black text-white mb-4">+ DE 200 APPS</div>
+            <p class="text-blue-400 font-bold uppercase tracking-widest">DISSENYADES PER A VOSALTRES</p>
+        </div>
+    </div>
+
+    <!-- 2b. SMARTPHONE OS GRID -->
+    <div class="slide" id="slide2b">
+        <div class="bg-img" style="background-image: url('img/fonsintro.jpg'); opacity:0.3"></div>
+        <div class="glass-box">
+            <h2 class="text-4xl font-black mb-4"><span class="highlight-orange">EL TEU NOU SISTEMA OPERATIU</span></h2>
+            <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Tot està muntat com si fos el sistema operatiu d'un <strong>Smartphone</strong>.
+            </p>
+
+            <!-- APP GRID -->
+            <div class="grid grid-cols-5 gap-4 max-w-4xl mx-auto mb-4 animate-pulse">
+                <!-- Row 1 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/arenadeltemps.jpg')"></div><span
+                        class="text-[10px] opacity-70">Arena del Temps</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/knockout.jpg')"></div><span
+                        class="text-[10px] opacity-70">Knockout</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Skyrim_Armory.jpg')"></div><span
+                        class="text-[10px] opacity-70">Skyrim</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/strangerchonos.jpg')"></div><span
+                        class="text-[10px] opacity-70">Stranger Chronos</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/squidchronos.jpg')"></div><span
+                        class="text-[10px] opacity-70">Squid</span>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/13RueCompositors.png')"></div><span
+                        class="text-[10px] opacity-70">13Rue</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Agencia_Temporal.png')"></div><span
+                        class="text-[10px] opacity-70">Agencia</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/AgeofMusic.jpg')"></div><span
+                        class="text-[10px] opacity-70">Age of Music</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Assassins_Harmony.jpg')"></div><span
+                        class="text-[10px] opacity-70">Assassins</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Netflix.jpg')"></div><span
+                        class="text-[10px] opacity-70">Netflix</span>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/BeatSaber.jpg')"></div><span
+                        class="text-[10px] opacity-70">BeatSaber</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Twitter.jpg')"></div><span
+                        class="text-[10px] opacity-70">Twitter</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Bushido.jpg')"></div><span
+                        class="text-[10px] opacity-70">Bushido</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Cinema.jpg')"></div><span
+                        class="text-[10px] opacity-70">Cinema</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/ClahsofMusic.jpg')"></div><span
+                        class="text-[10px] opacity-70">Clash</span>
+                </div>
+
+                <!-- Row 4 -->
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/InstagramMusical.jpg')"></div><span
+                        class="text-[10px] opacity-70">Instagram</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/CopyrightStrike.jpg')"></div><span
+                        class="text-[10px] opacity-70">Copyright</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/cornucopia.jpg')"></div><span
+                        class="text-[10px] opacity-70">Cornucopia</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/Historify.jpg')"></div><span
+                        class="text-[10px] opacity-70">Historify</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-cover bg-center shadow-lg mb-2"
+                        style="background-image: url('img/DJHistoric.jpg')"></div><span
+                        class="text-[10px] opacity-70">DJHistoric</span>
+                </div>
+            </div>
+            <!-- DOCK Mobile -->
+            <div
+                class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/20 backdrop-blur-md border border-white/20 rounded-3xl p-3 flex gap-4 shadow-2xl z-50">
+                <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110">
+                    <div class="w-12 h-12 rounded-xl bg-cover bg-center shadow-lg"
+                        style="background-image: url('img/OSInstallation.jpg')"></div>
+                </div>
+                <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110">
+                    <div class="w-12 h-12 rounded-xl bg-cover bg-center shadow-lg"
+                        style="background-image: url('img/camera.jpg')"></div>
+                </div>
+                <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110">
+                    <div class="w-12 h-12 rounded-xl bg-cover bg-center shadow-lg"
+                        style="background-image: url('img/inbox_zero.jpg')"></div>
+                </div>
+                <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110">
+                    <div class="w-12 h-12 rounded-xl bg-cover bg-center shadow-lg"
+                        style="background-image: url('img/InstagramMusical.jpg')"></div>
+                </div>
+                <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110">
+                    <div class="w-12 h-12 rounded-xl bg-cover bg-center shadow-lg"
+                        style="background-image: url('img/Whatsapp.jpg')"></div>
+                </div>
+            </div>
+
+            <p class="text-sm text-gray-500 mt-20">Simulació visual. Totes les apps són reals.</p>
+        </div>
+    </div>
+
+    <!-- 3. LA MISSIÓ: Squads -->
+    <div class="slide" id="slide3">
+        <div class="bg-img" style="background-image: url('img/fonsintro.jpg'); opacity:0.3"></div>
+        <div class="glass-box">
+            <h2 class="text-5xl font-black mb-10"><span class="highlight-orange">EL SISTEMA ESTÀ BLOQUEJAT</span> 🔒
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <!-- FASE 1 -->
+                <div class="feature-card border-red-500/30 bg-red-500/10 h-full">
+                    <div class="text-3xl mb-2">🛡️</div>
+                    <h3 class="text-xl font-bold mb-2 text-red-300">FASE 1: SQUADS</h3>
+                    <ul class="text-gray-300 text-sm text-left list-disc pl-5 space-y-1">
+                        <li>Us dividireu en equips (Barroc, Renaixement...)</li>
+                        <li>Contesteu les preguntes del <strong>Dossier d'Investigació</strong>.</li>
+                        <li><span class="text-yellow-400 font-bold">⚠️ NOMÉS</span> es podran utilitzar els
+                            <strong>arxius temporals</strong> per buscar informació.
+                        </li>
+                        <li>Creeu una <strong>Presentació</strong> i un <strong>Mapa Mental</strong>.</li>
+                    </ul>
+                </div>
+
+                <!-- FASE 2 -->
+                <div class="feature-card border-blue-500/30 bg-blue-500/10 h-full">
+                    <div class="text-3xl mb-2">🔓</div>
+                    <h3 class="text-xl font-bold mb-2 text-blue-300">FASE 2: EL DESBLOQUEIG</h3>
+                    <p class="text-gray-300 text-sm">
+                        Si el vostre Squad fa una gran presentació, <strong>DESBLOQUEJA el vostre segle per a tota la
+                            classe</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <p class="mt-8 text-xl font-bold text-white">
+                Si voleu jugar a tot, heu de dependre els uns dels altres.
+            </p>
+        </div>
+    </div>
+
+
+
+    <!-- 4. LA NOTA: Gamificació -->
+    <div class="slide" id="slide4">
+        <div class="bg-img" style="background-image: url('img/fonsintro.jpg'); opacity:0.3"></div>
+        <div class="glass-box">
+            <h2 class="text-5xl font-black mb-6">LA VOSTRA NOTA?</h2>
+
+            <div
+                class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mb-8">
+                ÉS EL VOSTRE NIVELL
+            </div>
+
+            <div class="space-y-4 text-left max-w-lg mx-auto">
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl">
+                    <span class="text-3xl">🎮</span>
+                    <div>
+                        <div class="font-bold">1 JOC COMPLETAT</div>
+                        <div class="text-sm text-gray-400">= 1 VICTORIA al teu perfil</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl">
+                    <span class="text-3xl">📈</span>
+                    <div>
+                        <div class="font-bold">MÉS JUGUES</div>
+                        <div class="text-sm text-gray-400">= MÉS NOTA TENS</div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="mt-12 text-5xl font-black text-white leading-tight drop-shadow-xl">
+                L'única classe on 'viciar-se' puja la mitjana.
+            </p>
+        </div>
+    </div>
+
+    <!-- 5. FINAL: Call to Action -->
+    <div class="slide" id="slide5">
+        <div class="bg-img" style="background-image: url('img/fonsintro.jpg'); opacity:0.3"></div>
+        <div class="glass-box">
+            <h2 class="text-6xl font-black mb-4">ESTEU PREPARATS?</h2>
+            <p class="text-2xl mb-12 text-gray-300">Accepteu la missió per desbloquejar el sistema?</p>
+
+            <button onclick="window.close()"
+                class="group relative px-12 py-5 bg-white text-black font-black text-2xl rounded-full overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.5)] transition-all hover:scale-105 hover:shadow-[0_0_80px_rgba(255,255,255,0.8)]">
+                <span class="relative z-10">INICIAR CHRONOS 1.0 🚀</span>
+                <div
+                    class="absolute inset-0 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500 z-0">
+                </div>
+                <span
+                    class="absolute inset-0 z-10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">SOM-HI!</span>
+            </button>
+        </div>
+    </div>
+
+    <button class="btn-prev" onclick="prevSlide()" style="display: none;">◀ ANTERIOR</button>
+    <button class="btn-next" onclick="nextSlide()">SEGÜENT ▶</button>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.querySelector('.btn-next');
+        const prevBtn = document.querySelector('.btn-prev');
+
+        function updateButtons() {
+            // Hide/Show Next Button
+            if (currentSlide === slides.length - 1) {
+                nextBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'block';
+            }
+
+            // Hide/Show Prev Button
+            if (currentSlide === 0) {
+                prevBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'block';
+            }
+        }
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide++;
+
+            if (currentSlide >= slides.length) {
+                currentSlide = 0; // Optional loop or clamp
+            }
+            slides[currentSlide].classList.add('active');
+            updateButtons();
+        }
+
+        function prevSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide--;
+
+            if (currentSlide < 0) {
+                currentSlide = 0;
+            }
+            slides[currentSlide].classList.add('active');
+            updateButtons();
+        }
+
+        // Initialize button state
+        updateButtons();
+    </script>
+</body>
+
+</html>

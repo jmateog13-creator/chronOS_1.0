@@ -3,48 +3,164 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQUID CHRONOS: GLASS BRIDGE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SQUID CHRONOS: PONT DE VIDRE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        html,
+        body,
+        #root {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Orbitron', sans-serif;
+            background-color: #000;
+            color: white;
+            user-select: none;
         }
 
-        .pink-glow {
-            text-shadow: 0 0 10px #FF0080;
-            box-shadow: 0 0 20px #FF0080;
+        /* Squid Game Colors */
+        :root {
+            --squid-pink: #FF0080;
+            --squid-green: #008C76;
+            --squid-dark: #1a1a1a;
         }
 
-        .green-glow {
-            text-shadow: 0 0 10px #008C76;
-            box-shadow: 0 0 20px #008C76;
+        .text-pink {
+            color: var(--squid-pink);
+        }
+
+        .text-green {
+            color: var(--squid-green);
+        }
+
+        .bg-pink {
+            background-color: var(--squid-pink);
+        }
+
+        .bg-green {
+            background-color: var(--squid-green);
+        }
+
+        .border-pink {
+            border-color: var(--squid-pink);
+        }
+
+        .border-green {
+            border-color: var(--squid-green);
         }
 
         .glass-panel {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
         .glass-panel:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-panel:active {
+            transform: scale(0.98);
+        }
+
+        .glass-broken {
+            animation: breakGlass 0.5s forwards;
+            background: rgba(255, 0, 0, 0.1);
+            border-color: rgba(255, 0, 0, 0.5);
+        }
+
+        @keyframes breakGlass {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.05) rotate(2deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(0.9) rotate(5deg);
+                opacity: 0;
+            }
+        }
+
+        .neon-text-pink {
+            text-shadow: 0 0 10px #FF0080;
+        }
+
+        .neon-text-green {
+            text-shadow: 0 0 10px #008C76;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 80px;
+            height: 3px;
             background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--squid-pink);
+            cursor: pointer;
+            box-shadow: 0 0 5px var(--squid-pink);
+        }
+
+        input[type=text] {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--squid-green);
+            color: var(--squid-green);
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            outline: none;
+        }
+
+        input[type=text]:focus {
+            box-shadow: 0 0 15px rgba(0, 140, 118, 0.5);
         }
     </style>
 </head>
 
-<body class="bg-[#242424] text-white h-screen overflow-hidden select-none">
+<body>
     <div id="root"></div>
-    <script type="text/babel" data-type="module">
-        import { motion, AnimatePresence } from 'https://esm.sh/framer-motion@10.16.4';
-        const { useState, useEffect, useMemo } = React;
 
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- GAME DATA ---
         const BRIDGE_DATA = {
             "Edat Mitjana": [
                 { q: "Textura principal?", left: "Monodia", right: "Polifonia", correct: "Monodia" },
@@ -55,7 +171,7 @@
                 { q: "Sistema d'escriptura?", left: "Neumes", right: "Pentagrama", correct: "Neumes" },
                 { q: "Músic profà?", left: "Trobador", right: "DJ", correct: "Trobador" },
                 { q: "Cant religiós?", left: "Gregorià", right: "Òpera", correct: "Gregorià" },
-                { q: "Ritme?", left: "Lliure (Cant Pla)", right: "Marcat", correct: "Lliure (Cant Pla)" },
+                { q: "Ritme?", left: "Lliure", right: "Marcat", correct: "Lliure" },
                 { q: "Lloc principal?", left: "Monestir", right: "Estadi", correct: "Monestir" }
             ],
             "Renaixement": [
@@ -63,8 +179,8 @@
                 { q: "Textura reina?", left: "Polifonia", right: "Monodia", correct: "Polifonia" },
                 { q: "Compositor espanyol?", left: "T.L. de Victoria", right: "Falla", correct: "T.L. de Victoria" },
                 { q: "Forma vocal profana?", left: "Madrigal", right: "Sonata", correct: "Madrigal" },
-                { q: "Centre del pensament?", left: "L'Home (Humanisme)", right: "Déu (Teocentrisme)", correct: "L'Home (Humanisme)" },
-                { q: "Instrument de corda?", left: "Viola de mà", right: "Guitarra Elèctrica", correct: "Viola de mà" },
+                { q: "Centre del pensament?", left: "L'Home", right: "Déu", correct: "L'Home" },
+                { q: "Instrument de corda?", left: "Viola de mà", right: "Guitarra", correct: "Viola de mà" },
                 { q: "La Reforma?", left: "Martí Luter", right: "El Papa", correct: "Martí Luter" },
                 { q: "Mestre de la Polifonia?", left: "Palestrina", right: "Bach", correct: "Palestrina" },
                 { q: "Grup vocal?", left: "Cor A Cappella", right: "Orquestra", correct: "Cor A Cappella" },
@@ -78,7 +194,7 @@
                 { q: "Veus agudes homes?", left: "Castrati", right: "Tenors", correct: "Castrati" },
                 { q: "Base harmònica?", left: "Baix Continu", right: "Acords Jazz", correct: "Baix Continu" },
                 { q: "El capellà roig?", left: "Vivaldi", right: "Mozart", correct: "Vivaldi" },
-                { q: "Dinàmica?", left: "Contrast (Fort/Fluix)", right: "Pla", correct: "Contrast (Fort/Fluix)" },
+                { q: "Dinàmica?", left: "Contrast", right: "Pla", correct: "Contrast" },
                 { q: "Lloc de feina?", left: "Palau Reial", right: "Discoteca", correct: "Palau Reial" },
                 { q: "Estètica?", left: "Ornamentada", right: "Minimalista", correct: "Ornamentada" }
             ],
@@ -122,20 +238,106 @@
 
         const ERAS = Object.keys(BRIDGE_DATA);
 
-        const IntroScreen = ({ onStart }) => (
-            <div class="h-full flex flex-col items-center justify-center p-8 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
-                <div class="border-4 border-[#FF0080] p-8 bg-black/80 pink-glow mb-8 text-center text-[#FF0080]">
-                    <div class="text-4xl mb-4">○ △ □</div>
-                    <h1 class="text-5xl md:text-7xl font-bold mb-2">SQUID CHRONOS</h1>
-                    <p class="text-white text-xl uppercase tracking-[0.3em]">Glass Bridge</p>
-                </div>
+        // --- COMPONENTS ---
 
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        const IntroScreen = ({ onSetPlayer }) => {
+            const [inputNum, setInputNum] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (inputNum.trim().length > 0) {
+                    onSetPlayer(inputNum);
+                }
+            };
+
+            return (
+                <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-1000"
+                        style={{ backgroundImage: 'url(img/fons.jpg)', filter: 'brightness(0.5) blur(3px)' }}></div>
+
+                    <div className="z-10 flex flex-col items-center mb-8 animate-float">
+                        <div className="w-56 h-56 md:w-72 md:h-72 filter drop-shadow-[0_0_30px_rgba(255,0,128,0.6)] mb-6 hover:scale-105 transition-transform duration-500">
+                            <img src="img/soldatrosa.png" alt="Soldat Rosa" className="w-full h-full object-contain" />
+                        </div>
+
+                        <div className="text-center max-w-3xl px-4">
+                            <h1 className="text-5xl md:text-7xl font-bold mb-2 neon-text-pink tracking-tighter">SQUID CHRONOS</h1>
+                        </div>
+                    </div>
+
+                    <div className="z-20 w-full max-w-md px-8 text-center bg-black/40 backdrop-blur-md rounded-xl p-8 border border-white/10">
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                            <label className="text-white text-sm font-mono tracking-widest uppercase">
+                                Introdueix ID de Jugador
+                            </label>
+                            <input
+                                type="text"
+                                maxLength="3"
+                                placeholder="000"
+                                value={inputNum}
+                                onChange={(e) => setInputNum(e.target.value.replace(/[^0-9]/g, ''))}
+                                className="text-5xl p-4 bg-transparent border-b-2 border-pink/50 focus:border-pink text-center placeholder-gray-600 outline-none transition-colors"
+                            />
+                            <button
+                                type="submit"
+                                disabled={inputNum.length === 0}
+                                className={`bg-pink text-white font-bold py-4 px-6 rounded uppercase tracking-widest hover:bg-white hover:text-black transition-all ${inputNum.length === 0 ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`}
+                            >
+                                Iniciar Sessió
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const InstructionsScreen = ({ playerNum, onNext }) => (
+            <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden p-8">
+                <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: 'url(img/fons.jpg)', filter: 'brightness(0.3) blur(5px)' }}></div>
+
+                <div className="z-10 max-w-2xl w-full bg-black/60 backdrop-blur-xl border-l-4 border-pink p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
+                    <div className="absolute -left-3 -top-3 w-6 h-6 bg-pink"></div>
+                    <div className="absolute -right-3 -bottom-3 w-6 h-6 bg-green"></div>
+
+                    <h2 className="text-3xl font-bold text-pink mb-6 tracking-widest uppercase">Protocol de Joc</h2>
+
+                    <div className="space-y-6 text-lg md:text-xl font-mono text-white/90 leading-relaxed">
+                        <p>BENVINGUT, <span className="text-green font-bold">JUGADOR {playerNum}</span>.</p>
+                        <p>DAVANT TEU HI HA UN PONT DE VIDRE.</p>
+                        <ul className="list-disc pl-6 space-y-2 text-base md:text-lg text-gray-300">
+                            <li>Avança d'esquerra a dreta.</li>
+                            <li>Un panell et sostindrà. L'altre et farà caure.</li>
+                            <li><span className="text-red-500 font-bold">NO HI HA VIDES.</span> Un error és fatal.</li>
+                            <li>Tens exactament <span className="text-white font-bold">2 MINUTS</span> per creuar.</li>
+                        </ul>
+                        {/* QUOTES REMOVED as requested */}
+                        <p className="text-center italic text-sm text-gray-500 mt-8">La història estalvia els que la coneixen.</p>
+                    </div>
+
+                    <button
+                        onClick={onNext}
+                        className="w-full mt-8 bg-green text-black font-black py-4 text-xl uppercase tracking-[0.2em] hover:bg-white transition-colors"
+                    >
+                        Acceptar Riscos
+                    </button>
+                </div>
+            </div>
+        );
+
+        const EraSelectionScreen = ({ onSelectEra, playerNum }) => (
+            <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: 'url(img/fons.jpg)', filter: 'brightness(0.4) blur(3px)' }}></div>
+
+                <h2 className="z-10 text-2xl md:text-4xl font-bold mb-12 text-white tracking-widest text-center uppercase">
+                    Selecciona Època Objectiu
+                </h2>
+
+                <div className="z-10 grid grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-5xl px-4">
                     {ERAS.map(era => (
                         <button
                             key={era}
-                            onClick={() => onStart(era)}
-                            class="bg-[#008C76]/20 border border-[#008C76] text-[#008C76] hover:bg-[#008C76] hover:text-white px-6 py-4 font-bold uppercase transition-all"
+                            onClick={() => onSelectEra(era)}
+                            className="bg-black/40 backdrop-blur-sm border border-green/30 text-green hover:bg-green hover:text-black hover:scale-105 py-6 px-4 font-bold uppercase tracking-wider transition-all duration-300 rounded shadow-[0_0_15px_rgba(0,140,118,0.1)] text-sm md:text-base"
                         >
                             {era}
                         </button>
@@ -144,124 +346,274 @@
             </div>
         );
 
-        const GameScreen = ({ era, onGameOver, onWin, onBack }) => {
-            const [step, setStep] = useState(0); // 0 to 9
-            const questions = useMemo(() => BRIDGE_DATA[era], [era]);
+        const GlassPanel = ({ text, onClick, state, isActive }) => {
+            let baseClasses = `glass-panel w-64 h-48 rounded-lg flex items-center justify-center text-xl md:text-2xl font-bold p-6 text-center select-none transition-all duration-500 relative cursor-pointer`;
 
-            const handleChoice = (choiceText) => {
-                const currentQ = questions[step];
-                if (choiceText === currentQ.correct) {
-                    // Correct - Ding & Advance
-                    if (step < 9) {
-                        setStep(prev => prev + 1);
-                    } else {
-                        onWin();
-                    }
-                } else {
-                    // Wrong - Crash & Fail
-                    onGameOver();
-                }
-            };
+            if (state === 'broken') {
+                baseClasses += " glass-broken pointer-events-none opacity-0";
+            } else if (state === 'safe') {
+                baseClasses += " bg-green/20 border-green text-green pointer-events-none shadow-[0_0_30px_rgba(0,140,118,0.6)]";
+            } else if (!isActive) {
+                baseClasses += " opacity-30 pointer-events-none grayscale";
+            } else {
+                baseClasses += " hover:bg-white/10 hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:scale-105 border-white/20";
+            }
+
+            return (
+                <div onClick={isActive ? onClick : undefined} className={baseClasses}>
+                    {state !== 'broken' && <span className="drop-shadow-md">{text}</span>}
+                    {state === 'broken' && <span className="absolute text-5xl animate-ping">💥</span>}
+                </div>
+            );
+        };
+
+        const GameScreen = ({ era, playerNum, onGameOver, onWin, onBack }) => {
+            const [step, setStep] = useState(0);
+            const [panelStates, setPanelStates] = useState({});
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [timeLeft, setTimeLeft] = useState(120);
+
+            // Randomize questions AND randomize answer options position
+            const questions = useMemo(() => {
+                let shuffled = [...BRIDGE_DATA[era]].sort(() => 0.5 - Math.random());
+                return shuffled.map(q => {
+                    const flip = Math.random() > 0.5;
+                    return {
+                        q: q.q,
+                        // If flip, swap left/right
+                        left: flip ? q.right : q.left,
+                        right: flip ? q.left : q.right,
+                        // Correct answer string remains the same
+                        correct: q.correct
+                    };
+                });
+            }, [era]);
 
             const currentQ = questions[step];
 
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setTimeLeft((prev) => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            onGameOver('timeout');
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [onGameOver]);
+
+            useEffect(() => {
+                const initialStates = {};
+                questions.forEach((_, idx) => {
+                    initialStates[idx] = { left: 'normal', right: 'normal' };
+                });
+                setPanelStates(initialStates);
+            }, [questions]);
+
+            const handleChoice = (side) => {
+                if (isProcessing) return;
+                setIsProcessing(true);
+
+                const choiceText = side === 'left' ? currentQ.left : currentQ.right;
+                const isCorrect = choiceText === currentQ.correct;
+
+                if (isCorrect) {
+                    setPanelStates(prev => ({ ...prev, [step]: { ...prev[step], [side]: 'safe' } }));
+                    setTimeout(() => {
+                        if (step < 9) {
+                            setStep(prev => prev + 1);
+                            setIsProcessing(false);
+                        } else {
+                            onWin();
+                        }
+                    }, 600);
+                } else {
+                    setPanelStates(prev => ({ ...prev, [step]: { ...prev[step], [side]: 'broken' } }));
+                    setTimeout(() => onGameOver('fall'), 600);
+                }
+            };
+
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            };
+
+            const translateX = -(step * 400);
+
             return (
-                <div class="h-full flex flex-col relative bg-gradient-to-b from-[#111] to-[#000]">
-                    {/* HUD */}
-                    <div class="p-4 flex justify-between items-center bg-[#242424] border-b border-gray-700">
-                        <div class="text-white text-lg font-bold">{era.toUpperCase()}</div>
-                        <div class="flex items-center gap-4">
-                            <div class="text-[#FF0080] text-3xl font-bold">{step + 1} <span class="text-sm text-gray-500">/ 10</span></div>
-                            <button onClick={onBack} class="text-xs text-gray-500 hover:text-white">SORTIR</button>
+                <div className="h-full w-full flex flex-col relative overflow-hidden bg-black">
+                    <div className="absolute inset-0 bg-cover bg-center z-0 transition-transform duration-700 ease-out"
+                        style={{
+                            backgroundImage: 'url(img/fons.jpg)',
+                            filter: 'brightness(0.3)',
+                            transform: `translateX(${-step * 50}px) scale(1.1)`
+                        }}></div>
+
+                    <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-50 pointer-events-none text-white">
+                        <div className="pointer-events-auto">
+                            <button onClick={onBack} className="text-xs text-white/50 hover:text-white border border-white/20 hover:border-white px-4 py-2 rounded uppercase tracking-widest transition-colors">Sortir</button>
+                            <div className="mt-2 text-green font-bold tracking-[0.3em] opacity-80">{era.toUpperCase()}</div>
+                        </div>
+
+                        <div className={`text-4xl md:text-5xl font-mono font-bold tracking-widest ${timeLeft < 30 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+                            {formatTime(timeLeft)}
                         </div>
                     </div>
 
-                    {/* BRIDGE VISUAL SCENE */}
-                    <div class="flex-grow flex flex-col items-center justify-center p-4 relative overflow-hidden">
-                        {/* Perspective lines for bridge */}
-                        <div class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(90deg,transparent_49%,#fff_50%,transparent_51%)]"></div>
+                    <div className="absolute top-[15%] w-full text-center z-40 pointer-events-none px-4">
+                        <h2 className="inline-block text-3xl md:text-5xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] transition-all duration-300 transform">
+                            {currentQ.q}
+                        </h2>
+                    </div>
 
-                        <div class="z-10 text-center mb-12">
-                            <h2 class="text-3xl md:text-4xl font-bold text-white mb-8 bg-black/50 p-4 inline-block border-l-4 border-r-4 border-[#008C76]">{currentQ.q}</h2>
-                        </div>
+                    <div className="flex-grow flex items-center relative z-10 w-full">
+                        <div className="absolute left-[50vw] h-full flex items-center transition-transform duration-700 cubic-bezier(0.2, 0.8, 0.2, 1)"
+                            style={{ transform: `translateX(${translateX}px)` }}>
 
-                        <div class="flex justify-center gap-8 md:gap-16 w-full max-w-4xl z-20">
-                            {/* LEFT PANEL */}
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleChoice(currentQ.left)}
-                                class="w-40 h-40 md:w-64 md:h-64 glass-panel rounded-lg flex items-center justify-center p-4"
-                            >
-                                <span class="text-xl md:text-2xl font-bold text-center">{currentQ.left}</span>
-                            </motion.button>
+                            {questions.map((q, idx) => {
+                                const isActive = idx === step;
+                                const isPast = idx < step;
+                                const panels = panelStates[idx] || { left: 'normal', right: 'normal' };
+                                const opacity = isActive ? 1 : (isPast ? 0 : 0.3);
 
-                            {/* RIGHT PANEL */}
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleChoice(currentQ.right)}
-                                class="w-40 h-40 md:w-64 md:h-64 glass-panel rounded-lg flex items-center justify-center p-4"
-                            >
-                                <span class="text-xl md:text-2xl font-bold text-center">{currentQ.right}</span>
-                            </motion.button>
-                        </div>
+                                return (
+                                    <div key={idx} className={`w-[400px] flex flex-col gap-8 items-center justify-center transition-all duration-500 transform ${isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-40 blur-[1px]'}`}>
 
-                        <div class="mt-12 text-[#008C76] text-sm animate-pulse tracking-widest text-center">
-                            AVANÇA AMB CURA
+                                        <div className="text-white/20 font-mono text-sm tracking-[0.5em] mb-4">PAS {idx + 1}</div>
+
+                                        <GlassPanel
+                                            text={q.left}
+                                            state={panels.left}
+                                            isActive={isActive}
+                                            onClick={() => handleChoice('left')}
+                                        />
+
+                                        <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
+                                        <GlassPanel
+                                            text={q.right}
+                                            state={panels.right}
+                                            isActive={isActive}
+                                            onClick={() => handleChoice('right')}
+                                        />
+                                    </div>
+                                );
+                            })}
+
+                            <div className="w-[400px] flex items-center justify-center opacity-50">
+                                <div className="h-64 w-1 bg-gradient-to-b from-transparent via-yellow-500/50 to-transparent"></div>
+                                <span className="ml-4 text-yellow-500 tracking-[0.5em] font-bold">FINAL</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        const EndScreen = ({ type, onRestart }) => (
-            <div class={`h-full flex flex-col items-center justify-center p-8 bg-black ${type === 'gameover' ? 'bg-red-900/20' : 'bg-green-900/20'}`}>
-                <div class="text-6xl mb-6">
-                    {type === 'gameover' ? '☠️' : '🏆'}
+        const EndScreen = ({ type, playerNum, onRestart }) => (
+            <div className={`h-full w-full flex flex-col items-center justify-center relative overflow-hidden`}>
+                <div className="absolute inset-0 bg-cover bg-center z-0"
+                    style={{ backgroundImage: 'url(img/fons.jpg)', filter: 'brightness(0.3)' }}></div>
+
+                <div className="z-10 text-center flex flex-col items-center">
+
+                    {type === 'gameover' ? (
+                        <div className="w-48 h-48 mb-8 animate-pulse drop-shadow-[0_0_30px_rgba(255,0,0,0.5)]">
+                            <img src="img/soldatrosa.png" alt="Eliminat" className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <div className="text-8xl mb-8 filter drop-shadow-[0_0_30px_rgba(0,140,118,0.5)] animate-bounce text-green">
+                            {/* DIAMOND REMOVED */}
+                            ★
+                        </div>
+                    )}
+
+                    <h1 className={`text-5xl md:text-7xl font-black mb-6 tracking-tighter ${type === 'gameover' ? 'text-pink neon-text-pink' : 'text-green neon-text-green'}`}>
+                        {type === 'gameover' ? `JUGADOR ${playerNum} ELIMINAT` : `JUGADOR ${playerNum} SALVAT`}
+                    </h1>
+
+                    <p className="text-white font-light text-xl tracking-widest mb-12">
+                        {type === 'gameover'
+                            ? "El protocol ha finalitzat."
+                            : "Has sobreviscut al pont de vidre."}
+                    </p>
+
+                    <button
+                        onClick={onRestart}
+                        className="bg-transparent border-2 border-white text-white px-12 py-4 font-bold text-xl uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all duration-300"
+                    >
+                        {type === 'gameover' ? 'Reintentar' : 'Menú Principal'}
+                    </button>
                 </div>
-                <h1 class={`text-5xl md:text-7xl font-bold mb-4 ${type === 'gameover' ? 'text-[#FF0080]' : 'text-[#008C76]'}`}>
-                    {type === 'gameover' ? 'ELIMINAT' : 'VICTÒRIA'}
-                </h1>
-                <p class="text-white text-xl mb-8 opacity-70">
-                    {type === 'gameover' ? 'El vidre s\'ha trencat sota els teus peus.' : 'Has creuat el pont amb seguretat.'}
-                </p>
-                <button
-                    onClick={onRestart}
-                    class="px-8 py-4 bg-white text-black font-bold text-xl hover:scale-105 transition-transform"
-                >
-                    {type === 'gameover' ? 'REINTENTAR' : 'TORNAR AL MENÚ'}
-                </button>
             </div>
         );
 
         const App = () => {
-            const [gameState, setGameState] = useState('intro');
+            const [gameState, setGameState] = useState('input'); // input -> instructions -> era -> playing -> win/gameover
+            const [playerNum, setPlayerNum] = useState('');
             const [selectedEra, setSelectedEra] = useState(null);
+            const [volume, setVolume] = useState(0.5);
+            const audioRef = useRef(null);
 
-            const startGame = (era) => {
-                setSelectedEra(era);
-                setGameState('playing');
-            };
-
-            const reset = () => {
-                setGameState('intro');
-                setSelectedEra(null);
-            };
+            useEffect(() => {
+                if (audioRef.current) {
+                    audioRef.current.volume = volume;
+                    if (gameState !== 'input' && audioRef.current.paused) {
+                        audioRef.current.play().catch(e => console.log('Audio autoplay blocked', e));
+                    }
+                }
+            }, [gameState, volume]);
 
             return (
-                <div class="h-full w-full">
-                    {gameState === 'intro' && <IntroScreen onStart={startGame} />}
+                <div className="w-full h-full bg-black text-white relative">
+                    <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-3 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 hover:border-white/40 transition-colors group">
+                        <span className="text-lg opacity-50 group-hover:opacity-100 transition-opacity">🔊</span>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={volume}
+                            onChange={(e) => setVolume(parseFloat(e.target.value))}
+                            className="opacity-50 group-hover:opacity-100 transition-opacity"
+                        />
+                        <audio ref={audioRef} loop src="audio/Eternal Red Circles.mp3" />
+                    </div>
+
+                    {gameState === 'input' && (
+                        <IntroScreen onSetPlayer={(num) => { setPlayerNum(num); setGameState('instructions'); }} />
+                    )}
+
+                    {gameState === 'instructions' && (
+                        <InstructionsScreen playerNum={playerNum} onNext={() => setGameState('era')} />
+                    )}
+
+                    {gameState === 'era' && (
+                        <EraSelectionScreen
+                            playerNum={playerNum}
+                            onSelectEra={(era) => { setSelectedEra(era); setGameState('playing'); }}
+                        />
+                    )}
+
                     {gameState === 'playing' && (
                         <GameScreen
                             era={selectedEra}
+                            playerNum={playerNum}
                             onGameOver={() => setGameState('gameover')}
                             onWin={() => setGameState('win')}
-                            onBack={reset}
+                            onBack={() => { setGameState('input'); setPlayerNum(''); setSelectedEra(null); }}
                         />
                     )}
                     {(gameState === 'gameover' || gameState === 'win') && (
-                        <EndScreen type={gameState} onRestart={reset} />
+                        <EndScreen
+                            type={gameState}
+                            playerNum={playerNum}
+                            onRestart={() => { setGameState('input'); setPlayerNum(''); setSelectedEra(null); }}
+                        />
                     )}
                 </div>
             );

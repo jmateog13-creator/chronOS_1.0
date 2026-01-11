@@ -507,7 +507,7 @@
         <div class="status-bar">
             <span>9:41</span>
             <!-- Info Mission Button -->
-            <div onclick="openMissionInfo()"
+            <div onclick="window.open('info.html', '_blank')"
                 style="cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 12px; padding: 4px 10px; font-size: 13px; display: flex; align-items: center; gap: 5px;">
                 <span>ℹ️</span> Info
             </div>
@@ -533,35 +533,31 @@
 
         <!-- Dock -->
         <div class="dock">
-            <!-- Settings Folder -->
-            <div class="app" onclick="openFolder('Opcions', systemApps.settings)">
-                <div class="icon folder-icon" style="background: rgba(80,80,80,0.5)">
-                    <div class="mini-dot" style="background:#bbb"></div>
-                    <div class="mini-dot" style="background:#bbb"></div>
-                    <div class="mini-dot" style="background:#bbb"></div>
-                </div>
-                <!-- No label in dock -->
-            </div>
-
-            <!-- Maps -->
-            <div id="dock-maps"></div>
-
-            <!-- Mail Folder -->
-            <div class="app" onclick="openFolder('Mail', systemApps.mail)">
-                <div class="icon folder-icon" style="background: rgba(0,122,255,0.5)">
-                    <div class="mini-dot" style="background:#fff"></div>
-                    <div class="mini-dot" style="background:#fff"></div>
+            <!-- 1. Opcions (OSInstallation) -->
+            <div class="app" onclick="window.open('Jocs/OSInstallation/index.html', '_blank')">
+                <div class="icon" style="background-image: url('img/OSInstallation.jpg'); background-size: cover;">
                 </div>
             </div>
 
-            <!-- Instagram -->
-            <div id="dock-instagram"></div>
+            <!-- 2. Camera -->
+            <div class="app" onclick="window.open('Jocs/Camera/index.html', '_blank')">
+                <div class="icon" style="background-image: url('img/camera.jpg'); background-size: cover;"></div>
+            </div>
 
-            <!-- WhatsApp -->
-            <div class="app" onclick="openFolder('Comunicació', systemApps.social)">
-                <div class="icon" style="background: #25D366;">
-                    📞
+            <!-- 3. Mail (InboxZero) -->
+            <div class="app" onclick="window.open('Jocs/inbox_zero/index.html', '_blank')">
+                <div class="icon" style="background-image: url('img/inbox_zero.jpg'); background-size: cover;"></div>
+            </div>
+
+            <!-- 4. Instagram -->
+            <div class="app" onclick="window.open('Jocs/InstagramMusical/index.html', '_blank')">
+                <div class="icon" style="background-image: url('img/InstagramMusical.jpg'); background-size: cover;">
                 </div>
+            </div>
+
+            <!-- 5. Whatsapp -->
+            <div class="app" onclick="window.open('Jocs/Whatsapp/index.html', '_blank')">
+                <div class="icon" style="background-image: url('img/Whatsapp.jpg'); background-size: cover;"></div>
             </div>
         </div>
 
@@ -738,6 +734,7 @@
         // Generated from directory structure + classifications
         const data = {
             "selector": [
+                "Arena_Del_Temps", "Knockout_History", "Camera", "CinemaChronos",
                 "Agencia_Temporal", "ClubTemps", "DJHistoric", "HistorIA", "L_Art_de_Carrer_Historic",
                 "LiniaTemps", "MusicTok_X", "Projecte_Genesis", "QuiesquiCompositors", "Refugi_Protocol",
                 "SalaProfessors", "Scrabble", "Simulator_Professor", "Tren_Progres", "Vidirera_trencada",
@@ -746,7 +743,8 @@
                 "lliga_ritme", "metro_music", "moodboard_musical", "pesca_anecs", "pica_paret",
                 "primer_contacte", "servei_neteja", "tops_musicals", "torre_control", "urgencies_musicals",
                 "var_historic", "vident_temps",
-                "StrangerChronos", "Telegrama20", "SquidChronos", "ChronoFactCheck", "MasterPlan", "Cornucopia", "JurassicChronos"
+                "StrangerChronos", "Telegrama20", "SquidChronos", "MasterPlan", "Cornucopia", "JurassicChronos",
+                "GameOfTones"
             ],
             "mixed": [
                 "13RueCompositors", "AgeofMusic", "AlquimiaGeneres", "AlquimistaArts", "AncestryMusic",
@@ -789,6 +787,10 @@
             maps: ["musimaps"],
             instagram: ["InstagramMusical"]
         };
+
+        // Sort lists alphabetically
+        data.selector.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        data.mixed.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
         // Flatten list for search
         const allGames = [...data.selector, ...data.mixed, ...systemApps.settings, ...systemApps.mail, ...systemApps.social, ...systemApps.maps, ...systemApps.instagram].sort();
@@ -838,8 +840,22 @@
                 icon.style.backgroundPosition = 'center';
 
                 // Try to load image
-                const imgPathPng = `img/${name}.png`;
-                const imgPathJpg = `img/${name}.jpg`;
+                // ICON OVERRIDES (Fix mismatching names)
+                const iconOverrides = {
+                    'Arena_Del_Temps': 'arenadeltemps.jpg',
+                    'Knockout_History': 'knockout.jpg',
+                    'StrangerChronos': 'strangerchonos.jpg'
+                };
+
+                let imgPathPng = `img/${name}.png`;
+                let imgPathJpg = `img/${name}.jpg`;
+
+                if (iconOverrides[name]) {
+                    // Use override if exists
+                    const override = iconOverrides[name];
+                    if (override.endsWith('.png')) imgPathPng = `img/${override}`;
+                    else imgPathJpg = `img/${override}`;
+                }
 
                 const img = new Image();
                 img.onload = () => {
@@ -957,8 +973,8 @@
                                 border: none; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; 
                                 padding: 10px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
                                 flex: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                <span style="font-size: 14px;">ℹ️</span>
-                                <span style="font-size: 11px; font-weight: 700;">Intro</span>
+                                <span style="font-size: 14px;">⏳</span>
+                                <span style="font-size: 11px; font-weight: 700;">Timeline</span>
                             </button>
                             <button onclick="window.open('mapa_investigador.html', '_blank')" style="
                                 border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; 
@@ -1229,7 +1245,7 @@
             const filtered = allGames.filter(g => g.toLowerCase().includes(query));
 
             if (query === '') {
-                filtered.slice(0, 24).forEach(app => container.appendChild(createIcon(app)));
+                filtered.forEach(app => container.appendChild(createIcon(app)));
             } else {
                 filtered.forEach(app => container.appendChild(createIcon(app)));
             }

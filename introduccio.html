@@ -4,624 +4,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronOS - Viatge pel Temps Musical</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>Viatge pel Temps Musical</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #050510;
-            --text-color: #e2e8f0;
-            --card-bg: rgba(20, 20, 35, 0.6);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --accent-glow: 0 0 20px rgba(59, 130, 246, 0.5);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            background-image:
-                radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.2) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.2) 0%, transparent 40%),
-                url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop");
-            /* Subtle space texture */
-            background-size: cover;
-            background-blend-mode: overlay;
-            min-height: 100vh;
+            background-color: #020617;
+            color: #fff;
+            overflow: hidden;
+            /* No scrollbars at all */
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
+            height: 100vh;
         }
 
-        /* Header */
-        header {
-            text-align: center;
-            padding: 3rem 1rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 4rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: -2px;
-            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-            filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.5));
-            animation: fadeInDown 1s ease-out;
-        }
-
-        p.subtitle {
-            font-size: 1.2rem;
-            color: #bbc7dd;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-            animation: fadeIn 1.5s ease-out;
-        }
-
-        /* Timeline Container */
-        .timeline-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem 2rem;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            /* Prevent scroll */
-        }
-
-        .timeline {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-            max-width: 1800px;
-            /* Max constraint for huge screens */
-            justify-content: center;
-            align-items: stretch;
-            height: 80%;
-        }
-
-        /* Era Card */
-        .era-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            flex: 1;
-            /* Grow to fill space */
-            min-width: 0;
-            /* Allow shrinking */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 1.5rem 0.5rem;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            cursor: pointer;
-            backdrop-filter: blur(20px);
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-
-        .era-card::before {
-            content: '';
-            position: absolute;
+        /* Background Image */
+        .bg-fog {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 5px;
-            background: var(--accent-color, #fff);
-            box-shadow: 0 0 15px var(--accent-color, #fff);
+            height: 100%;
+            background-image: url('img/fonsintro.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.6;
+            /* Adjust visibility */
+            z-index: -1;
         }
 
-        .era-card:hover {
-            transform: translateY(-10px);
-            flex: 1.2;
-            /* Expand slightly on hover */
-            background: rgba(30, 30, 50, 0.95);
-            z-index: 10;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Era Icon (Image) - Now Circular */
-        .img-container {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 2;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            background: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .era-card:hover .img-container {
-            transform: scale(1.1);
-            border-color: var(--accent-color);
-        }
-
-        .era-img {
+        .scroll-container {
+            display: flex;
+            gap: 12px;
+            /* Tighter gap */
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            object-position: top center;
-            /* Focus on face */
+            padding: 0 24px;
+            /* Reduced padding */
+            align-items: center;
+            justify-content: center;
+            /* Center content */
         }
 
-        /* Era Emoji (Top Feature) */
-        .era-emoji {
-            font-size: 2.5rem;
-            margin-bottom: 5px;
-            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
-            z-index: 2;
-            transition: transform 0.3s ease;
-        }
-
-        .era-card:hover .era-emoji {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        /* Composer Name */
-        .composer-name {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            z-index: 2;
-            opacity: 0.9;
-        }
-
-        /* Card Background Glow */
-        .card-bg-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
-            background: var(--accent-color);
-            filter: blur(80px);
-            opacity: 0.15;
-            z-index: 1;
-            border-radius: 50%;
-            transition: opacity 0.4s ease;
-        }
-
-        .era-card:hover .card-bg-glow {
-            opacity: 0.4;
-        }
-
-        /* Title & Date */
-        .era-title {
-            font-size: 1.3rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-bottom: 2px;
-            color: #fff;
-            letter-spacing: 0px;
-            z-index: 2;
-            word-wrap: break-word;
-            /* Prevent overflow */
-        }
-
-        .era-date {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
-            color: #bbc7dd;
-            margin-bottom: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 2px 8px;
-            border-radius: 12px;
-            z-index: 2;
-        }
-
-        /* Era Traits (Always Visible now) */
-        .era-traits {
-            text-align: left;
-            width: 100%;
-            font-size: 0.8rem;
-            /* Smaller font */
-            line-height: 1.3;
-            color: #e2e8f0;
-            list-style: none;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 8px;
-            z-index: 2;
-            margin-bottom: auto;
-            /* Push composer down */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .era-traits li {
-            margin-bottom: 0.5rem;
-            padding-left: 1rem;
-            position: relative;
-        }
-
-        .era-traits li::before {
-            content: "➜";
-            color: var(--accent-color);
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-            font-size: 0.8rem;
-            top: 2px;
-        }
-
-        /* Colors per Era */
-        .era-prehistoria {
-            --accent-color: #78716c;
-            /* Stone Gray */
-        }
-
-        .era-mesopotamia {
-            --accent-color: #d97706;
-            /* Gold/Sand */
-        }
-
-        .era-grecia_roma {
-            --accent-color: #ea580c;
-            /* Burnt Orange/Terracotta */
-        }
-
-        .era-medieval {
-            --accent-color: #fbbf24;
-        }
-
-        .era-renaixement {
-            --accent-color: #ef4444;
-        }
-
-        .era-barroc {
-            --accent-color: #a855f7;
-        }
-
-        .era-classicisme {
-            --accent-color: #3b82f6;
-        }
-
-        .era-romanticisme {
-            --accent-color: #ec4899;
-        }
-
-        .era-impressionisme {
-            --accent-color: #10b981;
-        }
-
-        .era-segleXX {
-            --accent-color: #14b8a6;
-            /* Teal */
-        }
-
-        .era-actualitat {
-            --accent-color: #64748b;
-            /* Slate */
-        }
-
-        /* Context Era (Inactive Bookends) */
-        .context-era {
-            flex: 0.85;
-            /* Wider to overlap less and fit text */
-            opacity: 0.85;
-            /* Much more visible */
-            filter: grayscale(0.3);
-            /* Slight desaturation instead of heavy gray */
-            transform: scale(0.98);
-            background: rgba(20, 20, 30, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            /* Solid, subtle border */
-        }
-
-        .context-era:hover {
-            transform: scale(1.0);
-            /* Full size on hover */
-            flex: 0.9;
-            opacity: 1;
-            filter: grayscale(0);
-            /* Full color on hover */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            background: var(--card-bg);
-            border-color: var(--accent-color);
-        }
-
-        .context-message {
-            margin-top: auto;
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding-top: 20px;
-            font-weight: 600;
-        }
-
-        /* Composer Section (Footer) */
-        .composer-section {
-            margin-top: auto;
-            /* Push to bottom */
-            width: 100%;
+        .era-card {
+            flex: 1;
+            /* Default for ACTIVE eras */
+            height: 65vh;
+            min-height: 480px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 10px;
             position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            min-width: 0;
+            overflow: hidden;
+            /* Hide overflow content if too narrow */
+        }
+
+        .era-card:hover {
+            flex: 1.2 !important;
+            /* Expand on hover */
+            transform: translateY(-5px);
+            z-index: 20;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* INACTIVE ERAS (Narrower) */
+        .era-inactive {
+            flex: 0.5;
+            /* Compressed width */
+            border-top: 3px solid #334155;
+            opacity: 0.6;
+            filter: grayscale(1);
+            background: #0f172a;
+        }
+
+        .era-inactive:hover {
+            filter: grayscale(0);
+            opacity: 1;
+            border-color: #94a3b8;
+        }
+
+        /* Hide details in inactive eras when compressed to save space */
+        .era-inactive .features,
+        .era-inactive .not-included {
+            opacity: 0.5;
+            transform: scale(0.9);
+            transition: opacity 0.3s;
+        }
+
+        .era-inactive:hover .features,
+        .era-inactive:hover .not-included {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .era-mitjana {
+            border-top: 3px solid #ef4444;
+            box-shadow: 0 -10px 20px -10px rgba(239, 68, 68, 0.3);
+        }
+
+        .era-renaixement {
+            border-top: 3px solid #f97316;
+            box-shadow: 0 -10px 20px -10px rgba(249, 115, 22, 0.3);
+        }
+
+        .era-barroc {
+            border-top: 3px solid #a855f7;
+            box-shadow: 0 -10px 20px -10px rgba(168, 85, 247, 0.3);
+        }
+
+        .era-classicisme {
+            border-top: 3px solid #3b82f6;
+            box-shadow: 0 -10px 20px -10px rgba(59, 130, 246, 0.3);
+        }
+
+        .era-romanticisme {
+            border-top: 3px solid #ec4899;
+            box-shadow: 0 -10px 20px -10px rgba(236, 72, 153, 0.3);
+        }
+
+        .era-xx {
+            border-top: 3px solid #14b8a6;
+            box-shadow: 0 -10px 20px -10px rgba(20, 184, 166, 0.3);
+        }
+
+        /* TYPOGRAPHY ADJUSTMENTS - Larger & Clearer */
+        .era-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .era-title {
+            font-weight: 900;
+            font-size: 0.95rem;
+            /* Bigger */
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 4px;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: visible;
+            /* readable */
+        }
+
+        .era-title.multi {
+            white-space: normal;
+            font-size: 0.85rem;
+            line-height: 1;
+        }
+
+        .era-years {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            /* Bigger */
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .features {
+            width: 100%;
+            margin-bottom: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .feature-item {
+            font-size: 0.7rem;
+            color: #cbd5e1;
+            /* Bigger */
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.2;
+        }
+
+        .feature-item::before {
+            content: '→';
+            color: rgba(255, 255, 255, 0.5);
+            margin-right: 6px;
+            flex-shrink: 0;
+            font-size: 0.7rem;
+        }
+
+        .composer-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 12px;
+            margin-top: 8px;
         }
 
         .composer-label {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            color: #fff;
-            opacity: 0.7;
-            margin-bottom: 15px;
-            font-weight: 300;
-            border-bottom: 1px solid var(--accent-color);
-            padding-bottom: 5px;
-            display: inline-block;
+            letter-spacing: 1.5px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
 
-        /* CTA Button Container */
-        .cta-container {
+        .composer-img {
+            width: 100px;
+            height: 100px;
+            /* Much Larger Image */
+            border-radius: 50%;
+            background-color: #334155;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .composer-name {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #38bdf8;
             text-align: center;
-            padding: 3rem;
-            position: relative;
-            z-index: 10;
+            text-transform: uppercase;
+            line-height: 1.1;
         }
 
-        .start-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
-            background: #fff;
-            color: #000;
-            font-size: 1.3rem;
+        .not-included {
+            margin-top: auto;
+            width: 100%;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cta-btn {
+            background: white;
+            color: black;
             font-weight: 800;
             text-transform: uppercase;
-            padding: 1.2rem 3rem;
-            border-radius: 50px;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            border: 4px solid transparent;
+            padding: 14px 36px;
+            border-radius: 99px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .start-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
-            border-color: #3b82f6;
-            color: #3b82f6;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* Decorative Background Elements */
-        .bg-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: -1;
-            opacity: 0.4;
-        }
-
-        .orb-1 {
-            width: 300px;
-            height: 300px;
-            background: #3b82f6;
-            top: -50px;
-            left: -50px;
-        }
-
-        .orb-2 {
-            width: 400px;
-            height: 400px;
-            background: #8b5cf6;
-            bottom: -100px;
-            right: -100px;
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
 
 <body>
+    <div class="bg-fog"></div>
 
-    <div class="bg-orb orb-1"></div>
-    <div class="bg-orb orb-2"></div>
+    <!-- Header -->
+    <div class="text-center pt-8 pb-4 z-10 flex-shrink-0">
+        <h1 class="text-4xl font-black mb-2 tracking-tighter text-blue-400 drop-shadow-2xl">
+            VIATGE PEL TEMPS MUSICAL
+        </h1>
+        <p class="text-gray-300 text-sm max-w-3xl mx-auto opacity-90 font-medium">
+            Explora sis èpoques que van canviar la història. Descobreix els secrets de cada període i prepara't per a la
+            teva missió d'investigació.
+        </p>
+    </div>
 
-    <header>
-        <h1>Viatge pel Temps Musical</h1>
-        <p class="subtitle">Explora sis èpoques que van canviar la història. Descobreix els secrets de cada període i
-            prepara't per a la teva missió d'investigació.</p>
-    </header>
+    <!-- Timeline Layout (Flex container, no scroll) -->
+    <div class="scroll-container" id="timeline">
 
-    <!-- Dynamic Timeline Container -->
-    <div class="timeline-container">
-        <div id="timeline" class="timeline">
-            <!-- Cards will be injected here by JS -->
+        <!-- 1. PREHISTÒRIA -->
+        <div class="era-card era-inactive">
+            <div class="era-icon">🦴</div>
+            <h3 class="era-title">PREHISTÒRIA</h3>
+            <div class="era-years">ABANS DEL 3000 aC</div>
+            <div class="features">
+                <div class="feature-item">Orígens del So</div>
+                <div class="feature-item">Ritme i Instruments</div>
+                <div class="feature-item">Imitació de la Natura</div>
+            </div>
+            <div class="not-included">NO INCLÒS A LA MISSIÓ</div>
         </div>
+
+        <!-- 2. MESOPOTÀMIA -->
+        <div class="era-card era-inactive">
+            <div class="era-icon">👁️</div>
+            <h3 class="era-title multi">MESOPOTÀMIA<br>I EGIPTE</h3>
+            <div class="era-years">3000 aC - 800 aC</div>
+            <div class="features">
+                <div class="feature-item">Creació de l'Escriptura</div>
+                <div class="feature-item">Música Religiosa</div>
+                <div class="feature-item">Lires i Arpes</div>
+            </div>
+            <div class="not-included">NO INCLÒS A LA MISSIÓ</div>
+        </div>
+
+        <!-- 3. GRÈCIA -->
+        <div class="era-card era-inactive">
+            <div class="era-icon">🏺</div>
+            <h3 class="era-title multi">GRÈCIA I<br>ROMA</h3>
+            <div class="era-years">800 aC - 476 dC</div>
+            <div class="features">
+                <div class="feature-item">Naixement de la Teoria</div>
+                <div class="feature-item">Teatre i Cors</div>
+                <div class="feature-item">Epitafi de Seikilos</div>
+            </div>
+            <div class="not-included">NO INCLÒS A LA MISSIÓ</div>
+        </div>
+
+        <!-- 4. EDAT MITJANA -->
+        <div class="era-card era-mitjana">
+            <div class="era-icon">🏰</div>
+            <h3 class="era-title">EDAT MITJANA</h3>
+            <div class="era-years">476 - 1450</div>
+            <div class="features">
+                <div class="feature-item">Monestirs i Castells</div>
+                <div class="feature-item">Cant Gregorià (Un veu)</div>
+                <div class="feature-item">Naixement Polifonia</div>
+            </div>
+            <div class="composer-box">
+                <div class="composer-label">ICONA MUSICAL</div>
+                <div class="composer-img" style="background-image: url('Jocs/Pixar_Artist/img/hildegard.png')"></div>
+                <div class="composer-name" style="color:#fca5a5">HILDEGARD V. B.</div>
+            </div>
+        </div>
+
+        <!-- 5. RENAIXEMENT -->
+        <div class="era-card era-renaixement">
+            <div class="era-icon">🎭</div>
+            <h3 class="era-title">RENAIXEMENT</h3>
+            <div class="era-years">1450 - 1600</div>
+            <div class="features">
+                <div class="feature-item">Humanisme i Art</div>
+                <div class="feature-item">Polifonia Complexa</div>
+                <div class="feature-item">Música Vocal</div>
+            </div>
+            <div class="composer-box">
+                <div class="composer-label">ICONA MUSICAL</div>
+                <div class="composer-img" style="background-image: url('Jocs/Pixar_Artist/img/palestrina.png')"></div>
+                <div class="composer-name" style="color:#fdba74">G. PALESTRINA</div>
+            </div>
+        </div>
+
+        <!-- 6. BARROC -->
+        <div class="era-card era-barroc">
+            <div class="era-icon">🎻</div>
+            <h3 class="era-title">BARROC</h3>
+            <div class="era-years">1600 - 1750</div>
+            <div class="features">
+                <div class="feature-item">Contrast i Ornamentació</div>
+                <div class="feature-item">Naixement de l'Òpera</div>
+                <div class="feature-item">Clavicèmbal i Orquestra</div>
+            </div>
+            <div class="composer-box">
+                <div class="composer-label">ICONA MUSICAL</div>
+                <div class="composer-img" style="background-image: url('Jocs/Pixar_Artist/img/bach.png')"></div>
+                <div class="composer-name" style="color:#d8b4fe">J.S. BACH</div>
+            </div>
+        </div>
+
+        <!-- 7. CLASSICISME -->
+        <div class="era-card era-classicisme">
+            <div class="era-icon">🏛️</div>
+            <h3 class="era-title">CLASSICISME</h3>
+            <div class="era-years">1750 - 1820</div>
+            <div class="features">
+                <div class="feature-item">Equilibri i Claredat</div>
+                <div class="feature-item">Piano i Simfonia</div>
+                <div class="feature-item">Melodia Agradable</div>
+            </div>
+            <div class="composer-box">
+                <div class="composer-label">ICONA MUSICAL</div>
+                <div class="composer-img" style="background-image: url('Jocs/Pixar_Artist/img/mozart.png')"></div>
+                <div class="composer-name" style="color:#93c5fd">W.A. MOZART</div>
+            </div>
+        </div>
+
+        <!-- 8. ROMANTICISME -->
+        <div class="era-card era-romanticisme">
+            <div class="era-icon">🎹</div>
+            <h3 class="era-title">ROMANTICISME</h3>
+            <div class="era-years">1820 - 1900</div>
+            <div class="features">
+                <div class="feature-item">Emoció i Passió</div>
+                <div class="feature-item">Grans Orquestres</div>
+                <div class="feature-item">Virtuosisme</div>
+            </div>
+            <div class="composer-box">
+                <div class="composer-label">ICONA MUSICAL</div>
+                <div class="composer-img" style="background-image: url('Jocs/Pixar_Artist/img/beethoven.png')"></div>
+                <div class="composer-name" style="color:#f9a8d4">L.V. BEETHOVEN</div>
+            </div>
+        </div>
+
+        <!-- 9. SEGLE XX -->
+        <div class="era-card era-xx">
+            <div class="era-icon">🌊</div>
+            <h3 class="era-title">SEGLE XX</h3>
+            <div class="era-years">1900 - 2000</div>
+            <div class="features">
+                <div class="feature-item">Ruptura de Normes</div>
+                <div class="feature-item">Nous Sons i Tecnologia</div>
+                <div class="feature-item">Varietat d'Estils</div>
+            </div>
+            <div class="composer-box">
+                <div class="composer-label">ICONA MUSICAL</div>
+                <div class="composer-img" style="background-image: url('Jocs/Pixar_Artist/img/cage.png')"></div>
+                <div class="composer-name" style="color:#5eead4">JOHN CAGE</div>
+            </div>
+        </div>
+
+        <!-- 10. ACTUALITAT -->
+        <div class="era-card era-inactive">
+            <div class="era-icon">📱</div>
+            <h3 class="era-title">ACTUALITAT</h3>
+            <div class="era-years">SEGLE XXI</div>
+            <div class="features">
+                <div class="feature-item">Música Digital</div>
+                <div class="feature-item">Streaming i IA</div>
+                <div class="feature-item">Fusió Global</div>
+            </div>
+            <div class="not-included">NO INCLÒS A LA MISSIÓ</div>
+        </div>
+
     </div>
 
-    <div class="cta-container">
-        <a href="mapa_investigador.html" class="start-btn">
-            Obrir Dossier d'Investigació <span class="btn-icon">🚀</span>
-        </a>
+    <!-- CTA Footer -->
+    <div class="py-6 text-center z-10 w-full relative">
+        <button onclick="window.open('mapa_investigador.html', '_blank')" class="cta-btn">
+            OBRIR DOSSIER D'INVESTIGACIÓ 🚀
+        </button>
     </div>
 
-    <script>
-        // Data Model with Pixar-style Images & Emojis
-        const eras = [
-            {
-                id: 'prehistoria',
-                title: "Prehistòria",
-                date: "Abans del 3000 aC",
-                emoji: "🦴",
-                type: 'context',
-                traits: ["Orígens del So", "Ritme i Instruments", "Imitació de la Natura"]
-            },
-            {
-                id: 'mesopotamia',
-                title: "Mesopotàmia i Egipte",
-                date: "3000 aC - 800 aC",
-                emoji: "👁️",
-                type: 'context',
-                traits: ["Creació de l'Escriptura", "Música Religiosa", "Lires i Arpes"]
-            },
-            {
-                id: 'grecia_roma',
-                title: "Grècia i Roma",
-                date: "800 aC - 476 dC",
-                emoji: "🏺",
-                type: 'context',
-                traits: ["Naixement de la Teoria", "Teatre i Cors", "Epitafi de Seikilos"]
-            },
-            {
-                id: 'medieval',
-                title: "Edat Mitjana",
-                date: "476 - 1450",
-                emoji: "🏰",
-                character: "Hildegard von Bingen",
-                image: "./Jocs/Pixar_Artist/img/hildegard.png",
-                traits: ["Monestirs i Castells", "Cant Gregorià (Un veu)", "Naixement de la Polifonia"]
-            },
-            {
-                id: 'renaixement',
-                title: "Renaixement",
-                date: "1450 - 1600",
-                emoji: "🎭",
-                character: "Giovanni P. Palestrina",
-                image: "./Jocs/Pixar_Artist/img/palestrina.png",
-                traits: ["Humanisme i Art", "Polifonia Complexa", "Música Vocal (A Cappella)"]
-            },
-            {
-                id: 'barroc',
-                title: "Barroc",
-                date: "1600 - 1750",
-                emoji: "🎻",
-                character: "Johann S. Bach",
-                image: "./Jocs/Pixar_Artist/img/bach.png",
-                traits: ["Contrast i Ornamentació", "Naixement de l'Òpera", "Clavicèmbal i Orquestra"]
-            },
-            {
-                id: 'classicisme',
-                title: "Classicisme",
-                date: "1750 - 1820",
-                emoji: "🏛️",
-                character: "W.A. Mozart",
-                image: "./Jocs/Pixar_Artist/img/mozart.png",
-                traits: ["Equilibri i Claredat", "Piano i Simfonia", "Melodia Agradable"]
-            },
-            {
-                id: 'romanticisme',
-                title: "Romanticisme",
-                date: "1820 - 1900",
-                emoji: "🎹",
-                character: "Frédéric Chopin",
-                image: "./Jocs/Pixar_Artist/img/chopin.png",
-                traits: ["Emoció i Passió", "Grans Orquestres", "Virtuosisme Instrumental"]
-            },
-            {
-                id: 'segleXX',
-                title: "Segle XX",
-                date: "1900 - 2000",
-                emoji: "🌊",
-                character: "John Cage",
-                image: "./Jocs/Pixar_Artist/img/cage.png",
-                traits: ["Ruptura de Normes", "Nous Sons i Tecnologia", "Varietat d'Estils"]
-            },
-            {
-                id: 'actualitat',
-                title: "Actualitat",
-                date: "Segle XXI",
-                emoji: "📱",
-                type: 'context',
-                traits: ["Música Digital", "Streaming i IA", "Fusió Global"]
-            }
-        ];
-
-        // Render Timeline
-        const container = document.getElementById('timeline');
-
-        eras.forEach((era, index) => {
-            const card = document.createElement('div');
-            const isContext = era.type === 'context';
-
-            // Add extra class if it's a context era
-            card.className = `era-card era-${era.id} ${isContext ? 'context-era' : ''}`;
-            card.style.animationDelay = `${index * 0.1}s`;
-
-            // Build Traits List
-            const traitsList = era.traits.map(t => `<li>${t}</li>`).join('');
-
-            // Conditional HTML for Composer Section
-            const composerHTML = isContext ?
-                `<div class="context-message">No inclòs a la missió</div>` :
-                `<div class="composer-section">
-                    <div class="composer-label">Icona Musical</div>
-                    <div class="img-container">
-                        <img src="${era.image}" class="era-img" alt="${era.character}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4600/4600336.png'"> 
-                    </div>
-                    <div class="composer-name">${era.character}</div>
-                </div>`;
-
-            card.innerHTML = `
-                <div class="card-bg-glow"></div>
-                
-                <div class="era-emoji">${era.emoji}</div>
-                <h2 class="era-title">${era.title}</h2>
-                <div class="era-date">${era.date}</div>
-                
-                <ul class="era-traits">
-                    ${traitsList}
-                </ul>
-
-                ${composerHTML}
-            `;
-
-            // Hover logic
-            card.addEventListener('mouseenter', () => {
-                // Future sound effect
-            });
-
-            container.appendChild(card);
-        });
-    </script>
 </body>
 
 </html>
