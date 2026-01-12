@@ -428,34 +428,34 @@
 
         const COMPOSERS = [
             // Medieval
-            { name: "Hildegard", era: "EDAT MITJANA", type: "range", cost: 3, hp: 100, dmg: 20, speed: 1, img: "img/unitat_hildegard.jpg", desc: "Mística visionària que connecta amb el diví." },
-            { name: "Guido", era: "EDAT MITJANA", type: "tank", cost: 4, hp: 300, dmg: 10, speed: 0.5, img: "img/unitat_guido.jpg", desc: "Inventor de les notes musicals (Do-Re-Mi...)." },
-            { name: "Leonin", era: "EDAT MITJANA", type: "swarm", cost: 2, hp: 50, dmg: 30, speed: 2, img: "img/unitat_leonin.jpg", desc: "Pioner de la polifonia a Notre Dame." },
-            { name: "Perotin", era: "EDAT MITJANA", type: "range", cost: 3, hp: 120, dmg: 15, speed: 1, img: "img/unitat_perotin.jpg", desc: "Mestre del ritme i l'organum complex." },
+            { name: "Hildegard", era: "EDAT MITJANA", type: "range", cost: 3, hp: 100, dmg: 20, speed: 1, img: "img/unitat_hildegard.png", desc: "Mística visionària que connecta amb el diví." },
+            { name: "Guido", era: "EDAT MITJANA", type: "tank", cost: 4, hp: 300, dmg: 10, speed: 0.5, img: "img/unitat_guido.png", desc: "Inventor de les notes musicals (Do-Re-Mi...)." },
+            { name: "Leonin", era: "EDAT MITJANA", type: "swarm", cost: 2, hp: 50, dmg: 30, speed: 2, img: "img/unitat_leonin.png", desc: "Pioner de la polifonia a Notre Dame." },
+            { name: "Perotin", era: "EDAT MITJANA", type: "range", cost: 3, hp: 120, dmg: 15, speed: 1, img: "img/unitat_perotin.png", desc: "Mestre del ritme i l'organum complex." },
             // Renaixement
-            { name: "Josquin", era: "RENAIXEMENT", type: "tank", cost: 5, hp: 400, dmg: 15, speed: 0.5, img: "img/unitat_josquin.jpg", desc: "El 'Miquel Àngel' de la música vocal." },
-            { name: "Palestrina", era: "RENAIXEMENT", type: "range", cost: 4, hp: 150, dmg: 25, speed: 1, img: "img/unitat_palestrina.jpg", desc: "Salvador de la polifonia sacra." },
-            { name: "Victoria", era: "RENAIXEMENT", type: "swarm", cost: 2, hp: 60, dmg: 35, speed: 2, img: "img/unitat_victoria.jpg", desc: "El gran místic del Renaixement espanyol." },
-            { name: "Monteverdi", era: "RENAIXEMENT", type: "range", cost: 3, hp: 130, dmg: 20, speed: 1, img: "img/unitat_monteverdi.jpg", desc: "El pont revolucionari cap al Barroc." },
+            { name: "Josquin", era: "RENAIXEMENT", type: "tank", cost: 5, hp: 400, dmg: 15, speed: 0.5, img: "img/unitat_josquin.png", desc: "El 'Miquel Àngel' de la música vocal." },
+            { name: "Palestrina", era: "RENAIXEMENT", type: "range", cost: 4, hp: 150, dmg: 25, speed: 1, img: "img/unitat_palestrina.png", desc: "Salvador de la polifonia sacra." },
+            { name: "Victoria", era: "RENAIXEMENT", type: "swarm", cost: 2, hp: 60, dmg: 35, speed: 2, img: "img/unitat_victoria.png", desc: "El gran místic del Renaixement espanyol." },
+            { name: "Monteverdi", era: "RENAIXEMENT", type: "range", cost: 3, hp: 130, dmg: 20, speed: 1, img: "img/unitat_monteverdi.png", desc: "El pont revolucionari cap al Barroc." },
             // Barroc
-            { name: "Bach", era: "BARROC", type: "tank", cost: 6, hp: 500, dmg: 20, speed: 0.4, img: "img/unitat_bach.jpg", desc: "El mestre absolut del contrapunt i la fuga." },
-            { name: "Vivaldi", era: "BARROC", type: "swarm", cost: 3, hp: 80, dmg: 40, speed: 2.5, img: "img/unitat_vivaldi.jpg", desc: "El 'Capellà Roig', àgil i virtuós." },
-            { name: "Handel", era: "BARROC", type: "range", cost: 4, hp: 200, dmg: 30, speed: 0.8, img: "img/unitat_haendel.jpg", desc: "Mestre de l'oratori i l'òpera espectacular." },
-            { name: "Purcell", era: "BARROC", type: "range", cost: 3, hp: 140, dmg: 25, speed: 1, img: "img/unitat_purcell.jpg", desc: "L'orgull musical d'Anglaterra." },
+            { name: "Bach", era: "BARROC", type: "tank", cost: 6, hp: 500, dmg: 20, speed: 0.4, img: "img/unitat_bach.png", desc: "El mestre absolut del contrapunt i la fuga." },
+            { name: "Vivaldi", era: "BARROC", type: "swarm", cost: 3, hp: 80, dmg: 40, speed: 2.5, img: "img/unitat_vivaldi.png", desc: "El 'Capellà Roig', àgil i virtuós." },
+            { name: "Handel", era: "BARROC", type: "range", cost: 4, hp: 200, dmg: 30, speed: 0.8, img: "img/unitat_haendel.png", desc: "Mestre de l'oratori i l'òpera espectacular." },
+            { name: "Purcell", era: "BARROC", type: "range", cost: 3, hp: 140, dmg: 25, speed: 1, img: "img/unitat_purcell.png", desc: "L'orgull musical d'Anglaterra." },
             // Classicisme
-            { name: "Mozart", era: "CLASSICISME", type: "swarm", cost: 3, hp: 90, dmg: 50, speed: 3, img: "img/unitat_mozart.jpg", desc: "El nen prodigi etern, ràpid i genial." },
-            { name: "Haydn", era: "CLASSICISME", type: "tank", cost: 5, hp: 450, dmg: 15, speed: 0.5, img: "img/unitat_haydn.jpg", desc: "El 'Pare de la Simfonia' (Papa Haydn)." },
-            { name: "Martín i Soler", era: "CLASSICISME", type: "range", cost: 4, hp: 160, dmg: 30, speed: 1, img: "img/unitat_vicente.jpg", desc: "El 'Mozart Valencià', famós a tot Europa." },
-            { name: "Gluck", era: "CLASSICISME", type: "range", cost: 3, hp: 150, dmg: 20, speed: 1, img: "img/unitat_gluck.jpg", desc: "Reformador de l'òpera cap al drama." },
+            { name: "Mozart", era: "CLASSICISME", type: "swarm", cost: 3, hp: 90, dmg: 50, speed: 3, img: "img/unitat_mozart.png", desc: "El nen prodigi etern, ràpid i genial." },
+            { name: "Haydn", era: "CLASSICISME", type: "tank", cost: 5, hp: 450, dmg: 15, speed: 0.5, img: "img/unitat_haydn.png", desc: "El 'Pare de la Simfonia' (Papa Haydn)." },
+            { name: "Martín i Soler", era: "CLASSICISME", type: "range", cost: 4, hp: 160, dmg: 30, speed: 1, img: "img/unitat_vicente.png", desc: "El 'Mozart Valencià', famós a tot Europa." },
+            { name: "Gluck", era: "CLASSICISME", type: "range", cost: 3, hp: 150, dmg: 20, speed: 1, img: "img/unitat_gluck.png", desc: "Reformador de l'òpera cap al drama." },
             // Romanticisme
-            { name: "Beethoven", era: "ROMANTICISME", type: "range", cost: 5, hp: 250, dmg: 40, speed: 0.7, img: "img/unitat_beethoven.jpg", desc: "El geni sord que va trencar totes les regles." },
+            { name: "Beethoven", era: "ROMANTICISME", type: "range", cost: 5, hp: 250, dmg: 40, speed: 0.7, img: "img/unitat_beethoven.png", desc: "El geni sord que va trencar totes les regles." },
             { name: "Chopin", era: "ROMANTICISME", type: "range", cost: 4, hp: 180, dmg: 45, speed: 1, img: "img/unitat_chopìn.jpg", desc: "El poeta del piano, sensible i profund." },
-            { name: "Wagner", era: "ROMANTICISME", type: "tank", cost: 7, hp: 600, dmg: 30, speed: 0.3, img: "img/unitat_wagner.jpg", desc: "Creador de l'Obra d'Art Total." },
-            { name: "Schubert", era: "ROMANTICISME", type: "range", cost: 3, hp: 160, dmg: 25, speed: 1, img: "img/unitat_schubert.jpg", desc: "El rei del lied i la melodia íntima." },
+            { name: "Wagner", era: "ROMANTICISME", type: "tank", cost: 7, hp: 600, dmg: 30, speed: 0.3, img: "img/unitat_wagner.png", desc: "Creador de l'Obra d'Art Total." },
+            { name: "Schubert", era: "ROMANTICISME", type: "range", cost: 3, hp: 160, dmg: 25, speed: 1, img: "img/unitat_schubert.png", desc: "El rei del lied i la melodia íntima." },
             // Segle XX
-            { name: "Stravinsky", era: "SEGLE XX", type: "tank", cost: 5, hp: 400, dmg: 40, speed: 0.6, img: "img/unitat_stravinsky.jpg", desc: "El camaleó rítmic que va causar disturbis." },
-            { name: "Cage", era: "SEGLE XX", type: "range", cost: 2, hp: 50, dmg: 10, speed: 0, img: "img/unitat_cage.jpg", desc: "El silenci (4'33) també és música." }, // Special?
-            { name: "Schoenberg", era: "SEGLE XX", type: "range", cost: 4, hp: 200, dmg: 35, speed: 0.8, img: "img/unitat_schoenberg.jpg", desc: "El trencador de la tonalitat (Dodecafonisme)." },
+            { name: "Stravinsky", era: "SEGLE XX", type: "tank", cost: 5, hp: 400, dmg: 40, speed: 0.6, img: "img/unitat_stravinsky.png", desc: "El camaleó rítmic que va causar disturbis." },
+            { name: "Cage", era: "SEGLE XX", type: "range", cost: 2, hp: 50, dmg: 10, speed: 0, img: "img/unitat_cage.png", desc: "El silenci (4'33) també és música." }, // Special?
+            { name: "Schoenberg", era: "SEGLE XX", type: "range", cost: 4, hp: 200, dmg: 35, speed: 0.8, img: "img/unitat_schoenberg.png", desc: "El trencador de la tonalitat (Dodecafonisme)." },
             { name: "Gershwin", era: "SEGLE XX", type: "swarm", cost: 3, hp: 110, dmg: 40, speed: 2, img: "img/unitat_ gershwin.jpg", desc: "Va portar el Jazz a la sala de concerts." }
         ];
 
