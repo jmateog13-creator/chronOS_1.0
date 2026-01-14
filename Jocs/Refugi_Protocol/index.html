@@ -7,6 +7,23 @@
     <title>El Refugi: Protocol de Veritat</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <!-- INICIO_AUTO_ZOOM_ANTIGRAVITY -->
+    <script>
+        function autoEscalar() {
+            const anchoDiseno = 1920; 
+            const escala = window.innerWidth / anchoDiseno;
+            if (escala < 1) {
+                document.body.style.zoom = escala;
+            } else {
+                document.body.style.zoom = 1;
+            }
+        }
+        window.addEventListener('resize', autoEscalar);
+        window.addEventListener('DOMContentLoaded', autoEscalar);
+    </script>
+    <!-- FIN_AUTO_ZOOM_ANTIGRAVITY -->
+
 </head>
 
 <body>

@@ -364,6 +364,23 @@
             box-shadow: 0 2px 0 #96281b;
         }
     </style>
+
+    <!-- INICIO_AUTO_ZOOM_ANTIGRAVITY -->
+    <script>
+        function autoEscalar() {
+            const anchoDiseno = 1920; 
+            const escala = window.innerWidth / anchoDiseno;
+            if (escala < 1) {
+                document.body.style.zoom = escala;
+            } else {
+                document.body.style.zoom = 1;
+            }
+        }
+        window.addEventListener('resize', autoEscalar);
+        window.addEventListener('DOMContentLoaded', autoEscalar);
+    </script>
+    <!-- FIN_AUTO_ZOOM_ANTIGRAVITY -->
+
 </head>
 
 <body>

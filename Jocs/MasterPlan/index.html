@@ -104,6 +104,23 @@
             animation: shake-hard 0.5s;
         }
     </style>
+
+    <!-- INICIO_AUTO_ZOOM_ANTIGRAVITY -->
+    <script>
+        function autoEscalar() {
+            const anchoDiseno = 1920; 
+            const escala = window.innerWidth / anchoDiseno;
+            if (escala < 1) {
+                document.body.style.zoom = escala;
+            } else {
+                document.body.style.zoom = 1;
+            }
+        }
+        window.addEventListener('resize', autoEscalar);
+        window.addEventListener('DOMContentLoaded', autoEscalar);
+    </script>
+    <!-- FIN_AUTO_ZOOM_ANTIGRAVITY -->
+
 </head>
 
 <body class="bg-[#1a1a1a] text-white h-screen overflow-hidden select-none">
